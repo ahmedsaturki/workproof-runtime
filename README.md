@@ -37,6 +37,8 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - `GET /v1/proofs` lists retained records.
 - `GET /v1/proofs/<digest>` returns record plus verified proof.
 - `GET /v1/proofs/<digest>/content` returns verified proof content.
+- `publishProofToRegistry()` sends only proofs whose integrity verifies locally.
+- `getProofFromRegistry()` independently re-verifies returned proof integrity and digest.
 - Invalid JSON is rejected before storage.
 - Invalid-integrity proofs are rejected before storage.
 - Retained proof integrity is re-verified before egress.

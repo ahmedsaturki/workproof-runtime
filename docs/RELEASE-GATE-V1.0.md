@@ -13,6 +13,9 @@ Make WorkProof proof records portable across processes and machines through a se
 - [x] GET proof metadata by digest.
 - [x] GET proof content by digest.
 - [x] List retained proof records.
+- [x] Verified HTTP client publish/get/list transport.
+- [x] Client-side proof integrity check before publication.
+- [x] Client-side digest verification after retrieval.
 - [x] Reject malformed JSON.
 - [x] Reject invalid-integrity proofs before retention.
 - [x] Re-verify retained proof integrity on egress.
@@ -26,7 +29,7 @@ Make WorkProof proof records portable across processes and machines through a se
 
 ## Safety boundary
 
-The registry transports and stores proof; it does not establish trust. Integrity, cryptographic signature validity, and local trust policy remain separate verification gates.
+The registry transports and stores proof; it does not establish trust. Integrity, signature validity, and trust policy remain separate acceptance gates.
 
 ## Milestone result
 
