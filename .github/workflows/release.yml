@@ -34,7 +34,7 @@ jobs:
 
       - name: Build distribution files
         env:
-          RELEASE_TAG: v3.4.0-dev
+          RELEASE_TAG: v${{ github.ref_name#release/ }}
         run: |
           set -euo pipefail
           rm -rf release-dist
@@ -57,7 +57,7 @@ jobs:
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: v3.4.0-dev
+          RELEASE_TAG: v${{ github.ref_name#release/ }}
         run: |
           set -euo pipefail
           if gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
@@ -65,6 +65,7 @@ jobs:
             exit 1
           fi
           gh release create "${RELEASE_TAG}"             --repo "${GITHUB_REPOSITORY}"             --target "${GITHUB_SHA}"             --title "WorkProof Runtime v3.4.0-dev"             --prerelease             --notes-file docs/RELEASE-V3.4.0-DEV.md             release-dist/*
+          fi
 
       - name: Verify published release
         env:
