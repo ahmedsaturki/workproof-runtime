@@ -6,7 +6,9 @@ Date: 2026-09-21
 
 - Feature branch: feature/v3.4-operator-benchmark
 - Scope: executable M001-M005 benchmark with induced partial failures
-- Implementation merge: pending
+- Implementation merge: `fe662d5bb5337bde18772f22864434935d59f66f`
+- Feature CI: #864 (success)
+- Merged-main CI: #866 (success)
 - Final closeout commit: pending
 
 ## Verification target
@@ -37,4 +39,18 @@ Date: 2026-09-21
 
 ## Status
 
-**v3.4 is under CI validation.**
+**v3.4 implementation is merged and functionally verified; final documentation/source-tree closeout is pending.**
+
+
+## Recorded benchmark outcome
+
+- 5/5 missions verified.
+- verifiedCompletionRate: 1.0.
+- falseDoneCount: 0.
+- duplicateExternalEffectCount: 0.
+- ambiguousOutcomeResolvedCount: 1.
+- capabilitySubstitutionCount: 1.
+- evidenceCompleteRate: 1.0.
+- humanInterventionCount: 0.
+- M004 produced exactly one POST and reconciled the existing effect.
+- M005 used two primary attempts, then substituted a compatible fallback and independently verified the stored outcome.
