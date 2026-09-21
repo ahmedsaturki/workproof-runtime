@@ -28,6 +28,7 @@ export interface ExecutionLeaseAuthority {
   acquire(resourceId: string, ownerId: string, ttlMs: number): import("../../coordination/src/leases").LeaseAcquireResult;
   renew(resourceId: string, leaseId: string, ownerId: string, ttlMs: number): import("../../coordination/src/leases").LeaseRecord;
   release(resourceId: string, leaseId: string, ownerId: string): boolean;
+  assertOwned(resourceId: string, leaseId: string, ownerId: string): import("../../coordination/src/leases").LeaseRecord;
 }
 
 export interface ExecutionLeaseConfig {
@@ -70,6 +71,29 @@ export class WorkEngine {
     return this.executionLease?.resourceId?.(work, step) ?? ("work:" + work.id + ":step:" + step.id);
   }
 
+  private createExecutionFence(
+    resourceId: string,
+    ownerId: string,
+    authority: ExecutionLeaseAuthority,
+    leaseRef: { current: LeaseRecord | null }
+  ): import("../../core/src/types").ExecutionFence {
+    return {
+      get resourceId() { return resourceId; },
+      get leaseId() { return leaseRef.current?.leaseId ?? ""; },
+      get ownerId() { return ownerId; },
+      get revision() { return leaseRef.current?.revision ?? 0; },
+      get token() {
+        const lease = leaseRef.current;
+        return lease ? lease.leaseId + ":" + lease.revision : "";
+      },
+      assertOwned() {
+        const lease = leaseRef.current;
+        if (!lease) throw new Error("Execution lease is missing");
+        authority.assertOwned(resourceId, lease.leaseId, ownerId);
+      }
+    };
+  }
+
   async run(work: WorkObject, steps: WorkStep[]): Promise<WorkObject> {
     this.store.transition(work, "running", "Work execution started");
     this.persist(work);
@@ -87,6 +111,8 @@ export class WorkEngine {
       let lease: import("../../coordination/src/leases").LeaseRecord | null = null;
       let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
       let leaseLost: string | null = null;
+      const leaseRef: { current: LeaseRecord | null } = { current: null };
+      let executionFence: import("../../core/src/types").ExecutionFence | undefined;
       const resourceId = this.executionLease ? this.leaseResourceId(work, step) : null;
 
       if (this.executionLease && resourceId) {
@@ -106,6 +132,8 @@ export class WorkEngine {
           }
 
           lease = acquired.lease;
+          leaseRef.current = lease;
+          executionFence = this.createExecutionFence(resourceId, this.executionLease.ownerId, this.executionLease.authority, leaseRef);
           this.store.event(
             work,
             acquired.status === "renewed" ? "lease.renewed" : "lease.acquired",
@@ -133,6 +161,7 @@ export class WorkEngine {
                 this.executionLease!.ownerId,
                 this.executionLease!.ttlMs
               );
+              leaseRef.current = lease;
               this.store.event(work, "lease.heartbeat", "Execution lease renewed for step " + step.id, {
                 stepId: step.id,
                 resourceId,
@@ -212,6 +241,7 @@ export class WorkEngine {
                 this.executionLease.ownerId,
                 this.executionLease.ttlMs
               );
+              leaseRef.current = lease;
             } catch (error) {
               leaseLost = String(error);
               this.store.event(work, "lease.lost", "Execution lease renewal failed before attempt " + attempt, {
@@ -223,6 +253,21 @@ export class WorkEngine {
               this.persist(work);
               return work;
             }
+          }
+
+          try {
+            executionFence?.assertOwned();
+          } catch (error) {
+            leaseLost = String(error);
+            this.store.event(work, "lease.fence_rejected", "Execution fencing rejected a stale worker before capability execution", {
+              stepId: step.id,
+              attempt,
+              resourceId,
+              error: leaseLost
+            });
+            this.store.transition(work, "unresolved", "Execution lease fencing rejected step " + step.id);
+            this.persist(work);
+            return work;
           }
 
           const effect = this.store.addEffect(work, capability.name, capability.riskClass, step.idempotencyKey, step.operation);
@@ -252,8 +297,21 @@ export class WorkEngine {
             effect,
             registry: this.registry,
             verifyExternalState: async () => this.verifyEffect(work, effect.effectId),
-            contextLog: (type, message, data) => this.store.event(work, type, message, data)
+            contextLog: (type, message, data) => this.store.event(work, type, message, data),
+            executionFence
           });
+
+          try {
+            executionFence?.assertOwned();
+          } catch (error) {
+            leaseLost = String(error);
+            this.store.event(work, "lease.fence_rejected", "Execution fencing detected ownership loss after capability execution", {
+              stepId: step.id,
+              attempt,
+              resourceId,
+              error: leaseLost
+            });
+          }
 
           this.store.event(work, "step.finished", "Step " + step.id + " finished", {
             status: receipt.status,
