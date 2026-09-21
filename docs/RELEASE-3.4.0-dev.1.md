@@ -33,3 +33,7 @@ This prerelease aligns:
 The repository remains `private: true`; no npm registry publication is claimed.
 
 The Studio container is an operator distribution target. No managed public production host is implied by this prerelease.
+
+
+Release branch: release/3.4.0-dev.1
+Source baseline: fb25a4b26260df1517fe9366f4b766f44e2c6f21
