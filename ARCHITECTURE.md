@@ -40,6 +40,23 @@ GOAL -> CONTRACT -> ROUTE -> ACT -> OBSERVE -> VERIFY -> RECONCILE/RECOVER -> DE
     Proof / Artifact
     durable evidence
 
+## Control boundary
+
+    Studio
+       |
+       | bearer token
+       v
+    Authenticated Control Plane
+       |
+       +--> authorization
+       +--> state transition
+       +--> mutation audit
+       |
+       v
+    Work Object Repository
+
+The Studio never becomes the authority for authorization or mutation semantics. Its control endpoints are a same-origin proxy and sanitize returned Work Objects.
+
 ## Core packages
 
 ### packages/core
@@ -66,7 +83,7 @@ Handles ambiguous outcomes through bounded reconciliation, retry, substitution, 
 Runs independent verifiers against success criteria and records evidence-bearing checks. A successful capability receipt is not proof by itself.
 
 ### packages/evidence
-Builds portable proof bundles and deterministic SHA-256 integrity manifests.
+Builds portable proof bundles and deterministic SHA-256 integrity manifests plus optional Ed25519 signatures.
 
 ### packages/storage
 Persists Work Objects so execution state can survive process boundaries.
@@ -83,11 +100,11 @@ Domain adapters. The GitHub pack covers repository read, issue creation behind e
 5. Ambiguous outcomes attempt external-state reconciliation before another write.
 6. Verification is independent of the capability execution path.
 7. Proof integrity is represented by a digest over canonicalized proof content.
+8. Studio mutation is delegated to the authenticated control plane; Studio cannot bypass its authorization or audit model.
 
 ## Extension boundary
 
 MCP, A2A, workers, Studio, REST, SDKs, and remote control planes are adapters/surfaces around the Work Object model. They must not replace the kernel's outcome, effect, verification, recovery, and proof semantics.
-
 
 ## Saga recovery
 
@@ -100,8 +117,7 @@ Saga recovery is a coordination layer around persisted saga lineage.
           |
           v
     Saga recovery lease
-      /           \
-   owned         busy
+      /              owned         busy
     |              |
     v              v
  pending      waiting_lease
