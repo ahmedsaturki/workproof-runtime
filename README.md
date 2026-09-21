@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.3-dev local deterministic message outbox is fully verified on main, including documentation/source-tree closeout.**
+**v3.4-dev executable operator benchmark is merged and functionally verified on main; documentation closeout is in progress.**
 
 The v3.3 line adds a bounded, deterministic local messaging outbox without external SMTP delivery.
 
@@ -64,7 +64,16 @@ WorkProof Runtime is not a replacement for agents, browsers, workflow engines, M
 
 ## v3.4 Executable Operator Benchmark
 
+- PR #73 merged as `fe662d5bb5337bde18772f22864434935d59f66f`.
+- Feature CI #864: success.
+- Merged-main CI #866: success.
+- Benchmark artifact retained from the merged-main run and independently downloaded/inspected.
+
 The next engineering line is an executable five-mission benchmark with controlled failure injection. It exercises research, discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution while reporting evidence-backed outcome metrics.
+
+## Distribution and operation
+
+The repository remains a source-distributed runtime (`package.json` remains private and no npm package is published). The verified benchmark result is retained as a GitHub Actions artifact, while the public repository remains the source distribution surface. External service deployment is not implied by the runtime repository; operational launch requires an explicitly configured runtime host and credentials.
 
 ## Next engineering gates
 
