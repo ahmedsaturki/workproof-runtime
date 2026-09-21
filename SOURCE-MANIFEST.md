@@ -6,6 +6,7 @@ The verified v3.0 main tree contains **145 required paths** enforced by scripts/
 
 V3.0 additions include:
 - docs/RELEASE-GATE-V3.0.md
+- docs/FINAL-AUDIT-V3.0.md
 - operational health projection additions in apps/studio.ts and test/studio.test.ts
 
 V2.9 additions include:
