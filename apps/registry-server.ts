@@ -29,4 +29,6 @@ if (!Number.isInteger(port) || port < 0 || port > 65535) {
       process.stderr.write(String(error) + "\n");
       process.exitCode = 1;
     });
+  }
+}
 export {};
