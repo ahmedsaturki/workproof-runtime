@@ -22,19 +22,19 @@ test("compensation is explicit, linked, independently verified, and replay-safe"
   const state = new Set(["A","B"]);
   let calls = 0;
   registry.register({ name: "undo", version: "1", operations: ["undo"], riskClass: "external_write",
-    execute: async (request) => { calls++; state.delete(String(request.input)); return { status: "accepted", externalEffectId: "undo:" + request.input }; } });
+    execute: async (request: any) => { calls++; state.delete(String(request.input)); return { status: "accepted", externalEffectId: "undo:" + request.input }; } });
 
   const first = await executeCompensation({ store, registry, work,
     request: { sagaId: saga.sagaId, sourceEffectId: one.effectId, operation: "undo", input: "A", idempotencyKey: "comp:A", capability: "undo", riskClass: "external_write" },
-    verifyExternalState: async (_work, _effect) => !state.has("A") });
+    verifyExternalState: async (_work: any, _effect: any) => !state.has("A") });
   assert.equal(first.status, "partial");
   assert.equal(work.sagas[0].status, "partial");
-  const comp = work.effects.find(e => e.sourceEffectId === one.effectId);
+  const comp = work.effects.find((e: any) => e.sourceEffectId === one.effectId);
   assert.ok(comp); assert.equal(comp.kind, "compensation"); assert.equal(comp.status, "verified");
 
   const second = await executeCompensation({ store, registry, work,
     request: { sagaId: saga.sagaId, sourceEffectId: two.effectId, operation: "undo", input: "B", idempotencyKey: "comp:B", capability: "undo", riskClass: "external_write" },
-    verifyExternalState: async (_work, _effect) => !state.has("B") });
+    verifyExternalState: async (_work: any, _effect: any) => !state.has("B") });
   assert.equal(second.status, "compensated");
   assert.equal(work.sagas[0].status, "compensated");
   assert.equal(calls, 2);
@@ -82,7 +82,7 @@ test("persisted verified compensation is not replayed", async () => {
   registry.register(cap);
   await executeCompensation({ store, registry, work,
     request: { sagaId: saga.sagaId, sourceEffectId: one.effectId, operation: "undo", input: "A", idempotencyKey: "comp:persist", capability: cap.name, riskClass: "external_write" },
-    verifyExternalState: async () => true, persist: value => repo.save(value) });
+    verifyExternalState: async () => true, persist: (value: any) => repo.save(value) });
   assert.equal(calls, 1);
   const loaded = repo.load(work.id); const resumedStore = new WorkStore(); const resumedRegistry = new CapabilityRegistry();
   resumedStore.register(loaded); resumedRegistry.register(cap);
