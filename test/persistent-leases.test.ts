@@ -3,6 +3,10 @@ const test = require("node:test");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+
+function tempDir(prefix: string): string {
+  return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+}
 const { fork } = require("child_process");
 
 import type { LeaseAcquireResult, LeaseClock, LeaseRecord, WorkerRecord } from "../packages/coordination/src/leases";
@@ -210,3 +214,25 @@ test("persistent workers preserve metadata, heartbeat state, and deterministic l
 });
 
 export {};
+
+
+test("PersistentLeaseStore exposes the same sanitized lease visibility contract as in-memory LeaseStore", () => {
+  const root = tempDir("workproof-persistent-lease-visibility-");
+  const dbPath = path.join(root, "leases.db");
+  const leases = new PersistentLeaseStore(dbPath);
+  try {
+    const acquired = leases.acquire("work:persistent:step:1", "worker-persistent", 10_000);
+    assert.equal(acquired.status, "acquired");
+    const statuses = leases.listLeaseStatuses();
+    assert.equal(statuses.length, 1);
+    assert.equal(statuses[0].resourceId, "work:persistent:step:1");
+    assert.equal(statuses[0].ownerId, "worker-persistent");
+    assert.equal(statuses[0].revision, 1);
+    assert.equal(statuses[0].active, true);
+    assert.equal((statuses[0] as any).token, undefined);
+    assert.equal((statuses[0] as any).fencingToken, undefined);
+  } finally {
+    leases.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

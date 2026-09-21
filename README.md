@@ -4,9 +4,9 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v2.5-dev worker lifecycle hardening is verified on main.**
+**v2.8-dev diagnostic lease/fence visibility is being finalized on main.**
 
-v2.1 established authenticated Studio control delegation through the control plane. v2.2 added read-only proof/audit views backed by the content-addressed proof vault and optional local trust policy. v2.3 adds durable idempotency and replay/concurrency protection for authenticated control mutations.
+v2.1 established authenticated Studio control delegation through the control plane. v2.2 added read-only proof/audit views backed by the content-addressed proof vault and optional local trust policy. v2.3 added durable control idempotency. v2.4 added execution fencing. v2.5 added worker lifecycle hardening. v2.6 added worker-aware Studio. v2.7 added authenticated remote worker visibility. v2.8 adds read-only lease/fence diagnostics without exposing execution fencing tokens.
 
 ## Core loop
 
@@ -31,57 +31,20 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - v2.2 proof/audit Studio.
 - v2.3 durable control mutation idempotency.
 - v2.4 execution fencing token boundary.
+- v2.5 worker lifecycle/reassignment hardening.
+- v2.6 worker-aware Studio.
+- v2.7 authenticated remote worker visibility.
 
-## v2.1 authenticated Studio control
+## v2.8 diagnostic lease/fence visibility
 
-- Studio control routes are same-origin and proxy to the authenticated control plane.
-- Browser control uses a bearer token supplied by the operator and kept only in page memory.
-- Dispatch, cancel, and resume are delegated to the control plane; Studio does not authorize them independently.
-- Missing or malformed bearer credentials are rejected before forwarding.
-- Successful control responses are sanitized before leaving the Studio boundary.
-- Control-plane request IDs and audit behavior remain authoritative.
-- Control routes return `503` when no control plane is configured, rather than mutating local state.
-- The Studio has no direct Work Object mutation path.
-- v2.0 read endpoints and hardening headers remain intact.
-
-## v2.2 proof/audit Studio
-
-- Optional proof-vault configuration enables retained proof discovery by Work Object.
-- Proof audit reports integrity, signature, and local trust state without exposing vault filesystem paths.
-- Retained proof detail includes bounded verification metadata and artifact count.
-- Corrupted retained proofs fail closed as invalid audit records.
-- Missing proof vault configuration returns a clear `503` rather than fabricating proof state.
-- Proof/audit endpoints are read-only and use the existing Studio hardening/no-store boundary.
-
-## v2.3 control-plane idempotency
-
-- Authenticated mutation endpoints use a durable SQLite idempotency ledger when configured.
-- Dispatch, cancel, and resume mutations require an `Idempotency-Key` when the ledger is configured.
-- Reusing the same key for the same logical mutation replays the stored response without repeating the mutation.
-- Reusing a key for a different operation or payload is rejected as a conflict.
-- Concurrent use of the same key is fail-closed while the original mutation is pending.
-- Completed idempotency records survive control-plane process restart.
-- The SDK exposes mutation idempotency keys, and Studio generates per-action keys for control delegation.
-- The control-plane ledger is separate from external capability idempotency and does not claim exactly-once third-party execution.
-
-## v2.3 verification evidence
-
-Merged v2.3 commit:
-`47e09002f135c0d2f999b2465e5bfbd291db4c22`
-
-Verified merged-main CI:
-- CI #621: success
-- source-tree audit: 126/126
-- dependency security audit: 0 vulnerabilities
-- Chromium/CDP preflight: success
-- strict TypeScript build: success
-- retention lifecycle suite: success
-- sequential integration suite: 32/32 test files passed
-- benchmark: passed
-- demo: passed
-- CLI proof verification: passed
-- CLI mission execution: passed
-- live GitHub integration smoke: verified
+- The control plane exposes a read-only lease projection through `GET /v1/leases`.
+- Studio exposes local and authenticated remote lease projections through `GET /api/leases`.
+- Lease projections include resource, owner, lease identity, revision, timing, and active state.
+- The Studio and control plane do not expose execution fencing tokens or mutate lease ownership through these read surfaces.
+- Remote lease visibility requires a valid bearer credential.
+- Missing lease sources fail closed with an explicit HTTP 503.
+- Persistent and in-memory lease authorities share the same sanitized lease projection contract.
+- Existing worker, proof/audit, control, vault, and security boundaries remain intact.
 
 ## Safety boundary
 
@@ -93,47 +56,12 @@ Proof integrity and signatures establish integrity/authenticity properties under
 
 Control-plane idempotency protects the authenticated mutation boundary but does not make external capability execution exactly-once.
 
-## v2.4 distributed execution fencing
+Execution fencing protects the WorkProof execution boundary. External systems must explicitly honor a fence token to obtain corresponding remote conditional-write protection.
 
-- Execution leases expose a fencing token derived from lease identity and current revision.
-- Capability code receives the active execution fence through `CapabilityContext`.
-- WorkEngine asserts ownership before crossing the capability execution boundary.
-- WorkEngine also asserts ownership after capability execution so a takeover cannot be silently accepted.
-- Persistent and in-memory lease authorities expose authoritative `assertOwned`.
-- A dedicated two-process regression proves an old worker cannot assert ownership after lease takeover.
-- External systems may enforce the token at their own conditional-write boundary; WorkProof does not claim universal remote fencing.
-
-## v2.4 verification evidence
-
-- Feature CI #652: success.
-- Merged-main CI #653: success.
-- Final merged-main commit: `77603553fff569b230a71de0b92aa3e4a6ae1342`.
-- Source-tree, security, build, retention, full suite, benchmark, demo, CLI, and live GitHub smoke gates all passed.
-
-## v2.5 verification evidence
-
-- Feature CI #660: success.
-- Merged-main CI #661: success.
-- Final merged-main commit: `234e4397ae8e98acf1fcdf5fd57c42188582ae8f`.
-- Worker lifecycle/reassignment, source, security, build, retention, full suite, benchmark, demo, CLI, and live GitHub smoke gates all passed.
-
-## v2.6 worker-aware Studio
-
-- Studio exposes a read-only worker liveness projection when a worker status source is configured.
-- The projection shows worker identity, capabilities, lifecycle state, liveness, heartbeat age, stale threshold, and reassignment eligibility.
-- Studio does not expose lease internals or filesystem paths and does not authorize worker mutations.
-- Unconfigured worker visibility fails closed with HTTP 503.
-
-## v2.7 authenticated remote worker visibility
-
-- Studio uses the configured authenticated control plane as the authoritative worker-status source when remote mode is enabled.
-- Missing bearer credentials fail closed with HTTP 401.
-- Remote control-plane outages become explicit HTTP 503 responses.
-- The Studio re-sanitizes remote worker state before returning it and keeps local worker-source mode intact for single-host deployments.
-- Remote worker visibility is read-only and does not acquire leases or authorize reassignment.
+Lease visibility is diagnostic only. A visible lease is not proof that a worker is healthy or that an external effect has stopped.
 
 ## Next engineering gates
 
-Additional capability packs/integrations, remote/distributed Studio mode, and richer visualization beyond proof/audit inspection remain separate milestones.
+Richer operational visualization/filtering and additional capability packs/integrations remain separate milestones.
 
 This repository does not make a global novelty claim.

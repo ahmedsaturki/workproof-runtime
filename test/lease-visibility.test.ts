@@ -55,8 +55,11 @@ test("control plane exposes sanitized read-only lease visibility", async () => {
     assert.equal(lease.token, undefined);
     assert.equal(lease.fencingToken, undefined);
 
-    const mutation = await fetch("http://127.0.0.1:" + control.port + "/v1/leases", { method: "POST" });
-    assert.equal(mutation.status, 404);
+    const mutation = await fetch("http://127.0.0.1:" + control.port + "/v1/leases", {
+      method: "POST",
+      headers: { authorization: "Bearer " + reader.token }
+    });
+    assert.equal(mutation.status, 403);
   } finally {
     await control.close();
     fs.rmSync(root, { recursive: true, force: true });

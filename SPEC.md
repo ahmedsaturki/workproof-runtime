@@ -1,8 +1,8 @@
-# WorkProof Runtime Specification - v2.4-dev
+# WorkProof Runtime Specification - v2.8-dev
 
 ## 1. Purpose
 
-Represent a bounded digital outcome as durable work, execute it through explicit capabilities and worker ownership, safely handle external effects, independently verify outcomes, preserve portable proof, manage proof lifecycle, recover persisted execution after worker loss, and expose a user-facing Studio with authenticated control delegation and read-only proof/audit views.
+Represent a bounded digital outcome as durable work, execute it through explicit capabilities and worker ownership, safely handle external effects, independently verify outcomes, preserve portable proof, manage proof lifecycle, recover persisted execution after worker loss, and expose a user-facing Studio with authenticated control delegation, read-only proof/audit views, worker visibility, and diagnostic lease visibility.
 
 ## 2. Core loop
 
@@ -21,11 +21,13 @@ A Work Contract contains:
 
 A step's risk class must not exceed the contract risk class.
 
-## 4. Capability, Effect, Worker, and Saga Contracts
+## 4. Capability, Effect, Worker, Lease, and Saga Contracts
 
 Capabilities declare stable names, versions, supported operations, risk classes, and executable behavior.
 
 Effects track effect identity, idempotency, operation, capability, risk, attempts, receipts/observed state, and lifecycle timestamps.
+
+Workers expose bounded status including liveness and reassignment eligibility.
 
 Execution and recovery leases establish explicit worker ownership. Saga recovery uses a separate recovery lease and durable compensation lineage.
 
@@ -43,52 +45,68 @@ The proof vault is content-addressed and uses conservative reachability-aware re
 
 ## 7. Control Plane
 
-Authenticated control-plane operations provide read, dispatch, cancel, and resume semantics. Authorization and audit remain separate from the Studio presentation layer.
+Authenticated control-plane operations provide read, dispatch, cancel, resume, worker-status, and lease-status semantics. Authorization and audit remain separate from the Studio presentation layer.
 
 The Studio control surface must delegate mutation to this control plane rather than reproducing authorization or state-transition logic.
 
-## 8. Control mutation idempotency
+## 8. Control Mutation Idempotency
 
 When a durable idempotency ledger is configured, authenticated POST mutations use an Idempotency-Key with a canonical request fingerprint.
 
 The ledger guarantees:
 - same key + same operation/input returns the previously stored logical response without repeating the mutation;
 - same key + different operation/input is rejected;
-- a concurrent duplicate sees an explicit in-progress state rather than executing a second mutation;
+- concurrent duplicates are blocked while the first mutation is pending;
 - completed entries survive process restart.
-
-A pending entry is fail-closed rather than automatically reclaimed, because retrying an unknown mutation can itself create a duplicate side effect.
-
-Invalid keys are rejected at the control-plane boundary. Idempotency records contain the logical operation, request fingerprint, response, request ID, and timestamps.
 
 Control-plane idempotency is separate from external capability idempotency; it does not create exactly-once semantics for third-party systems.
 
-## 9. Execution fencing
+## 9. Execution Fencing
 
-An execution lease provides an `ExecutionFence` to the active capability.
+An execution lease provides an ExecutionFence to the active capability.
 
 The fence contains:
 - resource identity
 - current lease identity
 - current revision
-- an opaque `leaseId:revision` token
-- an authoritative `assertOwned()` operation
+- an opaque leaseId:revision token
+- an authoritative assertOwned() operation
 
-The token is dynamic across lease renewals while retaining the same lease identity. A takeover changes lease identity, causing the old fence assertion to fail.
+WorkEngine asserts ownership before and after capability execution. Capability adapters may pass the token to an external system that supports conditional fencing.
 
-WorkEngine asserts the fence immediately before capability execution and again after execution. A post-execution fence failure converts the step to an unresolved state requiring reconciliation rather than silently accepting stale-worker work.
+## 10. Diagnostic Lease Visibility
 
-Capability adapters may pass the token to an external system that supports conditional fencing. The runtime does not claim universal protection for systems that ignore the token.
+The coordination layer provides a sanitized LeaseStatus projection for read-only diagnostics.
 
-## 10. Studio
+LeaseStatus contains:
+- lease identity
+- resource identity
+- owner identity
+- acquired timestamp
+- renewed timestamp
+- expiry timestamp
+- revision
+- active state
 
-The v2.3 Studio remains a local operational surface over persisted Work Objects with optional authenticated control delegation.
+LeaseStatus must not contain an execution fencing token.
+
+The in-memory LeaseStore and persistent LeaseStore expose the same projection contract.
+
+The authenticated control plane exposes `GET /v1/leases`. If no lease source is configured it returns HTTP 503.
+
+Studio exposes `GET /api/leases`. In local mode it reads the configured lease source directly. In remote mode it delegates through the authenticated control plane and re-sanitizes the returned leases.
+
+Lease visibility is diagnostic only and cannot acquire, renew, release, reassign, or otherwise mutate lease ownership.
+
+## 11. Studio
 
 Read surface:
 - `GET /` HTML dashboard
 - `GET /health` service health
 - `GET /api/work` bounded Work Object summary listing
 - `GET /api/work/:id` sanitized Work Object detail
+- `GET /api/workers` worker/liveness projection
+- `GET /api/leases` diagnostic execution lease projection
 - `GET /api/proofs?workId=:id` retained proof summaries
 - `GET /api/proof/:digest` retained proof audit detail
 
@@ -99,29 +117,29 @@ Optional control surface:
 
 Studio preserves the control-plane idempotency header when proxying replay responses, and its browser actions generate per-action keys.
 
-## 11. CLI Lifecycle Surface
+## 12. CLI Lifecycle Surface
 
 The CLI exposes work execution, proof inspection/verification, signer identity, registry operations, proof-vault lifecycle, and local Studio launch.
 
-## 12. Non-goals
+## 13. Non-goals
 
 WorkProof is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, or distributed-consensus system.
 
-## 13. v2.4 Acceptance Target
+## 14. v2.8 Acceptance Target
 
-- v2.2 behavior remains passing.
-- durable control mutation idempotency is enabled and tested.
-- same-key replay does not repeat a successful mutation.
-- same-key logical conflicts are rejected.
-- concurrent duplicates are blocked while the first mutation is pending.
-- completed idempotency entries survive process restart.
-- invalid idempotency keys are rejected.
-- SDK idempotency propagation works.
-- Studio idempotency propagation and replay headers work.
+- v2.7 behavior remains passing.
+- read-only control-plane lease visibility is available when configured.
+- lease visibility requires authentication when routed remotely.
+- local Studio exposes lease status when configured.
+- remote Studio delegates lease visibility through the authenticated control plane.
+- the Studio re-sanitizes the remote response.
+- PersistentLeaseStore and LeaseStore provide the same visibility contract.
+- fencing tokens never cross the read-only visibility boundary.
+- missing sources fail closed with 503.
+- lease visibility routes do not mutate lease state.
 - source audit
 - dependency audit
 - full integration suite
 - benchmark/demo/CLI verification
 - live GitHub smoke
-- multi-process stale-worker fencing regression
 - green feature CI and green merged-main CI
