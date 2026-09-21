@@ -52,6 +52,12 @@ Verified implementation gates:
 
 External message delivery is not part of v3.3. The capability writes a local outbox artifact and does not send SMTP or remote messages.
 
+## Current v3.4 benchmark work
+
+The executable benchmark now covers M001-M005: research, HTTP discovery, Git mutation, ambiguous-effect reconciliation, and capability substitution.
+
+The benchmark is evidence-bearing and fail-closed and reports verified completion, false-done, duplicate effects, ambiguity recovery, substitution, evidence completeness, and human intervention.
+
 ## Remaining platform work
 
 - [ ] additional capability packs and external integrations beyond current foundations

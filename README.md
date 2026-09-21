@@ -62,6 +62,10 @@ The messaging capability is intentionally local-only. A capability receipt is no
 
 WorkProof Runtime is not a replacement for agents, browsers, workflow engines, MCP registries, memory systems, observability backends, or OSINT graphs. Those systems can integrate as capabilities or adapters while Work Object, effect, verification, recovery, and proof semantics remain invariant.
 
+## v3.4 Executable Operator Benchmark
+
+The next engineering line is an executable five-mission benchmark with controlled failure injection. It exercises research, discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution while reporting evidence-backed outcome metrics.
+
 ## Next engineering gates
 
 Additional capability packs and richer end-to-end operator benchmarks are the next expansion points. The repository does not make a global novelty claim.
