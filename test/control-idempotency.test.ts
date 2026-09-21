@@ -8,6 +8,8 @@ import { WorkStore } from "../packages/core/src/work";
 import { JsonWorkRepository } from "../packages/storage/src/json";
 import { issueCredential, createAuthPolicy, addIssuedCredential } from "../packages/registry/src/auth";
 import { startControlPlane } from "../packages/control-plane/src/http";
+import { ControlPlaneClient } from "../packages/sdk/src/index";
+import { startStudio } from "../apps/studio";
 
 function sampleWork(objective: string) {
   const store = new WorkStore();
@@ -248,3 +250,79 @@ test("concurrent control mutations with the same idempotency key execute only on
 });
 
 export {};
+
+
+test("SDK mutation methods send caller-supplied idempotency keys", async () => {
+  const root = tempDir("workproof-idempotency-sdk-");
+  const repo = new JsonWorkRepository(path.join(root, "work"));
+  const credential = issueCredential({ id: "sdk-writer", permissions: ["write"] });
+  const policy = addIssuedCredential(createAuthPolicy(), credential);
+  let calls = 0;
+  const server = await startControlPlane({
+    repository: repo,
+    authPolicy: policy,
+    idempotencyDbPath: path.join(root, "control.sqlite"),
+    dispatch: async (input) => {
+      calls += 1;
+      const work = sampleWork(String(input.objective));
+      repo.save(work);
+      return work;
+    }
+  });
+  try {
+    const client = new ControlPlaneClient({ baseUrl: `http://${server.host}:${server.port}`, token: credential.token });
+    const first = await client.dispatch({ objective: "sdk replay" }, { idempotencyKey: "sdk-dispatch-001" });
+    const replay = await client.dispatch({ objective: "sdk replay" }, { idempotencyKey: "sdk-dispatch-001" });
+    assert.equal(replay.id, first.id);
+    assert.equal(calls, 1);
+    await assert.rejects(
+      () => client.dispatch({ objective: "sdk bad key" }, { idempotencyKey: "not safe!" }),
+      /Invalid idempotency key/
+    );
+  } finally {
+    await server.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("Studio forwards idempotency keys to the authenticated control plane", async () => {
+  const root = tempDir("workproof-idempotency-studio-");
+  const repo = new JsonWorkRepository(path.join(root, "work"));
+  const controlCredential = issueCredential({ id: "studio-writer", permissions: ["write"] });
+  const controlPolicy = addIssuedCredential(createAuthPolicy(), controlCredential);
+  let calls = 0;
+  const control = await startControlPlane({
+    repository: repo,
+    authPolicy: controlPolicy,
+    idempotencyDbPath: path.join(root, "control.sqlite"),
+    dispatch: async (input) => {
+      calls += 1;
+      const work = sampleWork(String(input.objective));
+      repo.save(work);
+      return work;
+    }
+  });
+  const studio = await startStudio({
+    workDirectory: path.join(root, "work"),
+    controlPlaneUrl: `http://${control.host}:${control.port}`
+  });
+  try {
+    const url = `http://${studio.host}:${studio.port}/api/control/dispatch`;
+    const headers = {
+      authorization: `Bearer ${controlCredential.token}`,
+      "idempotency-key": "studio-dispatch-001",
+      "content-type": "application/json"
+    };
+    const body = JSON.stringify({ objective: "studio replay" });
+    const first = await fetch(url, { method: "POST", headers, body });
+    assert.equal(first.status, 200);
+    const replay = await fetch(url, { method: "POST", headers, body });
+    assert.equal(replay.status, 200);
+    assert.equal(replay.headers.get("x-idempotency-replayed"), "true");
+    assert.equal(calls, 1);
+  } finally {
+    await studio.close();
+    await control.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
