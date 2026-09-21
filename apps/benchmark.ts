@@ -6,14 +6,14 @@ import { registerResearchPack } from "../packages/packs/src/research-pack";
 import { registerWebDiscoveryPack } from "../packages/packs/src/web-discovery-pack";
 import { registerGitLocalPack } from "../packages/packs/src/git-local-pack";
 import { selectCapability } from "../packages/runtime/src/router";
-import { JsonWorkRepository } from "../packages/storage/src/json";
+import { Capability, CapabilityReceipt } from "../packages/core/src/types";
 const fs = require("fs");
 const http = require("http");
 const os = require("os");
 const path = require("path");
 const { execFileSync } = require("child_process");
 
-async function runResearch() {
+async function runResearch(): Promise<CaseResult> {
   const store = new WorkStore(); const registry = new CapabilityRegistry(); const verification = new VerificationEngine();
   registerResearchPack(registry, verification);
   const selected = selectCapability(registry, { operation: "research_suppliers", riskClass: "read", preferred: ["pack.research.local"] });
@@ -21,10 +21,10 @@ async function runResearch() {
   const work = store.create({ objective: "Research-to-artifact", inputs: { dataPath: "./lab/data/suppliers.json", outputPath: output, minRecords: 4 }, success: [{ id: "artifact", description: "Unique supplier artifact exists", verifier: "pack.research.artifact", required: true }], deliverables: [output], riskClass: "read" });
   const engine = new WorkEngine(store, registry, verification, async (_work, effectId) => Boolean(work.effects.find((e: any) => e.effectId === effectId)?.receipt));
   await engine.run(work, [{ id: "research", operation: "research_suppliers", capability: selected.name, input: { dataPath: "./lab/data/suppliers.json", outputPath: output, minRecords: 4 }, idempotencyKey: `benchmark:${output}`, riskClass: "read" }]);
-  return { id: "M001", status: work.status, selectedCapability: selected.name, records: JSON.parse(fs.readFileSync(output, "utf8")).length };
+  return { id: "M001", status: work.status, effects: work.effects.length, artifacts: work.artifacts.length, events: work.events.length, details: { selectedCapability: selected.name, records: JSON.parse(fs.readFileSync(output, "utf8")).length } };
 }
 
-async function runWebDiscovery() {
+async function runWebDiscovery(): Promise<CaseResult> {
   const rows = [
     { name: "Alpha", website: "https://alpha.example", source: "catalog" },
     { name: "Alpha duplicate", website: "https://ALPHA.example", source: "catalog" },
@@ -40,7 +40,7 @@ async function runWebDiscovery() {
     const work = store.create({ objective: "Discover records over HTTP", inputs: { searchUrl: base, query: "suppliers", minRecords: 3, outputPath: output }, success: [{ id: "artifact", description: "Unique sourced artifact exists", verifier: "pack.discovery.http", required: true }], deliverables: [output], riskClass: "read" });
     const engine = new WorkEngine(store, registry, verification, async () => false);
     await engine.run(work, [{ id: "discover", operation: "discover_records", capability: "pack.discovery.http", input: { searchUrl: base, query: "suppliers", minRecords: 3, outputPath: output }, idempotencyKey: "benchmark:discovery", riskClass: "read" }]);
-    return { id: "M002", status: work.status, selectedCapability: "pack.discovery.http", records: JSON.parse(fs.readFileSync(output, "utf8")).length };
+    return { id: "M002", status: work.status, effects: work.effects.length, artifacts: work.artifacts.length, events: work.events.length, details: { selectedCapability: "pack.discovery.http", records: JSON.parse(fs.readFileSync(output, "utf8")).length } };
   } finally { await new Promise<void>(resolve => server.close(() => resolve())); }
 }
 
@@ -79,10 +79,10 @@ async function runGitChange() {
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 }
 
-class BenchmarkAmbiguousCreate {
+class BenchmarkAmbiguousCreate implements Capability {
   name = "benchmark.http.order.create"; version = "0.1.0"; operations = ["create_order"]; riskClass = "external_write" as const;
   constructor(private readonly baseUrl: string, private readonly counts: { posts: number }) {}
-  async execute(request: any) {
+  async execute(request: any): Promise<CapabilityReceipt> {
     const body = JSON.stringify(request.input); this.counts.posts += 1;
     return await new Promise<any>(resolve => {
       const req = http.request(this.baseUrl + "/orders", { method: "POST", headers: { "content-type": "application/json", "content-length": Buffer.byteLength(body) } }, (res: any) => {
@@ -110,7 +110,7 @@ class BenchmarkOrderVerifier {
   }
 }
 
-async function runAmbiguousExternalEffect() {
+async function runAmbiguousExternalEffect(): Promise<CaseResult> {
   const orders = new Map<string, any>(); const counts = { posts: 0 };
   const server = http.createServer((req: any, res: any) => {
     if (req.method === "POST" && req.url === "/orders") {
@@ -146,14 +146,14 @@ async function runAmbiguousExternalEffect() {
   } finally { await new Promise<void>(resolve => server.close(() => resolve())); }
 }
 
-class BenchmarkPrimary {
+class BenchmarkPrimary implements Capability {
   name = "benchmark.primary.publish"; version = "0.1.0"; operations = ["publish_record"]; riskClass = "local_write" as const; calls = 0;
-  async execute() { this.calls += 1; return { status: "ambiguous", data: { reason: "simulated primary outage" } }; }
+  async execute(): Promise<CapabilityReceipt> { this.calls += 1; return { status: "ambiguous", data: { reason: "simulated primary outage" } }; }
 }
-class BenchmarkFallback {
+class BenchmarkFallback implements Capability {
   name = "benchmark.fallback.publish"; version = "0.1.0"; operations = ["publish_record"]; riskClass = "local_write" as const;
   constructor(private readonly state: Map<string, string>) {}
-  async execute(request: any) { this.state.set(String(request.input.key), String(request.input.value)); return { status: "accepted", externalEffectId: "fallback:" + String(request.input.key) }; }
+  async execute(request: any): Promise<CapabilityReceipt> { this.state.set(String(request.input.key), String(request.input.value)); return { status: "accepted", externalEffectId: "fallback:" + String(request.input.key) }; }
 }
 class BenchmarkRecordVerifier {
   name = "benchmark.record.verify";
@@ -166,7 +166,7 @@ class BenchmarkRecordVerifier {
   }
 }
 
-async function runCapabilitySubstitution() {
+async function runCapabilitySubstitution(): Promise<CaseResult> {
   const state = new Map<string, string>(); const store = new WorkStore(); const registry = new CapabilityRegistry(); const verification = new VerificationEngine();
   const primary = new BenchmarkPrimary(); registry.register(primary); registry.register(new BenchmarkFallback(state)); verification.register(new BenchmarkRecordVerifier(state));
   const input = { key: "M005-1", value: "verified" };
@@ -201,9 +201,8 @@ export async function runBenchmark() {
     },
     passed: verified === results.length && evidenceComplete === results.length
   };
-  const repo = new JsonWorkRepository("./benchmark-runs"); void repo;
   fs.writeFileSync("./benchmark-result.json", JSON.stringify(summary, null, 2) + "\n");
   return summary;
 }
-if (require.main === module) { runBenchmark().then(summary => { process.stdout.write(JSON.stringify(summary, null, 2) + "\n"); if (!summary.passed) process.exitCode = 1; }).catch((err: Error) => { process.stderr.write(String(err) + "\n"); process.exitCode = 1; }); }
+if (process.argv[1] && path.basename(process.argv[1]) === "benchmark.js") { runBenchmark().then(summary => { process.stdout.write(JSON.stringify(summary, null, 2) + "\n"); if (!summary.passed) process.exitCode = 1; }).catch((err: Error) => { process.stderr.write(String(err) + "\n"); process.exitCode = 1; }); }
 export {};
