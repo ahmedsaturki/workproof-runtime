@@ -24,7 +24,9 @@ test("trust snapshot detects digest and signature tampering independently", () =
   const digestTampered = { ...snapshot, policy: mutatedPolicy };
   assert.equal(verifyTrustPolicySnapshot(digestTampered, new Set([key.keyId])), "invalid");
 
-  const signatureTampered = { ...snapshot, signature: { ...snapshot.signature, signature: snapshot.signature.signature.slice(0, -1) + (snapshot.signature.signature.slice(-1) === "A" ? "B" : "A") } };
+  const signature = snapshot.signature.signature;
+  const first = signature[0] === "A" ? "B" : "A";
+  const signatureTampered = { ...snapshot, signature: { ...snapshot.signature, signature: first + signature.slice(1) } };
   assert.equal(verifyTrustPolicySnapshot(signatureTampered, new Set([key.keyId])), "invalid");
 });
 
