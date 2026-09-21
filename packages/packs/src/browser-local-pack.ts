@@ -84,6 +84,7 @@ class LocalBrowserCapability implements Capability {
     if (!isAllowedBrowserUrl(input.startUrl)) return { status: "rejected", data: { reason: "Only local HTTP or HTML data-page targets are allowed by the local pack" } };
     const port = input.cdpPort ?? choosePort();
     const browser = ensureBrowser(port);
+    try { browser.unref?.(); } catch {}
     try {
       let ready = false;
       for (let i = 0; i < 30; i++) { try { await cdpHttp(port, "/json/list"); ready = true; break; } catch { await new Promise(r => setTimeout(r, 100)); } }
