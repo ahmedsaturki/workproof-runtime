@@ -4,12 +4,26 @@ Date: 2026-09-21
 
 ## Current main
 
-v0.7-dev signed-proof identity is verified on main.
+v0.7-dev signed-proof identity is merged on main.
 
-Verified v0.7 runtime commit:
-e4f3711861e31cec3fff923be3fbba045d3487f5
+Current main commit:
+5ea9aab16e7333621b639f7f96c0e5a4ad9852c8
 
-Current `main` adds documentation-only finalization on top of that runtime. The final HEAD is accepted only when its own CI passes.
+Current main verification:
+- [ ] final CI after deterministic signature-tamper regression fix
+
+The v0.7 runtime itself passed feature CI run #70 and merged-main CI run #71; the later restoration commit exposed a nondeterministic regression fixture, now fixed on main.
+
+## Active next branch
+
+feature/v0.8-trust-policy
+
+Target:
+- local trusted-key registry
+- explicit trusted / revoked / unknown identity states
+- CLI trust-add / trust-revoke operations
+- optional --require-trusted proof verification
+- key lifecycle and rotation semantics without a network dependency
 
 ## Verified v0.7 gates
 
@@ -25,43 +39,26 @@ Current `main` adds documentation-only finalization on top of that runtime. The 
 - [x] Feature branch CI run #70.
 - [x] Merged-main CI run #71.
 
-## Next engineering gate
+## v0.8 implemented on branch
 
-Open issue #6 covers v0.8 trusted proof identities and key lifecycle policy:
-- local trusted-key registry
-- trusted / revoked / unknown states
-- optional required-trusted-signature verification
-- key rotation and revocation semantics
+- [x] Local JSON trust policy.
+- [x] Trusted and revoked states.
+- [x] Unknown/mismatched identity handling.
+- [x] CLI trust-add.
+- [x] CLI trust-revoke.
+- [x] Optional --require-trusted verification mode.
+- [x] Regression tests for trusted, unknown, and revoked proofs.
+- [ ] Feature branch CI.
+- [ ] Merged-main CI.
 
 ## Remaining platform work
 
-- [ ] v0.8 trusted proof identity policy.
 - [ ] Remote proof registry and artifact retention.
+- [ ] Distributed/multi-user trust policy.
 - [ ] Generalized compensation/saga engine.
 - [ ] External browser navigation where permitted.
 - [ ] Distributed/remote workers and control plane.
 - [ ] Studio / REST / SDK surfaces.
-
-## Historical checkpoints
-
-### v0.5
-- commit: e3010a83513ec25806cd9524481a2cca6dd5bbf2
-- CI runs #34 and #35: success
-
-### v0.6
-- merged main commit: fc80cc859923731861f6a6a4df5246b1c0144ba2
-- feature CI run #49: success
-- final merged-main CI run #55: success
-
-### v0.7
-- merged runtime commit: e4f3711861e31cec3fff923be3fbba045d3487f5
-- feature CI run #70: success
-- merged-main CI run #71: success
-- checkpoint branch: checkpoint/v0.7-signed-proof-verified
-
-## Finalization note
-
-The current main HEAD is documentation-only on top of the verified v0.7 runtime. The final repository-state gate is this branch's pull-request CI; merging is performed only after that check passes. The PR changes documentation only.
 
 ## Verification rule
 
