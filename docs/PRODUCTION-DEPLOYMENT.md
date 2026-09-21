@@ -3,6 +3,7 @@
 Supported distribution target: the Node 24 GHCR container.
 
 - image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.2`
+- pinned digest: `sha256:490dcb17e37c0f9a9cdbf7f30624d7d393f9fdb59b911cc9e86b9de681195617`
 - bind: `127.0.0.1:8788`
 - persistent data: `./work-runs -> /data/work-runs`
 
@@ -22,7 +23,7 @@ Do not expose port 8788 directly to the Internet. Use a TLS reverse proxy with a
 
 ## Backup and rollback
 
-Back up `work-runs` and any configured proof vault. Roll back by pinning the compose image to a previously verified GHCR tag or immutable digest and restarting the stack.
+Back up `work-runs` and any configured proof vault. Roll back by pinning the compose image to a previously verified GHCR tag@digest or immutable digest and restarting the stack.
 
 ## Release integrity
 
