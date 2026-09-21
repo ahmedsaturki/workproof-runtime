@@ -1,3 +1,4 @@
+import { WorkerStatus } from "../packages/coordination/src/leases";
 const http = require("http");
 const path = require("path");
 const fs = require("fs");
@@ -19,6 +20,8 @@ export interface StudioOptions {
   controlPlaneUrl?: string;
   vaultDirectory?: string;
   trustPolicyPath?: string;
+  workerStatusSource?: { listWorkerStatuses(staleAfterMs: number): WorkerStatus[] };
+  workerStaleAfterMs?: number;
 }
 
 export interface RunningStudio {
@@ -257,6 +260,18 @@ function proofAuditSummary(record: any, vaultDirectory: string, trustPolicyPath?
   };
 }
 
+function sanitizeWorkerStatus(worker: WorkerStatus): Record<string, unknown> {
+  return {
+    workerId: worker.workerId,
+    capabilities: Array.isArray(worker.capabilities) ? worker.capabilities.slice().sort() : [],
+    state: worker.state,
+    liveness: worker.liveness,
+    heartbeatAgeMs: worker.heartbeatAgeMs,
+    staleAfterMs: worker.staleAfterMs,
+    reassignmentEligible: worker.reassignmentEligible
+  };
+}
+
 function studioHtml(controlEnabled: boolean): string {
   return `<!doctype html>
 <html lang="en">
@@ -290,6 +305,10 @@ button { background: #21262d; color: #e6edf3; border: 1px solid #30363d; padding
 <button id="dispatch">Dispatch</button>
 <span id="actionStatus"><small></small></span>
 </section>
+<section id="workersSection">
+<h2>Workers</h2>
+<div id="workers" class="grid"></div>
+</section>
 <section id="list" class="grid"></section>
 <section id="detail" hidden>
 <h2 id="title"></h2>
@@ -315,6 +334,7 @@ const token = document.getElementById("token");
 const dispatchObjective = document.getElementById("dispatchObjective");
 const actionStatus = document.getElementById("actionStatus");
 const proofSection = document.getElementById("proofSection");
+const workers = document.getElementById("workers");
 const proofs = document.getElementById("proofs");
 let selectedId = null;
 
@@ -381,7 +401,33 @@ async function showProof(digest) {
   proofs.prepend(detailCard);
 }
 
+async function loadWorkers() {
+  workers.innerHTML = "<div class='card'>Loading worker status…</div>";
+  const response = await fetch("/api/workers", {cache:"no-store"});
+  const data = await response.json();
+  if (response.status === 503) {
+    workers.innerHTML = "<div class='card'>Worker visibility is not configured.</div>";
+    return;
+  }
+  if (!response.ok) throw new Error(data.error || "Failed to load workers");
+  workers.innerHTML = "";
+  for (const worker of data.workers) {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML =
+      "<div><span class='badge'>" + esc(worker.liveness) + "</span> " +
+      "<span class='badge'>" + esc(worker.state) + "</span> " +
+      "<span class='badge'>" + (worker.reassignmentEligible ? "reassignment-eligible" : "lease-protected") + "</span></div>" +
+      "<h3>" + esc(worker.workerId) + "</h3>" +
+      "<small>heartbeat age " + Number(worker.heartbeatAgeMs) + "ms · stale after " + Number(worker.staleAfterMs) + "ms</small>" +
+      "<pre>" + esc(JSON.stringify({capabilities: worker.capabilities}, null, 2)) + "</pre>";
+    workers.appendChild(card);
+  }
+  if (!data.workers.length) workers.innerHTML = "<div class='card'>No registered workers.</div>";
+}
+
 async function load() {
+  await loadWorkers().catch(error => { workers.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
   detail.hidden = true;
   selectedId = null;
   list.innerHTML = "<div class='card'>Loading…</div>";
@@ -430,6 +476,10 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
   const repository = new JsonWorkRepository(workDirectory);
   const configuredControlPlane = options.controlPlaneUrl ? controlBaseUrl(options.controlPlaneUrl) : undefined;
   const vaultDirectory = options.vaultDirectory ? path.resolve(options.vaultDirectory) : undefined;
+  const workerStaleAfterMs = options.workerStaleAfterMs ?? 30_000;
+  if (!Number.isSafeInteger(workerStaleAfterMs) || workerStaleAfterMs <= 0) {
+    throw new Error("Worker stale threshold must be a positive safe integer");
+  }
 
   const server = http.createServer(async (req: any, res: any) => {
     try {
@@ -448,6 +498,20 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
 
       if (method === "GET" && url.pathname === "/") {
         sendHtml(res, studioHtml(Boolean(configuredControlPlane)));
+        return;
+      }
+
+      if (method === "GET" && url.pathname === "/api/workers") {
+        if (!options.workerStatusSource) {
+          sendJson(res, 503, { error: "worker-status-not-configured" });
+          return;
+        }
+        const workerList = options.workerStatusSource.listWorkerStatuses(workerStaleAfterMs);
+        sendJson(res, 200, {
+          version: "2.6",
+          staleAfterMs: workerStaleAfterMs,
+          workers: workerList.map(sanitizeWorkerStatus)
+        });
         return;
       }
 
