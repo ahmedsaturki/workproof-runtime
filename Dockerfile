@@ -1,5 +1,8 @@
 FROM node:24-bookworm-slim AS build
 
+ARG VERSION=dev
+ARG VCS_REF=unknown
+
 WORKDIR /app
 
 COPY package.json tsconfig.json ./
@@ -14,6 +17,15 @@ RUN npm install
 RUN npm run build
 
 FROM node:24-bookworm-slim
+
+ARG VERSION=dev
+ARG VCS_REF=unknown
+
+LABEL org.opencontainers.image.title="WorkProof Runtime"
+LABEL org.opencontainers.image.description="Outcome-first digital work runtime"
+LABEL org.opencontainers.image.version="$VERSION"
+LABEL org.opencontainers.image.revision="$VCS_REF"
+LABEL org.opencontainers.image.source="https://github.com/ahmedsaturki/workproof-runtime"
 
 WORKDIR /app
 

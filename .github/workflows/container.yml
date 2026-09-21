@@ -83,4 +83,8 @@ jobs:
         run: |
           set -euo pipefail
           IMAGE="${GITHUB_REPOSITORY,,}"
-          docker image inspect "ghcr.io/${IMAGE}:${IMAGE_TAG}" --format='{{index .RepoDigests 0}}'
+          IMAGE="${GITHUB_REPOSITORY,,}"
+          VERSION_DIGEST="$(docker image inspect "ghcr.io/${IMAGE}:${IMAGE_TAG}" --format='{{index .RepoDigests 0}}')"
+          COMMIT_DIGEST="$(docker image inspect "ghcr.io/${IMAGE}:${GITHUB_SHA}" --format='{{index .RepoDigests 0}}')"
+          test "${VERSION_DIGEST}" = "${COMMIT_DIGEST}"
+          echo "${VERSION_DIGEST}"

@@ -172,6 +172,14 @@ const required = [
   "test/retention.test.ts",
   "test/two-system.test.ts",
   "tsconfig.json",
+  "Dockerfile"
+  ".dockerignore"
+  "compose.production.yaml"
+  ".github/workflows/release.yml"
+  ".github/workflows/container.yml"
+  "docs/CONTAINER-RUNTIME.md"
+  "docs/PRODUCTION-DEPLOYMENT.md"
+  "docs/RELEASE-3.4.0-dev.2.md"
   "types/globals.d.ts"
 ];
 

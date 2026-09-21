@@ -47,6 +47,10 @@ jobs:
 
           PACKAGE_NAME="$(node -p "require('./package.json').name")"
           PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          if [ "${RELEASE_TAG#v}" != "${PACKAGE_VERSION}" ]; then
+            echo "Release tag ${RELEASE_TAG} does not match package version ${PACKAGE_VERSION}"
+            exit 1
+          fi
           PACKAGE_FILE="$(npm pack --pack-destination release-dist | tail -n 1)"
           SOURCE_FILE="workproof-runtime-${RELEASE_TAG}.tar.gz"
           BENCHMARK_FILE="workproof-benchmark-${RELEASE_TAG}.json"
@@ -88,4 +92,30 @@ jobs:
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
         run: |
           set -euo pipefail
-          gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}"
+          TARGET_COMMIT="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json targetCommitish --jq '.targetCommitish')"
+          test "${TARGET_COMMIT}" = "${GITHUB_SHA}"
+          ASSET_COUNT="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets | length')"
+          test "${ASSET_COUNT}" = "5"
+          ASSET_NAMES="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets[].name')"
+          for required in \
+            "RELEASE-MANIFEST.txt" \
+            "SHA256SUMS.txt" \
+            "operational-reality-core-${RELEASE_TAG#v}.tgz" \
+            "workproof-benchmark-${RELEASE_TAG}.json" \
+            "workproof-runtime-${RELEASE_TAG}.tar.gz"; do
+            echo "${ASSET_NAMES}" | grep -Fx "${required}" >/dev/null
+          done
+
+          rm -rf release-verify
+          mkdir -p release-verify
+          gh release download "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --dir release-verify
+          (cd release-verify && sha256sum -c SHA256SUMS.txt)
+
+          node <<'NODE'
+          const fs = require("fs");
+          const tag = process.env.RELEASE_TAG;
+          const result = JSON.parse(fs.readFileSync("release-verify/workproof-benchmark-" + tag + ".json", "utf8"));
+          const metrics = result.summary?.metrics ?? {};
+          if (!result.passed || !Array.isArray(result.results) || result.results.length !== 5) process.exit(1);
+          if (metrics.verifiedCompletionRate !== 1 || metrics.falseDoneCount !== 0 || metrics.duplicateExternalEffectCount !== 0) process.exit(1);
+          NODE
