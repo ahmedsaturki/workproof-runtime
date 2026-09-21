@@ -3,6 +3,7 @@ const test = require("node:test");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const http = require("http");
 const { createAuthPolicy, issueCredential, addIssuedCredential } = require("../packages/registry/src/auth.js");
 const { startRegistryServer } = require("../packages/registry/src/http.js");
 const { publishTrustSnapshotToRegistry, getTrustSnapshotFromRegistry, listTrustSnapshotsFromRegistry, getCurrentTrustSnapshotFromRegistry, applyTrustSnapshotToRegistry } = require("../packages/registry/src/client.js");
@@ -93,6 +94,35 @@ test("two authenticated registries publish, pull, apply, conflict, reject forged
     await registryB.close();
     fs.rmSync(rootA, { recursive: true, force: true });
     fs.rmSync(rootB, { recursive: true, force: true });
+  }
+});
+
+
+test("registry client rejects a transport-level trust snapshot with invalid cryptographic signature", async () => {
+  const pair = generateProofKeyPair();
+  const policy = createTrustPolicy();
+  const snapshot = signTrustPolicySnapshot(buildTrustPolicySnapshot(policy, 1), pair.privateKey);
+  const forged = {
+    ...snapshot,
+    signature: {
+      ...snapshot.signature,
+      signature: "A" + snapshot.signature.signature.slice(1)
+    }
+  };
+  const server = http.createServer((_req: any, res: any) => {
+    const body = JSON.stringify({ version: "1.2", snapshot: forged });
+    res.writeHead(200, { "content-type": "application/json", "content-length": Buffer.byteLength(body) });
+    res.end(body);
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const port = server.address().port;
+  try {
+    await assert.rejects(
+      () => getTrustSnapshotFromRegistry(`http://127.0.0.1:${port}`, snapshot.digest),
+      /Trust snapshot signature is invalid/
+    );
+  } finally {
+    await new Promise<void>((resolve, reject) => server.close((error: any) => error ? reject(error) : resolve()));
   }
 });
 
