@@ -130,6 +130,15 @@ function copyFileAtomic(source: string, destination: string): void {
   fs.renameSync(temporary, destination);
 }
 
+function assertVaultOwnedPath(vaultDir: string, kind: "proofs" | "artifacts", targetPath: string): void {
+  const root = path.join(vaultDir, kind);
+  if (!isInside(root, targetPath)) throw new Error(`Vault ${kind.slice(0, -1)} path escapes vault`);
+  if (fs.existsSync(targetPath)) {
+    const realPath = fs.realpathSync(targetPath);
+    if (!isInside(root, realPath)) throw new Error(`Vault ${kind.slice(0, -1)} path escapes vault`);
+  }
+}
+
 export function publishProof(proofFile: string, vaultDir: string): VaultRecord {
   ensureVault(vaultDir);
   const data = JSON.parse(fs.readFileSync(proofFile, "utf8"));
@@ -143,6 +152,7 @@ export function publishProof(proofFile: string, vaultDir: string): VaultRecord {
   if (typeof workId !== "string" || !workId) throw new Error("Proof work ID is required");
 
   const destinationProof = path.join(vaultDir, "proofs", `${digest}.json`);
+  assertVaultOwnedPath(vaultDir, "proofs", destinationProof);
   if (!fs.existsSync(destinationProof)) {
     atomicWrite(destinationProof, JSON.stringify(data, null, 2) + "\n");
   } else {
@@ -160,6 +170,7 @@ export function publishProof(proofFile: string, vaultDir: string): VaultRecord {
     if (!source) continue;
     const artifactDigest = sha256File(source);
     const destinationArtifact = path.join(vaultDir, "artifacts", artifactDigest);
+    assertVaultOwnedPath(vaultDir, "artifacts", destinationArtifact);
     if (!fs.existsSync(destinationArtifact)) {
       copyFileAtomic(source, destinationArtifact);
     } else if (sha256File(destinationArtifact) !== artifactDigest) {
