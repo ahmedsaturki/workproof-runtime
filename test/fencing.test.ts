@@ -8,7 +8,8 @@ const { fork } = require("child_process");
 import { Capability, CapabilityContext, VerificationCheck, Verifier, WorkObject } from "../packages/core/src/types";
 import { CapabilityRegistry } from "../packages/capabilities/src/registry";
 import { WorkStore } from "../packages/core/src/work";
-import { LeaseAcquireResult, LeaseRecord, LeaseStore, PersistentLeaseStore } from "../packages/coordination/src/persistent";
+import { LeaseRecord, PersistentLeaseStore } from "../packages/coordination/src/persistent";
+import { LeaseAcquireResult } from "../packages/coordination/src/leases";
 import { ExecutionLeaseAuthority, WorkEngine, WorkStep } from "../packages/runtime/src/engine";
 import { VerificationEngine } from "../packages/verification/src/engine";
 
