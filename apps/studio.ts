@@ -5,6 +5,7 @@ const { URL } = require("url");
 const { JsonWorkRepository } = require("../packages/storage/src/json.js");
 
 const MAX_WORKS = 1000;
+const MAX_BODY_BYTES = 1024 * 1024;
 
 export interface StudioOptions {
   workDirectory: string;
@@ -430,7 +431,7 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
 const runtimeProcess = require("process");
 
 if (runtimeProcess.argv[1] && path.resolve(runtimeProcess.argv[1]) === path.resolve(__filename)) {
-  const [, , workDirectoryArg, portArg, hostArg] = process.argv;
+  const [, , workDirectoryArg, portArg, hostArg, controlPlaneUrlArg] = process.argv;
   const workDirectory = workDirectoryArg ?? "./work-runs";
   const port = portArg ? Number(portArg) : 8788;
   const host = hostArg ?? "127.0.0.1";
