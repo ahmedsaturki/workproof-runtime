@@ -117,8 +117,15 @@ Control-plane idempotency protects the authenticated mutation boundary but does 
 - Final merged-main commit: `234e4397ae8e98acf1fcdf5fd57c42188582ae8f`.
 - Worker lifecycle/reassignment, source, security, build, retention, full suite, benchmark, demo, CLI, and live GitHub smoke gates all passed.
 
+## v2.6 worker-aware Studio
+
+- Studio exposes a read-only worker liveness projection when a worker status source is configured.
+- The projection shows worker identity, capabilities, lifecycle state, liveness, heartbeat age, stale threshold, and reassignment eligibility.
+- Studio does not expose lease internals or filesystem paths and does not authorize worker mutations.
+- Unconfigured worker visibility fails closed with HTTP 503.
+
 ## Next engineering gates
 
-v2.6 worker-aware Studio visibility, additional capability packs/integrations, remote/distributed Studio mode, and richer visualization beyond proof/audit inspection remain separate milestones.
+Additional capability packs/integrations, remote/distributed Studio mode, and richer visualization beyond proof/audit inspection remain separate milestones.
 
 This repository does not make a global novelty claim.
