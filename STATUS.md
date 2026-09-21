@@ -7,32 +7,29 @@ Date: 2026-09-21
 v1.0-dev self-hosted proof registry is verified on main.
 
 Current main commit:
-265a580b1352a610957e88c0954a02e736ad6886
-
-Verified main CI run #175:
-- source audit: 75/75
-- automated tests: 55/55
-- benchmark/demo/CLI passed
-- live GitHub smoke passed
+57e26542001ff33ba28c9ae82da370bda74315f7
 
 ## Active v1.1 gate
 
 Branch: feature/v1.1-registry-auth
 
+v1.1 adds authenticated multi-user registry transport, namespace isolation, CLI credential lifecycle, and focused security evidence.
+
+## Parallel v1.2 core branch
+
+Branch: feature/v1.2-trust-sync
+
 Target:
-- local hashed bearer credentials
-- read/write authorization
-- namespace isolation
-- auth audit evidence
-- CLI credential lifecycle
-- bearer-aware registry client
-- end-to-end authorization regressions
-- focused security regression evidence and dependency audit
+- versioned trust-policy snapshots
+- canonical digesting
+- Ed25519 administrative signatures
+- explicit signer authorization
+- deterministic reconciliation for newer, equal, conflicting, stale, and rollback states
 
 ## Remaining platform work
 
 - [ ] v1.1 authenticated multi-user registry
-- [ ] v1.2 distributed trust-policy synchronization
+- [ ] v1.2 registry-to-registry trust synchronization
 - [ ] retention/garbage-collection policy
 - [ ] generalized compensation/saga engine
 - [ ] external browser navigation where permitted
