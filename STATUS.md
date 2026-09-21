@@ -4,19 +4,20 @@ Date: 2026-09-21
 
 ## Current main
 
-**v3.1-dev SQLite database capability pack is verified on main.**
+**v3.2-dev declarative data transformation capability is verified on main.**
 
-Current main merge commit:
-449ad75806c3c0f1dab748598dd1f85c65047afc
+Current main:
+c3562b96df23c1c8d500c48e0591833e96236306
 
-Latest merged-main CI:
-- run #795: success
-- source-tree audit: 150/150
+Verified gates:
+- feature CI #798: success
+- PR #69: merged
+- merged-main CI #800: success
+- source-tree audit: 155/155 implementation required paths
 - dependency security audit: 0 vulnerabilities
-- Chromium availability: success
 - Chromium/CDP preflight: success
-- strict TypeScript build: success
-- retention lifecycle suite: success
+- strict build: success
+- retention lifecycle: success
 - full unit/integration suite: success
 - benchmark: success
 - demo: success
@@ -24,21 +25,24 @@ Latest merged-main CI:
 - CLI mission execution: success
 - live GitHub smoke: success
 
-## Verified v3.1 gates
+## Verified v3.2 gates
 
-- [x] no new npm runtime dependency
-- [x] real file-backed SQLite integration
-- [x] SELECT-only bounded query capability
-- [x] bounded SQL, parameter, row, and identifier inputs
-- [x] local_write risk for upsert
-- [x] declared conflict-key upsert semantics
-- [x] independent query verification
-- [x] independent upsert verification
-- [x] evidence-bearing capability/verifier results
-- [x] pack compatibility manifest and fixture
+- [x] deterministic JSON transformation
+- [x] declarative filter
+- [x] explicit field projection
+- [x] stable sort
+- [x] 500-row output cap
+- [x] 2 MiB input size bound
+- [x] 20-level input depth bound
+- [x] 10,000 input-item bound
+- [x] safe field-name validation
+- [x] arbitrary expression/code execution excluded
+- [x] evidence-bearing capability result
+- [x] independent persisted-artifact verification
+- [x] pack manifest and fixture
 - [x] CLI registration
-- [x] feature CI #793
-- [x] merged-main CI #795
+- [x] feature CI
+- [x] merged-main CI
 
 ## Remaining platform work
 

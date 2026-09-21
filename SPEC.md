@@ -1,4 +1,4 @@
-# WorkProof Runtime Specification - v3.1-dev
+# WorkProof Runtime Specification - v3.2-dev
 
 ## 1. Purpose
 
@@ -10,145 +10,66 @@ GOAL -> CONTRACT -> ROUTE -> ACT -> OBSERVE -> VERIFY -> RECONCILE/RECOVER -> DE
 
 ## 3. Work Contract
 
-A Work Contract contains:
-- objective
-- inputs
-- constraints
-- success criteria
-- deliverables
-- risk class
-- optional approval requirement
+A Work Contract contains objective, inputs, constraints, success criteria, deliverables, risk class, and optional approval requirement. Step risk cannot exceed the contract risk ceiling.
 
-A step's risk class must not exceed the contract risk class.
-
-## 4. Capability, Effect, Worker, Lease, Saga, and Database Contracts
+## 4. Capability, Effect, Worker, Lease, Saga, Database, and Transformation Contracts
 
 Capabilities declare stable names, versions, supported operations, risk classes, and executable behavior.
 
-Effects track effect identity, idempotency, operation, capability, risk, attempts, receipts/observed state, and lifecycle timestamps.
+Effects track identity, idempotency, operation, capability, risk, attempts, receipts/observed state, and lifecycle timestamps.
 
-Workers expose bounded status including liveness and reassignment eligibility.
+Workers expose bounded liveness and reassignment status. Execution/recovery leases establish explicit ownership. Saga recovery records durable compensation lineage.
 
-Execution and recovery leases establish explicit worker ownership. Saga recovery uses a separate recovery lease and durable compensation lineage.
+The SQLite pack provides bounded local query and parameterized local upsert capabilities with independent persisted-state verification.
 
-The SQLite database pack provides:
-- `pack.database.sqlite.query` as a local read capability with one SELECT statement, bounded SQL/parameters, and bounded output.
-- `pack.database.sqlite.upsert` as a local_write capability constrained to a parameterized conflict-key upsert.
-- independent verifiers that read persisted SQLite state directly.
-- evidence references identifying the observed database path and verification state.
+The data transformation pack provides:
+- `pack.transform.json` as a local_write capability for deterministic transformation of an input JSON array of objects.
+- declarative filter by primitive equality.
+- explicit top-level field projection.
+- stable sort by explicit field and direction.
+- output limit capped at 500.
+- input size/depth/item bounds.
+- safe field names only.
+- no user-provided code, expressions, SQL, or templates.
+- independent persisted-output verification.
 
 ## 5. Verification and Evidence
 
 Verification is criterion-specific and evidence-bearing. A receipt is not independent proof.
 
-Proof bundles identify durable work, effects, artifacts, verification, and events. Canonical SHA-256 provides tamper-evident integrity. Ed25519 signatures can provide cryptographic authenticity under a trusted key policy.
+Proof bundles identify durable work, effects, artifacts, verification, and events. Canonical SHA-256 provides tamper-evident integrity. Ed25519 signatures provide cryptographic authenticity under a trusted key policy.
 
 ## 6. Persistence and Retention
 
-Work state, lease state, vault indexes, trust snapshots, retention metadata, recovery lineage, and control idempotency records use authoritative persistence where correctness depends on durable state.
+Authoritative persistence is used where correctness depends on durable state. The proof vault is content-addressed and retention/GC remains reachability-aware.
 
-The proof vault is content-addressed and uses conservative reachability-aware retention and garbage collection.
+## 7. Control Plane and Studio
 
-## 7. Control Plane
+Authenticated control-plane mutation remains the authorization boundary. Studio is a presentation/delegation layer with read-only operational projections and bounded filtering.
 
-Authenticated control-plane operations provide read, dispatch, cancel, resume, worker-status, and lease-status semantics. Authorization and audit remain separate from the Studio presentation layer.
+## 8. CLI Lifecycle Surface
 
-The Studio control surface must delegate mutation to this control plane rather than reproducing authorization or state-transition logic.
+The CLI exposes work execution, proof inspection/verification, signer identity, trust/registry operations, vault lifecycle, Studio launch, and registered capability packs including SQLite and data transformation.
 
-## 8. Control Mutation Idempotency
-
-When a durable idempotency ledger is configured, authenticated POST mutations use an Idempotency-Key with a canonical request fingerprint.
-
-The ledger guarantees:
-- same key + same operation/input returns the previously stored logical response without repeating the mutation;
-- same key + different operation/input is rejected;
-- concurrent duplicates are blocked while the first mutation is pending;
-- completed entries survive process restart.
-
-Control-plane idempotency is separate from external capability idempotency; it does not create exactly-once semantics for third-party systems.
-
-## 9. Execution Fencing
-
-An execution lease provides an ExecutionFence to the active capability.
-
-The fence contains:
-- resource identity
-- current lease identity
-- current revision
-- an opaque leaseId:revision token
-- an authoritative assertOwned() operation
-
-WorkEngine asserts ownership before and after capability execution. Capability adapters may pass the token to an external system that supports conditional fencing.
-
-## 10. Diagnostic Lease Visibility
-
-The coordination layer provides a sanitized LeaseStatus projection for read-only diagnostics.
-
-LeaseStatus contains:
-- lease identity
-- resource identity
-- owner identity
-- acquired timestamp
-- renewed timestamp
-- expiry timestamp
-- revision
-- active state
-
-LeaseStatus must not contain an execution fencing token.
-
-## 11. Operational Work Filtering
-
-The Studio Work Object list supports:
-- free-text query q against Work Object ID and objective, bounded to 200 characters
-- exact status filtering over the bounded WorkStatus set
-- exact risk filtering over the bounded RiskClass set
-- positive safe-integer limit from 1 through MAX_WORKS
-
-The /api/work response includes filters, total, byStatus, byRisk, and bounded work[].
-
-Invalid filter values fail closed with HTTP 400. Matching results are sorted deterministically by updated timestamp and Work Object ID. The operation is read-only.
-
-## 12. Studio
-
-Read surface:
-- GET / HTML dashboard
-- GET /health service health
-- GET /api/work bounded/filterable Work Object listing
-- GET /api/work/:id sanitized Work Object detail
-- GET /api/workers worker/liveness projection
-- GET /api/leases diagnostic execution lease projection
-- GET /api/proofs?workId=:id retained proof summaries
-- GET /api/proof/:digest retained proof audit detail
-- GET /api/operations/overview bounded operational health projection
-
-Optional control surface delegates mutation to the authenticated control plane.
-
-## 13. CLI Lifecycle Surface
-
-The CLI exposes work execution, proof inspection/verification, signer identity, trust/registry operations, proof-vault lifecycle, and local Studio launch. Mission execution can use the registered SQLite capability pack.
-
-## 14. Non-goals
+## 9. Non-goals
 
 WorkProof is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, or distributed-consensus system.
 
-## 15. v3.0 Operational Health
+## 10. v3.0/v3.1 Baseline
 
-- GET /api/operations/overview is bounded and deterministic.
-- Effect and verification health are evidence-derived from valid persisted Work Objects.
-- Optional worker and lease health never fabricates state.
-- Attention reason codes are explicit and deterministic.
-- Studio renders operational health cards and an attention queue.
-- Projection is read-only.
+Operational health, local SQLite query/upsert, independent verification, proof integrity, and existing worker/control/retention boundaries remain passing.
 
-## 16. v3.1 SQLite Acceptance Target
+## 11. v3.2 Acceptance Target
 
-- v3.0 behavior remains passing.
-- SQLite query capability is SELECT-only and locally scoped.
-- SQL length, parameters, rows, identifiers, and expected row limits are enforced.
-- SQLite upsert uses parameterized SQL with an explicit conflict key and local_write risk.
-- Query and upsert verifiers re-read persisted state independently.
-- Capability and verifier results carry evidence references.
-- Pack manifest and fixture remain aligned with implementation.
-- CLI registers the pack for normal mission execution.
-- source audit, dependency audit, full integration suite, benchmark, demo, CLI verification, live GitHub smoke
+- v3.1 behavior remains passing.
+- JSON transformation is declarative and deterministic.
+- filter/projection/sort/limit semantics are explicitly bounded.
+- input size, depth, item-count, and selected-field counts are bounded.
+- arbitrary user code/expression execution is impossible through the pack contract.
+- output is a persisted local artifact.
+- independent verifier re-reads the artifact and validates the expected deterministic result.
+- evidence references are emitted.
+- pack manifest and fixture align with implementation.
+- CLI registers the pack.
+- source audit, dependency audit, retention, full suite, benchmark, demo, CLI verification, live GitHub smoke
 - green feature CI and green merged-main CI

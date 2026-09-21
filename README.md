@@ -4,60 +4,60 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.1-dev SQLite database capability pack is verified on main.**
+**v3.2-dev declarative data transformation capability is verified on main.**
 
-The verified v3.1 line extends v3.0 with a bounded local SQLite capability family for real file-backed database work, independent verification, and explicit local-write semantics without adding a runtime dependency.
+The verified v3.2 line adds a bounded, local, declarative JSON transformation capability for filter/projection/sort/limit workflows without evaluating user-provided code.
 
 ## Core loop
 
 Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify -> Recover/Substitute -> Deliver -> Proof -> Retain -> Control -> Compensate
 
-## Verified platform gates
+## Verified platform
 
-v1.0 through v3.0 are preserved as verified milestones, covering proof registry and trust, retention, worker ownership and recovery, control-plane idempotency, fencing, saga recovery, authenticated Studio control, proof/audit, lease visibility, operational filtering, and operational health projection.
+v1.0 through v3.1 remain verified foundations for proof registry/trust, retention, worker ownership/recovery, control-plane auth/idempotency/fencing, saga recovery, Studio control/audit, lease visibility, operational filtering/health, and local SQLite database work.
 
-## v3.1 SQLite database pack
+## v3.2 Data Transformation
 
-- `pack.database.sqlite.query` executes one SELECT statement against a local SQLite file.
-- SQL length is bounded to 20,000 characters.
-- Query parameters are bounded to 50 supported values.
-- Result output is bounded to 500 rows and reports truncation explicitly.
-- `pack.database.sqlite.upsert` provides parameterized upsert semantics with an explicit conflict key.
-- Upsert risk is declared `local_write`.
-- Identifiers are constrained to safe SQLite identifier syntax.
-- Query and upsert outcomes produce evidence references.
-- Independent verifiers re-read persisted SQLite state instead of trusting capability receipts.
-- The pack uses Node 24's built-in `node:sqlite`; no new npm runtime dependency is required.
-- CLI mission registration includes the SQLite pack.
-- Pack compatibility metadata and fixture-backed tests are included.
+- `pack.transform.json` transforms an input JSON array of objects into a bounded output artifact.
+- Filtering uses explicit field names and primitive equality only.
+- Projection uses an explicit allowlist of safe top-level fields.
+- Sorting uses an explicit field and asc/desc direction with stable tie handling.
+- Output is bounded to 500 rows.
+- Input file size is bounded to 2 MiB.
+- Input depth is bounded to 20 and scanned item count to 10,000.
+- Selected field count is bounded to 50.
+- Unsafe field names and malformed roots fail closed.
+- No user-provided JavaScript, SQL, templates, or expressions are executed.
+- Output is deterministic and produces evidence.
+- The verifier re-reads the persisted output artifact and recomputes the expected deterministic result.
+- The pack is classified `local_write` because it creates an output artifact.
+- No new npm runtime dependency was introduced.
+- CLI mission registration includes the transformation pack.
 
-## v3.1 verification evidence
+## v3.2 verification evidence
 
-- feature CI #793: success on the final v3.1 feature head.
-- merged-main CI #795: success on merge commit `449ad75806c3c0f1dab748598dd1f85c65047afc`.
-- source-tree audit: 150/150 before final audit documentation.
-- dependency security audit: 0 vulnerabilities.
+- feature CI #798: success.
+- feature PR #69: merged.
+- merged-main CI #800: success on `c3562b96df23c1c8d500c48e0591833e96236306`.
+- final documentation/source audit CI: pending for the final audit commit.
+- source-tree audit: 155 required paths before final audit documentation.
+- dependency security audit: 0 vulnerabilities on the merged implementation.
 - Chromium/CDP preflight: success.
 - strict TypeScript build: success.
 - retention lifecycle suite: success.
 - full unit/integration suite: success.
 - benchmark: success.
 - demo: success.
-- CLI proof verification: success.
-- CLI mission execution: success.
+- CLI proof verification and mission execution: success.
 - live GitHub smoke: success.
 
 ## Safety boundary
 
-A capability receipt is not proof of the final outcome. External side effects require independent state verification or reconciliation.
+The transformation language is intentionally declarative. It does not execute user-provided code or arbitrary expressions.
 
-Operational health is diagnostic only. Healthy workers, active leases, or prior verification do not prove a current external outcome.
+A capability receipt is not proof of the final outcome. The verifier observes the persisted output artifact independently.
 
-The SQLite pack is local-only. It does not expose arbitrary write SQL, and its upsert operation is not a claim of third-party exactly-once behavior.
-
-Compensation is not guaranteed rollback. The runtime records what was attempted, what was independently verified, and what remains unresolved.
-
-Proof integrity and signatures establish integrity and authenticity under their defined trust boundaries; they do not create an organization-wide trust or revocation policy by themselves.
+Operational health is diagnostic only. Healthy workers, active leases, or previous verification do not prove a current external outcome.
 
 ## Product boundary
 
