@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The current v2.2 closeout contains **123 required paths** enforced by scripts/verify-source-tree.js.
+The current v2.3 control-plane hardening branch contains **126 required paths** enforced by scripts/verify-source-tree.js.
 
 The tree includes:
 - proof registry and authenticated transport
@@ -19,6 +19,12 @@ The tree includes:
 - local read-only Studio
 - authenticated Studio control delegation
 - read-only proof/audit views backed by the proof vault
+
+## v2.3 additions
+
+- packages/control-plane/src/idempotency.ts
+- test/control-idempotency.test.ts
+- docs/RELEASE-GATE-V2.3.md
 
 ## Exact v0.4 local history
 
