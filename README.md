@@ -60,7 +60,7 @@ v1.0 through v3.2 remain verified foundations for proof registry/trust, retentio
 - Merged-main CI #866: success.
 - Documentation/source-tree closeout CI #872: success.
 - Final closeout record verification CI #875: success.
-- Final main CI: verified successfully for the current main freeze commit.
+- Main CI for the latest main commit: success.
 
 ### Benchmark result
 
