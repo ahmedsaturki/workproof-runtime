@@ -46,16 +46,20 @@ export function signTrustPolicySnapshot(snapshot: TrustPolicySnapshot, privateKe
   return { ...snapshot, signature: signProof(signingEnvelope(snapshot), privateKeyPem) };
 }
 
-export function verifyTrustPolicySnapshot(snapshot: TrustPolicySnapshot, trustedAdminKeyIds: Set<string>): TrustSnapshotDecision {
+export function verifyTrustPolicySnapshotSignature(snapshot: TrustPolicySnapshot): boolean {
   try {
-    if (!snapshot || snapshot.version !== "0.1" || !Number.isSafeInteger(snapshot.epoch) || snapshot.epoch < 0) return "invalid";
+    if (!snapshot || snapshot.version !== "0.1" || !Number.isSafeInteger(snapshot.epoch) || snapshot.epoch < 0) return false;
     validateTrustPolicy(snapshot.policy);
-    if (!/^[0-9a-f]{64}$/.test(snapshot.digest) || snapshot.digest !== digestTrustPolicySnapshot(snapshot)) return "invalid";
-    if (!snapshot.signature || !verifyProofSignature(signingEnvelope(snapshot), snapshot.signature)) return "invalid";
-    return trustedAdminKeyIds.has(snapshot.signature.keyId) ? "accept" : "untrusted-signer";
+    if (!/^[0-9a-f]{64}$/.test(snapshot.digest) || snapshot.digest !== digestTrustPolicySnapshot(snapshot)) return false;
+    return Boolean(snapshot.signature) && verifyProofSignature(signingEnvelope(snapshot), snapshot.signature);
   } catch {
-    return "invalid";
+    return false;
   }
+}
+
+export function verifyTrustPolicySnapshot(snapshot: TrustPolicySnapshot, trustedAdminKeyIds: Set<string>): TrustSnapshotDecision {
+  if (!verifyTrustPolicySnapshotSignature(snapshot)) return "invalid";
+  return trustedAdminKeyIds.has(snapshot.signature!.keyId) ? "accept" : "untrusted-signer";
 }
 
 export function reconcileTrustPolicySnapshot(current: TrustPolicySnapshot, incoming: TrustPolicySnapshot, trustedAdminKeyIds: Set<string>, allowRollback = false): TrustSnapshotDecision {
