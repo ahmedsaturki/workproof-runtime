@@ -61,7 +61,7 @@ Open issue #6 covers v0.8 trusted proof identities and key lifecycle policy:
 
 ## Finalization note
 
-The current main HEAD is documentation-only on top of the verified v0.7 runtime. Its own CI run is the final repository-state gate.
+The current main HEAD is documentation-only on top of the verified v0.7 runtime. The final repository-state gate is this branch's pull-request CI; merging is performed only after that check passes. The PR changes documentation only.
 
 ## Verification rule
 
