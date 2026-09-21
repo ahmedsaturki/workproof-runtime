@@ -83,4 +83,17 @@ test("vault rejects a corrupted retained artifact during publish and restore", (
   );
 });
 
+test("vault rejects malformed or duplicated index records", () => {
+  const dir = "/tmp/workproof-vault-index";
+  const { proofPath } = writeFixture(dir, false);
+  const vault = path.join(dir, "vault");
+  const record = publishProof(proofPath, vault);
+  const indexPath = path.join(vault, "index.json");
+  const index = JSON.parse(fs.readFileSync(indexPath, "utf8"));
+  index.records.push({ ...record });
+  fs.writeFileSync(indexPath, JSON.stringify(index, null, 2), "utf8");
+  assert.throws(() => listProofs(vault), /Duplicate proof vault digest/);
+});
+
+
 export {};
