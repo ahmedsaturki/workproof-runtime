@@ -27,7 +27,17 @@ type GitHubIssue = {
 
 function apiBase(input: { apiBaseUrl?: string }): string {
   const base = input.apiBaseUrl ?? process.env.GITHUB_API_URL ?? "https://api.github.com";
-  return base.replace(/\/$/, "");
+  const parsed = new URL(base);
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") throw new Error("GitHub API base must use http or https");
+  return parsed.toString().replace(/\/$/, "");
+}
+
+function validRepository(repository: string): boolean {
+  return /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repository);
+}
+
+function validIdempotencyMarker(marker: string): boolean {
+  return /^[A-Za-z0-9._:-]{1,128}$/.test(marker);
 }
 
 function apiUrl(input: GitHubRepoInput): string {
@@ -92,8 +102,8 @@ class GitHubRepositoryReadCapability implements Capability {
 
   async execute(request: { operation: string; input: unknown }): Promise<CapabilityReceipt> {
     const input = request.input as GitHubRepoInput;
-    if (!input?.repository) {
-      return { status: "rejected", data: { reason: "repository is required" } };
+    if (!input?.repository || !validRepository(input.repository)) {
+      return { status: "rejected", data: { reason: "repository must be an owner/repository identifier" } };
     }
 
     try {
@@ -191,11 +201,11 @@ class GitHubIssueCreateCapability implements Capability {
 
   async execute(request: { operation: string; input: unknown }, ctx: { work: any; effect?: any; log: any }): Promise<CapabilityReceipt> {
     const input = request.input as GitHubIssueInput;
-    if (!input?.repository || !input?.title) {
-      return { status: "rejected", data: { reason: "repository and title are required" } };
+    if (!input?.repository || !validRepository(input.repository) || !input?.title) {
+      return { status: "rejected", data: { reason: "repository must be an owner/repository identifier and title is required" } };
     }
-    if (!input.idempotencyMarker) {
-      return { status: "rejected", data: { reason: "idempotencyMarker is required for safe external write reconciliation" } };
+    if (!input.idempotencyMarker || !validIdempotencyMarker(input.idempotencyMarker)) {
+      return { status: "rejected", data: { reason: "idempotencyMarker must match [A-Za-z0-9._:-]{1,128}" } };
     }
 
     try {
@@ -254,7 +264,7 @@ class GitHubIssueCreateVerifier implements Verifier {
   }) {
     const input = ctx.work.contract.inputs as GitHubIssueInput;
     try {
-      if (!input?.repository || !input?.title || !input?.idempotencyMarker) {
+      if (!input?.repository || !validRepository(input.repository) || !input?.title || !validIdempotencyMarker(input.idempotencyMarker)) {
         return {
           id: ctx.criterion.id,
           criterion: ctx.criterion.description,

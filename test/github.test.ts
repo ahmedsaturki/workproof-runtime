@@ -222,4 +222,33 @@ test("GitHub pack manifest, effect operation context, and proof integrity are en
   assert.equal(canonicalJson({ b: 2, a: 1 }), canonicalJson({ a: 1, b: 2 }));
 });
 
+
+test("GitHub external write validates repository and idempotency inputs before network access", async () => {
+  const store = new WorkStore();
+  const registry = new CapabilityRegistry();
+  const verification = new VerificationEngine();
+  registerGitHubPack(registry, verification);
+  const capability = registry.get("pack.github.issue.create");
+  const work = store.create({ objective: "validate inputs", success: [], deliverables: [], riskClass: "external_write" });
+  const context = { work, effect: undefined, log: () => {} };
+
+  const badRepository = await capability.execute({
+    operation: "create_issue",
+    input: { repository: "acme/demo/issues/1", title: "x", idempotencyMarker: "safe-marker" }
+  }, context);
+  assert.equal(badRepository.status, "rejected");
+
+  const badMarker = await capability.execute({
+    operation: "create_issue",
+    input: { repository: "acme/demo", title: "x", idempotencyMarker: "unsafe marker" }
+  }, context);
+  assert.equal(badMarker.status, "rejected");
+
+  const missingTitle = await capability.execute({
+    operation: "create_issue",
+    input: { repository: "acme/demo", idempotencyMarker: "safe-marker" }
+  }, context);
+  assert.equal(missingTitle.status, "rejected");
+});
+
 export {};
