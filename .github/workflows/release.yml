@@ -1,5 +1,7 @@
 name: Release
 
+# Canonical release workflow: validates the published tag and its assets.
+
 on:
   push:
     branches:
