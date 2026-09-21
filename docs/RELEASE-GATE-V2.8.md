@@ -20,11 +20,26 @@ Expose authoritative lease ownership, revision, and expiry state for operator di
 - [x] Lease visibility has no acquire/renew/release/reassign mutation path.
 - [x] PersistentLeaseStore and in-memory LeaseStore share the same LeaseStatus contract.
 - [x] Worker visibility, proof/audit, control, vault, and security behavior remain intact.
-- [x] Feature CI #708 passed the initial v2.8 implementation gate.
-- [x] PR CI #709 passed the initial v2.8 implementation gate.
-- [x] Merged-main CI #710 passed the initial v2.8 implementation gate.
-- [ ] Finalization feature CI passes with the corrected 140-path source manifest and persistent parity regression.
-- [ ] Finalization PR/main CI passes on the merged final state.
+- [x] Initial implementation feature CI #708 passed.
+- [x] Initial implementation PR CI #709 passed.
+- [x] Initial implementation merged-main CI #710 passed.
+- [x] Finalization feature CI #726 passed.
+- [x] Finalization PR CI #727 passed.
+- [x] Final merged-main CI #728 passed.
+
+## Final verification
+
+- Required source paths: 141/141.
+- Dependency security audit: 0 vulnerabilities.
+- Chromium/CDP preflight: success.
+- Strict TypeScript build: success.
+- Retention lifecycle: success.
+- Full unit/integration suite: success.
+- Benchmark: success.
+- Demo: success.
+- CLI proof verification: success.
+- CLI mission execution: success.
+- Live GitHub smoke: success.
 
 ## Safety boundary
 
@@ -32,4 +47,4 @@ Lease visibility is diagnostic only. It does not grant control-plane mutation au
 
 ## Milestone result
 
-Complete only after the finalization branch and the merged main commit both pass the full verification pipeline.
+**Verified on main at aed65c8ecf770efa7ae1d2c2aa2500133a5dbf81.**
