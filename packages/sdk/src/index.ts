@@ -31,6 +31,10 @@ export interface ControlPlaneClientOptions {
   token?: string;
 }
 
+export interface ControlMutationOptions {
+  idempotencyKey?: string;
+}
+
 function normalizeBaseUrl(value: string): string {
   const url = new URL(value);
   if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("Control plane URL must use HTTP or HTTPS");
@@ -59,12 +63,23 @@ export function parseWorkObject(raw: string): WorkObject {
   return value as WorkObject;
 }
 
-async function request(baseUrl: string, token: string | undefined, method: string, path: string, body?: unknown): Promise<any> {
+async function request(
+  baseUrl: string,
+  token: string | undefined,
+  method: string,
+  path: string,
+  body?: unknown,
+  idempotencyKey?: string
+): Promise<any> {
+  if (idempotencyKey !== undefined && !/^[A-Za-z0-9._~-]{1,200}$/.test(idempotencyKey)) {
+    throw new Error("Invalid idempotency key");
+  }
   const response = await fetch(`${baseUrl}${path}`, {
     method,
     headers: {
       ...(body === undefined ? {} : { "content-type": "application/json" }),
-      ...(token ? { authorization: `Bearer ${token}` } : {})
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
+      ...(idempotencyKey ? { "idempotency-key": idempotencyKey } : {})
     },
     body: body === undefined ? undefined : JSON.stringify(body)
   });
@@ -93,18 +108,18 @@ export class ControlPlaneClient {
     return parseWorkObject(JSON.stringify((await request(this.baseUrl, this.token, "GET", `/v1/work/${workId}`)).work));
   }
 
-  async dispatch(input: WorkDispatchRequest): Promise<WorkObject> {
+  async dispatch(input: WorkDispatchRequest, options: ControlMutationOptions = {}): Promise<WorkObject> {
     if (!input || typeof input.objective !== "string" || !input.objective.trim()) throw new Error("Dispatch objective is required");
-    return parseWorkObject(JSON.stringify((await request(this.baseUrl, this.token, "POST", "/v1/work/dispatch", input)).work));
+    return parseWorkObject(JSON.stringify((await request(this.baseUrl, this.token, "POST", "/v1/work/dispatch", input, options.idempotencyKey)).work));
   }
 
-  async cancel(workId: string): Promise<WorkObject> {
+  async cancel(workId: string, options: ControlMutationOptions = {}): Promise<WorkObject> {
     if (!/^[A-Za-z0-9._-]+$/.test(workId)) throw new Error("Invalid work id");
-    return parseWorkObject(JSON.stringify((await request(this.baseUrl, this.token, "POST", `/v1/work/${workId}/cancel`, {})).work));
+    return parseWorkObject(JSON.stringify((await request(this.baseUrl, this.token, "POST", `/v1/work/${workId}/cancel`, {}, options.idempotencyKey)).work));
   }
 
-  async resume(workId: string): Promise<WorkObject> {
+  async resume(workId: string, options: ControlMutationOptions = {}): Promise<WorkObject> {
     if (!/^[A-Za-z0-9._-]+$/.test(workId)) throw new Error("Invalid work id");
-    return parseWorkObject(JSON.stringify((await request(this.baseUrl, this.token, "POST", `/v1/work/${workId}/resume`, {})).work));
+    return parseWorkObject(JSON.stringify((await request(this.baseUrl, this.token, "POST", `/v1/work/${workId}/resume`, {}, options.idempotencyKey)).work));
   }
 }
