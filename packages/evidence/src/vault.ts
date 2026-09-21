@@ -103,6 +103,7 @@ function proofBundleFromFile(data: any): Record<string, unknown> {
     version: data.version,
     work: data.work,
     effects: data.effects,
+    sagas: data.sagas ?? [],
     artifacts: data.artifacts,
     verification: data.verification,
     events: data.events
