@@ -28,21 +28,11 @@ jobs:
           command -v "$WORKPROOF_BROWSER_BINARY"
           "$WORKPROOF_BROWSER_BINARY" --version
       - name: Chromium CDP preflight
-        run: |
-          set -euo pipefail
-          dbus_dir="$RUNNER_TEMP/workproof-dbus"
-          mkdir -p "$dbus_dir"
-          chmod 700 "$dbus_dir"
-          export XDG_RUNTIME_DIR="$dbus_dir"
-          export DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
-          dbus-daemon --session --address="$DBUS_SESSION_BUS_ADDRESS" --nofork --nopidfile --syslog-only &
-          dbus_pid=$!
-          cleanup() {
-            kill "$dbus_pid" 2>/dev/null || true
-            wait "$dbus_pid" 2>/dev/null || true
-          }
-          trap cleanup EXIT
-          node scripts/chromium-cdp-smoke.js
+        env:
+          DBUS_SESSION_BUS_ADDRESS: unix:path=/dev/null
+          DBUS_SYSTEM_BUS_ADDRESS: unix:path=/dev/null
+          XDG_RUNTIME_DIR: ""
+        run: node scripts/chromium-cdp-smoke.js
       - run: npm install
       - name: Dependency security audit
         run: npm audit --audit-level=high
