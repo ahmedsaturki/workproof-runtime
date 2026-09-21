@@ -27,6 +27,8 @@ Latest v2.1 feature CI:
 Latest v2.1 merged-main CI:
 - CI #569: success.
 
+v2.1 closeout CI #570: success.
+
 ## Verified v2.1 gates
 
 - [x] v2.0 read-only Studio behavior remains intact.
