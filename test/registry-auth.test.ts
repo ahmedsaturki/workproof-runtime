@@ -7,6 +7,7 @@ const { startRegistryServer } = require("../packages/registry/src/http.js");
 const { createAuthPolicy, issueCredential, addIssuedCredential, revokeCredential, hashToken } = require("../packages/registry/src/auth.js");
 const { buildProofBundle } = require("../packages/evidence/src/bundle.js");
 const { buildIntegrityManifest } = require("../packages/evidence/src/integrity.js");
+const { publishProofToRegistry, getProofFromRegistry, listProofsFromRegistry } = require("../packages/registry/src/client.js");
 
 function proofFixture(id = "work_auth") {
   const work = {
@@ -162,3 +163,23 @@ test("invalid bearer credentials are rejected without disclosing authorization d
 });
 
 export {};
+
+test("registry client sends bearer authorization and enforces namespace-scoped access", async () => {
+  const root = tempDir("workproof-auth-client-");
+  const base = createAuthPolicy();
+  const writer = withCredential(base, { id: "writer", permissions: ["read", "write"], namespace: "client-a" });
+  const registry = await startRegistryServer({ vaultDir: root, port: 0, authPolicy: writer.policy });
+  try {
+    const url = `http://127.0.0.1:${registry.port}`;
+    const proof = proofFixture("work_client_auth");
+    const published = await publishProofToRegistry(url, proof, writer.issued.token);
+    assert.equal(published.digest, proof.integrity.digest);
+    const fetched = await getProofFromRegistry(url, proof.integrity.digest, writer.issued.token);
+    assert.deepEqual(fetched, proof);
+    const records = await listProofsFromRegistry(url, writer.issued.token);
+    assert.equal(records.length, 1);
+  } finally {
+    await registry.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
