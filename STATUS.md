@@ -4,64 +4,48 @@ Date: 2026-09-21
 
 ## Current main
 
-**v1.8 explicit saga and compensation semantics are verified on main.**
+**v1.9 durable saga recovery is verified on main.**
 
 Main merge commit:
-545dffda29c04249677f9605e5709f8e8c9d2ffb
+f0173fd9c0603fd1fa58ea6f722486f52a04f932
 
-Latest verified main CI:
-- CI #476: success.
-- final documentation CI #478: success.
-- source audit: 111/111 required paths on the v1.8 checkpoint.
+Latest v1.9 merged-main CI:
+- CI #530: success.
+- source audit before final audit-doc addition: 114/114.
 - dependency security audit: success.
-- retention lifecycle suite: 9/9.
-- full unit/integration suite: passed.
-- benchmark: passed.
-- demo: verified.
-- CLI proof and mission: verified.
-- live GitHub smoke: verified.
+- Chromium verification and CDP preflight: success.
+- TypeScript build: success.
+- retention lifecycle suite: success.
+- full sequential unit/integration verification: 30/30 test files passed.
+- benchmark: success.
+- demo: success.
+- CLI proof verification: success.
+- CLI mission execution: success.
+- live GitHub integration smoke: success.
 
-## Active next branch
+## v1.9 implementation result
 
-feature/v1.9-saga-recovery
+- [x] Partial saga recovery survives worker/process loss through persisted Work Objects.
+- [x] Replacement worker acquires the saga recovery lease after expiry.
+- [x] Verified compensation is never replayed.
+- [x] Pending compensation executes once in the controlled handoff path.
+- [x] Ambiguous compensation acknowledgement reconciles before retry.
+- [x] Stale worker cannot continue after lease ownership moves.
+- [x] Corrupt compensation lineage fails closed as unresolved.
+- [x] Recovery state and lineage are persisted and auditable.
+- [x] Feature CI #528 passed on the v1.9 candidate head.
+- [x] Merged-main CI #530 passed on main.
 
-Target:
-- durable saga recovery after worker/process loss.
-- dedicated recovery lease ownership.
-- replacement worker takeover after lease expiry.
-- resume only pending compensation.
-- stale-owner stop after ownership moves.
-- ambiguous compensation reconciliation before retry.
+## Current release posture
 
-## Verified v1.8 gates
+v1.9 is closed as a verified development milestone. The repository is not presented as a finished production platform; remaining work is intentionally separated into subsequent gates.
 
-- [x] First-class compensating effects with explicit identity.
-- [x] Forward-effect to compensation linkage.
-- [x] Compensation risk ceilings and approval policy.
-- [x] Lost-acknowledgement reconciliation without duplicate write.
-- [x] Partial and unresolved saga states remain explicit.
-- [x] Persisted verified compensation is not replayed.
-- [x] Proof, retention, vault, registry, and CLI preserve saga lineage.
-- [x] Legacy work objects remain schema-compatible.
-- [x] Feature CI and merged-main CI both pass.
+## Next engineering gates
 
-## v1.9 acceptance gates
-
-- [ ] Partial saga survives worker/process loss as a durable Work Object.
-- [ ] Replacement worker acquires the saga recovery lease after expiry.
-- [ ] Verified compensation is never replayed.
-- [ ] Pending compensation executes exactly once in the controlled handoff path.
-- [ ] Ambiguous compensation acknowledgement reconciles before retry.
-- [ ] Stale worker cannot continue after lease ownership moves.
-- [ ] Feature CI and merged-main CI pass.
-
-## Remaining platform work
-
-- [ ] Multi-user proof trust policy for signed identities.
-- [ ] Broader remote proof/artifact lifecycle surfaces.
-- [ ] External browser navigation where permitted.
-- [ ] Further worker/control-plane hardening.
-- [ ] Studio / wider product surfaces.
+- [ ] Multi-user signer trust policy / trusted-key lifecycle.
+- [ ] Broader distributed worker and control-plane hardening.
+- [ ] Additional capability packs and external integrations.
+- [ ] User-facing Studio/product surfaces.
 
 ## Verification rule
 
