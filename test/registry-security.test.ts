@@ -81,8 +81,12 @@ test("trusted administrative signer identities are namespace-scoped when configu
   const trustB = createTrustPolicy();
   const recordB = trustKey(trustB, adminB.publicKey, "admin-b");
   const auth = createAuthPolicy();
-  const issuedA = addIssuedCredential(auth, issueCredential({ id: "trust-team-a", permissions: ["trust"], namespace: "team-a" }));
-  const issuedB = addIssuedCredential(auth, issueCredential({ id: "trust-team-b", permissions: ["trust"], namespace: "team-b" }));
+  const issuedACredential = issueCredential({ id: "trust-team-a", permissions: ["trust"], namespace: "team-a" });
+  const issuedBCredential = issueCredential({ id: "trust-team-b", permissions: ["trust"], namespace: "team-b" });
+  addIssuedCredential(auth, issuedACredential);
+  addIssuedCredential(auth, issuedBCredential);
+  const issuedA = issuedACredential;
+  const issuedB = issuedBCredential;
   const server = await startRegistryServer({
     vaultDir: root,
     port: 0,
