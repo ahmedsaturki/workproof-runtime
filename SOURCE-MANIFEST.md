@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The current main v1.9 closeout contains **115 required paths** enforced by scripts/verify-source-tree.js.
+The current v2.0 Studio branch contains **117 required paths** enforced by scripts/verify-source-tree.js.
 
 The tree includes:
 - proof registry and authenticated transport
@@ -16,6 +16,7 @@ The tree includes:
 - browser acceptance reliability preflight
 - live GitHub integration and external-write safety regression coverage
 - durable saga compensation recovery after worker loss
+- local read-only Studio
 
 ## Exact v0.4 local history
 
@@ -23,30 +24,23 @@ The tree includes:
 - tag: v0.4.0-dev
 - exact development bundle: workproof-runtime-v0.4.0-dev.bundle
 
-## v1.9 additions
+## v2.0 additions
 
-- docs/RELEASE-GATE-V1.9.md
-- docs/FINAL-AUDIT-V1.9.md
-- packages/runtime/src/saga-recovery.ts
-- test/saga-recovery.test.ts
-- persisted EffectRecord input for compensation reconstruction
-- work-object schema support for effect input
+- apps/studio.ts
+- docs/RELEASE-GATE-V2.0.md
+- test/studio.test.ts
 
 ## Verified main milestone evidence
 
-- v1.9 documentation closeout merge commit: a9265bb8ff61db21627bb92a52cbad8aeffe8e50
-- feature CI #528: success
-- implementation merged-main CI #530: success
-- final closeout CI #532 attempt 2: success
-- final source audit: 115/115
-- dependency security audit: success
-- retention lifecycle suite: success
-- sequential full integration verification: 30/30 test files passed
-- benchmark: passed
-- demo: verified
-- CLI proof + mission: verified
-- live GitHub smoke: verified
+- v1.9 implementation merge: f0173fd9c0603fd1fa58ea6f722486f52a04f932
+- v1.9 documentation closeout: a9265bb8ff61db21627bb92a52cbad8aeffe8e50
+- final v1.9 closeout CI #532 attempt 2: success
+- final v1.9 source audit: 115/115
+- final v1.9 dependency security audit: success
+- final v1.9 retention lifecycle suite: success
+- final v1.9 sequential integration suite: 30/30 test files
+- final v1.9 benchmark/demo/CLI/live smoke: passed
 
 ## Verification discipline
 
-Source-tree completeness, compilation, dependency audit, retention lifecycle, full integration suite, benchmark, demo, CLI, and live smoke are separate gates. Passing one does not imply the others passed.
+Source-tree completeness, compilation, dependency audit, retention lifecycle, full integration suite, benchmark, demo, CLI, live smoke, and Studio acceptance are separate gates. Passing one does not imply the others passed.
