@@ -77,7 +77,7 @@ test("durable saga recovery skips verified compensation, acquires after worker l
     version: "1.0.0",
     operations: ["undo"],
     riskClass: "external_write",
-    execute: async (request) => {
+    execute: async (request: CapabilityRequest) => {
       calls += 1;
       state.delete(String(request.input));
       return { status: "accepted", externalEffectId: "undo:" + request.input };
@@ -86,14 +86,14 @@ test("durable saga recovery skips verified compensation, acquires after worker l
 
   const resource = "saga:" + work.id + ":recovery:" + saga.sagaId;
   const oldLease = leaseStore.acquire(resource, "dead-worker", 1000);
-  assert.equal(oldLease.status, "acquired");
+  if (oldLease.status !== "acquired") throw new Error("Expected dead-worker lease to be acquired");
   clock.advance(1001);
 
   const recoveryStore = new WorkStore();
   const recovered = await coordinator(repo, recoveryStore, registry, leaseStore, "replacement-worker").recover({
     workId: work.id,
     sagaId: saga.sagaId,
-    verifyExternalState: async (_work, effect) => effect.input === "B" && !state.has("B")
+    verifyExternalState: async (_work: WorkObject, effect: EffectRecord) => effect.input === "B" && !state.has("B")
   });
 
   assert.equal(recovered.status, "compensated");
@@ -103,12 +103,12 @@ test("durable saga recovery skips verified compensation, acquires after worker l
   assert.equal(calls, 1);
 
   const after = repo.load(work.id);
-  assert.equal(after.effects.find(effect => effect.effectId === compA.effectId).status, "verified");
-  assert.equal(after.effects.find(effect => effect.effectId === compB.effectId).status, "verified");
+  assert.equal(after.effects.find((effect: EffectRecord) => effect.effectId === compA.effectId)?.status, "verified");
+  assert.equal(after.effects.find((effect: EffectRecord) => effect.effectId === compB.effectId)?.status, "verified");
   assert.equal(after.sagas?.[0]?.status, "compensated");
   assert.ok(after.events.some((event: WorkEvent) => event.type === "saga.recovery.started"));
   assert.ok(after.events.some((event: WorkEvent) => event.type === "saga.recovery.finished"));
-  const recoveryStart = after.events.find(event => event.type === "saga.recovery.started");
+  const recoveryStart = after.events.find((event: WorkEvent) => event.type === "saga.recovery.started");
   assert.deepEqual(recoveryStart?.data?.recoveredFromLeaseIds, [oldLease.lease.leaseId]);
 
   leaseStore.close();
@@ -197,8 +197,8 @@ test("stale saga worker stops after ownership moves and replacement worker resum
   assert.equal(stale.completedCompensationEffectIds.includes(compB.effectId), false);
 
   const persistedAfterLoss = repo.load(work.id);
-  assert.equal(persistedAfterLoss.effects.find(effect => effect.effectId === compA.effectId).status, "verified");
-  assert.equal(persistedAfterLoss.effects.find(effect => effect.effectId === compB.effectId).status, "planned");
+  assert.equal(persistedAfterLoss.effects.find((effect: EffectRecord) => effect.effectId === compA.effectId)?.status, "verified");
+  assert.equal(persistedAfterLoss.effects.find((effect: EffectRecord) => effect.effectId === compB.effectId)?.status, "planned");
   assert.ok(persistedAfterLoss.events.some(event => event.type === "saga.recovery.lease_lost"));
 
   const replacement = await coordinator(repo, new WorkStore(), registry, leaseStore, "replacement-worker").recover({
@@ -237,7 +237,7 @@ test("saga recovery refuses to execute when another owner still holds the recove
 
   const resource = "saga:" + work.id + ":recovery:" + saga.sagaId;
   const held = leaseStore.acquire(resource, "live-worker", 10_000);
-  assert.equal(held.status, "acquired");
+  if (held.status !== "acquired") throw new Error("Expected live-worker lease to be acquired");
 
   const result = await coordinator(repo, new WorkStore(), registry, leaseStore, "replacement-worker").recover({
     workId: work.id,
