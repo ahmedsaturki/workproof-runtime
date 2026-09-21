@@ -87,3 +87,34 @@ Domain adapters. The GitHub pack covers repository read, issue creation behind e
 ## Extension boundary
 
 MCP, A2A, workers, Studio, REST, SDKs, and remote control planes are adapters/surfaces around the Work Object model. They must not replace the kernel's outcome, effect, verification, recovery, and proof semantics.
+
+
+## Saga recovery
+
+Saga recovery is a coordination layer around persisted saga lineage.
+
+    Persisted Work Object
+          |
+          v
+    Recovery discovery
+          |
+          v
+    Saga recovery lease
+      /           \
+   owned         busy
+    |              |
+    v              v
+ pending      waiting_lease
+ compensations
+    |
+    v
+ reconcile -> execute -> verify -> persist
+    |
+    v
+ ownership check
+    |
+    +--> stale owner: stop
+    |
+    +--> replacement owner: resume remaining pending work
+
+The recovery lease prevents concurrent recovery workers from intentionally executing the same saga at the same time. It does not replace external idempotency or state reconciliation for individual effects.
