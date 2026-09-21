@@ -14,6 +14,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -28,7 +29,21 @@ jobs:
       - name: Dependency security audit
         run: npm audit --audit-level=high
       - run: node scripts/verify-source-tree.js
-      - run: npm run check
+      - name: Run unit and integration tests
+        run: npm test
+        timeout-minutes: 4
+      - name: Run benchmark
+        run: npm run benchmark
+        timeout-minutes: 2
+      - name: Run demo
+        run: npm run demo
+        timeout-minutes: 2
+      - name: Verify CLI proof
+        run: node dist/packages/cli/src/index.js verify mission-proof.json
+        timeout-minutes: 1
+      - name: Execute CLI mission
+        run: node dist/packages/cli/src/index.js run examples/missions/research-local.json
+        timeout-minutes: 2
       - name: Live GitHub integration smoke
         env:
           GITHUB_TOKEN: ${{ github.token }}
