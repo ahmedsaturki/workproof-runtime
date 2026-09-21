@@ -32,7 +32,8 @@ function sendJson(res: any, statusCode: number, body: Record<string, unknown>): 
   const payload = JSON.stringify(body);
   res.writeHead(statusCode, {
     "content-type": "application/json; charset=utf-8",
-    "content-length": Buffer.byteLength(payload)
+    "content-length": Buffer.byteLength(payload),
+    "connection": "close"
   });
   res.end(payload);
 }
@@ -213,6 +214,9 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
     host,
     port: actualPort,
     server,
-    close: () => new Promise((resolve, reject) => server.close((error: unknown) => error ? reject(error) : resolve()))
+    close: () => new Promise((resolve, reject) => {
+      server.closeAllConnections?.();
+      server.close((error: unknown) => error ? reject(error) : resolve());
+    })
   };
 }
