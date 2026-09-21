@@ -91,7 +91,7 @@ Published assets:
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
-The release pipeline re-downloads the published assets, verifies their SHA256 sums, verifies the release target matches the tag, and validates the published benchmark semantics. Release verification run #21 succeeded.
+The release pipeline re-downloads the published assets, verifies their SHA256 sums, verifies the release target matches the tag, and validates the published benchmark semantics. Release verification run #30 succeeded.
 
 ### GHCR container
 
