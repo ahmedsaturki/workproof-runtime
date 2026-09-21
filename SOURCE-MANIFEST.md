@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The active main v1.8 branch contains 111 required paths enforced by scripts/verify-source-tree.js.
+The active main v1.8 checkpoint contains 111 required paths. The v1.9 recovery branch contains 114 required paths enforced by scripts/verify-source-tree.js.
 
 The current tree includes:
 - proof registry and authenticated transport
