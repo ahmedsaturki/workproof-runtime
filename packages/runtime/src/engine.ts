@@ -88,8 +88,8 @@ export class WorkEngine {
           }
         }
 
-        const effect = this.store.addEffect(work, capability.name, capability.riskClass, step.idempotencyKey);
-        this.store.event(work, "step.started", `Step ${step.id} started`, { stepId: step.id, capability: capability.name, attempt });
+        const effect = this.store.addEffect(work, capability.name, capability.riskClass, step.idempotencyKey, step.operation);
+        this.store.event(work, "step.started", `Step ${step.id} started`, { stepId: step.id, capability: capability.name, attempt, operation: step.operation });
         this.persist(work);
 
         const receipt = await executeWithSafety({
