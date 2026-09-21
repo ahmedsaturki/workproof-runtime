@@ -4,9 +4,9 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v2.1-dev authenticated Studio control is verified on main.**
+**v2.2-dev proof/audit Studio is in progress.**
 
-v2.0 established a dependency-free, read-only local Studio over persisted Work Objects. v2.1 adds a thin same-origin control proxy that delegates dispatch, cancel, and resume to the authenticated control plane without introducing a second authorization system.
+v2.1 established authenticated Studio control delegation through the control plane. v2.2 adds read-only proof/audit views backed by the content-addressed proof vault and optional local trust policy.
 
 ## Core loop
 
@@ -49,8 +49,17 @@ Studio control is not a new control plane: authorization, state transitions, and
 
 Proof integrity and signatures establish integrity/authenticity properties under their defined trust boundaries; they do not create an organization-wide trust or revocation policy by themselves.
 
+## v2.2 proof/audit Studio
+
+- Optional proof-vault configuration enables retained proof discovery by Work Object.
+- Proof audit reports integrity, signature, and local trust state without exposing vault filesystem paths.
+- Retained proof detail includes bounded verification metadata and artifact count.
+- Corrupted retained proofs fail closed as invalid audit records.
+- Missing proof vault configuration returns a clear `503` rather than fabricating proof state.
+- Proof/audit endpoints are read-only and use the existing Studio hardening/no-store boundary.
+
 ## Next engineering gates
 
-Broader distributed worker/control-plane hardening, trusted-key policy surfaces, richer proof/audit views, additional capability packs/integrations, and remote/distributed Studio mode remain separate milestones.
+Broader distributed worker/control-plane hardening, richer visualization beyond the proof/audit surface, additional capability packs/integrations, and remote/distributed Studio mode remain separate milestones.
 
 This repository does not make a global novelty claim.

@@ -1,8 +1,8 @@
-# WorkProof Runtime Specification - v2.1-dev
+# WorkProof Runtime Specification - v2.2-dev
 
 ## 1. Purpose
 
-Represent a bounded digital outcome as durable work, execute it through explicit capabilities and worker ownership, safely handle external effects, independently verify outcomes, preserve portable proof, manage proof lifecycle, recover persisted execution after worker loss, and expose a user-facing operational Studio with authenticated control delegation.
+Represent a bounded digital outcome as durable work, execute it through explicit capabilities and worker ownership, safely handle external effects, independently verify outcomes, preserve portable proof, manage proof lifecycle, recover persisted execution after worker loss, and expose a user-facing Studio with authenticated control delegation and read-only proof/audit views.
 
 ## 2. Core loop
 
@@ -56,6 +56,8 @@ Read surface:
 - `GET /health` service health
 - `GET /api/work` bounded Work Object summary listing
 - `GET /api/work/:id` sanitized Work Object detail
+- `GET /api/proofs?workId=:id` retained proof summaries
+- `GET /api/proof/:digest` retained proof audit detail
 
 Optional control surface:
 - `POST /api/control/dispatch` -> authenticated control-plane dispatch
@@ -71,6 +73,15 @@ Studio control security rules:
 - No local mutation occurs when the control plane is absent.
 - State-changing Studio operations preserve the control-plane request ID and audit semantics.
 
+Proof/audit security rules:
+- Proof digests are validated as lowercase SHA-256 values.
+- Vault filesystem paths are never returned.
+- Integrity and signature validity are recomputed from retained proof material.
+- Trust state is evaluated against an optional local trust policy.
+- Corrupted retained proofs are reported as invalid instead of being treated as valid.
+- Proof APIs never mutate the vault.
+- Browser hardening and no-store headers apply to the proof/audit surface.
+
 ## 9. CLI Lifecycle Surface
 
 The CLI exposes work execution, proof inspection/verification, signer identity, registry operations, proof-vault lifecycle, and local Studio launch.
@@ -79,7 +90,7 @@ The CLI exposes work execution, proof inspection/verification, signer identity, 
 
 WorkProof is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, or distributed-consensus system.
 
-## 11. v2.1 Acceptance Target
+## 11. v2.2 Acceptance Target
 
 - v2.0 Studio behavior remains passing.
 - Authenticated dispatch delegation works.
@@ -89,6 +100,7 @@ WorkProof is not itself a generic agent framework, browser automation engine, wo
 - Read-only credentials cannot perform Studio mutations.
 - Control responses do not leak sensitive Work Object fields.
 - Control-plane audit entries remain authoritative.
+- Retained proof summaries and audit detail are read-only and sanitized.
 - Source audit
 - dependency audit
 - full integration suite
