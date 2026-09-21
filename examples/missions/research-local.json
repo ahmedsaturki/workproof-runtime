@@ -1,0 +1,34 @@
+{
+  "objective": "Find verified supplier records and produce a local artifact",
+  "inputs": {
+    "dataPath": "./lab/data/suppliers.json",
+    "outputPath": "/tmp/workctl-research.json",
+    "minRecords": 4
+  },
+  "success": [
+    {
+      "id": "artifact",
+      "description": "At least four unique supplier records with required fields",
+      "verifier": "pack.research.artifact",
+      "required": true
+    }
+  ],
+  "deliverables": ["/tmp/workctl-research.json"],
+  "riskClass": "read",
+  "steps": [
+    {
+      "id": "research",
+      "operation": "research_suppliers",
+      "capability": "pack.research.local",
+      "input": {
+        "dataPath": "./lab/data/suppliers.json",
+        "outputPath": "/tmp/workctl-research.json",
+        "minRecords": 4
+      },
+      "idempotencyKey": "workctl:research:suppliers",
+      "riskClass": "read"
+    }
+  ],
+  "proofPath": "./workctl-research-proof.json",
+  "workDirectory": "./work-runs"
+}

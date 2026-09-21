@@ -1,0 +1,21 @@
+{
+  "$schema": "../schemas/pack.schema.json",
+  "name": "github",
+  "version": "0.2.0",
+  "capabilities": [
+    "pack.github.repo.read@0.1.0",
+    "pack.github.issue.create@0.1.0"
+  ],
+  "verifiers": [
+    "pack.github.repo.read",
+    "pack.github.issue.create"
+  ],
+  "policies": [
+    "external_write requires human approval",
+    "external write requires deterministic idempotencyMarker"
+  ],
+  "fixtures": [
+    "test/github.test.ts",
+    "test/two-system.test.ts"
+  ]
+}
