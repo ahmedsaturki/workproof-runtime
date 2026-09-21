@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v2.5-dev worker lifecycle hardening is in progress.**
+**v2.5-dev worker lifecycle hardening is verified on main.**
 
 v2.1 established authenticated Studio control delegation through the control plane. v2.2 added read-only proof/audit views backed by the content-addressed proof vault and optional local trust policy. v2.3 adds durable idempotency and replay/concurrency protection for authenticated control mutations.
 
@@ -110,8 +110,15 @@ Control-plane idempotency protects the authenticated mutation boundary but does 
 - Final merged-main commit: `77603553fff569b230a71de0b92aa3e4a6ae1342`.
 - Source-tree, security, build, retention, full suite, benchmark, demo, CLI, and live GitHub smoke gates all passed.
 
+## v2.5 verification evidence
+
+- Feature CI #660: success.
+- Merged-main CI #661: success.
+- Final merged-main commit: `234e4397ae8e98acf1fcdf5fd57c42188582ae8f`.
+- Worker lifecycle/reassignment, source, security, build, retention, full suite, benchmark, demo, CLI, and live GitHub smoke gates all passed.
+
 ## Next engineering gates
 
-v2.5 broader distributed worker/control-plane hardening, additional capability packs/integrations, remote/distributed Studio mode, and richer visualization beyond proof/audit inspection remain separate milestones.
+v2.6 worker-aware Studio visibility, additional capability packs/integrations, remote/distributed Studio mode, and richer visualization beyond proof/audit inspection remain separate milestones.
 
 This repository does not make a global novelty claim.
