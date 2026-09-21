@@ -2,6 +2,7 @@ declare const process: {
   env: Record<string, string | undefined>;
   argv: string[];
   execPath: string;
+  kill(pid: number, signal?: string): void;
   exitCode?: number;
   stdout: { write(s: string): void };
   stderr: { write(s: string): void };
