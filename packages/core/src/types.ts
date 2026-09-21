@@ -6,6 +6,8 @@ export type EffectStatus =
   | "planned" | "dispatched" | "acknowledged" | "unknown"
   | "observed" | "verified" | "reconciled" | "compensated" | "unresolved";
 
+export type EffectKind = "forward" | "compensation";
+
 export type RiskClass = "read" | "local_write" | "external_write" | "destructive" | "financial";
 
 export interface EvidenceRef {
@@ -68,6 +70,8 @@ export interface EffectAttempt {
 export interface EffectRecord {
   effectId: string;
   idempotencyKey: string;
+  kind?: EffectKind;
+  sourceEffectId?: string;
   operation?: string;
   capability: string;
   status: EffectStatus;
