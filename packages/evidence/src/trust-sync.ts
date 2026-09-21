@@ -51,7 +51,9 @@ export function verifyTrustPolicySnapshotSignature(snapshot: TrustPolicySnapshot
     if (!snapshot || snapshot.version !== "0.1" || !Number.isSafeInteger(snapshot.epoch) || snapshot.epoch < 0) return false;
     validateTrustPolicy(snapshot.policy);
     if (!/^[0-9a-f]{64}$/.test(snapshot.digest) || snapshot.digest !== digestTrustPolicySnapshot(snapshot)) return false;
-    return Boolean(snapshot.signature) && verifyProofSignature(signingEnvelope(snapshot), snapshot.signature);
+    const signature = snapshot.signature;
+    if (!signature) return false;
+    return verifyProofSignature(signingEnvelope(snapshot), signature);
   } catch {
     return false;
   }
