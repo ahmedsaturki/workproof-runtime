@@ -42,6 +42,11 @@ function indexPath(vaultDir: string): string {
   return path.join(vaultDir, "index.json");
 }
 
+function isInside(parentDir: string, targetPath: string): boolean {
+  const parent = path.resolve(parentDir) + path.sep;
+  return path.resolve(targetPath).startsWith(parent);
+}
+
 function createIndex(): VaultIndex {
   return { version: "0.1", records: [] };
 }
@@ -62,6 +67,7 @@ function loadIndex(vaultDir: string): VaultIndex {
       typeof record.workId !== "string" ||
       !/^[0-9a-f]{64}$/.test(record.digest) ||
       typeof record.proofPath !== "string" ||
+      !isInside(path.join(vaultDir, "proofs"), record.proofPath) ||
       !record.proofPath.endsWith(`${record.digest}.json`) ||
       !record.artifacts ||
       typeof record.artifacts !== "object" ||
@@ -74,7 +80,12 @@ function loadIndex(vaultDir: string): VaultIndex {
     seen.add(record.digest);
 
     for (const [uri, artifactPath] of Object.entries(record.artifacts as Record<string, unknown>)) {
-      if (typeof uri !== "string" || typeof artifactPath !== "string" || !/^[0-9a-f]{64}$/.test(path.basename(artifactPath))) {
+      if (
+        typeof uri !== "string" ||
+        typeof artifactPath !== "string" ||
+        !isInside(path.join(vaultDir, "artifacts"), artifactPath) ||
+        !/^[0-9a-f]{64}$/.test(path.basename(artifactPath))
+      ) {
         throw new Error("Invalid proof vault artifact reference");
       }
     }
@@ -189,6 +200,9 @@ export function restoreProof(vaultDir: string, digest: string, outputPath: strin
   const record = index.records.find((item) => item.digest === digest);
   if (!record) throw new Error(`Unknown proof digest: ${digest}`);
   if (!fs.existsSync(record.proofPath)) throw new Error("Vault proof file is missing");
+  if (fs.realpathSync(record.proofPath) !== path.resolve(record.proofPath) || !isInside(path.join(vaultDir, "proofs"), fs.realpathSync(record.proofPath))) {
+    throw new Error("Vault proof path escapes vault");
+  }
 
   const data = JSON.parse(fs.readFileSync(record.proofPath, "utf8"));
   if (!data?.integrity || !verifyProofIntegrity(proofBundleFromFile(data), data.integrity)) {
@@ -204,6 +218,10 @@ export function restoreProof(vaultDir: string, digest: string, outputPath: strin
   for (const [uri, artifactPath] of Object.entries(record.artifacts)) {
     if (!proofArtifactUris.has(uri)) throw new Error("Vault artifact reference is absent from proof");
     if (!fs.existsSync(artifactPath)) throw new Error("Vault artifact file is missing");
+    const realArtifactPath = fs.realpathSync(artifactPath);
+    if (!isInside(path.join(vaultDir, "artifacts"), realArtifactPath)) {
+      throw new Error("Vault artifact path escapes vault");
+    }
     const expectedDigest = path.basename(artifactPath);
     if (!/^[0-9a-f]{64}$/.test(expectedDigest) || sha256File(artifactPath) !== expectedDigest) {
       throw new Error("Vault artifact failed integrity verification");
