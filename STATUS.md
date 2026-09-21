@@ -4,7 +4,7 @@ Date: 2026-09-21
 
 ## Current main
 
-**v2.2-dev proof/audit Studio is verified on main.**
+**v2.3-dev control-plane hardening is in progress.**
 
 Latest v2.2 proof/audit Studio merge:
 5deee742ad0b481ff4e55832b972706e84de3c01
@@ -41,6 +41,17 @@ Latest v2.2 merged-main CI:
 - [x] local Studio foundation
 - [x] authenticated Studio control delegation
 - [x] proof/audit Studio surface
+
+## Active next branch
+
+`feature/v2.3-control-idempotency`
+
+Target:
+- durable idempotency for authenticated control mutations
+- replay protection across process restart
+- same-key payload conflict detection
+- concurrent mutation race protection
+- SDK/Studio propagation
 
 ## Remaining platform work
 
