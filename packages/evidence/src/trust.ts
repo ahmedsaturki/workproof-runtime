@@ -62,6 +62,9 @@ export function saveTrustPolicy(filePath: string, policy: TrustPolicyDocument): 
 export function trustKey(policy: TrustPolicyDocument, publicKey: string, label?: string): TrustedKeyRecord {
   validateTrustPolicy(policy);
   const normalized = normalizePublicKey(publicKey);
+  if (!normalized.includes("-----BEGIN PUBLIC KEY-----") || normalized.includes("-----BEGIN PRIVATE KEY-----")) {
+    throw new Error("Trusted proof keys must be public-key PEM material");
+  }
   const publicKeyObject = crypto.createPublicKey(normalized);
   if (publicKeyObject.asymmetricKeyType !== "ed25519") {
     throw new Error("Trusted proof keys must be Ed25519 public keys");
