@@ -16,16 +16,16 @@ test("operator benchmark v3 executes five evidence-bearing missions and proves r
   assert.equal(summary.metrics.humanInterventionCount, 0);
   assert.deepEqual(summary.cases.map((item: any) => item.id), ["M001", "M002", "M003", "M004", "M005"]);
 
-  const m003 = summary.cases.find((item: any) => item.id === "M003");
+  const m003 = summary.cases.find((item: any) => item.id === "M003")!;
   assert.equal(m003.details.branch, "main");
   assert.equal(m003.details.workingTree, "");
 
-  const m004 = summary.cases.find((item: any) => item.id === "M004");
+  const m004 = summary.cases.find((item: any) => item.id === "M004")!;
   assert.equal(m004.details.postRequests, 1);
   assert.equal(m004.details.duplicatesPrevented, 0);
   assert.equal(m004.details.reconciled, true);
 
-  const m005 = summary.cases.find((item: any) => item.id === "M005");
+  const m005 = summary.cases.find((item: any) => item.id === "M005")!;
   assert.equal(m005.details.primaryCalls, 2);
   assert.equal(m005.details.substituted, true);
   assert.equal(m005.details.fallbackStored, true);
