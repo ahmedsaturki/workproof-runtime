@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The v0.9 proof-vault branch contains **71 required paths** enforced by scripts/verify-source-tree.js.
+The v1.0 self-hosted registry branch contains **77 required paths** enforced by scripts/verify-source-tree.js.
 
 V0.6 additions:
 - docs/RELEASE-GATE-V0.6.md
@@ -24,6 +24,14 @@ V0.9 additions:
 - test/vault.test.ts
 - test/vault-cli.test.ts
 
+V1.0 additions:
+- apps/registry-server.ts
+- docs/RELEASE-GATE-V1.0.md
+- packages/registry/src/client.ts
+- packages/registry/src/http.ts
+- test/registry-client.test.ts
+- test/registry.test.ts
+
 ## v0.4 local exact history
 
 - local commit: 8cd9b7d841191b8a030bb462ac8dbd271f8259ca
@@ -32,10 +40,10 @@ V0.9 additions:
 
 ## Verified main
 
-- commit: 5ea9aab16e7333621b639f7f96c0e5a4ad9852c8
-- v0.7 merged-main CI run #82: success
-- result: source audit + build + 33 tests + benchmark/demo/CLI + browser/HTTP/publication/recovery paths + live GitHub read smoke passed
-- active branch extends the verified v0.7 state with local trust and proof-vault work
+- commit: 1b025eb8da677fb6e4ac84875103f5f76dc1a137
+- v0.9 merged-main CI run #140: success
+- result: source audit + build + 49 tests + benchmark/demo/CLI + browser/HTTP/publication/recovery paths + live GitHub read smoke passed
+- active v1.0 branch extends the verified v0.9 state with self-hosted registry transport
 
 ## Verification discipline
 

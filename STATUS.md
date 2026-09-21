@@ -18,32 +18,6 @@ Latest main CI:
 - CLI proof verification + mission execution: verified
 - live GitHub repository smoke: passed
 
-## Verified v0.7 gates
-
-- [x] v0.6 user-facing proof integrity CLI.
-- [x] Ed25519 key generation.
-- [x] CLI proof signing.
-- [x] Embedded public key and deterministic key identity.
-- [x] Independent signature verification.
-- [x] Separate signature tamper failure.
-- [x] Proof-integrity tamper detection.
-- [x] Unsigned/legacy compatibility.
-- [x] Key overwrite protection.
-- [x] Feature branch CI.
-- [x] Merged-main CI.
-- [x] Final deterministic regression repair verified by main CI.
-
-## Verified v0.8 trust policy
-
-- [x] Local JSON trust policy.
-- [x] Trusted and revoked identity states.
-- [x] Unknown/mismatched identity handling.
-- [x] Ed25519-only trust enrollment.
-- [x] CLI trust-add / trust-revoke.
-- [x] Optional --require-trusted verification.
-- [x] Feature CI final gate.
-- [x] Merged-main CI final gate.
-
 ## Verified v0.9 proof vault
 
 - [x] Content-addressed proof storage by SHA-256 digest.
@@ -57,23 +31,26 @@ Latest main CI:
 - [x] CLI publish/list/inspect/restore lifecycle.
 - [x] Feature-vault implementation merged to main.
 - [x] Merged-main CI run #140: 49/49 tests and all integration gates passed.
+- [x] v0.9 issue closed as completed.
 
-## Active next gate
+## Active v1.0 gate
 
-v1.0 self-hosted proof registry / replication.
+Current branch:
+feature/v1.0-proof-registry
 
 Target:
 - HTTP registry protocol over the existing content-addressed vault.
-- Proof publication and retrieval by digest.
+- Verified client publish/get/list transport.
 - Idempotent remote publication.
 - Integrity enforcement at registry ingress and egress.
 - Local/self-hosted operation with no managed service dependency.
-- CLI/server entry point and end-to-end local HTTP tests.
+- End-to-end local HTTP tests.
 
 ## Remaining platform work
 
 - [ ] v1.0 registry/replication.
-- [ ] Distributed/multi-user trust policy.
+- [ ] Authenticated multi-user access.
+- [ ] Distributed trust synchronization.
 - [ ] Generalized compensation/saga engine.
 - [ ] External browser navigation where permitted.
 - [ ] Distributed/remote workers and control plane.
