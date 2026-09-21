@@ -162,7 +162,8 @@ function walkFiles(root: string): string[] {
   while (stack.length) {
     const current = stack.pop();
     if (!current) continue;
-    const stat = fs.statSync(current);
+    const stat = fs.lstatSync(current);
+    if (stat.isSymbolicLink()) continue;
     if (stat.isDirectory()) {
       for (const child of fs.readdirSync(current)) stack.push(path.join(current, child));
     } else if (stat.isFile()) out.push(current);
