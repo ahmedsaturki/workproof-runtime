@@ -4,9 +4,9 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v2.9-dev operational work filtering is in progress.**
+**v2.9-dev operational work filtering is verified on main.**
 
-The active v2.9 line extends the verified v2.8 Studio with bounded search, status/risk filtering, result limits, and deterministic operational summaries. The filter layer is diagnostic only and does not alter execution or authorization semantics.
+The verified v2.9 line extends the v2.8 Studio with bounded search, status/risk filtering, result limits, deterministic operational summaries, and a read-only diagnostic filter layer.
 
 ## Core loop
 
@@ -35,6 +35,7 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - v2.6 worker-aware Studio.
 - v2.7 authenticated remote worker visibility.
 - v2.8 diagnostic lease/fence visibility.
+- v2.9 operational work filtering and summaries.
 
 ## v2.9 operational work filtering
 
@@ -44,38 +45,23 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - Invalid filter inputs fail closed with HTTP 400.
 - The API returns deterministic `total`, `byStatus`, and `byRisk` counts for the matched set.
 - Studio exposes search, status, risk, and limit controls and renders summary cards from the filtered result set.
+- Query length is bounded and result ordering is stabilized by timestamp plus Work Object ID.
 - Filtering never mutates a Work Object and never bypasses authorization, lease, proof, or control-plane semantics.
 
-## v2.8 diagnostic lease/fence visibility
+## v2.9 verification evidence
 
-- The control plane exposes a read-only lease projection through `GET /v1/leases`.
-- Studio exposes local and authenticated remote lease projections through `GET /api/leases`.
-- Lease projections include resource, owner, lease identity, revision, timing, and active state.
-- Studio and control-plane visibility surfaces do not expose execution fencing tokens.
-- Remote lease visibility requires a valid bearer credential.
-- Missing lease sources fail closed with HTTP 503.
-- Persistent and in-memory lease authorities share the same sanitized LeaseStatus projection contract.
-- Visibility routes are diagnostic and do not acquire, renew, release, or reassign leases.
-
-## Final v2.8 verification evidence
-
-- Initial implementation feature CI #708: success.
-- Initial implementation PR CI #709: success.
-- Initial merged-main CI #710: success.
-- Finalization feature CI #726: success.
-- Finalization PR CI #727: success.
-- Final merged-main CI #728: success.
-- Finalization corrected the source manifest to 141 required paths.
-- Dependency security audit: 0 vulnerabilities.
-- Chromium/CDP preflight: success.
-- Strict TypeScript build: success.
-- Retention lifecycle: success.
-- Full unit/integration suite: success.
-- Benchmark: success.
-- Demo: success.
-- CLI proof verification: success.
-- CLI mission execution: success.
-- Live GitHub smoke: success.
+- source-tree audit: 142/142
+- dependency security audit: 0 vulnerabilities
+- Chromium/CDP preflight: success
+- strict TypeScript build: success
+- retention lifecycle: success
+- full unit/integration suite: success
+- benchmark: success
+- demo: success
+- CLI proof verification: success
+- CLI mission execution: success
+- live GitHub smoke: success
+- merged-main CI #751: success
 
 ## Safety boundary
 
@@ -90,6 +76,8 @@ Control-plane idempotency protects the authenticated mutation boundary but does 
 Execution fencing protects the WorkProof execution boundary. External systems must explicitly honor a fence token to obtain corresponding remote conditional-write protection.
 
 Lease visibility is diagnostic only. A visible lease is not proof that a worker is healthy or that an external effect has stopped.
+
+Operational filtering is diagnostic only. It does not change work state, authorization, lease ownership, proof state, or execution.
 
 ## Next engineering gates
 
