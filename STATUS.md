@@ -4,7 +4,7 @@ Date: 2026-09-21
 
 ## Current main
 
-v1.0-dev self-hosted proof registry is verified on main.
+v1.1-dev authenticated multi-user proof registry is merged to main; merged-main CI is the final gate.
 
 Current main commit:
 57e26542001ff33ba28c9ae82da370bda74315f7
