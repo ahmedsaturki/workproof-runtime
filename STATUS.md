@@ -27,6 +27,7 @@ Target:
 - CLI credential lifecycle
 - bearer-aware registry client
 - end-to-end authorization regressions
+- focused security regression evidence and dependency audit
 
 ## Remaining platform work
 
