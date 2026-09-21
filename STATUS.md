@@ -2,7 +2,7 @@
 
 Date: 2026-09-22
 
-Verification note: latest-main documentation synchronization is CI-gated.
+Verification note: this status snapshot is itself CI-gated on the current main commit.
 The recorded latest-main gate above is CI #922; this follow-up documentation commit is also CI-gated.
 Chromium CDP smoke is environment-isolated from D-Bus and uses a bounded startup window.
 
