@@ -4,53 +4,35 @@ Date: 2026-09-21
 
 ## Current main
 
-**v2.6-dev worker-aware Studio hardening is in progress.**
+**v2.8 diagnostic lease/fence visibility is implemented and being finalized with persistence parity and complete release traceability.**
 
-Merged v2.4 commit:
-77603553fff569b230a71de0b92aa3e4a6ae1342
+Current main commit:
+44ed49dac589389bdad9bbcb6e177a74f43767f9
 
-Merged v2.5 commit:
-234e4397ae8e98acf1fcdf5fd57c42188582ae8f
+v2.8 feature head:
+2e5692751d60275e22131f49069207ae9d5b2d7c
 
-Merged v2.6 commit:
-172757754264398137a2982ca62a5d5449028f04
+Merged v2.8 commit:
+44ed49dac589389bdad9bbcb6e177a74f43767f9
 
-Merged v2.7 commit:
-df3bda90e10e17f5e683a153c68d7537e9d4a2c0
+Verified v2.8 feature/PR evidence:
+- Feature CI #708: success
+- PR CI #709: success
+- Merged-main CI #710: success
+- source audit, dependency security audit, Chromium/CDP, strict build, retention, full suite, benchmark, demo, CLI proof, CLI mission, and live GitHub smoke: success
 
-Merged v2.6 commit:
-172757754264398137a2982ca62a5d5449028f04
+## Active v2.8 finalization
 
-Merged v2.5 commit:
-234e4397ae8e98acf1fcdf5fd57c42188582ae8f
+`feature/v2.8.1-persistent-lease-visibility`
 
-Merged-main CI:
-- CI #653: success
-- source-tree audit: 131/131 required paths
-- dependency security audit: success
-- Chromium/CDP preflight: success
-- strict TypeScript build: success
-- retention lifecycle suite: success
-- full sequential unit/integration suite: success
-- benchmark: success
-- demo: success
-- CLI proof verification: success
-- CLI mission execution: success
-- live GitHub integration smoke: success
+This hardening branch closes release-traceability gaps discovered after the initial v2.8 merge and adds PersistentLeaseStore parity for lease visibility.
 
-## Verified v2.4 gates
-
-- [x] ExecutionFence type exposed by the kernel.
-- [x] Fence contains resource, lease identity, owner, revision, and token.
-- [x] Persistent and in-memory authorities implement assertOwned.
-- [x] CapabilityContext carries the execution fence.
-- [x] WorkEngine asserts ownership before capability execution.
-- [x] WorkEngine asserts ownership after capability execution.
-- [x] Dedicated stale-worker execution regression.
-- [x] Multi-process stale-worker takeover regression.
-- [x] Feature CI on final v2.4 head: CI #652 success.
-- [x] Merged-main CI on final v2.4 merge: CI #653 success.
-- [x] Final v2.4 release gate and audit documentation.
+Target:
+- enforce v2.8 release/audit documents in the source manifest
+- align package metadata and operational docs to v2.8
+- expose sanitized lease status from PersistentLeaseStore
+- regression-test persistent lease visibility and token non-disclosure
+- final feature CI and merged-main CI on the corrected source tree
 
 ## Verified broader platform gates
 
@@ -60,42 +42,21 @@ Merged-main CI:
 - [x] persistent execution/recovery lease authority
 - [x] worker-loss recovery
 - [x] authenticated control plane and SDK
-- [x] explicit saga and durable compensation recovery
-- [x] local Studio foundation
+- [x] explicit saga/compensation recovery
+- [x] local Studio
 - [x] authenticated Studio control delegation
-- [x] proof/audit Studio surface
+- [x] proof/audit Studio
 - [x] durable control mutation idempotency
 - [x] execution fencing token boundary
-
-## Verified v2.5 gates
-
-- [x] worker liveness classification from heartbeat age
-- [x] safe reassignment eligibility respects active leases
-- [x] read-only worker status exposure through the control-plane surface
-- [x] persistent worker lifecycle behavior across process restart
-- [x] feature CI #660 and merged-main CI #661
-- [x] final v2.5 audit documentation
-
-## Verified v2.5 gates
-
-- [x] worker liveness classification from heartbeat age
-- [x] safe reassignment respects authoritative leases
-- [x] worker status visibility in the control-plane read surface
-- [x] v2.5 feature and merged-main CI
-
-## Active v2.6 target
-
-`feature/v2.6-worker-aware-studio`
-
-- read-only worker/liveness visibility in Studio
-- preserve existing Studio hardening and no direct mutation authority
-- surface active/stale/offline state without exposing lease internals or filesystem paths
+- [x] worker liveness and reassignment visibility
+- [x] authenticated remote worker visibility
+- [x] v2.8 read-only lease/fence visibility
 
 ## Remaining platform work
 
-- [ ] additional capability packs and external integrations
-- [ ] remote/distributed Studio mode
-- [ ] richer visualization beyond proof/audit inspection
+- [ ] final v2.8 traceability/persistence parity patch merge and final main CI
+- [ ] richer operational visualization/filtering
+- [ ] additional capability packs and external integrations beyond the current foundations
 
 ## Verification rule
 
