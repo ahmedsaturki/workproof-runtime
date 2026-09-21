@@ -53,6 +53,33 @@ function loadIndex(vaultDir: string): VaultIndex {
   if (!index || index.version !== "0.1" || !Array.isArray(index.records)) {
     throw new Error("Invalid proof vault index");
   }
+
+  const seen = new Set<string>();
+  for (const record of index.records) {
+    if (
+      !record ||
+      record.version !== "0.1" ||
+      typeof record.workId !== "string" ||
+      !/^[0-9a-f]{64}$/.test(record.digest) ||
+      typeof record.proofPath !== "string" ||
+      !record.proofPath.endsWith(`${record.digest}.json`) ||
+      !record.artifacts ||
+      typeof record.artifacts !== "object" ||
+      typeof record.createdAt !== "string" ||
+      typeof record.publishedAt !== "string"
+    ) {
+      throw new Error("Invalid proof vault record");
+    }
+    if (seen.has(record.digest)) throw new Error(`Duplicate proof vault digest: ${record.digest}`);
+    seen.add(record.digest);
+
+    for (const [uri, artifactPath] of Object.entries(record.artifacts as Record<string, unknown>)) {
+      if (typeof uri !== "string" || typeof artifactPath !== "string" || !/^[0-9a-f]{64}$/.test(path.basename(artifactPath))) {
+        throw new Error("Invalid proof vault artifact reference");
+      }
+    }
+  }
+
   return index;
 }
 
