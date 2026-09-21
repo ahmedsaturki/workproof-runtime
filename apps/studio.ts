@@ -1,4 +1,4 @@
-import { WorkerStatus } from "../packages/coordination/src/leases";
+import { LeaseStatus, WorkerStatus } from "../packages/coordination/src/leases";
 const http = require("http");
 const path = require("path");
 const fs = require("fs");
@@ -22,6 +22,7 @@ export interface StudioOptions {
   trustPolicyPath?: string;
   workerStatusSource?: { listWorkerStatuses(staleAfterMs: number): WorkerStatus[] };
   workerStaleAfterMs?: number;
+  leaseStatusSource?: { listLeaseStatuses(): LeaseStatus[] };
 }
 
 export interface RunningStudio {
@@ -272,6 +273,56 @@ function sanitizeWorkerStatus(worker: WorkerStatus): Record<string, unknown> {
   };
 }
 
+function sanitizeLeaseStatus(lease: LeaseStatus): Record<string, unknown> {
+  return {
+    leaseId: lease.leaseId,
+    resourceId: lease.resourceId,
+    ownerId: lease.ownerId,
+    acquiredAt: lease.acquiredAt,
+    renewedAt: lease.renewedAt,
+    expiresAt: lease.expiresAt,
+    revision: lease.revision,
+    active: lease.active
+  };
+}
+
+async function fetchRemoteLeases(controlPlaneUrl: string | undefined, req: any): Promise<{ status: number; payload: Record<string, unknown> }> {
+  if (!controlPlaneUrl) return { status: 503, payload: { error: "control-not-configured" } };
+  const token = authHeader(req);
+  if (!token) return { status: 401, payload: { error: "unauthorized" } };
+  try {
+    const response = await fetch(controlPlaneUrl + "/v1/leases", {
+      method: "GET",
+      headers: { authorization: token }
+    });
+    const raw = await response.text();
+    let data: any = {};
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      return { status: 502, payload: { error: "control-plane-invalid-json" } };
+    }
+    if (!response.ok) {
+      return {
+        status: response.status,
+        payload: {
+          error: typeof data?.error === "string" ? data.error : "lease-status-request-failed"
+        }
+      };
+    }
+    const leases = Array.isArray(data?.leases) ? data.leases : [];
+    return {
+      status: 200,
+      payload: {
+        version: "2.8",
+        source: "control-plane",
+        leases: leases.map((lease: LeaseStatus) => sanitizeLeaseStatus(lease))
+      }
+    };
+  } catch {
+    return { status: 503, payload: { error: "control-plane-unavailable" } };
+  }
+}
 async function fetchRemoteWorkers(controlPlaneUrl: string | undefined, req: any): Promise<{ status: number; payload: Record<string, unknown> }> {
   if (!controlPlaneUrl) return { status: 503, payload: { error: "control-not-configured" } };
   const token = authHeader(req);
@@ -351,6 +402,10 @@ button { background: #21262d; color: #e6edf3; border: 1px solid #30363d; padding
 <h2>Workers</h2>
 <div id="workers" class="grid"></div>
 </section>
+<section id="leasesSection">
+<h2>Execution leases</h2>
+<div id="leases" class="grid"></div>
+</section>
 <section id="list" class="grid"></section>
 <section id="detail" hidden>
 <h2 id="title"></h2>
@@ -377,6 +432,7 @@ const dispatchObjective = document.getElementById("dispatchObjective");
 const actionStatus = document.getElementById("actionStatus");
 const proofSection = document.getElementById("proofSection");
 const workers = document.getElementById("workers");
+const leases = document.getElementById("leases");
 const proofs = document.getElementById("proofs");
 let selectedId = null;
 
@@ -469,8 +525,35 @@ async function loadWorkers() {
   if (!data.workers.length) workers.innerHTML = "<div class='card'>No registered workers.</div>";
 }
 
+async function loadLeases() {
+  leases.innerHTML = "<div class='card'>Loading lease status…</div>";
+  const response = await fetch("/api/leases", {cache:"no-store", headers: token.value.trim() ? {"authorization":"Bearer " + token.value.trim()} : {}});
+  const data = await response.json();
+  if (response.status === 503) {
+    leases.innerHTML = "<div class='card'>Lease visibility is not configured.</div>";
+    return;
+  }
+  if (response.status === 401) {
+    leases.innerHTML = "<div class='card'>Lease visibility requires the control token.</div>";
+    return;
+  }
+  if (!response.ok) throw new Error(data.error || "Failed to load leases");
+  leases.innerHTML = "";
+  for (const lease of data.leases) {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML =
+      "<div><span class='badge'>" + esc(lease.active ? "active" : "expired") + "</span></div>" +
+      "<h3>" + esc(lease.resourceId) + "</h3>" +
+      "<small>owner " + esc(lease.ownerId) + " · revision " + Number(lease.revision) + "</small>" +
+      "<pre>" + esc(JSON.stringify({leaseId: lease.leaseId, acquiredAt: lease.acquiredAt, renewedAt: lease.renewedAt, expiresAt: lease.expiresAt}, null, 2)) + "</pre>";
+    leases.appendChild(card);
+  }
+  if (!data.leases.length) leases.innerHTML = "<div class='card'>No active execution leases.</div>";
+}
 async function load() {
   await loadWorkers().catch(error => { workers.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
+  await loadLeases().catch(error => { leases.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
   detail.hidden = true;
   selectedId = null;
   list.innerHTML = "<div class='card'>Loading…</div>";
@@ -532,7 +615,7 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
       if (method === "GET" && url.pathname === "/health") {
         sendJson(res, 200, {
           status: "ok",
-          version: "2.2",
+          version: "2.8",
           mode: configuredControlPlane ? "authenticated-control" : "read-only",
           proofVault: Boolean(vaultDirectory)
         });
@@ -544,6 +627,24 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
         return;
       }
 
+      if (method === "GET" && url.pathname === "/api/leases") {
+        if (configuredControlPlane) {
+          const remote = await fetchRemoteLeases(configuredControlPlane, req);
+          sendJson(res, remote.status, remote.payload);
+          return;
+        }
+        if (!options.leaseStatusSource) {
+          sendJson(res, 503, { error: "lease-status-not-configured" });
+          return;
+        }
+        const leaseList = options.leaseStatusSource.listLeaseStatuses();
+        sendJson(res, 200, {
+          version: "2.8",
+          source: "local",
+          leases: leaseList.map(sanitizeLeaseStatus)
+        });
+        return;
+      }
       if (method === "GET" && url.pathname === "/api/workers") {
         if (configuredControlPlane) {
           const remote = await fetchRemoteWorkers(configuredControlPlane, req);
@@ -734,7 +835,7 @@ if (runtimeProcess.argv[1] && path.resolve(runtimeProcess.argv[1]) === path.reso
         process.stdout.write(JSON.stringify({
           studio: `http://${running.host}:${running.port}`,
           workDirectory: path.resolve(workDirectory),
-          version: "2.2",
+          version: "2.8",
           mode: controlPlaneUrlArg ? "authenticated-control" : "read-only",
           proofVault: Boolean(vaultDirectoryArg)
         }, null, 2) + "\n");

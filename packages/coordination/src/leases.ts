@@ -215,6 +215,14 @@ export class LeaseStore {
     this.reapExpired();
     return Array.from(this.leases.values()).sort((a, b) => a.resourceId.localeCompare(b.resourceId)).map(cloneLease);
   }
+
+  listLeaseStatuses(): LeaseStatus[] {
+    this.reapExpired();
+    const nowMs = this.clock.nowMs();
+    return Array.from(this.leases.values())
+      .sort((a, b) => a.resourceId.localeCompare(b.resourceId))
+      .map((lease) => projectLeaseStatus(lease, nowMs));
+  }
 }
 
 
@@ -264,5 +272,34 @@ export function inspectWorker(worker: WorkerRecord, nowMs: number, staleAfterMs:
     heartbeatAgeMs,
     staleAfterMs,
     reassignmentEligible: liveness !== "active"
+  };
+}
+
+export interface LeaseStatus {
+  version: "0.1";
+  leaseId: string;
+  resourceId: string;
+  ownerId: string;
+  acquiredAt: string;
+  renewedAt: string;
+  expiresAt: string;
+  revision: number;
+  active: boolean;
+}
+
+export function projectLeaseStatus(lease: LeaseRecord, nowMs: number): LeaseStatus {
+  if (!Number.isSafeInteger(nowMs) || nowMs < 0) throw new Error("Lease inspection time must be a non-negative safe integer");
+  const expiresAt = Date.parse(lease.expiresAt);
+  if (!Number.isFinite(expiresAt)) throw new Error("Lease expiry timestamp is invalid");
+  return {
+    version: "0.1",
+    leaseId: lease.leaseId,
+    resourceId: lease.resourceId,
+    ownerId: lease.ownerId,
+    acquiredAt: lease.acquiredAt,
+    renewedAt: lease.renewedAt,
+    expiresAt: lease.expiresAt,
+    revision: lease.revision,
+    active: expiresAt > nowMs
   };
 }
