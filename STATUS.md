@@ -49,8 +49,9 @@ Final verification:
 
 ## Remaining platform work
 
-- [ ] richer operational visualization/filtering
+- [ ] v2.9 operational filtering feature merge and final CI.
 - [ ] additional capability packs and external integrations beyond the current foundations
+- [ ] richer operational visualization beyond filtering and summary cards
 
 ## Verification rule
 
