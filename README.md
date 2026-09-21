@@ -4,9 +4,9 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v0.5-dev integration milestone is verified on main.**
+**v0.6-dev proof CLI hardening is in progress.**
 
-The next hardening branch, `feature/v0.6-proof-cli`, promotes proof integrity into the user-facing CLI: generated proof files carry a SHA-256 integrity manifest and `workctl verify` validates it, including explicit tamper detection.
+The active branch, `feature/v0.6-proof-cli`, promotes proof integrity into the user-facing CLI: generated proof files carry a SHA-256 integrity manifest and `workctl verify` validates it, including explicit tamper detection and manifest metadata checks.
 
 ## Core loop
 
@@ -29,6 +29,7 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 
 - `workctl run` emits an integrity manifest with the proof.
 - `workctl verify` validates the manifest when present.
+- Integrity metadata is checked for version, algorithm, work identity, and digest shape.
 - Tampered proof content returns an integrity-specific failure.
 - Legacy proofs without an integrity manifest remain readable.
 
