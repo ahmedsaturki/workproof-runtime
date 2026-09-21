@@ -11,16 +11,19 @@ const { registerPublicationPack } = require("../../packs/src/publication-pack.js
 const { registerLocalBrowserPack } = require("../../packs/src/browser-local-pack.js");
 const { buildProofBundle } = require("../../evidence/src/bundle.js");
 const { buildIntegrityManifest, verifyProofIntegrity } = require("../../evidence/src/integrity.js");
-const { generateProofKeyPair, signProof, verifyProofSignature } = require("../../evidence/src/signature.js");
+const { generateProofKeyPair, signProof, verifyProofSignature, proofKeyId } = require("../../evidence/src/signature.js");
+const { loadTrustPolicy, saveTrustPolicy, trustKey, revokeKey, evaluateProofTrust } = require("../../evidence/src/trust.js");
 
 function usage(): void {
   process.stdout.write(`workctl
   run <mission.json>
   inspect <proof.json>
-  verify <proof.json>
+  verify <proof.json> [trust-policy.json] [--require-trusted]
   summarize <proof.json>
   keygen <private.pem> <public.pem>
   sign <proof.json> <private.pem>
+  trust-add <public.pem> <trust-policy.json> [label]
+  trust-revoke <key-id> <trust-policy.json> [reason]
 `);
 }
 
@@ -40,6 +43,21 @@ function writeKey(path: string, content: string, mode: number): void {
   fs.chmodSync(path, mode);
 }
 
+function trustAdd(publicPath: string, policyPath: string, label?: string): void {
+  const policy = loadTrustPolicy(policyPath);
+  const publicKey = fs.readFileSync(publicPath, "utf8");
+  const record = trustKey(policy, publicKey, label);
+  saveTrustPolicy(policyPath, policy);
+  process.stdout.write(JSON.stringify({ policy: policyPath, keyId: record.keyId, state: record.state, label: record.label ?? null }, null, 2) + "\n");
+}
+
+function trustRevoke(keyId: string, policyPath: string, reason?: string): void {
+  const policy = loadTrustPolicy(policyPath);
+  const record = revokeKey(policy, keyId, reason);
+  saveTrustPolicy(policyPath, policy);
+  process.stdout.write(JSON.stringify({ policy: policyPath, keyId: record.keyId, state: record.state, reason: record.reason ?? null }, null, 2) + "\n");
+}
+
 function generateKeys(privatePath: string, publicPath: string): void {
   if (privatePath === publicPath) throw new Error("Private and public key paths must differ");
   if (fs.existsSync(privatePath) || fs.existsSync(publicPath)) {
@@ -51,7 +69,7 @@ function generateKeys(privatePath: string, publicPath: string): void {
   process.stdout.write(JSON.stringify({
     privateKey: privatePath,
     publicKey: publicPath,
-    keyId: require("../../evidence/src/signature.js").proofKeyId(pair.publicKey)
+    keyId: proofKeyId(pair.publicKey)
   }, null, 2) + "\n");
 }
 
@@ -100,7 +118,7 @@ async function runMission(file: string): Promise<void> {
   if (work.status !== "verified") process.exitCode = 2;
 }
 
-const [, , command, firstArg, secondArg] = process.argv;
+const [, , command, firstArg, secondArg, thirdArg] = process.argv;
 if (!command) {
   usage();
   process.exitCode = 1;
@@ -108,6 +126,18 @@ if (!command) {
   if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
   else {
     try { generateKeys(firstArg, secondArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+} else if (command === "trust-add") {
+  if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
+  else {
+    try { trustAdd(firstArg, secondArg, thirdArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+} else if (command === "trust-revoke") {
+  if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
+  else {
+    try { trustRevoke(firstArg, secondArg, thirdArg); }
     catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "sign") {
@@ -131,6 +161,8 @@ if (!command) {
       process.stdout.write(`${data.work.status}: ${data.work.objective}\nEffects: ${data.effects.length}\nArtifacts: ${data.artifacts.length}\nEvents: ${data.events.length}\n`);
     } else if (command === "verify") {
       const status = data.work?.status ?? data.verification?.status ?? "unverified";
+      const trustPolicyPath = secondArg && !secondArg.startsWith("--") ? secondArg : undefined;
+      const requireTrusted = [secondArg, thirdArg].includes("--require-trusted");
       let exitCode = 0;
       if (data.integrity) {
         const valid = verifyProofIntegrity(proofBundleFromFile(data), data.integrity);
@@ -144,8 +176,9 @@ if (!command) {
         process.stdout.write("integrity=not-present; ");
       }
 
+      let signatureValid = false;
       if (data.signature) {
-        const signatureValid = verifyProofSignature(data, data.signature);
+        signatureValid = verifyProofSignature(data, data.signature);
         if (!signatureValid) {
           process.stdout.write("signature=invalid; ");
           exitCode = exitCode || 4;
@@ -156,7 +189,15 @@ if (!command) {
         process.stdout.write("signature=not-present; ");
       }
 
-      process.stdout.write(`status=${status}\n`);
+      let trustState = "not-present";
+      if (data.signature && trustPolicyPath) {
+        const policy = loadTrustPolicy(trustPolicyPath);
+        trustState = evaluateProofTrust(policy, data.signature);
+      } else if (data.signature) {
+        trustState = "unknown";
+      }
+      process.stdout.write(`trust=${trustState}; status=${status}\n`);
+      if (requireTrusted && trustState !== "trusted") exitCode = exitCode || 5;
       if (exitCode === 0 && status !== "verified") exitCode = 2;
       process.exitCode = exitCode;
     } else {
