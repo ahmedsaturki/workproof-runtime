@@ -41,6 +41,7 @@ interface WorkerChild {
   once(event: "error", listener: (error: Error) => void): WorkerChild;
   send(message: string): void;
   kill(): boolean;
+  once(event: "exit", listener: (code: number | null, signal: string | null) => void): WorkerChild;
 }
 
 interface WorkerHandle {
@@ -76,16 +77,42 @@ function startWorker(db: string, workerId: string, resourceId: string, ttlMs: nu
   }) as unknown as WorkerChild;
 
   const ready = new Promise<void>((resolve, reject) => {
+    let settled = false;
+    const timeout = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      reject(new Error(`Worker ${workerId} did not become ready within 10000ms`));
+      if (child.connected) child.kill();
+    }, 10_000);
+
     const onMessage = (message: WorkerMessage): void => {
       if (message.type === "ready") {
         child.off("message", onMessage);
-        resolve();
-      } else if (message.type === "error") {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timeout);
+          resolve();
+        }
+      } else if (message.type === "error" && !settled) {
+        settled = true;
+        clearTimeout(timeout);
         reject(new Error(message.error));
       }
     };
+
     child.on("message", onMessage);
-    child.once("error", reject);
+    child.once("error", (error: Error) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      reject(error);
+    });
+    child.once("exit", (code, signal) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      reject(new Error(`Worker ${workerId} exited before ready (code=${code ?? "null"}, signal=${signal ?? "null"})`));
+    });
   });
 
   return { child, ready };
@@ -93,16 +120,42 @@ function startWorker(db: string, workerId: string, resourceId: string, ttlMs: nu
 
 function awaitResult(handle: WorkerHandle): Promise<WorkerResultMessage> {
   return new Promise<WorkerResultMessage>((resolve, reject) => {
+    let settled = false;
+    const timeout = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      reject(new Error("Worker did not return an acquisition result within 10000ms"));
+      if (handle.child.connected) handle.child.kill();
+    }, 10_000);
+
     const onMessage = (message: WorkerMessage): void => {
       if (message.type === "result") {
         handle.child.off("message", onMessage);
-        resolve(message);
-      } else if (message.type === "error") {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timeout);
+          resolve(message);
+        }
+      } else if (message.type === "error" && !settled) {
+        settled = true;
+        clearTimeout(timeout);
         reject(new Error(message.error));
       }
     };
+
     handle.child.on("message", onMessage);
-    handle.child.once("error", reject);
+    handle.child.once("error", (error: Error) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      reject(error);
+    });
+    handle.child.once("exit", (code, signal) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      reject(new Error(`Worker exited before result (code=${code ?? "null"}, signal=${signal ?? "null"})`));
+    });
   });
 }
 
@@ -142,12 +195,14 @@ test("persistent lease state survives reopening and preserves owner identity", (
 
 test("six independent Node processes cannot both acquire the same persistent lease", async () => {
   const { dir, db } = tempDb("workproof-cross-process-");
-  const workers: WorkerHandle[] = Array.from({ length: 6 }, (_, index) =>
-    startWorker(db, `worker-${String.fromCharCode(97 + index)}`, "shared-work", 60_000)
-  );
+  const workers: WorkerHandle[] = [];
 
   try {
-    await Promise.all(workers.map((worker: WorkerHandle) => worker.ready));
+    for (let index = 0; index < 6; index += 1) {
+      const worker = startWorker(db, `worker-${String.fromCharCode(97 + index)}`, "shared-work", 60_000);
+      workers.push(worker);
+      await worker.ready;
+    }
     const resultPromises = workers.map((worker: WorkerHandle) => awaitResult(worker));
     for (const worker of workers) worker.child.send("go");
     const results: WorkerResultMessage[] = await Promise.all(resultPromises);
