@@ -78,6 +78,21 @@ function validate(input: GitLocalChangeInput): void {
   if (runGitDir(remotePath, ["rev-parse", "--is-bare-repository"]) !== "true") throw new Error("remotePath is not a bare Git repository");
 }
 
+function assertTargetWithinRepo(repoPath: string, target: string): void {
+  const repoRoot = fs.realpathSync(path.resolve(repoPath));
+  const lexicalTarget = path.resolve(target);
+  if (!(lexicalTarget === repoRoot || lexicalTarget.startsWith(repoRoot + path.sep))) throw new Error("filePath escapes repository root");
+  if (fs.existsSync(lexicalTarget)) {
+    const realTarget = fs.realpathSync(lexicalTarget);
+    if (!(realTarget === repoRoot || realTarget.startsWith(repoRoot + path.sep))) throw new Error("filePath resolves outside repository root");
+    return;
+  }
+  let parent = path.dirname(lexicalTarget);
+  while (parent !== path.dirname(parent) && !fs.existsSync(parent)) parent = path.dirname(parent);
+  const realParent = fs.realpathSync(parent);
+  if (!(realParent === repoRoot || realParent.startsWith(repoRoot + path.sep))) throw new Error("filePath parent resolves outside repository root");
+}
+
 function evidence(input: GitLocalChangeInput, kind: string, uri: string, metadata: Record<string, string | number | boolean>): EvidenceRef {
   return { id: "git-local:" + kind + ":" + path.resolve(input.repoPath) + ":" + input.filePath, kind, uri, observedAt: new Date().toISOString(), metadata };
 }
@@ -98,7 +113,7 @@ class GitLocalChangeCapability implements Capability {
       const remoteName = input.remoteName ?? "workproof-benchmark";
       const branch = input.branch;
       const target = path.resolve(repoPath, input.filePath);
-      if (!target.startsWith(repoPath + path.sep)) throw new Error("filePath escapes repository root");
+      assertTargetWithinRepo(repoPath, target);
 
       const currentBranch = runGit(repoPath, ["symbolic-ref", "--short", "HEAD"]);
       if (currentBranch !== branch) throw new Error("working tree is on " + currentBranch + ", expected " + branch);
