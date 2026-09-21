@@ -120,6 +120,7 @@ export function loadAuthPolicy(filePath: string): RegistryAuthPolicy {
 
 export function saveAuthPolicy(filePath: string, policy: RegistryAuthPolicy): void {
   const validated = validateAuthPolicy(policy);
+  fs.mkdirSync(require("path").dirname(filePath), { recursive: true });
   const temporary = `${filePath}.tmp-${crypto.randomBytes(8).toString("hex")}`;
   fs.writeFileSync(temporary, JSON.stringify(validated, null, 2) + "\n", { encoding: "utf8", mode: 0o600 });
   fs.chmodSync(temporary, 0o600);
