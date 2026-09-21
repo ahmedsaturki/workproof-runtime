@@ -4,7 +4,7 @@ Date: 2026-09-21
 
 ## Current main
 
-**v2.5-dev worker lifecycle and safe reassignment hardening is verified on main.**
+**v2.6-dev worker-aware Studio hardening is in progress.**
 
 Merged v2.4 commit:
 77603553fff569b230a71de0b92aa3e4a6ae1342
@@ -64,13 +64,20 @@ Merged-main CI:
 - [x] feature CI #660 and merged-main CI #661
 - [x] final v2.5 audit documentation
 
+## Verified v2.5 gates
+
+- [x] worker liveness classification from heartbeat age
+- [x] safe reassignment respects authoritative leases
+- [x] worker status visibility in the control-plane read surface
+- [x] v2.5 feature and merged-main CI
+
 ## Active v2.6 target
 
-`worker-aware-studio`
+`feature/v2.6-worker-aware-studio`
 
 - read-only worker/liveness visibility in Studio
 - preserve existing Studio hardening and no direct mutation authority
-- surface active/stale/offline state without exposing filesystem internals
+- surface active/stale/offline state without exposing lease internals or filesystem paths
 
 ## Remaining platform work
 
