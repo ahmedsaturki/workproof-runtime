@@ -22,6 +22,15 @@ The tree includes:
 - durable control-plane idempotency
 - execution fencing token and stale-worker execution boundary
 
+## V2.5 additions
+
+- docs/RELEASE-GATE-V2.5.md
+- docs/FINAL-AUDIT-V2.5.md
+- packages/coordination/src/leases.ts worker liveness/reassignment semantics
+- packages/coordination/src/persistent.ts worker liveness/reassignment helpers
+- packages/control-plane/src/http.ts read-only worker status endpoint
+- test/worker-lifecycle.test.ts
+
 ## v2.3 additions
 
 - packages/control-plane/src/idempotency.ts
