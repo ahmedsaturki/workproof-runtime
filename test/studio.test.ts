@@ -332,4 +332,97 @@ test("Studio proof APIs fail closed when the vault is not configured", async () 
   }
 });
 
+
+test("Studio exposes sanitized worker liveness without becoming a mutation authority", async () => {
+  const root = tempDir("workproof-studio-workers-");
+  const workerStatuses = [
+    {
+      version: "0.1",
+      workerId: "worker-active",
+      capabilities: ["github.read", "browser"],
+      state: "active",
+      registeredAt: "2026-09-21T00:00:00.000Z",
+      lastHeartbeatAt: "2026-09-21T00:00:00.000Z",
+      liveness: "active",
+      heartbeatAgeMs: 10,
+      staleAfterMs: 1000,
+      reassignmentEligible: false
+    },
+    {
+      version: "0.1",
+      workerId: "worker-stale",
+      capabilities: ["github.read"],
+      state: "active",
+      registeredAt: "2026-09-21T00:00:00.000Z",
+      lastHeartbeatAt: "2026-09-20T23:59:00.000Z",
+      liveness: "stale",
+      heartbeatAgeMs: 61000,
+      staleAfterMs: 1000,
+      reassignmentEligible: true
+    },
+    {
+      version: "0.1",
+      workerId: "worker-offline",
+      capabilities: ["browser"],
+      state: "offline",
+      registeredAt: "2026-09-21T00:00:00.000Z",
+      lastHeartbeatAt: "2026-09-20T23:58:00.000Z",
+      liveness: "offline",
+      heartbeatAgeMs: 122000,
+      staleAfterMs: 1000,
+      reassignmentEligible: true
+    }
+  ];
+
+  const studio = await startStudio({
+    workDirectory: root,
+    port: 0,
+    workerStatusSource: {
+      listWorkerStatuses: () => workerStatuses
+    },
+    workerStaleAfterMs: 1000
+  });
+
+  try {
+    const base = `http://127.0.0.1:${studio.port}`;
+    const response = await fetch(`${base}/api/workers`);
+    assert.equal(response.status, 200);
+    const data = await response.json();
+    assert.equal(data.version, "2.6");
+    assert.equal(data.staleAfterMs, 1000);
+    assert.deepEqual(data.workers.map((worker: any) => worker.workerId), [
+      "worker-active",
+      "worker-stale",
+      "worker-offline"
+    ]);
+    assert.equal(data.workers[1].liveness, "stale");
+    assert.equal(data.workers[2].liveness, "offline");
+    assert.equal(data.workers[0].reassignmentEligible, false);
+    assert.equal(data.workers[1].reassignmentEligible, true);
+    assert.equal(data.workers[0].metadata, undefined);
+    assert.equal(data.workers[0].leaseId, undefined);
+
+    const page = await fetch(base);
+    assert.equal(page.status, 200);
+    assert.match(await page.text(), /Workers/);
+  } finally {
+    await studio.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+
+  const unconfiguredRoot = tempDir("workproof-studio-workers-off-");
+  const unconfigured = await startStudio({
+    workDirectory: unconfiguredRoot,
+    port: 0
+  });
+  try {
+    const response = await fetch(`http://127.0.0.1:${unconfigured.port}/api/workers`);
+    assert.equal(response.status, 503);
+    assert.equal((await response.json()).error, "worker-status-not-configured");
+  } finally {
+    await unconfigured.close();
+    fs.rmSync(unconfiguredRoot, { recursive: true, force: true });
+  }
+});
+
 export {};
