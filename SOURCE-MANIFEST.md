@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The active v1.4.1 persistent-lease branch contains **99 required paths** enforced by scripts/verify-source-tree.js.
+The active v1.4.1 persistent-lease branch contains **100 required paths** enforced by scripts/verify-source-tree.js.
 
 The v1.4 foundation adds:
 - docs/RELEASE-GATE-V1.4.md
@@ -10,6 +10,7 @@ The v1.4 foundation adds:
 - test/leases.test.ts
 
 The v1.4.1 persistent lease gate adds:
+- docs/RELEASE-GATE-V1.4.1.md
 - apps/lease-worker.ts
 - packages/coordination/src/persistent.ts
 - test/persistent-leases.test.ts
