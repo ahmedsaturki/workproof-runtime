@@ -47,7 +47,22 @@ V3.1 additions include:
 ## V3.4 benchmark branch
 
 - feature branch: feature/v3.4-operator-benchmark
-- implementation and final CI evidence: pending
+- implementation merge commit: fe662d5bb5337bde18772f22864434935d59f66f
+- feature CI: #864
+- merged-main CI: #866
+- final documentation/source-tree closeout: pending
+
+## v3.4 verified benchmark evidence
+
+- M001-M005: all verified
+- verifiedCompletionRate: 1
+- falseDoneCount: 0
+- duplicateExternalEffectCount: 0
+- ambiguousOutcomeResolvedCount: 1
+- capabilitySubstitutionCount: 1
+- evidenceCompleteRate: 1
+- humanInterventionCount: 0
+- merged-main benchmark artifact: workflow run #866
 
 ## Verified main
 
