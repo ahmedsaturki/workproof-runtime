@@ -2,7 +2,12 @@
 
 ## Required source tree
 
-The verified v1.3 main line contains **93 required paths** enforced by scripts/verify-source-tree.js.
+The active v1.4 branch contains **96 required paths** enforced by scripts/verify-source-tree.js.
+
+The v1.4 foundation adds:
+- docs/RELEASE-GATE-V1.4.md
+- packages/coordination/src/leases.ts
+- test/leases.test.ts
 
 The browser-reliability correction adds:
 - scripts/chromium-cdp-smoke.js (operational CI preflight; intentionally not part of the required source-path list)
@@ -25,8 +30,8 @@ The v1.2 trust-sync foundation remains covered by:
 - v1.2 merge commit: b6ef830d79dc432314a4da0f6e143ddb3a8b6f61
 - v1.3 retention merge commit: db5c8fa296f13828ccc461c60916457b87af7168
 - browser reliability merge commit: 6c01f201f6cec32ab6fa34a01fe878d3f47c5b0b
-- verified merged-main CI: run #358
-- result: source audit + dependency audit + 9/9 retention tests + 23/23 test files + benchmark/demo/CLI/live GitHub smoke all passed
+- verified merged-main CI: run #360
+- v1.3 result: source audit + dependency audit + 9/9 retention tests + 23/23 test files + benchmark/demo/CLI/live GitHub smoke all passed.
 
 ## Verification discipline
 

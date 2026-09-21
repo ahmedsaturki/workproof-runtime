@@ -6,6 +6,8 @@ Date: 2026-09-21
 
 **v1.3 retention, reachability, garbage collection, and browser-acceptance reliability are verified on main.**
 
+v1.4 worker-ownership foundation is active on `feature/v1.4-leases-workers`.
+
 Main commit:
 6c01f201f6cec32ab6fa34a01fe878d3f47c5b0b
 
@@ -34,6 +36,7 @@ Verification:
 **v1.4 — distributed work execution and control-plane foundations**
 
 The next milestone is intentionally separate from v1.3. It should address:
+- deterministic lease and worker-ownership semantics
 - durable remote worker/process execution boundaries
 - a minimal authenticated REST/control-plane surface
 - SDK-level Work Object and proof operations
