@@ -7,9 +7,9 @@ Date: 2026-09-22
 **v3.4 benchmark and v3.4.0-dev.2 distribution path are verified.**
 
 Latest main:
-`8d899f9a9abe0ef1a3aca316d717cc325b00b6c0`
+`0f06a763f4fe2bc74a014fa1e39bc70bcaaaaed6`
 
-The latest three main commits after the release target changed only distribution workflow logic; the runtime source included in the release remains unchanged from tag target `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`.
+Since the release target `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`, main has added distribution hardening, documentation corrections, and deterministic persistent-lease test hardening. The published v3.4.0-dev.2 runtime source remains pinned to the release target.
 
 ## Verified main gates
 
@@ -24,7 +24,7 @@ The latest three main commits after the release target changed only distribution
 - [x] CLI proof verification
 - [x] CLI mission execution
 - [x] live GitHub integration smoke
-- [x] final main CI for the current main freeze commit
+- [x] Main CI #918 for latest main
 
 ## Verified v3.3 gates
 
