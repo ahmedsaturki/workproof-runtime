@@ -4,13 +4,15 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 
-const { WorkStore } = require("../packages/core/src/work.js");
-const { CapabilityRegistry } = require("../packages/capabilities/src/registry.js");
-const { PersistentLeaseStore } = require("../packages/coordination/src/persistent.js");
-const { JsonWorkRepository } = require("../packages/storage/src/json.js");
-const { SagaRecoveryCoordinator } = require("../packages/runtime/src/saga-recovery.js");
+import { WorkStore } from "../packages/core/src/work";
+import { CapabilityRegistry } from "../packages/capabilities/src/registry";
+import { PersistentLeaseStore } from "../packages/coordination/src/persistent";
+import { JsonWorkRepository } from "../packages/storage/src/json";
+import { SagaRecoveryCoordinator } from "../packages/runtime/src/saga-recovery";
+import type { Capability, CapabilityRequest, EffectRecord, LeaseAcquireResult, LeaseClock, SagaRecord, WorkEvent, WorkObject } from "../packages/core/src/types";
 
-import type { Capability, CapabilityRequest, EffectRecord, WorkEvent, WorkObject, SagaRecord, LeaseClock } from "../packages/core/src/types";
+import type { Capability, CapabilityRequest, EffectRecord, SagaRecord, WorkEvent, WorkObject } from "../packages/core/src/types";
+import type { LeaseAcquireResult, LeaseClock } from "../packages/coordination/src/leases";
 
 class FakeClock implements LeaseClock {
   constructor(public value: number = 1_700_000_000_000) {}
