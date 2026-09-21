@@ -74,7 +74,7 @@ jobs:
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
         run: |
           set -euo pipefail
-          PACKAGE_VERSION="$(node -p "require(\'./package.json\').version")"
+          PACKAGE_VERSION="$(node -p 'require(\"./package.json\").version')"
           NOTES_FILE="docs/RELEASE-${PACKAGE_VERSION}.md"
           if gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
             echo "Release ${RELEASE_TAG} already exists; continuing idempotently."
