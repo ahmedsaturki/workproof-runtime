@@ -24,11 +24,14 @@ function normalizeBaseUrl(registryUrl: string): string {
   return url.toString().replace(/\/$/, "");
 }
 
-async function request(registryUrl: string, method: string, path: string, body?: unknown): Promise<any> {
+async function request(registryUrl: string, method: string, path: string, body?: unknown, token?: string): Promise<any> {
   const base = normalizeBaseUrl(registryUrl);
   const response = await fetch(`${base}${path}`, {
     method,
-    headers: body === undefined ? {} : { "content-type": "application/json" },
+    headers: {
+      ...(body === undefined ? {} : { "content-type": "application/json" }),
+      ...(token ? { authorization: `Bearer ${token}` } : {})
+    },
     body: body === undefined ? undefined : JSON.stringify(body)
   });
   const raw = await response.text();
@@ -42,24 +45,24 @@ async function request(registryUrl: string, method: string, path: string, body?:
   return data;
 }
 
-export async function publishProofToRegistry(registryUrl: string, proof: Record<string, unknown>): Promise<Record<string, unknown>> {
+export async function publishProofToRegistry(registryUrl: string, proof: Record<string, unknown>, token?: string): Promise<Record<string, unknown>> {
   assertValidProof(proof);
   const expectedDigest = digestProofBundle(proofBundle(proof));
-  const result = await request(registryUrl, "POST", "/v1/proofs", proof);
+  const result = await request(registryUrl, "POST", "/v1/proofs", proof, token);
   if (result?.digest !== expectedDigest) throw new Error("Registry returned a mismatched proof digest");
   return result;
 }
 
-export async function getProofFromRegistry(registryUrl: string, digest: string): Promise<Record<string, unknown>> {
+export async function getProofFromRegistry(registryUrl: string, digest: string, token?: string): Promise<Record<string, unknown>> {
   if (!/^[0-9a-f]{64}$/.test(digest)) throw new Error("Proof digest must be a lowercase SHA-256 hex value");
-  const result = await request(registryUrl, "GET", `/v1/proofs/${digest}/content`);
+  const result = await request(registryUrl, "GET", `/v1/proofs/${digest}/content`, undefined, token);
   assertValidProof(result);
   if (digestProofBundle(proofBundle(result)) !== digest) throw new Error("Registry returned a mismatched proof digest");
   return result;
 }
 
-export async function listProofsFromRegistry(registryUrl: string): Promise<Record<string, unknown>[]> {
-  const result = await request(registryUrl, "GET", "/v1/proofs");
+export async function listProofsFromRegistry(registryUrl: string, token?: string): Promise<Record<string, unknown>[]> {
+  const result = await request(registryUrl, "GET", "/v1/proofs", undefined, token);
   if (!Array.isArray(result?.records)) throw new Error("Registry returned an invalid proof list");
   return result.records;
 }
