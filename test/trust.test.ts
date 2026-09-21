@@ -38,6 +38,14 @@ test("trust policy distinguishes unknown identities and mismatched key material"
   assert.equal(evaluateProofTrust(policy), "not-present");
 });
 
+test("trust enrollment rejects non-Ed25519 public keys", () => {
+  const policy = createTrustPolicy();
+  assert.throws(
+    () => trustKey(policy, "-----BEGIN PUBLIC KEY-----\nnot-a-key\n-----END PUBLIC KEY-----\n"),
+    /Invalid trusted|Failed to read|DECODER|key/
+  );
+});
+
 test("valid signature does not imply trusted identity", () => {
   const pair = generateProofKeyPair();
   const proof = { version: "0.1", work: { id: "trust-proof" }, effects: [], artifacts: [], verification: null, events: [] };
