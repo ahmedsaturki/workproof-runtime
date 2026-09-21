@@ -73,3 +73,17 @@ Operational health, local SQLite query/upsert, independent verification, proof i
 - CLI registers the pack.
 - source audit, dependency audit, retention, full suite, benchmark, demo, CLI verification, live GitHub smoke
 - green feature CI and green merged-main CI
+
+
+## 12. v3.4 Executable Operator Benchmark
+
+The v3.4 acceptance target turns the benchmark into executable end-to-end work with induced failure modes.
+
+- M001 research-to-artifact remains executable.
+- M002 HTTP discovery remains executable.
+- M003 Git change executes bounded inspect, mutate, test, commit, push, and independent remote-state verification against a controlled local bare remote.
+- M004 ambiguous external effect loses acknowledgement after the server has accepted the write; reconciliation must discover the effect and prevent a duplicate write.
+- M005 repeated primary ambiguity must trigger compatible capability substitution followed by independent verification.
+- The benchmark reports verified completion, false-done, duplicate-effect, ambiguity resolution, substitution, evidence completeness, and human intervention metrics.
+- The benchmark fails closed when required verification is not satisfied.
+- Feature CI and merged-main CI must be green.
