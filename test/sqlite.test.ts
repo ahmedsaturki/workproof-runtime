@@ -64,7 +64,7 @@ test("SQLite query pack reads a real file-backed database and independently veri
 
     assert.equal(work.status, "verified");
     assert.ok(work.effects[0].receipt?.data?.rows?.length === 2);
-    assert.ok(work.artifacts.some(a => a.kind === "sqlite-verification"));
+    assert.ok(work.artifacts.some((a: any) => a.kind === "sqlite-verification"));
   } finally {
     fs.rmSync(fixture.dir, { recursive: true, force: true });
   }
@@ -82,7 +82,7 @@ test("SQLite query pack bounds output and rejects multi-statement/non-SELECT inp
       input: { databasePath: fixture.databasePath, sql: "SELECT id FROM items ORDER BY id", maxRows: 2 }
     }, context);
     assert.equal(bounded.status, "accepted");
-    assert.deepEqual(bounded.data.rows.map(r => r.id), [1, 2]);
+    assert.deepEqual(bounded.data.rows.map((r: any) => r.id), [1, 2]);
     assert.equal(bounded.data.truncated, true);
 
     const multi = await capability.execute({
@@ -143,7 +143,7 @@ test("SQLite upsert is local_write, idempotent by declared conflict key, and ind
       riskClass: "local_write"
     }]);
     assert.equal(work.status, "verified");
-    assert.ok(work.artifacts.some(a => a.kind === "sqlite-upsert-verification"));
+    assert.ok(work.artifacts.some((a: any) => a.kind === "sqlite-upsert-verification"));
   } finally {
     fs.rmSync(fixture.dir, { recursive: true, force: true });
   }
