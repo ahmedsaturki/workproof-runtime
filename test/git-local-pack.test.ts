@@ -74,20 +74,27 @@ test("local git capability rejects unsafe file paths and unsupported operations 
     const base = { repoPath: f.repo, remotePath: f.remote, branch: "main", filePath: "safe.txt", content: "ok; touch PWNED", commitMessage: "safe" };
     const invalid = await capability.execute({ operation: "update_commit_push", input: { ...base, filePath: "../escape.txt" } }, { work: {}, effect: undefined, log: () => {} });
     const unsupported = await capability.execute({ operation: "run_shell", input: base }, { work: {}, effect: undefined, log: () => {} });
-    const outside = fs.mkdtempSync(path.join(os.tmpdir(), "workproof-git-outside-"));
-    fs.symlinkSync(outside, path.join(f.repo, "linked-dir"), "dir");
-    const symlinkEscape = await capability.execute({
-      operation: "update_commit_push",
-      input: { ...base, filePath: "linked-dir/escaped.txt", content: "must not escape" }
-    }, { work: {}, effect: undefined, log: () => {} });
     const literal = await capability.execute({ operation: "update_commit_push", input: base }, { work: {}, effect: undefined, log: () => {} });
     assert.equal(invalid.status, "rejected");
-    assert.equal(symlinkEscape.status, "rejected");
-    assert.equal(fs.existsSync(path.join(outside, "escaped.txt")), false);
     assert.equal(unsupported.status, "rejected");
     assert.equal(literal.status, "accepted");
     assert.equal(fs.existsSync(path.join(f.repo, "PWNED")), false);
     assert.equal(git(f.remote, ["show", "main:safe.txt"]), "ok; touch PWNED");
+
+    const outside = fs.mkdtempSync(path.join(os.tmpdir(), "workproof-git-outside-"));
+    const linkedDir = path.join(f.repo, "linked-dir");
+    fs.symlinkSync(outside, linkedDir, "dir");
+    try {
+      const symlinkEscape = await capability.execute({
+        operation: "update_commit_push",
+        input: { ...base, filePath: "linked-dir/escaped.txt", content: "must not escape" }
+      }, { work: {}, effect: undefined, log: () => {} });
+      assert.equal(symlinkEscape.status, "rejected");
+      assert.equal(fs.existsSync(path.join(outside, "escaped.txt")), false);
+    } finally {
+      fs.unlinkSync(linkedDir);
+      fs.rmSync(outside, { recursive: true, force: true });
+    }
   } finally {
     fs.rmSync(f.root, { recursive: true, force: true });
   }
