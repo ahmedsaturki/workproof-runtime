@@ -114,6 +114,8 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
   fs.mkdirSync(options.vaultDir, { recursive: true });
 
   const auditPath = path.join(options.vaultDir, "auth-events.jsonl");
+  if (!fs.existsSync(auditPath)) fs.writeFileSync(auditPath, "", { encoding: "utf8", mode: 0o600 });
+  fs.chmodSync(auditPath, 0o600);
   const audit = (entry: Record<string, unknown>): void => {
     fs.appendFileSync(auditPath, JSON.stringify(entry) + "\n", "utf8");
   };
