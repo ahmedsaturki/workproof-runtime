@@ -6,6 +6,7 @@ import type { WorkEngine, WorkStep } from "./engine";
 export interface RecoverableWorkRepository {
   load(id: string): WorkObject;
   list(): string[];
+  save?(work: WorkObject): string;
 }
 
 export interface RecoveryLeaseAuthority {
@@ -78,8 +79,7 @@ export class WorkRecoveryCoordinator {
         .map((lease) => lease.leaseId)
     });
 
-    const path = this.repository.save?.(work);
-    if (path) void path;
+    this.repository.save?.(work);
 
     const recovered = await args.engine.run(work, args.steps);
     this.store.event(work, "recovery.finished", "Persisted work recovery attempt finished", {
