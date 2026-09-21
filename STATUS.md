@@ -4,10 +4,13 @@ Date: 2026-09-21
 
 ## Current main
 
-**v2.4-dev distributed execution fencing is verified on main.**
+**v2.5-dev worker lifecycle and safe reassignment hardening is verified on main.**
 
 Merged v2.4 commit:
 77603553fff569b230a71de0b92aa3e4a6ae1342
+
+Merged v2.5 commit:
+234e4397ae8e98acf1fcdf5fd57c42188582ae8f
 
 Merged-main CI:
 - CI #653: success
@@ -52,16 +55,22 @@ Merged-main CI:
 - [x] durable control mutation idempotency
 - [x] execution fencing token boundary
 
-## Active next gate
+## Verified v2.5 gates
 
-**v2.5 — broader distributed worker/control-plane hardening**
+- [x] worker liveness classification from heartbeat age
+- [x] safe reassignment eligibility respects active leases
+- [x] read-only worker status exposure through the control-plane surface
+- [x] persistent worker lifecycle behavior across process restart
+- [x] feature CI #660 and merged-main CI #661
+- [x] final v2.5 audit documentation
 
-Focus:
-- deterministic worker lifecycle and shutdown behavior
-- control-plane concurrency/ownership hardening beyond the current mutation ledger
-- worker registration/heartbeat visibility
-- explicit stale-worker detection and safe reassignment semantics above the execution fence
-- cross-process recovery observability
+## Active v2.6 target
+
+`worker-aware-studio`
+
+- read-only worker/liveness visibility in Studio
+- preserve existing Studio hardening and no direct mutation authority
+- surface active/stale/offline state without exposing filesystem internals
 
 ## Remaining platform work
 
