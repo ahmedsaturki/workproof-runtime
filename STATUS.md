@@ -24,7 +24,7 @@ The latest three main commits after the release target changed only distribution
 - [x] CLI proof verification
 - [x] CLI mission execution
 - [x] live GitHub integration smoke
-- [x] final main CI #893
+- [x] final main CI #912
 
 ## Verified v3.3 gates
 
@@ -60,7 +60,7 @@ M001-M005 all verify successfully:
 - tag: `v3.4.0-dev.2`
 - release id: 393311702
 - target commit: `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`
-- release verification run: #21 (success)
+- release verification run: #30 (success)
 - assets: 5/5 present and re-downloaded
 - SHA256 verification: success
 - published benchmark semantic verification: success
@@ -70,7 +70,7 @@ M001-M005 all verify successfully:
 - image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.2`
 - digest: `sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`
 - immutable tag: `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`
-- container verification run: #25 (success)
+- container verification run: #27 (success)
 - OCI version/revision checks: success
 - published-image `/health`: success
 - anonymous GHCR pull: success

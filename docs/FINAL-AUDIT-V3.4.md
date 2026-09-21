@@ -59,12 +59,12 @@ Date: 2026-09-21
 
 - GitHub Release: `v3.4.0-dev.2`, release id 393311702.
 - Release target: `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`.
-- Post-publication release verification run #21: success.
+- Post-publication release verification run #30: success.
 - Release assets: 5/5, SHA256 re-check: success.
 - Published benchmark semantic verification: success.
 - GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.2`.
 - GHCR digest: `sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`.
-- Container verification run #25: success.
+- Container verification run #27: success.
 - OCI version/revision verification: success.
 - Published-image `/health` smoke: success.
 - Main CI remains green after distribution hardening.

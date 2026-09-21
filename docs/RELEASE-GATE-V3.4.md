@@ -50,11 +50,11 @@ The final distribution-ready v3.4 source tree contains **179 required paths**, e
 
 - GitHub Release id: 393311702.
 - Release target: `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`.
-- Release verification run: #21 (success).
+- Release verification run: #30 (success).
 - GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.2`.
 - GHCR digest: `sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`.
-- Container verification run: #25 (success).
-- Main CI: latest 900-series verification passed.
+- Container verification run: #27 (success).
+- Main CI #912: success.
 
 ## Verification rule
 

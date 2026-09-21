@@ -7,8 +7,8 @@ Coherent prerelease for the verified v3.4 operator benchmark and self-host distr
 - GitHub Release id: 393311702
 - tag: `v3.4.0-dev.2`
 - target commit: `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`
-- release verification run: #21 (success)
-- final main CI: #893 (success)
+- release verification run: #30 (success)
+- final main CI: #912 (success)
 
 The release assets were published from the release target and then re-downloaded and verified after publication.
 
@@ -39,7 +39,7 @@ The release assets were published from the release target and then re-downloaded
 
 - image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.2`
 - digest: `sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`
-- container verification run: #25 (success)
+- container verification run: #27 (success)
 - anonymous GHCR pull: success
 - version tag and immutable `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d` tag matched by digest
 
