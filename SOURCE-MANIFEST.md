@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The current v2.0 Studio branch contains **117 required paths** enforced by scripts/verify-source-tree.js.
+The current main v2.0 closeout contains **118 required paths** enforced by scripts/verify-source-tree.js.
 
 The tree includes:
 - proof registry and authenticated transport
@@ -28,6 +28,7 @@ The tree includes:
 
 - apps/studio.ts
 - docs/RELEASE-GATE-V2.0.md
+- docs/FINAL-AUDIT-V2.0.md
 - test/studio.test.ts
 
 ## Verified main milestone evidence
@@ -44,3 +45,11 @@ The tree includes:
 ## Verification discipline
 
 Source-tree completeness, compilation, dependency audit, retention lifecycle, full integration suite, benchmark, demo, CLI, live smoke, and Studio acceptance are separate gates. Passing one does not imply the others passed.
+
+## Verified v2.0 main evidence
+
+- v2.0 Studio merge: 0e29eb04addea53ae399887612314bd49ffa341a
+- feature CI #547: success
+- merged-main CI #548: success
+- Studio acceptance: passed
+- source audit: passed
