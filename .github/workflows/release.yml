@@ -120,7 +120,7 @@ jobs:
           RELEASE_MANIFEST_COMMIT="$(awk -F': ' '/Commit:/ {print $2; exit}' release-verify/RELEASE-MANIFEST.txt | tr -d '\\r')"
           test "${RELEASE_MANIFEST_COMMIT}" = "${TAG_COMMIT}"
 
-          node <<'NODE
+          node <<'NODE'
           const fs = require("fs");
           const tag = process.env.RELEASE_TAG;
           const result = JSON.parse(fs.readFileSync("release-verify/workproof-benchmark-" + tag + ".json", "utf8"));
