@@ -37,7 +37,7 @@ test("retention plan keeps pinned and retained proofs and protects reachable art
   const record = publishProof(p.proofPath, vault);
   setRetentionClass(vault, record.digest, "proof", "long", "alpha");
   const inventory = inventoryVault(vault);
-  assert.ok(inventory.some((x) => x.kind === "proof" && x.protected));
+  assert.ok(inventory.some((x: any) => x.kind === "proof" && x.protected));
   const plan = planGarbageCollection(vault, { namespace: "alpha" });
   assert.equal(plan.candidates.length, 0);
 });
@@ -52,8 +52,8 @@ test("dry-run reports an expired proof and orphan artifact without deleting data
   index.records[0].publishedAt = "2025-01-01T00:00:00.000Z";
   saveVaultIndex(vault, index);
   const plan = planGarbageCollection(vault);
-  assert.ok(plan.candidates.some((x) => x.kind === "proof" && x.digest === record.digest && x.reason === "expired"));
-  assert.ok(plan.candidates.some((x) => x.kind === "artifact" && x.reason === "orphan"));
+  assert.ok(plan.candidates.some((x: any) => x.kind === "proof" && x.digest === record.digest && x.reason === "expired"));
+  assert.ok(plan.candidates.some((x: any) => x.kind === "artifact" && x.reason === "orphan"));
   assert.equal(fs.existsSync(record.proofPath), true);
 });
 
@@ -90,12 +90,12 @@ test("shared artifacts remain reachable while one proof is retained", () => {
   const first = publishProof(proof("first"), vault);
   const second = publishProof(proof("second"), vault);
   const index = loadVaultIndex(vault);
-  index.records.find((x) => x.digest === first.digest).publishedAt = "2025-01-01T00:00:00.000Z";
+  index.records.find((x: any) => x.digest === first.digest).publishedAt = "2025-01-01T00:00:00.000Z";
   saveVaultIndex(vault, index);
   setRetentionClass(vault, second.digest, "proof", "long");
   const artifactDigest = sha256File(common);
   const plan = planGarbageCollection(vault);
-  assert.equal(plan.candidates.some((x) => x.kind === "artifact" && x.digest === artifactDigest), false);
+  assert.equal(plan.candidates.some((x: any) => x.kind === "artifact" && x.digest === artifactDigest), false);
 });
 
 test("corrupt proofs and artifacts are never auto-deleted", () => {
@@ -109,8 +109,8 @@ test("corrupt proofs and artifacts are never auto-deleted", () => {
   saveVaultIndex(vault, index);
   fs.writeFileSync(record.proofPath, "tampered\n", "utf8");
   const plan = planGarbageCollection(vault);
-  assert.equal(plan.candidates.some((x) => x.kind === "proof" && x.digest === record.digest), false);
-  assert.ok(plan.warnings.some((x) => x.includes(record.digest)));
+  assert.equal(plan.candidates.some((x: any) => x.kind === "proof" && x.digest === record.digest), false);
+  assert.ok(plan.warnings.some((x: any) => x.includes(record.digest)));
 });
 
 test("execute garbage collection uses an index-first journal and removes expired content", () => {
@@ -155,7 +155,7 @@ test("retention inventory does not follow symlinks outside the vault", () => {
   const fakeDigest = sha256File(outside);
   fs.symlinkSync(outside, path.join(vault, "artifacts", fakeDigest));
   const inventory = inventoryVault(vault);
-  assert.equal(inventory.some((x) => x.digest === fakeDigest), false);
+  assert.equal(inventory.some((x: any) => x.digest === fakeDigest), false);
 });
 
 test("namespace scoped collection is conservative and does not delete unscoped objects", () => {
@@ -169,7 +169,7 @@ test("namespace scoped collection is conservative and does not delete unscoped o
   saveVaultIndex(vault, index);
   setRetentionClass(vault, record.digest, "proof", "ephemeral");
   const plan = planGarbageCollection(vault, { namespace: "alpha" });
-  assert.equal(plan.candidates.some((x) => x.digest === record.digest), false);
+  assert.equal(plan.candidates.some((x: any) => x.digest === record.digest), false);
 });
 
 export {};
