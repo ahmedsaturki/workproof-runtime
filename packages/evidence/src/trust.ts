@@ -1,4 +1,5 @@
 const fs = require("fs");
+const crypto = require("crypto");
 const { proofKeyId } = require("./signature");
 
 export type TrustState = "trusted" | "revoked";
@@ -61,6 +62,10 @@ export function saveTrustPolicy(filePath: string, policy: TrustPolicyDocument): 
 export function trustKey(policy: TrustPolicyDocument, publicKey: string, label?: string): TrustedKeyRecord {
   validateTrustPolicy(policy);
   const normalized = normalizePublicKey(publicKey);
+  const publicKeyObject = crypto.createPublicKey(normalized);
+  if (publicKeyObject.asymmetricKeyType !== "ed25519") {
+    throw new Error("Trusted proof keys must be Ed25519 public keys");
+  }
   const keyId = proofKeyId(normalized);
   const existing = policy.keys.find((key) => key.keyId === keyId);
   const timestamp = now();
