@@ -83,7 +83,7 @@ test("registry server entrypoint loads an auth policy file and enforces it end-t
   ], { stdio: ["ignore", "pipe", "pipe"] });
 
   const output = [];
-  const start = new Promise((resolve, reject) => {
+  const start = new Promise<any>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error("registry server startup timed out")), 5000);
     child.stdout.on("data", (chunk) => {
       output.push(chunk.toString());
