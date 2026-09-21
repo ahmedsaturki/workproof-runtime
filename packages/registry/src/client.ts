@@ -68,9 +68,18 @@ export async function listProofsFromRegistry(registryUrl: string, token?: string
 }
 
 
+const { digestTrustPolicySnapshot, verifyTrustPolicySnapshot } = require("../../evidence/src/trust-sync.js");
 import type { TrustPolicySnapshot, TrustSnapshotDecision } from "../../evidence/src/trust-sync";
 
+function assertValidTrustSnapshot(snapshot: TrustPolicySnapshot): void {
+  if (!snapshot?.signature) throw new Error("Trust snapshot signature is required");
+  if (digestTrustPolicySnapshot(snapshot) !== snapshot.digest) throw new Error("Trust snapshot digest is invalid");
+  const decision = verifyTrustPolicySnapshot(snapshot, new Set([snapshot.signature.keyId]));
+  if (decision !== "accept") throw new Error(`Trust snapshot signature is invalid: ${decision}`);
+}
+
 export async function publishTrustSnapshotToRegistry(registryUrl: string, snapshot: TrustPolicySnapshot, token?: string): Promise<Record<string, unknown>> {
+  assertValidTrustSnapshot(snapshot);
   const result = await request(registryUrl, "POST", "/v1/trust/snapshots", snapshot, token);
   if (result?.record?.digest !== snapshot.digest) throw new Error("Registry returned a mismatched trust snapshot digest");
   return result;
@@ -80,7 +89,10 @@ export async function getTrustSnapshotFromRegistry(registryUrl: string, digest: 
   if (!/^[0-9a-f]{64}$/.test(digest)) throw new Error("Trust snapshot digest must be a lowercase SHA-256 hex value");
   const result = await request(registryUrl, "GET", `/v1/trust/snapshots/${digest}`, undefined, token);
   if (!result?.snapshot) throw new Error("Registry returned no trust snapshot");
-  return result.snapshot as TrustPolicySnapshot;
+  const snapshot = result.snapshot as TrustPolicySnapshot;
+  assertValidTrustSnapshot(snapshot);
+  if (snapshot.digest !== digest) throw new Error("Registry returned a mismatched trust snapshot digest");
+  return snapshot;
 }
 
 export async function listTrustSnapshotsFromRegistry(registryUrl: string, token?: string): Promise<Record<string, unknown>[]> {
@@ -92,7 +104,9 @@ export async function listTrustSnapshotsFromRegistry(registryUrl: string, token?
 export async function getCurrentTrustSnapshotFromRegistry(registryUrl: string, token?: string): Promise<TrustPolicySnapshot | null> {
   try {
     const result = await request(registryUrl, "GET", "/v1/trust/current", undefined, token);
-    return (result?.snapshot ?? null) as TrustPolicySnapshot | null;
+    const snapshot = (result?.snapshot ?? null) as TrustPolicySnapshot | null;
+    if (snapshot) assertValidTrustSnapshot(snapshot);
+    return snapshot;
   } catch (error) {
     if (String(error).includes("no-current-trust-snapshot")) return null;
     throw error;
