@@ -8,7 +8,7 @@ export interface GitHubRepoInput {
 
 function apiUrl(input: GitHubRepoInput): string {
   const base = input.apiBaseUrl ?? process.env.GITHUB_API_URL ?? "https://api.github.com";
-  return `${base.replace(/\\/$/, "")}/repos/${input.repository}`;
+  return `${base.replace(/\/$/, "")}/repos/${input.repository}`;
 }
 
 function headers(): Record<string, string> {
