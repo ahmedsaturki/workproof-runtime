@@ -120,8 +120,9 @@ test("ambiguous compensation acknowledgement reconciles before retry and perform
   const repo = new JsonWorkRepository(path.join(dir, "work"));
   const clock = new FakeClock();
   const leaseStore = new PersistentLeaseStore(path.join(dir, "leases.db"), { clock });
-  const { store, registry, work, saga, compA } = fixture();
+  const { store, registry, work, saga, compA, compB } = fixture();
   compA.status = "planned";
+  compB.status = "verified";
   store.updateSagaStatus(work, saga.sagaId);
   repo.save(work);
 
@@ -146,7 +147,7 @@ test("ambiguous compensation acknowledgement reconciles before retry and perform
     verifyExternalState: async (_work, effect) => effect.input === "A" && !state.has("A")
   });
 
-  assert.equal(recovered.status, "partial");
+  assert.equal(recovered.status, "compensated");
   assert.equal(calls, 1);
   assert.equal(recovered.attemptsByEffectId[compA.effectId], 1);
 
