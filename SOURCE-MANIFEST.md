@@ -2,11 +2,16 @@
 
 ## Required source tree
 
-The v0.6 proof-CLI branch contains **62 required paths** enforced by scripts/verify-source-tree.js.
+The v0.7 signed-proof branch contains **64 required paths** enforced by scripts/verify-source-tree.js.
 
 V0.6 additions include:
 - docs/RELEASE-GATE-V0.6.md
 - test/cli-integrity.test.ts
+
+V0.7 additions include:
+- docs/RELEASE-GATE-V0.7.md
+- packages/evidence/src/signature.ts
+- test/signature.test.ts
 
 ## v0.4 local exact history
 

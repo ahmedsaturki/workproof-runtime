@@ -15,13 +15,16 @@ Latest main CI:
 
 ## Active next branch
 
-feature/v0.6-proof-cli
+feature/v0.7-signed-proof
+
+The branch carries the v0.6 proof-CLI work plus the signed-proof identity milestone.
 
 Target:
-- user-facing proof integrity validation in workctl
-- tamper detection with dedicated exit code
-- backward compatibility for proofs without integrity manifests
-- metadata validation for proof integrity manifests
+- v0.6 user-facing proof integrity validation.
+- Ed25519 proof signing with embedded public identity.
+- CLI key generation, signing, and signature verification.
+- Dedicated signature failure status.
+- Proof tamper detection remains independently enforced by SHA-256 integrity.
 
 ## Verified v0.5 main gates
 
@@ -39,7 +42,8 @@ Target:
 ## Remaining platform work
 
 - [ ] v0.6 proof CLI feature merge and final CI.
-- [ ] Signed proof identity / non-repudiation.
+- [ ] v0.7 signed proof feature merge and final CI.
+- [ ] Multi-user trust policy for accepted proof identities.
 - [ ] Remote proof registry and artifact retention.
 - [ ] Generalized compensation/saga engine.
 - [ ] External browser navigation where permitted.
