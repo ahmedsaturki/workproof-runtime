@@ -34,11 +34,11 @@ The tree includes:
 
 ## Verified main milestone evidence
 
-- v1.9 merge commit: f0173fd9c0603fd1fa58ea6f722486f52a04f932
+- v1.9 documentation closeout merge commit: a9265bb8ff61db21627bb92a52cbad8aeffe8e50
 - feature CI #528: success
-- merged-main CI #530: success
-- pre-closeout source audit on main: 114/114
-- closeout source audit target: 115/115 after FINAL-AUDIT-V1.9.md is included
+- implementation merged-main CI #530: success
+- final closeout CI #532 attempt 2: success
+- final source audit: 115/115
 - dependency security audit: success
 - retention lifecycle suite: success
 - sequential full integration verification: 30/30 test files passed
