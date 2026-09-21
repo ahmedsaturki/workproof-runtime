@@ -108,11 +108,13 @@ export class SagaRecoveryCoordinator {
 
     const pending = saga.compensationEffectIds
       .map(effectId => work.effects.find(effect => effect.effectId === effectId))
-      .filter((effect): effect is EffectRecord => Boolean(effect) && isPending(effect));
+      .filter((effect): effect is EffectRecord => effect !== undefined)
+      .filter(isPending);
 
     const skippedVerifiedEffectIds = saga.compensationEffectIds
       .map(effectId => work.effects.find(effect => effect.effectId === effectId))
-      .filter((effect): effect is EffectRecord => Boolean(effect) && isVerified(effect))
+      .filter((effect): effect is EffectRecord => effect !== undefined)
+      .filter(isVerified)
       .map(effect => effect.effectId);
 
     if (pending.length === 0) {
