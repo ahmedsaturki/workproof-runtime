@@ -278,7 +278,9 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
   };
 }
 
-if (require.main === module) {
+const runtimeProcess = require("process");
+
+if (runtimeProcess.argv[1] && path.resolve(runtimeProcess.argv[1]) === path.resolve(__filename)) {
   const [, , workDirectoryArg, portArg, hostArg] = process.argv;
   const workDirectory = workDirectoryArg ?? "./work-runs";
   const port = portArg ? Number(portArg) : 8788;
