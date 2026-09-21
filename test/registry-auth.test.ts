@@ -7,9 +7,10 @@ const { startRegistryServer } = require("../packages/registry/src/http.js");
 const { createAuthPolicy, issueCredential, addIssuedCredential, revokeCredential, hashToken } = require("../packages/registry/src/auth.js");
 const { buildProofBundle } = require("../packages/evidence/src/bundle.js");
 const { buildIntegrityManifest } = require("../packages/evidence/src/integrity.js");
+import type { RegistryAuthPolicy, IssuedCredential, RegistryPermission } from "../packages/registry/src/auth";
 const { publishProofToRegistry, getProofFromRegistry, listProofsFromRegistry } = require("../packages/registry/src/client.js");
 
-function proofFixture(id = "work_auth") {
+function proofFixture(id: string = "work_auth"): Record<string, any> {
   const work = {
     id,
     contract: { objective: "authenticated registry", success: [], deliverables: [], riskClass: "read" },
@@ -25,7 +26,7 @@ function proofFixture(id = "work_auth") {
   return { ...proof, integrity: buildIntegrityManifest(work) };
 }
 
-function request(port, method, requestPath, body, token) {
+function request(port: number, method: string, requestPath: string, body?: unknown, token?: string): Promise<{ status: number; body: any }> {
   return new Promise((resolve, reject) => {
     const payload = body === undefined ? undefined : JSON.stringify(body);
     const req = require("http").request({
@@ -39,7 +40,7 @@ function request(port, method, requestPath, body, token) {
       }
     }, (res) => {
       const chunks = [];
-      res.on("data", (chunk) => chunks.push(chunk));
+      res.on("data", (chunk: any) => chunks.push(chunk));
       res.on("end", () => resolve({
         status: res.statusCode,
         body: JSON.parse(Buffer.concat(chunks).toString("utf8"))
@@ -52,11 +53,11 @@ function request(port, method, requestPath, body, token) {
   });
 }
 
-function tempDir(prefix) {
+function tempDir(prefix: string): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 }
 
-function withCredential(policy, args) {
+function withCredential(policy: RegistryAuthPolicy, args: { id: string; permissions: RegistryPermission[]; namespace?: string; label?: string }): { issued: IssuedCredential; policy: RegistryAuthPolicy } {
   const issued = issueCredential(args);
   return { issued, policy: addIssuedCredential(policy, issued) };
 }
