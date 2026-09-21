@@ -46,6 +46,15 @@ test("trust enrollment rejects non-Ed25519 public keys", () => {
   );
 });
 
+test("trust enrollment rejects private-key PEM material", () => {
+  const policy = createTrustPolicy();
+  const pair = generateProofKeyPair();
+  assert.throws(
+    () => trustKey(policy, pair.privateKey),
+    /public-key PEM material/
+  );
+});
+
 test("valid signature does not imply trusted identity", () => {
   const pair = generateProofKeyPair();
   const proof = { version: "0.1", work: { id: "trust-proof" }, effects: [], artifacts: [], verification: null, events: [] };
