@@ -7,12 +7,13 @@ Date: 2026-09-21
 **v2.9-dev operational work filtering is verified on main.**
 
 Current main commit:
-b8be593242d19e3251914855801fc505aa19a566
+437516fb39e6f8c7469fc4540a0cf85f5e950391
 
-Verification:
-- merged-main CI #751: success
-- source-tree audit: 142/142
+Latest merged-main CI:
+- run #761: success
+- source-tree audit: 143/143
 - dependency security audit: success
+- Chromium availability: success
 - Chromium/CDP preflight: success
 - strict TypeScript build: success
 - retention lifecycle: success
@@ -30,11 +31,14 @@ Verification:
 - [x] exact risk-class filtering
 - [x] bounded result limit
 - [x] invalid filter inputs fail closed with 400
+- [x] bounded query length
+- [x] deterministic result ordering
 - [x] deterministic total/status/risk summaries
 - [x] Studio filter controls
 - [x] Studio operational summary cards
-- [x] v2.8 security, control, lease, proof, retention, and worker behavior preserved
-- [x] final feature/PR/merged-main CI
+- [x] v2.8 security, control, lease, proof, retention, worker, and fencing behavior preserved
+- [x] final feature/PR/merged-main verification
+- [x] final CI D-Bus hardening
 - [x] final audit and release-gate documentation
 
 ## Remaining platform work
