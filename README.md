@@ -4,9 +4,9 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v2.9-dev operational work filtering is verified on main.**
+**v3.0-dev operational health projection is in progress.**
 
-The verified v2.9 line extends the v2.8 Studio with bounded search, status/risk filtering, result limits, deterministic operational summaries, and a read-only diagnostic filter layer.
+The active v3.0 line extends the verified v2.9 Studio with a read-only operational health projection and deterministic attention queue derived from persisted Work Objects, effects, verification state, and optionally configured worker and lease sources.
 
 ## Core loop
 
@@ -87,8 +87,20 @@ Lease visibility is diagnostic only. A visible lease is not proof that a worker 
 
 Operational filtering is diagnostic only. It does not change work state, authorization, lease ownership, proof state, or execution.
 
+## v3.0 operational health
+
+- GET /api/operations/overview provides a read-only projection of durable Work Object health.
+- Work summaries include total and verified counts plus status and risk distributions.
+- Effect summaries distinguish observed effect states and count unknown and unresolved effects needing attention.
+- Verification summaries distinguish verified, failed, partial, unverifiable, and not-present states.
+- Optional worker health summarizes configured worker liveness and reassignment eligibility.
+- Optional lease health summarizes configured active and expired leases.
+- Attention items expose explicit reason codes for failed, unresolved, partial, waiting, unverifiable, unknown-effect, and failed-verification conditions.
+- Attention output is bounded and deterministically ordered.
+- The projection never mutates work, leases, proofs, authorization, or execution.
+
 ## Next engineering gates
 
-Additional capability packs/integrations and richer operational visualization remain separate milestones.
+Additional capability packs/integrations and richer visualization remain separate milestones.
 
 This repository does not make a global novelty claim.
