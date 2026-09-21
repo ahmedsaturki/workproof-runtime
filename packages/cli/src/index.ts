@@ -14,6 +14,7 @@ const { buildIntegrityManifest, verifyProofIntegrity } = require("../../evidence
 const { generateProofKeyPair, signProof, verifyProofSignature, proofKeyId } = require("../../evidence/src/signature.js");
 const { loadTrustPolicy, saveTrustPolicy, trustKey, revokeKey, evaluateProofTrust } = require("../../evidence/src/trust.js");
 const { publishProof, restoreProof, listProofs, inspectProof } = require("../../evidence/src/vault.js");
+const { setRetentionClass, pinRetention, unpinRetention, inventoryVault, planGarbageCollection, executeGarbageCollection, repairVaultIndex } = require("../../evidence/src/retention.js");
 const { createAuthPolicy, loadAuthPolicy, saveAuthPolicy, issueCredential, addIssuedCredential, revokeCredential } = require("../../registry/src/auth.js");
 const { publishTrustSnapshotToRegistry, getTrustSnapshotFromRegistry, listTrustSnapshotsFromRegistry, getCurrentTrustSnapshotFromRegistry, applyTrustSnapshotToRegistry } = require("../../registry/src/client.js");
 
@@ -31,6 +32,12 @@ function usage(): void {
   vault-restore <digest> <vault-dir> <output.json>
   vault-list <vault-dir>
   vault-inspect <digest> <vault-dir>
+  vault-inventory <vault-dir>
+  vault-retain <digest> <vault-dir> <ephemeral|standard|long|permanent> [namespace]
+  vault-pin <digest> <vault-dir> [reason] [namespace] [expiresAt]
+  vault-unpin <digest> <vault-dir>
+  vault-gc <vault-dir> [--execute] [--namespace <name>]
+  vault-repair <vault-dir>
   registry-auth-init <policy.json>
   registry-auth-add <policy.json> <credential-id> <read|write|trust|readwrite> [namespace] [label]
   registry-auth-revoke <credential-id> <policy.json> [reason]
@@ -83,6 +90,38 @@ function vaultList(vaultDir: string): void {
 
 function vaultInspect(digest: string, vaultDir: string): void {
   process.stdout.write(JSON.stringify(inspectProof(vaultDir, digest), null, 2) + "\n");
+}
+
+function vaultInventory(vaultDir: string): void {
+  process.stdout.write(JSON.stringify(inventoryVault(vaultDir), null, 2) + "\n");
+}
+
+function vaultRetain(digest: string, vaultDir: string, retentionClass: string, namespace?: string): void {
+  if (!["ephemeral", "standard", "long", "permanent"].includes(retentionClass)) throw new Error("Invalid retention class");
+  const result = setRetentionClass(vaultDir, digest, "proof", retentionClass as any, namespace);
+  process.stdout.write(JSON.stringify(result, null, 2) + "\n");
+}
+
+function vaultPin(digest: string, vaultDir: string, reason?: string, namespace?: string, expiresAt?: string): void {
+  const result = pinRetention(vaultDir, digest, "proof", reason, namespace, expiresAt);
+  process.stdout.write(JSON.stringify(result, null, 2) + "\n");
+}
+
+function vaultUnpin(digest: string, vaultDir: string): void {
+  process.stdout.write(JSON.stringify({ unpinned: unpinRetention(vaultDir, digest, "proof") }, null, 2) + "\n");
+}
+
+function vaultGc(vaultDir: string, args: string[]): void {
+  const execute = args.includes("--execute");
+  const namespaceIndex = args.indexOf("--namespace");
+  if (namespaceIndex >= 0 && !args[namespaceIndex + 1]) throw new Error("Namespace value is required");
+  const namespace = namespaceIndex >= 0 ? args[namespaceIndex + 1] : undefined;
+  const result = execute ? executeGarbageCollection(vaultDir, namespace ? { namespace } : {}) : planGarbageCollection(vaultDir, namespace ? { namespace } : {});
+  process.stdout.write(JSON.stringify(result, null, 2) + "\n");
+}
+
+function vaultRepair(vaultDir: string): void {
+  process.stdout.write(JSON.stringify(repairVaultIndex(vaultDir), null, 2) + "\n");
 }
 
 function registryAuthInit(policyPath: string): void {
@@ -236,7 +275,7 @@ async function runMission(file: string): Promise<void> {
   if (work.status !== "verified") process.exitCode = 2;
 }
 
-const [, , command, firstArg, secondArg, thirdArg, fourthArg, fifthArg] = process.argv;
+const [, , command, firstArg, secondArg, thirdArg, fourthArg, fifthArg, sixthArg] = process.argv;
 if (!command) {
   usage();
   process.exitCode = 1;
@@ -319,6 +358,43 @@ if (!command) {
   if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
   else {
     try { vaultInspect(firstArg, secondArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+ } else if (command === "vault-inventory") {
+  if (!firstArg) { usage(); process.exitCode = 1; }
+  else {
+    try { vaultInventory(firstArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+} else if (command === "vault-retain") {
+  if (!firstArg || !secondArg || !thirdArg) { usage(); process.exitCode = 1; }
+  else {
+    try { vaultRetain(firstArg, secondArg, thirdArg, fourthArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+} else if (command === "vault-pin") {
+  if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
+  else {
+    try { vaultPin(firstArg, secondArg, thirdArg, fourthArg, fifthArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+} else if (command === "vault-unpin") {
+  if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
+  else {
+    try { vaultUnpin(firstArg, secondArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+} else if (command === "vault-gc") {
+  if (!firstArg) { usage(); process.exitCode = 1; }
+  else {
+    try {
+      vaultGc(firstArg, [secondArg, thirdArg, fourthArg, fifthArg, sixthArg].filter((value) => Boolean(value)));
+    } catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+} else if (command === "vault-repair") {
+  if (!firstArg) { usage(); process.exitCode = 1; }
+  else {
+    try { vaultRepair(firstArg); }
     catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "sign") {

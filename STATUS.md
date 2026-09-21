@@ -6,29 +6,13 @@ Date: 2026-09-21
 
 **v1.2-dev signed trust-policy synchronization is verified on main.**
 
-Current main commit:
-b6ef830d79dc432314a4da0f6e143ddb3a8b6f61
+Current main audit head:
+be845ab160de3597de3781630cc7bb0a1b646259
 
 Verification:
-- v1.2 feature CI: run #298, 77/77 tests, dependency audit passed, source audit passed, benchmark/demo/CLI passed, live GitHub smoke passed.
-- merged-main CI: run #299, 77/77 tests, dependency audit passed, source audit passed, benchmark/demo/CLI passed, live GitHub smoke passed.
-- namespace-scoped signer trust regression passed.
-- trust client cryptographic validation regression passed.
-- filesystem path leakage regression passed.
-
-## v1.2 result
-
-- [x] Signed trust-policy snapshots.
-- [x] Canonical snapshot digesting.
-- [x] Administrative Ed25519 signatures.
-- [x] Explicit signer authorization.
-- [x] Namespace-scoped administrative signer trust.
-- [x] Deterministic accept/noop/conflict/rollback reconciliation.
-- [x] Authenticated registry trust transport.
-- [x] Signed snapshot replication between two self-hosted registries.
-- [x] Revocation propagation through snapshots.
-- [x] Persistent trust snapshot index and audit event history.
-- [x] Security and dependency audit.
+- run #300: success, final v1.2 audit/documentation state.
+- run #299: success, v1.2 merged-main verification.
+- v1.2 feature and merged-main verification previously passed 77/77 tests, dependency audit, source audit, benchmark/demo/CLI, live GitHub smoke, and trust-sync security regressions.
 
 ## Active next gate
 
@@ -36,22 +20,32 @@ Branch: **feature/v1.3-retention-gc**
 
 Goal:
 - content inventory
+- explicit retention classes
+- protected pins
 - reachability graph
-- retention classes
 - dry-run garbage collection
-- protected roots/pins
-- namespace-aware lifecycle boundaries
-- orphan detection and repair
-- crash-safe index updates
+- integrity-gated deletion
+- namespace-conservative lifecycle boundaries
+- orphan detection/repair
+- crash-safe index updates and journal recovery
+- user-facing vault lifecycle commands
+
+## Verified foundation
+
+- [x] v1.0 self-hosted proof registry.
+- [x] v1.1 authenticated registry.
+- [x] v1.2 signed trust-policy synchronization.
+- [x] proof integrity and cryptographic proof identity.
+- [x] trust policy separation from cryptographic validity.
 
 ## Remaining platform work
 
-- [ ] v1.3 retention and garbage collection
-- [ ] generalized compensation/saga engine
-- [ ] external browser navigation where permitted
-- [ ] distributed/remote workers and control plane
-- [ ] Studio / REST / SDK surfaces
-- [ ] hosted/managed deployment
+- [ ] v1.3 retention and garbage collection.
+- [ ] generalized compensation/saga engine.
+- [ ] external browser navigation where permitted.
+- [ ] distributed/remote workers and control plane.
+- [ ] Studio / REST / SDK surfaces.
+- [ ] hosted/managed deployment.
 
 ## Verification rule
 

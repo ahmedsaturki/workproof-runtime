@@ -31,6 +31,7 @@ const required = [
   "docs/RELEASE-GATE-V1.0.md",
   "docs/RELEASE-GATE-V1.1.md",
   "docs/RELEASE-GATE-V1.2.md",
+  "docs/RELEASE-GATE-V1.3.md",
   "docs/SECURITY-V1.2.md",
   "docs/SECURITY-V1.1.md",
   "docs/REPO-BOOTSTRAP.md",
@@ -52,6 +53,7 @@ const required = [
   "packages/evidence/src/trust-sync.ts",
   "packages/evidence/src/trust.ts",
   "packages/evidence/src/vault.ts",
+  "packages/evidence/src/retention.ts",
   "packages/packs/src/browser-local-pack.ts",
   "packages/packs/src/github-pack.ts",
   "packages/packs/src/local-pack.ts",
@@ -89,6 +91,7 @@ const required = [
   "test/trust.test.ts",
   "test/vault-cli.test.ts",
   "test/vault.test.ts",
+  "test/retention.test.ts",
   "test/two-system.test.ts",
   "tsconfig.json",
   "types/globals.d.ts"

@@ -1,12 +1,12 @@
-# WorkProof Runtime Specification - v0.5-dev
+# WorkProof Runtime Specification - v1.3-dev
 
 ## 1. Purpose
 
-Represent a user's bounded digital outcome as a durable Work Object, execute it through explicit capabilities, safely handle external effects, independently verify the outcome, and preserve portable proof.
+Represent a bounded digital outcome as a durable Work Object, execute it through explicit capabilities, safely handle external effects, independently verify outcomes, preserve portable proof, and manage proof lifecycle without deleting reachable evidence.
 
 ## 2. Core loop
 
-GOAL -> CONTRACT -> ROUTE -> ACT -> OBSERVE -> VERIFY -> RECONCILE/RECOVER -> DELIVER -> PROVE
+GOAL -> CONTRACT -> ROUTE -> ACT -> OBSERVE -> VERIFY -> RECONCILE/RECOVER -> DELIVER -> PROVE -> RETAIN
 
 ## 3. Work Contract
 
@@ -21,89 +21,81 @@ A Work Contract contains:
 
 A step's risk class must not exceed the contract risk class.
 
-## 4. Capability contract
+## 4. Capability and Effect Contracts
 
-Every capability declares:
-- stable name
-- version
-- supported operations
-- risk class
-- executable behavior
+Capabilities declare a stable name, version, supported operations, risk class, and executable behavior.
 
-Capabilities are replaceable adapters. Routing must respect risk ceilings.
+Effects track effect ID, idempotency key, operation, capability, risk class, attempts, attempt log, receipt/observed state, and lifecycle timestamps.
 
-## 5. Effect contract
+External writes may require approval. Ambiguous effects must be reconciled against external state before blind retry. A receipt is not independent proof of the final outcome.
 
-An Effect Record tracks:
-- effect ID
-- idempotency key
-- operation
-- capability
-- risk class
-- attempts
-- attempt log
-- receipt / observed state
-- lifecycle timestamps
+## 5. Verification and Evidence
 
-A repeated idempotency key resolves to the same durable effect record.
+A verifier receives the Work Object, success criterion, and known evidence and returns criterion-specific status, details, and evidence references.
 
-## 6. External-effect safety
+Proof bundles identify the durable work, effects, artifacts, verification, and events. Canonical SHA-256 provides tamper-evident integrity. Ed25519 signatures can provide cryptographic authenticity under an embedded public key. Trust policy determines whether a signing identity is accepted.
 
-For external writes:
-- policy can require approval before execution
-- the capability should expose a deterministic idempotency strategy
-- an ambiguous outcome must be reconciled against external state before a blind retry
-- successful completion is not declared until the Work Contract's success criteria are independently checked
+## 6. Persistence
 
-The GitHub issue capability requires idempotencyMarker and writes the marker into the issue body so reconciliation can identify an already-created issue after a lost acknowledgement.
+Work state, vault indexes, trust snapshots, and lifecycle metadata use atomic index updates where destructive recovery depends on authoritative metadata.
 
-## 7. Verification contract
+## 7. Proof Vault Lifecycle
 
-A verifier receives the Work Object, a success criterion, and known evidence and returns:
-- criterion
-- pass/fail status
-- details
-- evidence references
+The proof vault stores content-addressed proof files and artifacts.
 
-Boolean-only completion is insufficient.
+Retention classes:
+- ephemeral: eligible immediately unless protected or reachable.
+- standard: 30 days from the managed object's lifecycle timestamp.
+- long: 365 days.
+- permanent: no expiry.
 
-## 8. Evidence and proof
+Explicit retention entries override the default class. Explicit pins create protected roots and may have an expiration. Namespace-scoped lifecycle operations are conservative: unscoped content is not deleted under a namespace filter.
 
-Evidence references identify concrete observed states, artifacts, URLs, or receipts.
+## 8. Reachability
 
-Proof bundles can be hashed using canonical JSON plus SHA-256. The digest is tamper-evident integrity metadata; it is not a digital signature.
+A retained proof is a root for every artifact reference stored in its vault index record. An explicitly retained or pinned artifact is independently a root.
 
-## 9. Persistence
+Supplied registry trust-snapshot content is inventoried and protected in v1.3. The v1.3 vault GC does not destructively delete registry snapshot content.
 
-A Work Object may be persisted after major transitions, effect planning, step completion, and final verification.
+## 9. Garbage Collection
 
-## 10. Packs
+Collection has two distinct phases:
 
-A pack is compatible only when its declared capabilities, verifiers, policies, fixtures, and version metadata agree with the implemented extension.
+1. Plan: inventory content, validate proof/artifact integrity, determine protected roots, compute reachability, classify candidates, and emit a dry-run plan.
+2. Execute: persist a GC journal, update the authoritative proof index first, then delete verified candidates, audit each operation, and preserve a completion/partial journal for recovery.
 
-The GitHub pack manifest is stored at docs/packs/github-pack.json.
+Age alone is never sufficient. Corrupt or unverified proof/artifact content is not automatically deleted.
 
-## 11. Non-goals
+## 10. Repair
 
-The runtime is not defined as:
-- a generic agent framework
-- a browser automation engine
-- a workflow/queue product
-- a memory database
-- an observability backend
-- an OSINT graph
-- an LLM requirement
+Repair removes stale proof records whose files are missing, removes stale artifact references to missing files, and recovers/removes a stale GC journal after the index has been reconciled.
 
-Those systems can be integrated as capabilities or adapters.
+## 11. CLI Lifecycle Surface
 
-## 12. v0.5 acceptance target
+- vault-inventory
+- vault-retain
+- vault-pin
+- vault-unpin
+- vault-gc
+- vault-repair
 
-The v0.5 development gate requires:
-- live GitHub read integration
-- independently verified repository state
-- controlled GitHub external-write capability behind approval
-- local lost-acknowledgement fault injection with no duplicate write
-- evidence-bearing reconciliation
-- proof integrity verification
-- pack compatibility metadata
-- green CI
+The default `vault-gc` operation is dry-run; destructive execution requires the explicit `--execute` flag.
+
+## 12. Non-goals
+
+WorkProof is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, distributed-consensus system, or hosted identity provider.
+
+## 13. v1.3 Acceptance Target
+
+- content inventory
+- default and explicit retention classes
+- protected pins
+- proof-to-artifact reachability
+- deterministic dry-run GC
+- integrity-gated deletion
+- namespace-conservative boundaries
+- orphan detection and repair
+- crash-safe journaled execution
+- lifecycle audit events
+- user-facing CLI commands
+- green feature CI and green merged-main CI

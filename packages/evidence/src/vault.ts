@@ -51,7 +51,7 @@ function createIndex(): VaultIndex {
   return { version: "0.1", records: [] };
 }
 
-function loadIndex(vaultDir: string): VaultIndex {
+export function loadVaultIndex(vaultDir: string): VaultIndex {
   const file = indexPath(vaultDir);
   if (!fs.existsSync(file)) return createIndex();
   const index = JSON.parse(fs.readFileSync(file, "utf8"));
@@ -94,7 +94,7 @@ function loadIndex(vaultDir: string): VaultIndex {
   return index;
 }
 
-function saveIndex(vaultDir: string, index: VaultIndex): void {
+export function saveVaultIndex(vaultDir: string, index: VaultIndex): void {
   atomicWrite(indexPath(vaultDir), JSON.stringify(index, null, 2) + "\n");
 }
 
@@ -194,7 +194,7 @@ export function publishProof(proofFile: string, vaultDir: string): VaultRecord {
     artifacts[uri] = destinationArtifact;
   }
 
-  const index = loadIndex(vaultDir);
+  const index = loadVaultIndex(vaultDir);
   const existing = index.records.find((record) => record.digest === digest);
   if (existing) {
     return existing;
@@ -213,16 +213,16 @@ export function publishProof(proofFile: string, vaultDir: string): VaultRecord {
   };
   index.records.push(record);
   index.records.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
-  saveIndex(vaultDir, index);
+  saveVaultIndex(vaultDir, index);
   return record;
 }
 
 export function listProofs(vaultDir: string): VaultRecord[] {
-  return loadIndex(vaultDir).records.slice().sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+  return loadVaultIndex(vaultDir).records.slice().sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
 }
 
 export function restoreProof(vaultDir: string, digest: string, outputPath: string): VaultRecord {
-  const index = loadIndex(vaultDir);
+  const index = loadVaultIndex(vaultDir);
   const record = index.records.find((item) => item.digest === digest);
   if (!record) throw new Error(`Unknown proof digest: ${digest}`);
   if (!fs.existsSync(record.proofPath)) throw new Error("Vault proof file is missing");
@@ -260,7 +260,7 @@ export function restoreProof(vaultDir: string, digest: string, outputPath: strin
 }
 
 export function inspectProof(vaultDir: string, digest: string): Record<string, unknown> {
-  const record = loadIndex(vaultDir).records.find((item) => item.digest === digest);
+  const record = loadVaultIndex(vaultDir).records.find((item) => item.digest === digest);
   if (!record) throw new Error(`Unknown proof digest: ${digest}`);
   return { ...record };
 }

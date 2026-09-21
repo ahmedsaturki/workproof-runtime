@@ -2,9 +2,14 @@
 
 ## Required source tree
 
-The verified v1.2 trust-synchronization main tree contains **90 required paths** enforced by scripts/verify-source-tree.js.
+The v1.3 retention/GC branch contains **93 required paths** enforced by scripts/verify-source-tree.js.
 
 V1.2 additions include:
+
+V1.3 additions include:
+- docs/RELEASE-GATE-V1.3.md
+- packages/evidence/src/retention.ts
+- test/retention.test.ts
 - docs/RELEASE-GATE-V1.2.md
 - docs/SECURITY-V1.2.md
 - packages/evidence/src/trust-sync.ts

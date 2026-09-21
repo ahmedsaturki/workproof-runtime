@@ -14,21 +14,42 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: 24
           package-manager-cache: false
-      - name: Install Chromium for browser acceptance tests
+      - name: Verify Chromium for browser acceptance tests
         run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium
+          command -v chromium
+          chromium --version
       - run: npm install
       - name: Dependency security audit
         run: npm audit --audit-level=high
       - run: node scripts/verify-source-tree.js
-      - run: npm run check
+      - name: Build TypeScript
+        run: npm run build
+        timeout-minutes: 2
+      - name: Run retention lifecycle suite
+        run: node --test dist/test/retention.test.js
+        timeout-minutes: 2
+      - name: Run full unit and integration suite
+        run: node scripts/run-test-files.js
+        timeout-minutes: 25
+      - name: Run benchmark
+        run: npm run benchmark
+        timeout-minutes: 2
+      - name: Run demo
+        run: npm run demo
+        timeout-minutes: 2
+      - name: Verify CLI proof
+        run: node dist/packages/cli/src/index.js verify mission-proof.json
+        timeout-minutes: 1
+      - name: Execute CLI mission
+        run: node dist/packages/cli/src/index.js run examples/missions/research-local.json
+        timeout-minutes: 2
       - name: Live GitHub integration smoke
         env:
           GITHUB_TOKEN: ${{ github.token }}
