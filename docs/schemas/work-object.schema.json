@@ -16,7 +16,7 @@
     "id": {"type": "string"},
     "status": {
       "enum": [
-        "planned","running","waiting_verification","verified","partial",
+        "planned","running","waiting_verification","verified","partial","waiting_lease",
         "failed","unresolved","unverifiable","cancelled"
       ]
     },
