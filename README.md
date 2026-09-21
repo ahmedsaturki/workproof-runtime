@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v2.2-dev proof/audit Studio is in progress.**
+**v2.2-dev proof/audit Studio is verified on main.**
 
 v2.1 established authenticated Studio control delegation through the control plane. v2.2 adds read-only proof/audit views backed by the content-addressed proof vault and optional local trust policy.
 
