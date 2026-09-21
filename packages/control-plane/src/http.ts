@@ -5,7 +5,7 @@ const { URL } = require("url");
 const { authorize } = require("../../registry/src/auth.js");
 
 export interface ControlPlaneRepository {
-  get(id: string): import("../../core/src/types").WorkObject;
+  load(id: string): import("../../core/src/types").WorkObject;
   save(work: import("../../core/src/types").WorkObject): string;
 }
 
@@ -120,7 +120,7 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
           return;
         }
         const workId = requireWorkId(match[1]);
-        const work = options.repository.get(workId);
+        const work = options.repository.load(workId);
         sendJson(res, 200, { version: "1.0", requestId: id, work });
         return;
       }
