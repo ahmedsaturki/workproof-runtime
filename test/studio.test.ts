@@ -756,4 +756,67 @@ test("Studio work API supports safe search, status/risk filters, limits, and ope
   }
 });
 
+
+test("Studio operational overview reports bounded scanning and explicit truncation", async () => {
+  const root = tempDir("workproof-studio-health-bound-");
+  const repository = new JsonWorkRepository(root);
+  const fixture = workFixture();
+  for (let i = 0; i < 10001; i += 1) {
+    const work = { ...fixture, id: `bound-${String(i).padStart(5, "0")}` };
+    work.contract = { ...fixture.contract, objective: `Bounded work ${i}` };
+    repository.save(work);
+  }
+
+  const studio = await startStudio({ workDirectory: root, port: 0 });
+  try {
+    const response = await fetch(`http://127.0.0.1:${studio.port}/api/operations/overview`);
+    assert.equal(response.status, 200);
+    const data = await response.json();
+    assert.equal(data.version, "3.0");
+    assert.equal(data.work.sourceFiles, 10001);
+    assert.equal(data.work.scannedFiles, 10000);
+    assert.equal(data.work.total, 10000);
+    assert.equal(data.work.truncated, true);
+    assert.equal(data.attention.items.length <= 100, true);
+  } finally {
+    await studio.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("Studio operational overview fails soft when optional worker or lease health sources throw", async () => {
+  const root = tempDir("workproof-studio-health-soft-");
+  const repository = new JsonWorkRepository(root);
+  repository.save(workFixture());
+
+  const studio = await startStudio({
+    workDirectory: root,
+    port: 0,
+    workerStatusSource: {
+      listWorkerStatuses: () => { throw new Error("worker source down"); }
+    },
+    leaseStatusSource: {
+      listLeaseStatuses: () => { throw new Error("lease source down"); }
+    }
+  });
+
+  try {
+    const response = await fetch(`http://127.0.0.1:${studio.port}/api/operations/overview`);
+    assert.equal(response.status, 200);
+    const data = await response.json();
+    assert.equal(data.work.total, 1);
+    assert.equal(data.workers.configured, true);
+    assert.equal(data.workers.available, false);
+    assert.equal(data.workers.total, undefined);
+    assert.equal(data.workers.byLiveness, undefined);
+    assert.equal(data.leases.configured, true);
+    assert.equal(data.leases.available, false);
+    assert.equal(data.leases.total, undefined);
+    assert.equal(data.leases.active, undefined);
+  } finally {
+    await studio.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 export {};
