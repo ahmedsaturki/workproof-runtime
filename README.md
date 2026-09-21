@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v2.3-dev control-plane hardening is in progress.**
+**v2.3-dev control-plane hardening is verified on main.**
 
 v2.1 established authenticated Studio control delegation through the control plane. v2.2 added read-only proof/audit views backed by the content-addressed proof vault and optional local trust policy. v2.3 adds durable idempotency and replay/concurrency protection for authenticated control mutations.
 
@@ -28,6 +28,8 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - v1.9 durable saga recovery.
 - v2.0 local read-only Studio.
 - v2.1 authenticated Studio control delegation.
+- v2.2 proof/audit Studio.
+- v2.3 durable control mutation idempotency.
 
 ## v2.1 authenticated Studio control
 
@@ -41,14 +43,6 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - The Studio has no direct Work Object mutation path.
 - v2.0 read endpoints and hardening headers remain intact.
 
-## Safety boundary
-
-Compensation is not guaranteed rollback. The runtime records what was attempted, what was independently verified, and what remains unresolved.
-
-Studio control is not a new control plane: authorization, state transitions, and mutation audits remain owned by the authenticated control-plane implementation.
-
-Proof integrity and signatures establish integrity/authenticity properties under their defined trust boundaries; they do not create an organization-wide trust or revocation policy by themselves.
-
 ## v2.2 proof/audit Studio
 
 - Optional proof-vault configuration enables retained proof discovery by Work Object.
@@ -60,13 +54,43 @@ Proof integrity and signatures establish integrity/authenticity properties under
 
 ## v2.3 control-plane idempotency
 
-- Authenticated mutation endpoints can use a durable SQLite idempotency ledger.
+- Authenticated mutation endpoints use a durable SQLite idempotency ledger when configured.
 - Dispatch, cancel, and resume mutations require an `Idempotency-Key` when the ledger is configured.
 - Reusing the same key for the same logical mutation replays the stored response without repeating the mutation.
 - Reusing a key for a different operation or payload is rejected as a conflict.
 - Concurrent use of the same key is fail-closed while the original mutation is pending.
-- Idempotency records survive control-plane process restart.
+- Completed idempotency records survive control-plane process restart.
 - The SDK exposes mutation idempotency keys, and Studio generates per-action keys for control delegation.
+- The control-plane ledger is separate from external capability idempotency and does not claim exactly-once third-party execution.
+
+## v2.3 verification evidence
+
+Merged v2.3 commit:
+`47e09002f135c0d2f999b2465e5bfbd291db4c22`
+
+Verified merged-main CI:
+- CI #621: success
+- source-tree audit: 126/126
+- dependency security audit: 0 vulnerabilities
+- Chromium/CDP preflight: success
+- strict TypeScript build: success
+- retention lifecycle suite: success
+- sequential integration suite: 32/32 test files passed
+- benchmark: passed
+- demo: passed
+- CLI proof verification: passed
+- CLI mission execution: passed
+- live GitHub integration smoke: verified
+
+## Safety boundary
+
+Compensation is not guaranteed rollback. The runtime records what was attempted, what was independently verified, and what remains unresolved.
+
+Studio control is not a new control plane: authorization, state transitions, and mutation audits remain owned by the authenticated control-plane implementation.
+
+Proof integrity and signatures establish integrity/authenticity properties under their defined trust boundaries; they do not create an organization-wide trust or revocation policy by themselves.
+
+Control-plane idempotency protects the authenticated mutation boundary but does not make external capability execution exactly-once.
 
 ## Next engineering gates
 

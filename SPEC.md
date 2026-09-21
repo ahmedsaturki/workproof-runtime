@@ -1,4 +1,4 @@
-# WorkProof Runtime Specification - v2.2-dev
+# WorkProof Runtime Specification - v2.3-dev
 
 ## 1. Purpose
 
@@ -37,7 +37,7 @@ Proof bundles identify durable work, effects, artifacts, verification, and event
 
 ## 6. Persistence and Retention
 
-Work state, lease state, vault indexes, trust snapshots, retention metadata, and recovery lineage use authoritative persistence where correctness depends on durable state.
+Work state, lease state, vault indexes, trust snapshots, retention metadata, recovery lineage, and control idempotency records use authoritative persistence where correctness depends on durable state.
 
 The proof vault is content-addressed and uses conservative reachability-aware retention and garbage collection.
 
@@ -49,7 +49,7 @@ The Studio control surface must delegate mutation to this control plane rather t
 
 ## 8. Control mutation idempotency
 
-When a durable idempotency ledger is configured, authenticated `POST` mutations use an `Idempotency-Key` with a canonical request fingerprint.
+When a durable idempotency ledger is configured, authenticated POST mutations use an Idempotency-Key with a canonical request fingerprint.
 
 The ledger guarantees:
 - same key + same operation/input returns the previously stored logical response without repeating the mutation;
@@ -59,11 +59,13 @@ The ledger guarantees:
 
 A pending entry is fail-closed rather than automatically reclaimed, because retrying an unknown mutation can itself create a duplicate side effect.
 
+Invalid keys are rejected at the control-plane boundary. Idempotency records contain the logical operation, request fingerprint, response, request ID, and timestamps.
+
 Control-plane idempotency is separate from external capability idempotency; it does not create exactly-once semantics for third-party systems.
 
 ## 9. Studio
 
-The v2.1 Studio is a local operational surface over persisted Work Objects with optional authenticated control delegation.
+The v2.3 Studio remains a local operational surface over persisted Work Objects with optional authenticated control delegation.
 
 Read surface:
 - `GET /` HTML dashboard
@@ -78,23 +80,7 @@ Optional control surface:
 - `POST /api/control/work/:id/cancel` -> authenticated control-plane cancel
 - `POST /api/control/work/:id/resume` -> authenticated control-plane resume
 
-Studio control security rules:
-- Work IDs are validated before constructing control-plane routes.
-- The Studio requires a valid bearer header before forwarding.
-- No bearer token is logged or returned.
-- Control-plane authorization is authoritative.
-- Successful control responses are sanitized through the same Studio Work Object projection.
-- No local mutation occurs when the control plane is absent.
-- State-changing Studio operations preserve the control-plane request ID and audit semantics.
-
-Proof/audit security rules:
-- Proof digests are validated as lowercase SHA-256 values.
-- Vault filesystem paths are never returned.
-- Integrity and signature validity are recomputed from retained proof material.
-- Trust state is evaluated against an optional local trust policy.
-- Corrupted retained proofs are reported as invalid instead of being treated as valid.
-- Proof APIs never mutate the vault.
-- Browser hardening and no-store headers apply to the proof/audit surface.
+Studio preserves the control-plane idempotency header when proxying replay responses, and its browser actions generate per-action keys.
 
 ## 10. CLI Lifecycle Surface
 
@@ -104,18 +90,18 @@ The CLI exposes work execution, proof inspection/verification, signer identity, 
 
 WorkProof is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, or distributed-consensus system.
 
-## 12. v2.2 Acceptance Target
+## 12. v2.3 Acceptance Target
 
-- v2.0 Studio behavior remains passing.
-- Authenticated dispatch delegation works.
-- Authenticated cancel delegation works.
-- Authenticated resume delegation works.
-- Missing credentials are rejected.
-- Read-only credentials cannot perform Studio mutations.
-- Control responses do not leak sensitive Work Object fields.
-- Control-plane audit entries remain authoritative.
-- Retained proof summaries and audit detail are read-only and sanitized.
-- Source audit
+- v2.2 behavior remains passing.
+- durable control mutation idempotency is enabled and tested.
+- same-key replay does not repeat a successful mutation.
+- same-key logical conflicts are rejected.
+- concurrent duplicates are blocked while the first mutation is pending.
+- completed idempotency entries survive process restart.
+- invalid idempotency keys are rejected.
+- SDK idempotency propagation works.
+- Studio idempotency propagation and replay headers work.
+- source audit
 - dependency audit
 - full integration suite
 - benchmark/demo/CLI verification
