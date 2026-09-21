@@ -25,7 +25,7 @@ Latest main CI:
 - [x] CLI proof signing.
 - [x] Embedded public key and deterministic key identity.
 - [x] Independent signature verification.
-- [x] Separate signature tamper failure.
+- [x] Signature tamper detection.
 - [x] Proof-integrity tamper detection.
 - [x] Unsigned/legacy compatibility.
 - [x] Key overwrite protection.
@@ -57,10 +57,14 @@ Latest main CI:
 - [x] CLI publish/list/inspect/restore lifecycle.
 - [x] Feature-vault implementation merged to main.
 - [x] Merged-main CI run #140: 49/49 tests and all integration gates passed.
+- [x] v0.9 issue closed as completed.
 
 ## Active next gate
 
 v1.0 self-hosted proof registry / replication.
+
+Current branch:
+feature/v1.0-proof-registry
 
 Target:
 - HTTP registry protocol over the existing content-addressed vault.
@@ -73,7 +77,8 @@ Target:
 ## Remaining platform work
 
 - [ ] v1.0 registry/replication.
-- [ ] Distributed/multi-user trust policy.
+- [ ] Authenticated multi-user access.
+- [ ] Distributed trust synchronization.
 - [ ] Generalized compensation/saga engine.
 - [ ] External browser navigation where permitted.
 - [ ] Distributed/remote workers and control plane.
