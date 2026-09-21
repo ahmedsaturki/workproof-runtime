@@ -20,10 +20,10 @@ jobs:
         with:
           node-version: 24
           package-manager-cache: false
-      - name: Install Chromium for browser acceptance tests
+      - name: Verify Chromium for browser acceptance tests
         run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium
+          command -v chromium
+          chromium --version
       - run: npm install
       - name: Dependency security audit
         run: npm audit --audit-level=high
