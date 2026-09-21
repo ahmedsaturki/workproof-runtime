@@ -10,6 +10,7 @@ export interface StudioOptions {
   workDirectory: string;
   host?: string;
   port?: number;
+  controlPlaneUrl?: string;
 }
 
 export interface RunningStudio {
@@ -89,6 +90,9 @@ function sendJson(res: any, statusCode: number, body: Record<string, unknown>): 
     "content-length": Buffer.byteLength(payload),
     "cache-control": "no-store",
     "x-content-type-options": "nosniff",
+    "x-frame-options": "DENY",
+    "referrer-policy": "no-referrer",
+    "permissions-policy": "camera=(), microphone=(), geolocation=()",
     "connection": "close"
   });
   res.end(payload);
@@ -101,12 +105,90 @@ function sendHtml(res: any, body: string): void {
     "cache-control": "no-store",
     "content-security-policy": "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'",
     "x-content-type-options": "nosniff",
+    "x-frame-options": "DENY",
+    "referrer-policy": "no-referrer",
+    "permissions-policy": "camera=(), microphone=(), geolocation=()",
     "connection": "close"
   });
   res.end(body);
 }
 
-function studioHtml(): string {
+function readBody(req: any): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let total = 0;
+    const chunks: any[] = [];
+    req.on("data", (chunk: any) => {
+      total += chunk.length;
+      if (total > MAX_BODY_BYTES) {
+        reject(new Error("Request body too large"));
+        req.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+    req.on("error", reject);
+  });
+}
+
+function authHeader(req: any): string | null {
+  const raw = req.headers?.authorization;
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  if (!value) return null;
+  return /^Bearer [A-Za-z0-9._~-]+$/.test(String(value).trim()) ? String(value).trim() : null;
+}
+
+function controlBaseUrl(value: string): string {
+  const url = new URL(value);
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new Error("Control plane URL must use HTTP or HTTPS");
+  }
+  return url.toString().replace(/\/$/, "");
+}
+
+async function forwardControl(
+  controlPlaneUrl: string | undefined,
+  req: any,
+  route: string,
+  body?: unknown
+): Promise<{ status: number; payload: Record<string, unknown> }> {
+  if (!controlPlaneUrl) return { status: 503, payload: { error: "control-not-configured" } };
+  const token = authHeader(req);
+  if (!token) return { status: 401, payload: { error: "unauthorized" } };
+
+  const headers: Record<string, string> = { authorization: token };
+  if (body !== undefined) headers["content-type"] = "application/json";
+  const response = await fetch(`${controlPlaneUrl}${route}`, {
+    method: "POST",
+    headers,
+    body: body === undefined ? undefined : JSON.stringify(body)
+  });
+  const raw = await response.text();
+  let data: any;
+  try {
+    data = raw ? JSON.parse(raw) : {};
+  } catch {
+    return { status: 502, payload: { error: "control-plane-invalid-json" } };
+  }
+  if (data?.work) {
+    return {
+      status: response.status,
+      payload: {
+        version: "2.1",
+        ...(data.requestId ? { requestId: data.requestId } : {}),
+        work: sanitizeWork(data.work)
+      }
+    };
+  }
+  return {
+    status: response.status,
+    payload: {
+      ...(typeof data === "object" && data ? data : { error: String(data) })
+    }
+  };
+}
+
+function studioHtml(controlEnabled: boolean): string {
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -130,13 +212,23 @@ button { background: #21262d; color: #e6edf3; border: 1px solid #30363d; padding
 <body>
 <main>
 <header>
-<div><h1>WorkProof Studio</h1><small>Local operational view · read-only foundation</small></div>
+<div><h1>WorkProof Studio</h1><small>Local operational view · ${controlEnabled ? "authenticated control enabled" : "read-only foundation"}</small></div>
 <button id="refresh">Refresh</button>
 </header>
+<section class="toolbar">
+<label><small>Control token</small><br><input id="token" type="password" autocomplete="off" placeholder="Bearer token without prefix"></label>
+<label><small>Dispatch objective</small><br><input id="dispatchObjective" autocomplete="off" placeholder="New bounded outcome"></label>
+<button id="dispatch">Dispatch</button>
+<span id="actionStatus"><small></small></span>
+</section>
 <section id="list" class="grid"></section>
 <section id="detail" hidden>
 <h2 id="title"></h2>
 <div id="meta"></div>
+<div class="toolbar">
+<button id="resume">Resume</button>
+<button id="cancel">Cancel</button>
+</div>
 <pre id="payload"></pre>
 </section>
 </main>
@@ -146,6 +238,29 @@ const detail = document.getElementById("detail");
 const title = document.getElementById("title");
 const meta = document.getElementById("meta");
 const payload = document.getElementById("payload");
+const token = document.getElementById("token");
+const dispatchObjective = document.getElementById("dispatchObjective");
+const actionStatus = document.getElementById("actionStatus");
+let selectedId = null;
+
+function setActionStatus(message) {
+  actionStatus.textContent = message;
+}
+
+async function control(route, body) {
+  const value = token.value.trim();
+  if (!value) { setActionStatus("Enter a control token."); return; }
+  if (!selectedId && route !== "/api/control/dispatch") { setActionStatus("Select a Work Object first."); return; }
+  setActionStatus("Sending…");
+  const headers = {"authorization":"Bearer " + value};
+  if (body !== undefined) headers["content-type"] = "application/json";
+  const response = await fetch(route, {method:"POST", headers, body: body === undefined ? undefined : JSON.stringify(body)});
+  const data = await response.json();
+  if (!response.ok) { setActionStatus(data.error || "Control request failed."); return; }
+  await load();
+  if (data.work?.id) await show(data.work.id);
+  setActionStatus("Control request accepted.");
+}
 
 function esc(value) {
   return String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -153,6 +268,7 @@ function esc(value) {
 
 async function load() {
   detail.hidden = true;
+  selectedId = null;
   list.innerHTML = "<div class='card'>Loading…</div>";
   const response = await fetch("/api/work", {cache:"no-store"});
   const data = await response.json();
@@ -182,6 +298,9 @@ async function show(id) {
 }
 
 document.getElementById("refresh").onclick = () => load().catch(error => { list.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
+document.getElementById("dispatch").onclick = () => control("/api/control/dispatch", {objective: dispatchObjective.value.trim()});
+document.getElementById("resume").onclick = () => control("/api/control/work/" + encodeURIComponent(selectedId) + "/resume", {});
+document.getElementById("cancel").onclick = () => control("/api/control/work/" + encodeURIComponent(selectedId) + "/cancel", {});
 load().catch(error => { list.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
 </script>
 </body>
@@ -193,6 +312,7 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
   const port = options.port ?? 0;
   const workDirectory = path.resolve(options.workDirectory);
   const repository = new JsonWorkRepository(workDirectory);
+  const configuredControlPlane = options.controlPlaneUrl ? controlBaseUrl(options.controlPlaneUrl) : undefined;
 
   const server = http.createServer(async (req: any, res: any) => {
     try {
@@ -200,12 +320,12 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
       const url = new URL(String(req.url ?? "/"), `http://${host}`);
 
       if (method === "GET" && url.pathname === "/health") {
-        sendJson(res, 200, { status: "ok", version: "2.0", mode: "read-only" });
+        sendJson(res, 200, { status: "ok", version: "2.1", mode: configuredControlPlane ? "authenticated-control" : "read-only" });
         return;
       }
 
       if (method === "GET" && url.pathname === "/") {
-        sendHtml(res, studioHtml());
+        sendHtml(res, studioHtml(Boolean(configuredControlPlane)));
         return;
       }
 
@@ -230,7 +350,7 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
           }
         }
         work.sort((a: any, b: any) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
-        sendJson(res, 200, { version: "2.0", work });
+        sendJson(res, 200, { version: "2.1", work });
         return;
       }
 
@@ -242,7 +362,37 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
           return;
         }
         const work = sanitizeWork(repository.load(id));
-        sendJson(res, 200, { version: "2.0", work });
+        sendJson(res, 200, { version: "2.1", work });
+        return;
+      }
+
+      if (method === "POST" && url.pathname === "/api/control/dispatch") {
+        const raw = await readBody(req);
+        let input: Record<string, unknown>;
+        try { input = JSON.parse(raw); } catch {
+          sendJson(res, 400, { error: "invalid-json" });
+          return;
+        }
+        if (!input || typeof input !== "object" || Array.isArray(input) || typeof input.objective !== "string" || !input.objective.trim()) {
+          sendJson(res, 400, { error: "dispatch-objective-required" });
+          return;
+        }
+        const forwarded = await forwardControl(configuredControlPlane, req, "/v1/work/dispatch", input);
+        sendJson(res, forwarded.status, forwarded.payload);
+        return;
+      }
+
+      const controlMatch = /^\/api\/control\/work\/([A-Za-z0-9._-]+)\/(cancel|resume)$/.exec(url.pathname);
+      if (method === "POST" && controlMatch) {
+        const workId = controlMatch[1];
+        const action = controlMatch[2];
+        const forwarded = await forwardControl(
+          configuredControlPlane,
+          req,
+          `/v1/work/${encodeURIComponent(workId)}/${action}`,
+          {}
+        );
+        sendJson(res, forwarded.status, forwarded.payload);
         return;
       }
 
@@ -293,8 +443,8 @@ if (runtimeProcess.argv[1] && path.resolve(runtimeProcess.argv[1]) === path.reso
         process.stdout.write(JSON.stringify({
           studio: `http://${running.host}:${running.port}`,
           workDirectory: path.resolve(workDirectory),
-          version: "2.0",
-          mode: "read-only"
+          version: "2.1",
+          mode: controlPlaneUrlArg ? "authenticated-control" : "read-only"
         }, null, 2) + "\n");
       })
       .catch((error) => {
