@@ -215,6 +215,14 @@ export class LeaseStore {
     this.reapExpired();
     return Array.from(this.leases.values()).sort((a, b) => a.resourceId.localeCompare(b.resourceId)).map(cloneLease);
   }
+
+  listLeaseStatuses(): LeaseStatus[] {
+    this.reapExpired();
+    const nowMs = this.clock.nowMs();
+    return Array.from(this.leases.values())
+      .sort((a, b) => a.resourceId.localeCompare(b.resourceId))
+      .map((lease) => projectLeaseStatus(lease, nowMs));
+  }
 }
 
 
