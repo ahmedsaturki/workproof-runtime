@@ -40,7 +40,9 @@ v1.0 through v3.2 remain verified foundations for proof registry/trust, retentio
 - Feature CI #808: success.
 - PR #71: merged.
 - Merged-main CI #809: success on `c5e951056461c37f45bed8bb8406d119880d63df`.
-- Documentation/source-tree closeout CI #811: success on the final closeout commit.
+- Documentation/source-tree closeout CI #811: success.
+- Closeout record correction commit: `0c92a8c86950776243646de4bb40b0c0f2fe5876`
+- Closeout record correction CI #812: success.
 - Source-tree audit on merged implementation: 162 required paths.
 - Dependency security audit: 0 vulnerabilities.
 - Chromium/CDP preflight: success.

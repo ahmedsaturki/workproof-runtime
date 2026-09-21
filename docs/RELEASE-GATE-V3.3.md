@@ -20,6 +20,7 @@ Date: 2026-09-21
 - [x] PR #71 merged.
 - [x] Merged-main CI #809.
 - [x] Final documentation/source-tree closeout CI #811.
+- [x] Closeout record correction CI #812.
 
 ## Safety boundary
 

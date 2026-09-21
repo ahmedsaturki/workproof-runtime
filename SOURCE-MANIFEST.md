@@ -42,7 +42,8 @@ V3.1 additions include:
 - v3.1 SQLite pack merge commit: 449ad75806c3c0f1dab748598dd1f85c65047afc
 - v3.2 data-transform merge commit: c3562b96df23c1c8d500c48e0591833e96236306
 - v3.3 message-outbox implementation merge commit: c5e951056461c37f45bed8bb8406d119880d63df
-- v3.3 documentation closeout commit: 5e26ab0bb78ebb986513c08abe0809c0d75a1145
+- v3.3 documentation closeout baseline commit: 5e26ab0bb78ebb986513c08abe0809c0d75a1145
+- v3.3 closeout record correction commit: 0c92a8c86950776243646de4bb40b0c0f2fe5876
 - v2.9 final merged-main CI: #761
 - v3.0 final merged-main CI: #780
 - v3.1 final merged-main CI: #795
@@ -50,6 +51,7 @@ V3.1 additions include:
 - v3.3 feature CI: #808
 - v3.3 implementation merged-main CI: #809
 - v3.3 documentation closeout CI: #811
+- v3.3 closeout record correction CI: #812
 - result: source audit + dependency security + Chromium/CDP + strict build + retention + full suite + benchmark + demo + CLI + live GitHub smoke all passed for the verified v3.3 implementation
 
 ## Verification discipline

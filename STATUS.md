@@ -6,8 +6,14 @@ Date: 2026-09-21
 
 **v3.3-dev local deterministic message outbox is fully verified on main, including documentation/source-tree closeout.**
 
-Current main:
+Implementation main:
+c5e951056461c37f45bed8bb8406d119880d63df
+
+Documentation closeout baseline:
 5e26ab0bb78ebb986513c08abe0809c0d75a1145
+
+Latest verified closeout record:
+0c92a8c86950776243646de4bb40b0c0f2fe5876
 
 Verified implementation gates:
 - feature CI #808: success
@@ -25,6 +31,7 @@ Verified implementation gates:
 - CLI mission execution: success
 - live GitHub smoke: success
 - documentation/source-tree closeout CI #811: success
+- closeout record correction CI #812: success
 
 ## Verified v3.3 gates
 

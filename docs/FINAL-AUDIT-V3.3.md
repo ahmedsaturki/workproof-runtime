@@ -56,6 +56,8 @@ Date: 2026-09-21
 - CLI mission execution: success
 - Live GitHub integration smoke: success
 - Documentation/source-tree closeout CI #811: success
+- Closeout record correction commit: `0c92a8c86950776243646de4bb40b0c0f2fe5876`
+- Closeout record correction CI #812: success
 
 ## Safety boundary
 
@@ -63,7 +65,7 @@ The v3.3 messaging capability is local-only and classified `local_write`. It doe
 
 ## Closeout rule
 
-This audit document, the updated release gate, status, README, source manifest, and source-tree enforcement are part of the final closeout commit. Their correctness is validated by the subsequent merged-main CI run for that commit.
+This audit document, the updated release gate, status, README, source manifest, and source-tree enforcement form the v3.3 closeout record. The record was independently validated by the closeout CI chain. Their correctness is validated by the subsequent merged-main CI run for that commit.
 
 ## Status
 
