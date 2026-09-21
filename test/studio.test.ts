@@ -111,4 +111,114 @@ test("Studio rejects unknown work with a 404 and rejects unsupported methods", a
   }
 });
 
+
+test("Studio control routes require a bearer token and delegate mutation to the authenticated control plane", async () => {
+  const root = tempDir("workproof-studio-control-");
+  const repo = new JsonWorkRepository(path.join(root, "work"));
+  const work = workFixture();
+  work.status = "running";
+  repo.save(work);
+
+  const auth = require("../packages/registry/src/auth.js");
+  const controlPolicy = auth.createAuthPolicy();
+  const reader = auth.issueCredential({ id: "studio-reader", permissions: ["read"] });
+  const writer = auth.issueCredential({ id: "studio-writer", permissions: ["read", "write"] });
+  const withReader = auth.addIssuedCredential(controlPolicy, reader);
+  const controlAuth = auth.addIssuedCredential(withReader, writer);
+  const auditPath = path.join(root, "audit.jsonl");
+
+  const control = await require("../packages/control-plane/src/http.js").startControlPlane({
+    repository: repo,
+    authPolicy: controlAuth,
+    auditPath,
+    dispatch: async (input: Record<string, unknown>) => {
+      const created = { ...workFixture(), id: "studio_dispatched", status: "new" };
+      created.contract.objective = String(input.objective);
+      repo.save(created);
+      return created;
+    },
+    resume: async (persisted: any) => {
+      persisted.status = "verified";
+      persisted.events.push({
+        id: "studio_resume",
+        type: "control.resumed",
+        at: new Date().toISOString(),
+        message: "Resumed by Studio test"
+      });
+      persisted.updatedAt = persisted.events[persisted.events.length - 1].at;
+      repo.save(persisted);
+      return persisted;
+    }
+  });
+
+  const studio = await startStudio({
+    workDirectory: path.join(root, "work"),
+    port: 0,
+    controlPlaneUrl: `http://${control.host}:${control.port}`
+  });
+
+  try {
+    const base = `http://127.0.0.1:${studio.port}`;
+    const health = await fetch(`${base}/health`);
+    assert.equal(health.status, 200);
+    assert.equal((await health.json()).mode, "authenticated-control");
+
+    const missing = await fetch(`${base}/api/control/work/${work.id}/cancel`, { method: "POST" });
+    assert.equal(missing.status, 401);
+
+    const readOnly = await fetch(`${base}/api/control/work/${work.id}/cancel`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${reader.token}` }
+    });
+    assert.equal(readOnly.status, 403);
+
+    const cancelled = await fetch(`${base}/api/control/work/${work.id}/cancel`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${writer.token}` }
+    });
+    assert.equal(cancelled.status, 200);
+    const cancelledBody = await cancelled.json();
+    assert.equal(cancelledBody.work.status, "cancelled");
+    assert.equal(cancelledBody.work.contract, undefined);
+    assert.equal(cancelledBody.work.inputs, undefined);
+    assert.equal(cancelledBody.work.constraints, undefined);
+    assert.equal(cancelledBody.work.effects[0].idempotencyKey, undefined);
+
+    const resumed = await fetch(`${base}/api/control/work/${work.id}/resume`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${writer.token}` }
+    });
+    assert.equal(resumed.status, 200);
+    const resumedBody = await resumed.json();
+    assert.equal(resumedBody.work.status, "verified");
+
+    const dispatched = await fetch(`${base}/api/control/dispatch`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${writer.token}`,
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({ objective: "Studio dispatched objective" })
+    });
+    assert.equal(dispatched.status, 200);
+    const dispatchedBody = await dispatched.json();
+    assert.equal(dispatchedBody.work.id, "studio_dispatched");
+    assert.equal(dispatchedBody.work.objective, "Studio dispatched objective");
+    assert.equal(dispatchedBody.work.contract, undefined);
+    assert.equal(dispatchedBody.work.inputs, undefined);
+    assert.equal(dispatchedBody.work.constraints, undefined);
+
+    const audit = fs.readFileSync(auditPath, "utf8").trim().split("\n").map((line: string) => JSON.parse(line));
+    assert.ok(audit.some((entry: Record<string, any>) => entry.reason === "permission-denied"));
+    assert.ok(audit.some((entry: Record<string, any>) => entry.action === "cancel"));
+    assert.ok(audit.some((entry: Record<string, any>) => entry.action === "resume"));
+    assert.ok(audit.some((entry: Record<string, any>) => entry.action === "dispatch"));
+    assert.ok(audit.every((entry: Record<string, any>) => typeof entry.requestId === "string"));
+  } finally {
+    await studio.close();
+    await control.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 export {};
