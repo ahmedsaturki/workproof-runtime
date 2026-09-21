@@ -8,6 +8,7 @@ Date: 2026-09-21
 - feature/PR: #65
 - feature CI: #779
 - merged-main CI: #780
+- final documentation/source-tree CI: #785
 - CI preflight hardening carried forward from PR #63
 
 ## Final verification evidence
@@ -15,7 +16,7 @@ Date: 2026-09-21
 - Chromium availability: success.
 - Chromium/CDP preflight: success.
 - dependency security audit: success.
-- required source tree before this audit file: 144 paths.
+- required source tree after final-audit inclusion: 145 paths.
 - strict TypeScript build: success.
 - retention lifecycle: success.
 - full unit/integration suite: success.
