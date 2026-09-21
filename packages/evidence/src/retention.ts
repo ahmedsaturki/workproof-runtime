@@ -315,7 +315,9 @@ export function planGarbageCollection(vaultDir: string, options: { namespace?: s
       warnings.push(object.kind + " " + object.digest + " failed integrity verification and was not made deletable");
       continue;
     }
-    candidates.push({ kind: object.kind as "proof" | "artifact", digest: object.digest, filePath: object.filePath, reason: entry || pin ? "expired" : "orphan", bytes: object.bytes });
+    const managedProof = object.kind === "proof" && index.records.some((record: any) => record.digest === object.digest);
+    const reason: "expired" | "orphan" = entry || pin || managedProof ? "expired" : "orphan";
+    candidates.push({ kind: object.kind as "proof" | "artifact", digest: object.digest, filePath: object.filePath, reason, bytes: object.bytes });
   }
   return { version: "0.1", generatedAt, ...(options.namespace ? { namespace: options.namespace } : {}), dryRun: true, inventory, protectedRoots, reachable: Array.from(reachable).sort(), candidates, orphanCount: candidates.filter((item) => item.reason === "orphan").length, warnings };
 }
