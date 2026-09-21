@@ -8,7 +8,7 @@ const { buildIntegrityManifest } = require("../packages/evidence/src/integrity.j
 const { generateProofKeyPair, signProof } = require("../packages/evidence/src/signature.js");
 const { publishProof, listProofs, restoreProof, sha256File } = require("../packages/evidence/src/vault.js");
 
-function writeFixture(dir, withArtifact = true) {
+function writeFixture(dir: string, withArtifact = true) {
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const artifactPath = path.join(dir, "artifact.txt");
