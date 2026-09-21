@@ -66,3 +66,42 @@ export async function listProofsFromRegistry(registryUrl: string, token?: string
   if (!Array.isArray(result?.records)) throw new Error("Registry returned an invalid proof list");
   return result.records;
 }
+
+
+import type { TrustPolicySnapshot, TrustSnapshotDecision } from "../../evidence/src/trust-sync";
+
+export async function publishTrustSnapshotToRegistry(registryUrl: string, snapshot: TrustPolicySnapshot, token?: string): Promise<Record<string, unknown>> {
+  const result = await request(registryUrl, "POST", "/v1/trust/snapshots", snapshot, token);
+  if (result?.record?.digest !== snapshot.digest) throw new Error("Registry returned a mismatched trust snapshot digest");
+  return result;
+}
+
+export async function getTrustSnapshotFromRegistry(registryUrl: string, digest: string, token?: string): Promise<TrustPolicySnapshot> {
+  if (!/^[0-9a-f]{64}$/.test(digest)) throw new Error("Trust snapshot digest must be a lowercase SHA-256 hex value");
+  const result = await request(registryUrl, "GET", `/v1/trust/snapshots/${digest}`, undefined, token);
+  if (!result?.snapshot) throw new Error("Registry returned no trust snapshot");
+  return result.snapshot as TrustPolicySnapshot;
+}
+
+export async function listTrustSnapshotsFromRegistry(registryUrl: string, token?: string): Promise<Record<string, unknown>[]> {
+  const result = await request(registryUrl, "GET", "/v1/trust/snapshots", undefined, token);
+  if (!Array.isArray(result?.records)) throw new Error("Registry returned an invalid trust snapshot list");
+  return result.records;
+}
+
+export async function getCurrentTrustSnapshotFromRegistry(registryUrl: string, token?: string): Promise<TrustPolicySnapshot | null> {
+  try {
+    const result = await request(registryUrl, "GET", "/v1/trust/current", undefined, token);
+    return (result?.snapshot ?? null) as TrustPolicySnapshot | null;
+  } catch (error) {
+    if (String(error).includes("no-current-trust-snapshot")) return null;
+    throw error;
+  }
+}
+
+export async function applyTrustSnapshotToRegistry(registryUrl: string, digest: string, token?: string, allowRollback = false): Promise<{ status: TrustSnapshotDecision; current: TrustPolicySnapshot }> {
+  if (!/^[0-9a-f]{64}$/.test(digest)) throw new Error("Trust snapshot digest must be a lowercase SHA-256 hex value");
+  const result = await request(registryUrl, "POST", "/v1/trust/apply", { digest, ...(allowRollback ? { allowRollback: true } : {}) }, token);
+  if (!result?.current) throw new Error("Registry returned no current trust snapshot");
+  return { status: result.status as TrustSnapshotDecision, current: result.current as TrustPolicySnapshot };
+}

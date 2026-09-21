@@ -4,29 +4,30 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-v1.1-dev authenticated multi-user registry is verified on main.
+v1.2-dev signed trust-policy synchronization is the active integration gate.
 
-The proof boundary separates integrity, cryptographic signature, trust policy, content-addressed retention, registry transport, and registry authorization.
+The proof boundary separates integrity, cryptographic signature, trust policy, durable retention, registry transport, and registry authorization.
 
-## Verified v1.1 authenticated registry
+## v1.2 trust snapshots
 
-- Local registry credentials are generated as random bearer tokens; only SHA-256 hashes are persisted.
-- Read and write permissions are enforced separately.
-- Credentials can be bound to namespaces backed by separate local vault roots.
-- Authorization decisions are audited without plaintext bearer tokens.
-- CLI credential lifecycle is available through workctl.
-- Registry client publish/get/list calls support bearer credentials and re-check proof integrity/digest.
-- Focused security regressions and a high-severity dependency audit are part of CI.
-- Live GitHub read smoke remains part of the full acceptance pipeline.
+- `buildTrustPolicySnapshot` creates a versioned snapshot with an explicit epoch and canonical SHA-256 digest.
+- `signTrustPolicySnapshot` attaches an Ed25519 signature to the canonical snapshot envelope.
+- `verifyTrustPolicySnapshot` checks snapshot shape, digest, signature, and an explicit administrative-key allowlist.
+- `reconcileTrustPolicySnapshot` distinguishes accept, noop, conflict, rollback-required, untrusted-signer, and invalid.
+- `applyTrustPolicySnapshot` never silently replaces a newer epoch.
+- Administrative signer trust can be scoped per authenticated namespace; a key trusted in one namespace is not implicitly trusted in another.
+- The synchronization core is transport-independent and does not claim distributed consensus.
 
 ## Security boundary
 
-Transport authentication and authorization do not establish proof trust. Proof integrity, signature validity, and trust policy remain separate gates.
-
-Namespace isolation is a local vault-root boundary, not a distributed authorization system.
+Registry authentication answers who may call the registry.
+Proof signatures answer which key signed a proof.
+Trust policy answers which proof identities are accepted.
+Trust snapshots answer whether one trust-policy state may replace another.
+Administrative signer authorization is a separate namespace-aware gate for trust snapshot mutation.
 
 ## Next engineering gate
 
-v1.2 signed trust-policy snapshots, deterministic reconciliation, and registry-to-registry policy synchronization.
+Registry-to-registry snapshot transport, signed snapshot replication, revocation propagation, persistent rollback/audit history, retention garbage collection, generalized compensation/saga semantics, distributed workers/control plane, and Studio/REST/SDK remain separate milestones.
 
 This repository does not make a global novelty claim.
