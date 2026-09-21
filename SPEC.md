@@ -47,7 +47,21 @@ Authenticated control-plane operations provide read, dispatch, cancel, and resum
 
 The Studio control surface must delegate mutation to this control plane rather than reproducing authorization or state-transition logic.
 
-## 8. Studio
+## 8. Control mutation idempotency
+
+When a durable idempotency ledger is configured, authenticated `POST` mutations use an `Idempotency-Key` with a canonical request fingerprint.
+
+The ledger guarantees:
+- same key + same operation/input returns the previously stored logical response without repeating the mutation;
+- same key + different operation/input is rejected;
+- a concurrent duplicate sees an explicit in-progress state rather than executing a second mutation;
+- completed entries survive process restart.
+
+A pending entry is fail-closed rather than automatically reclaimed, because retrying an unknown mutation can itself create a duplicate side effect.
+
+Control-plane idempotency is separate from external capability idempotency; it does not create exactly-once semantics for third-party systems.
+
+## 9. Studio
 
 The v2.1 Studio is a local operational surface over persisted Work Objects with optional authenticated control delegation.
 
@@ -82,15 +96,15 @@ Proof/audit security rules:
 - Proof APIs never mutate the vault.
 - Browser hardening and no-store headers apply to the proof/audit surface.
 
-## 9. CLI Lifecycle Surface
+## 10. CLI Lifecycle Surface
 
 The CLI exposes work execution, proof inspection/verification, signer identity, registry operations, proof-vault lifecycle, and local Studio launch.
 
-## 10. Non-goals
+## 11. Non-goals
 
 WorkProof is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, or distributed-consensus system.
 
-## 11. v2.2 Acceptance Target
+## 12. v2.2 Acceptance Target
 
 - v2.0 Studio behavior remains passing.
 - Authenticated dispatch delegation works.
