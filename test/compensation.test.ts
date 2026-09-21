@@ -59,7 +59,8 @@ test("lost compensation acknowledgement reconciles without duplicate write", asy
   const result = await executeCompensation({ store, registry, work,
     request: { sagaId: saga.sagaId, sourceEffectId: one.effectId, operation: "undo", input: "A", idempotencyKey: "comp:lost", capability: "flaky.undo", riskClass: "external_write", maxAttempts: 3 },
     verifyExternalState: async () => !state.has("A") });
-  assert.equal(result.status, "compensated");
+  assert.equal(result.status, "partial");
+  assert.equal(work.sagas[0].status, "partial");
   assert.equal(calls, 1);
 });
 
