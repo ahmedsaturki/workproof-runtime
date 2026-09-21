@@ -9,16 +9,29 @@ Date: 2026-09-21
 Main merge commit:
 545dffda29c04249677f9605e5709f8e8c9d2ffb
 
-Merged-main verification:
+Latest verified main CI:
 - CI #476: success.
-- source audit: 111/111 required paths.
+- final documentation CI #478: success.
+- source audit: 111/111 required paths on the v1.8 checkpoint.
 - dependency security audit: success.
-- retention lifecycle suite: 9/9 passed.
+- retention lifecycle suite: 9/9.
 - full unit/integration suite: passed.
 - benchmark: passed.
 - demo: verified.
 - CLI proof and mission: verified.
 - live GitHub smoke: verified.
+
+## Active next branch
+
+feature/v1.9-saga-recovery
+
+Target:
+- durable saga recovery after worker/process loss.
+- dedicated recovery lease ownership.
+- replacement worker takeover after lease expiry.
+- resume only pending compensation.
+- stale-owner stop after ownership moves.
+- ambiguous compensation reconciliation before retry.
 
 ## Verified v1.8 gates
 
@@ -32,9 +45,18 @@ Merged-main verification:
 - [x] Legacy work objects remain schema-compatible.
 - [x] Feature CI and merged-main CI both pass.
 
-## Remaining saga hardening
+## v1.9 acceptance gates
 
-- [ ] Recover partially completed sagas after worker/process loss as an explicit end-to-end acceptance path.
+- [ ] Partial saga survives worker/process loss as a durable Work Object.
+- [ ] Replacement worker acquires the saga recovery lease after expiry.
+- [ ] Verified compensation is never replayed.
+- [ ] Pending compensation executes exactly once in the controlled handoff path.
+- [ ] Ambiguous compensation acknowledgement reconciles before retry.
+- [ ] Stale worker cannot continue after lease ownership moves.
+- [ ] Feature CI and merged-main CI pass.
+
+## Remaining platform work
+
 - [ ] Multi-user proof trust policy for signed identities.
 - [ ] Broader remote proof/artifact lifecycle surfaces.
 - [ ] External browser navigation where permitted.
