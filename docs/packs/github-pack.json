@@ -15,6 +15,7 @@
     "external write requires deterministic idempotencyMarker"
   ],
   "fixtures": [
-    "test/github.test.ts"
+    "test/github.test.ts",
+    "test/two-system.test.ts"
   ]
 }

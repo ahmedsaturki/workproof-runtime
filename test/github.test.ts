@@ -208,6 +208,7 @@ test("GitHub pack manifest, effect operation context, and proof integrity are en
     "pack.github.repo.read",
     "pack.github.issue.create"
   ]);
+  assert.deepEqual(manifest.fixtures, ["test/github.test.ts", "test/two-system.test.ts"]);
 
   const store = new WorkStore();
   const work = store.create({ objective: "integrity", success: [], deliverables: [], riskClass: "read" });
