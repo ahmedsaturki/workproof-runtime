@@ -49,7 +49,7 @@ test("dry-run reports an expired proof and orphan artifact without deleting data
   const vault = path.join(dir, "vault");
   const record = publishProof(p.proofPath, vault);
   const plan = planGarbageCollection(vault, { asOf: "2026-12-31T00:00:00.000Z" });
-  assert.ok(plan.candidates.some((x: any) => x.kind === "proof" && x.digest === record.digest && x.reason === "expired"));
+  assert.ok(plan.candidates.some((x: any) => x.kind === "proof" && x.digest === record.digest && x.reason === "expired"), JSON.stringify({ record, inventory: inventoryVault(vault), plan }, null, 2));
   assert.ok(plan.candidates.some((x: any) => x.kind === "artifact" && x.reason === "orphan"));
   assert.equal(fs.existsSync(record.proofPath), true);
 });
