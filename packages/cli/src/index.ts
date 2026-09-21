@@ -14,6 +14,7 @@ const { buildIntegrityManifest, verifyProofIntegrity } = require("../../evidence
 const { generateProofKeyPair, signProof, verifyProofSignature, proofKeyId } = require("../../evidence/src/signature.js");
 const { loadTrustPolicy, saveTrustPolicy, trustKey, revokeKey, evaluateProofTrust } = require("../../evidence/src/trust.js");
 const { publishProof, restoreProof, listProofs, inspectProof } = require("../../evidence/src/vault.js");
+const { createAuthPolicy, loadAuthPolicy, saveAuthPolicy, issueCredential, addIssuedCredential, revokeCredential } = require("../../registry/src/auth.js");
 
 function usage(): void {
   process.stdout.write(`workctl
@@ -29,6 +30,10 @@ function usage(): void {
   vault-restore <digest> <vault-dir> <output.json>
   vault-list <vault-dir>
   vault-inspect <digest> <vault-dir>
+  registry-auth-init <policy.json>
+  registry-auth-add <policy.json> <credential-id> <read|write|readwrite> [namespace] [label]
+  registry-auth-revoke <credential-id> <policy.json> [reason]
+  registry-auth-list <policy.json>
 `);
 }
 
@@ -72,6 +77,56 @@ function vaultList(vaultDir: string): void {
 
 function vaultInspect(digest: string, vaultDir: string): void {
   process.stdout.write(JSON.stringify(inspectProof(vaultDir, digest), null, 2) + "\n");
+}
+
+function registryAuthInit(policyPath: string): void {
+  if (fs.existsSync(policyPath)) throw new Error("Registry auth policy already exists");
+  saveAuthPolicy(policyPath, createAuthPolicy());
+  process.stdout.write(JSON.stringify({ status: "initialized", policy: policyPath }, null, 2) + "\n");
+}
+
+function registryAuthAdd(policyPath: string, credentialId: string, permissionSpec: string, namespace?: string, label?: string): void {
+  const permissions =
+    permissionSpec === "readwrite" ? ["read", "write"] :
+    permissionSpec === "read" || permissionSpec === "write" ? [permissionSpec] : null;
+  if (!permissions) throw new Error("Permission must be read, write, or readwrite");
+  const policy = loadAuthPolicy(policyPath);
+  const issued = issueCredential({ id: credentialId, permissions, ...(namespace ? { namespace } : {}), ...(label ? { label } : {}) });
+  const next = addIssuedCredential(policy, issued);
+  saveAuthPolicy(policyPath, next);
+  process.stdout.write(JSON.stringify({
+    status: "issued",
+    policy: policyPath,
+    credentialId: issued.credential.id,
+    permissions: issued.credential.permissions,
+    namespace: issued.credential.namespace ?? null,
+    token: issued.token
+  }, null, 2) + "\n");
+}
+
+function registryAuthRevoke(credentialId: string, policyPath: string, reason?: string): void {
+  const policy = loadAuthPolicy(policyPath);
+  const next = revokeCredential(policy, credentialId, reason);
+  saveAuthPolicy(policyPath, next);
+  const record = next.credentials.find((item) => item.id === credentialId);
+  process.stdout.write(JSON.stringify({
+    status: "revoked",
+    policy: policyPath,
+    credentialId,
+    revokedAt: record?.revokedAt ?? null
+  }, null, 2) + "\n");
+}
+
+function registryAuthList(policyPath: string): void {
+  const policy = loadAuthPolicy(policyPath);
+  process.stdout.write(JSON.stringify(policy.credentials.map((item) => ({
+    id: item.id,
+    permissions: item.permissions,
+    namespace: item.namespace ?? null,
+    label: item.label ?? null,
+    createdAt: item.createdAt,
+    revokedAt: item.revokedAt ?? null
+  })), null, 2) + "\n");
 }
 
 function trustRevoke(keyId: string, policyPath: string, reason?: string): void {
@@ -141,7 +196,7 @@ async function runMission(file: string): Promise<void> {
   if (work.status !== "verified") process.exitCode = 2;
 }
 
-const [, , command, firstArg, secondArg, thirdArg] = process.argv;
+const [, , command, firstArg, secondArg, thirdArg, fourthArg, fifthArg] = process.argv;
 if (!command) {
   usage();
   process.exitCode = 1;
@@ -161,6 +216,30 @@ if (!command) {
   if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
   else {
     try { trustRevoke(firstArg, secondArg, thirdArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+} else if (command === "registry-auth-init") {
+  if (!firstArg) { usage(); process.exitCode = 1; }
+  else {
+    try { registryAuthInit(firstArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+} else if (command === "registry-auth-add") {
+  if (!firstArg || !secondArg || !thirdArg) { usage(); process.exitCode = 1; }
+  else {
+    try { registryAuthAdd(firstArg, secondArg, thirdArg, fourthArg, fifthArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+} else if (command === "registry-auth-revoke") {
+  if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
+  else {
+    try { registryAuthRevoke(firstArg, secondArg, thirdArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+} else if (command === "registry-auth-list") {
+  if (!firstArg) { usage(); process.exitCode = 1; }
+  else {
+    try { registryAuthList(firstArg); }
     catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "vault-publish") {
