@@ -56,6 +56,7 @@ const required = [
   "packages/packs/src/web-discovery-pack.ts",
   "packages/policy/src/guard.ts",
   "packages/registry/src/auth.ts",
+  "packages/registry/src/client.ts",
   "packages/registry/src/http.ts",
   "packages/recovery/src/engine.ts",
   "packages/runtime/src/engine.ts",
