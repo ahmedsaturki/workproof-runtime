@@ -69,7 +69,8 @@ async function waitFor(ws: WebSocket & { call?: (m: string, p?: any) => Promise<
 
 function ensureBrowser(port = 0): any {
   const profile = `/tmp/workproof-chromium-${process.pid}-${randomBytes(4).toString("hex")}`;
-  const browser = spawn("chromium", [
+  const browserBinary = process.env.WORKPROOF_BROWSER_BINARY || "chromium";
+  const browser = spawn(browserBinary, [
     "--headless",
     "--no-sandbox",
     "--disable-gpu",
