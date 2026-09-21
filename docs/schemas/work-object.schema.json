@@ -8,6 +8,7 @@
     "status",
     "events",
     "effects",
+    "sagas",
     "artifacts",
     "createdAt",
     "updatedAt"
@@ -40,9 +41,10 @@
       "type": "array",
       "items": {
         "type": "object",
-        "properties": {"attemptLog": {"type": "array"}}
+        "properties": {"attemptLog": {"type": "array"}, "kind": {"enum": ["forward", "compensation"]}, "sourceEffectId": {"type": "string"}}
       }
     },
+    "sagas": {"type": "array", "items": {"type": "object", "required": ["sagaId","status","forwardEffectIds","compensationEffectIds","createdAt","updatedAt"], "properties": {"sagaId": {"type": "string"}, "status": {"enum": ["planned","running","partial","compensated","unresolved","failed"]}, "forwardEffectIds": {"type": "array", "items": {"type": "string"}}, "compensationEffectIds": {"type": "array", "items": {"type": "string"}}, "createdAt": {"type": "string"}, "updatedAt": {"type": "string"}}}},
     "artifacts": {"type": "array"},
     "verification": {"type": ["object","null"]},
     "createdAt": {"type": "string"},

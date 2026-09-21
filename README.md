@@ -4,13 +4,13 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v1.7 authenticated control-plane and SDK foundation is verified on main.**
+**v1.8 explicit saga/compensation semantics are in development.**
 
-The main line combines durable Work Objects, signed proof identity, trusted signer policy, authenticated proof registry transport, proof-vault lifecycle management, persistent cross-process lease authority, worker registration/heartbeat/offline state, WorkEngine-bound execution leases, durable worker-loss recovery, and an authenticated control/SDK surface around the Work Object model.
+The runtime models compensation as explicit auditable work linked to its originating forward effect. Compensation is never treated as automatic rollback.
 
 ## Core loop
 
-Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify -> Recover/Substitute -> Deliver -> Proof -> Retain -> Control
+Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify -> Recover/Substitute -> Deliver -> Proof -> Retain -> Control -> Compensate
 
 ## Verified platform gates
 
@@ -25,51 +25,25 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - v1.6 worker-loss recovery.
 - v1.7 authenticated control-plane and SDK foundation.
 
-## v1.7 control plane
+## v1.8 saga/compensation
 
-- Authenticated GET /v1/work/:id for work retrieval.
-- Authenticated POST dispatch/cancel/resume.
-- Mutating actions carry audit request IDs.
-- Verified/failed work cannot be cancelled remotely.
-- Repeated cancellation is idempotent.
-- Dispatch/resume remain injected boundaries so the control plane does not become a second workflow engine.
-
-## v1.7 SDK
-
-- Work Object types are re-exported from the kernel.
-- Work Objects round-trip through JSON wire semantics.
-- ControlPlaneClient exposes getWork, dispatch, cancel, and resume.
-- Input validation happens before network access.
-- HTTP authorization remains separate from proof signature/trust verification.
-
-## Verification evidence
-
-- Main merge commit: 86f8effb0e6178eb2f69d7b33472c7579be54d0f
-- Merged-main CI #448: success.
-- Source audit: 113/113 required paths.
-- Dependency security audit: success.
-- Retention lifecycle suite: passed.
-- Full sequential unit/integration suite: passed.
-- Benchmark: passed.
-- Demo and CLI mission: verified.
-- Live GitHub smoke: verified.
+- Compensation uses a distinct effect kind and independent effect identity.
+- Every compensation is linked to an originating forward effect.
+- Saga state tracks forward and compensation effect lineage.
+- Compensation obeys work risk ceilings and approval policy.
+- Lost acknowledgements reconcile external state before another compensation write.
+- Partial and unresolved compensation remain explicit.
+- Persisted verified compensation is not replayed.
+- Proof bundles preserve saga/effect lineage.
 
 ## Safety boundary
 
-Authentication answers whether a caller may control work. Signed proof verification answers whether a proof authenticates under its embedded key. Trust policy answers whether that key is accepted.
+Compensation is not guaranteed rollback. The runtime records what was attempted, what was independently verified, and what remains unresolved.
 
-Control-plane APIs do not provide exactly-once semantics for arbitrary external systems. Existing effect idempotency, reconciliation, verification, and execution-lease semantics remain authoritative.
+Control-plane authentication, proof signatures, signer trust, retention, and worker leases remain separate concerns with their existing boundaries.
 
-Leases are ownership coordination, not proof of outcome or distributed consensus.
+## Next engineering gates
 
-## Product boundary
-
-WorkProof Runtime is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, distributed-consensus system, or hosted identity provider.
-
-## Next engineering gate
-
-**v1.8 — explicit saga/compensation semantics**
-
-The next gate models compensation as explicit auditable work linked to the originating effect, with separate policy and risk semantics and no assumption that arbitrary external actions can be rolled back.
+External browser navigation where permitted, further worker/control-plane hardening, broader capability packs, and product-facing Studio surfaces remain separate milestones.
 
 This repository does not make a global novelty claim.

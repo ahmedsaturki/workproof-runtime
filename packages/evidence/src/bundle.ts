@@ -11,6 +11,7 @@ export function buildProofBundle(work: WorkObject): Record<string, unknown> {
       updatedAt: work.updatedAt
     },
     effects: work.effects,
+    sagas: work.sagas ?? [],
     artifacts: work.artifacts,
     verification: work.verification ?? null,
     events: work.events
