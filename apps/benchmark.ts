@@ -80,7 +80,7 @@ async function runGitChange() {
 }
 
 class BenchmarkAmbiguousCreate {
-  name = "benchmark.http.order.create"; version = "0.1.0"; operations = ["create_order"]; riskClass = "external_write";
+  name = "benchmark.http.order.create"; version = "0.1.0"; operations = ["create_order"]; riskClass = "external_write" as const;
   constructor(private readonly baseUrl: string, private readonly counts: { posts: number }) {}
   async execute(request: any) {
     const body = JSON.stringify(request.input); this.counts.posts += 1;
@@ -147,11 +147,11 @@ async function runAmbiguousExternalEffect() {
 }
 
 class BenchmarkPrimary {
-  name = "benchmark.primary.publish"; version = "0.1.0"; operations = ["publish_record"]; riskClass = "local_write"; calls = 0;
+  name = "benchmark.primary.publish"; version = "0.1.0"; operations = ["publish_record"]; riskClass = "local_write" as const; calls = 0;
   async execute() { this.calls += 1; return { status: "ambiguous", data: { reason: "simulated primary outage" } }; }
 }
 class BenchmarkFallback {
-  name = "benchmark.fallback.publish"; version = "0.1.0"; operations = ["publish_record"]; riskClass = "local_write";
+  name = "benchmark.fallback.publish"; version = "0.1.0"; operations = ["publish_record"]; riskClass = "local_write" as const;
   constructor(private readonly state: Map<string, string>) {}
   async execute(request: any) { this.state.set(String(request.input.key), String(request.input.value)); return { status: "accepted", externalEffectId: "fallback:" + String(request.input.key) }; }
 }
@@ -204,7 +204,6 @@ export async function runBenchmark() {
   const repo = new JsonWorkRepository("./benchmark-runs"); void repo;
   fs.writeFileSync("./benchmark-result.json", JSON.stringify(summary, null, 2) + "\n");
   return summary;
-  process.stdout.write(JSON.stringify(summary, null, 2) + "\n");
 }
 if (require.main === module) { runBenchmark().then(summary => { process.stdout.write(JSON.stringify(summary, null, 2) + "\n"); if (!summary.passed) process.exitCode = 1; }).catch((err: Error) => { process.stderr.write(String(err) + "\n"); process.exitCode = 1; }); }
 export {};
