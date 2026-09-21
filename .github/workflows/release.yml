@@ -26,6 +26,11 @@ jobs:
           node-version: 24
           package-manager-cache: false
 
+      - name: Determine release tag
+        id: release
+        shell: bash
+        run: echo "tag=v${GITHUB_REF_NAME#release/}" >> "$GITHUB_OUTPUT"
+
       - name: Install dependencies
         run: npm install
 
@@ -34,30 +39,39 @@ jobs:
 
       - name: Build distribution files
         env:
-          RELEASE_TAG: v${{ github.ref_name#release/ }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
         run: |
           set -euo pipefail
           rm -rf release-dist
           mkdir -p release-dist
-          npm pack --pack-destination release-dist
-          git archive --format=tar.gz --output="release-dist/workproof-runtime-${RELEASE_TAG}.tar.gz" "${GITHUB_SHA}"
-          cp benchmark-result.json "release-dist/workproof-benchmark-${RELEASE_TAG}.json"
+
+          PACKAGE_NAME="$(node -p "require('./package.json').name")"
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          PACKAGE_FILE="$(npm pack --pack-destination release-dist | tail -n 1)"
+          SOURCE_FILE="workproof-runtime-${RELEASE_TAG}.tar.gz"
+          BENCHMARK_FILE="workproof-benchmark-${RELEASE_TAG}.json"
+
+          git archive --format=tar.gz --output="release-dist/${SOURCE_FILE}" "${GITHUB_SHA}"
+          cp benchmark-result.json "release-dist/${BENCHMARK_FILE}"
+
           cat > release-dist/RELEASE-MANIFEST.txt <<EOF
           WorkProof Runtime ${RELEASE_TAG}
           Commit: ${GITHUB_SHA}
           Repository: ${GITHUB_REPOSITORY}
           Verification: npm run check
-          Package: operational-reality-core-3.4.0-dev.tgz
-          Source bundle: workproof-runtime-${RELEASE_TAG}.tar.gz
-          Benchmark: workproof-benchmark-${RELEASE_TAG}.json
+          Package: ${PACKAGE_FILE}
+          Package version: ${PACKAGE_VERSION}
+          Source bundle: ${SOURCE_FILE}
+          Benchmark: ${BENCHMARK_FILE}
           EOF
+
           sha256sum release-dist/* > release-dist/SHA256SUMS.txt
           cat release-dist/SHA256SUMS.txt
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: v${{ github.ref_name#release/ }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
         run: |
           set -euo pipefail
           if gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
@@ -69,7 +83,7 @@ jobs:
       - name: Verify published release
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: v${{ github.ref_name#release/ }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
         run: |
           set -euo pipefail
           gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}"
