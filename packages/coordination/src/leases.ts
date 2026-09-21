@@ -111,7 +111,7 @@ export class LeaseStore {
 
     const now = this.clock.nowMs();
     const existing = this.leases.get(resourceId);
-    if (existing && Number(existing.expiresAt) > 0 && Date.parse(existing.expiresAt) > now) {
+    if (existing && Date.parse(existing.expiresAt) > now) {
       if (existing.ownerId === ownerId) {
         existing.renewedAt = iso(now);
         existing.expiresAt = iso(now + ttlMs);
