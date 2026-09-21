@@ -27,7 +27,7 @@ class LocalPublicationVerifier implements Verifier {
     const expected = input.content;
     try {
       const response = await fetch(`${input.baseUrl}/publications/${encodeURIComponent(input.publicationId)}`);
-      if (!response.ok) return { id: ctx.criterion.id, criterion: ctx.criterion.description, passed: false, details: `HTTP ${response.status=}`, evidence: [] };
+      if (!response.ok) return { id: ctx.criterion.id, criterion: ctx.criterion.description, passed: false, details: `HTTP ${response.status}`, evidence: [] };
       const body = await response.json() as { id: string; content: string };
       const passed = body.id === input.publicationId && body.content === expected;
       return {
@@ -35,7 +35,7 @@ class LocalPublicationVerifier implements Verifier {
         criterion: ctx.criterion.description,
         passed,
         details: `public=${passed}; id=${body.id}`,
-        evidence: passed ? [{ id: `publication:{body.id}}`, kind: "public-state", uri: `${input.baseUrl}/publications,${encodeURiComponent(body.id)}` }] : []
+        evidence: passed ? [{ id: `publication:${body.id}`, kind: "public-state", uri: `${input.baseUrl}/publications/${encodeURIComponent(body.id)}` }] : []
       };
     } catch (error) {
       return { id: ctx.criterion.id, criterion: ctx.criterion.description, passed: false, details: String(error), evidence: [] };
