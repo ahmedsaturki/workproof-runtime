@@ -58,6 +58,7 @@ const required = [
   "test/kernel.test.ts",
   "test/publication.test.ts",
   "test/runtime.test.ts",
+  "test/two-system.test.ts",
   "tsconfig.json",
   "types/globals.d.ts"
 ];

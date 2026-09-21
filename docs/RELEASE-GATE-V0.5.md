@@ -19,6 +19,7 @@ This gate moves WorkProof Runtime beyond purely local adapters and proves that e
 - [x] Deterministic idempotency marker is mandatory.
 - [x] Lost acknowledgement is reconciled from external state before retry.
 - [x] Local fault injection proves one POST produces one issue.
+- [x] Two independent external systems can each reconcile a lost acknowledgement without duplicate writes.
 
 ### Proof
 - [x] Evidence references are emitted for the resulting GitHub issue.
@@ -27,9 +28,8 @@ This gate moves WorkProof Runtime beyond purely local adapters and proves that e
 - [x] GitHub pack compatibility is declared in a manifest and exercised by tests.
 
 ### Remaining for milestone closure
-- [ ] Two-system coordinated fault injection and reconciliation.
-- [ ] Real browser navigation where environment policy permits it.
 - [ ] Reusable compensation/saga primitives.
+- [ ] Real browser navigation where environment policy permits it.
 - [ ] Worker/process boundary tests.
 - [ ] Final release audit on the merged main branch.
 

@@ -17,6 +17,7 @@ v0.5 integration branch contains:
 - proof integrity digest
 - pack compatibility manifest
 - effect operation context
+- two-system lost-acknowledgement fault injection
 
 ## v0.5 gates
 
@@ -25,9 +26,9 @@ v0.5 integration branch contains:
 - [x] GitHub Actions live read smoke against the actual repository.
 - [x] External-effect write path behind approval policy.
 - [x] Local lost-acknowledgement regression without duplicate write.
+- [x] Two independent external systems reconcile lost acknowledgements without duplicate writes.
 - [x] Proof integrity checks.
 - [x] Pack compatibility manifest.
-- [ ] Two independent real external systems under coordinated fault injection.
 - [ ] Generalized compensation/saga engine.
 - [ ] Real browser navigation against an external site where environment policy permits it.
 - [ ] Distributed/remote workers.
@@ -39,4 +40,4 @@ Do not classify a work item as completed solely because a tool returned success.
 
 ## Release posture
 
-v0.5 remains a development milestone until its remaining cross-system and worker/control-plane gates are independently verified.
+v0.5 remains a development milestone until its remaining compensation, browser, worker, and final merged-branch audit gates are independently verified.

@@ -2,13 +2,14 @@
 
 ## Required source tree
 
-The v0.5 development branch contains 57 required paths enforced by scripts/verify-source-tree.js.
+The v0.5 development branch contains 58 required paths enforced by scripts/verify-source-tree.js.
 
 The additional v0.5 paths include:
 - docs/packs/github-pack.json
 - docs/RELEASE-GATE-V0.5.md
 - packages/evidence/src/integrity.ts
 - test/github.test.ts
+- test/two-system.test.ts
 
 ## v0.4 local exact history
 
