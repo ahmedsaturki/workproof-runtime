@@ -28,10 +28,6 @@ jobs:
           command -v "$WORKPROOF_BROWSER_BINARY"
           "$WORKPROOF_BROWSER_BINARY" --version
       - name: Chromium CDP preflight
-        env:
-          DBUS_SESSION_BUS_ADDRESS: unix:path=/dev/null
-          DBUS_SYSTEM_BUS_ADDRESS: unix:path=/dev/null
-          XDG_RUNTIME_DIR: ""
         run: node scripts/chromium-cdp-smoke.js
       - run: npm install
       - name: Dependency security audit
