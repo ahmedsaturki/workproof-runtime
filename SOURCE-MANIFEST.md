@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The current v2.5 verified main tree contains **133 required paths** enforced by scripts/verify-source-tree.js.
+The current v2.6 worker-aware Studio branch contains **135 required paths** enforced by scripts/verify-source-tree.js.
 
 The tree includes:
 - proof registry and authenticated transport
