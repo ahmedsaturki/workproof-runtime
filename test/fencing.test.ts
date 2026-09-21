@@ -8,8 +8,8 @@ const { fork } = require("child_process");
 import { Capability, CapabilityContext, VerificationCheck, Verifier, WorkObject } from "../packages/core/src/types";
 import { CapabilityRegistry } from "../packages/capabilities/src/registry";
 import { WorkStore } from "../packages/core/src/work";
-import { LeaseRecord, PersistentLeaseStore } from "../packages/coordination/src/persistent";
-import { LeaseAcquireResult } from "../packages/coordination/src/leases";
+import { PersistentLeaseStore } from "../packages/coordination/src/persistent";
+import { LeaseAcquireResult, LeaseRecord } from "../packages/coordination/src/leases";
 import { ExecutionLeaseAuthority, WorkEngine, WorkStep } from "../packages/runtime/src/engine";
 import { VerificationEngine } from "../packages/verification/src/engine";
 
@@ -116,7 +116,7 @@ test("WorkEngine exposes an execution fence to capability code and validates it 
   const registry = new CapabilityRegistry();
   const verification = new VerificationEngine();
   const authority = new FakeAuthority("unused", "worker-fence");
-  const calls = { count: 0 };
+  const calls: { count: number; fenceToken?: string } = { count: 0 };
 
   registerFenceCapability(registry, verification, calls);
   const engine = new WorkEngine(
