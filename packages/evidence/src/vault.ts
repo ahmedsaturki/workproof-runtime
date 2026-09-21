@@ -122,7 +122,11 @@ export function publishProof(proofFile: string, vaultDir: string): VaultRecord {
     if (!source) continue;
     const artifactDigest = sha256File(source);
     const destinationArtifact = path.join(vaultDir, "artifacts", artifactDigest);
-    if (!fs.existsSync(destinationArtifact)) copyFileAtomic(source, destinationArtifact);
+    if (!fs.existsSync(destinationArtifact)) {
+      copyFileAtomic(source, destinationArtifact);
+    } else if (sha256File(destinationArtifact) !== artifactDigest) {
+      throw new Error("Existing vault artifact failed integrity verification");
+    }
     artifacts[uri] = destinationArtifact;
   }
 
@@ -164,6 +168,13 @@ export function restoreProof(vaultDir: string, digest: string, outputPath: strin
     throw new Error("Vault proof failed integrity verification");
   }
   if (data.integrity.digest !== digest) throw new Error("Vault proof digest mismatch");
+  for (const artifactPath of Object.values(record.artifacts)) {
+    if (!fs.existsSync(artifactPath)) throw new Error("Vault artifact file is missing");
+    const expectedDigest = path.basename(artifactPath);
+    if (!/^[0-9a-f]{64}$/.test(expectedDigest) || sha256File(artifactPath) !== expectedDigest) {
+      throw new Error("Vault artifact failed integrity verification");
+    }
+  }
   ensureVault(vaultDir);
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   atomicWrite(outputPath, JSON.stringify(data, null, 2) + "\n");
