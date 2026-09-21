@@ -18,6 +18,12 @@ Make trust policy portable between self-hosted registries through versioned, sig
 - [x] Deterministic conflict for different snapshots at the same epoch.
 - [x] Stale/rollback state is explicit and requires an override.
 - [x] Pure reconciliation/apply functions are independently testable.
+- [x] Authenticated trust snapshot publish/pull/list transport.
+- [x] Explicit apply endpoint with monotonic epoch enforcement.
+- [x] Revocation state propagates through signed snapshots.
+- [x] Same-epoch conflict is rejected.
+- [x] Forged/untrusted signer is rejected.
+- [x] Explicit rollback requires an override.
 - [ ] Registry-to-registry transport.
 - [ ] Signed snapshot replication API.
 - [ ] Revocation propagation protocol.
