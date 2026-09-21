@@ -49,8 +49,7 @@ function sanitizeWork(work: any): Record<string, unknown> {
           capability: effect.capability,
           riskClass: effect.riskClass,
           status: effect.status,
-          attempts: effect.attempts,
-          idempotencyKey: effect.idempotencyKey
+          attempts: effect.attempts
         }))
       : [],
     artifacts: Array.isArray(work.artifacts)
