@@ -75,6 +75,7 @@ export interface EffectRecord {
   kind?: EffectKind;
   sourceEffectId?: string;
   operation?: string;
+  input?: unknown;
   capability: string;
   status: EffectStatus;
   riskClass: RiskClass;
