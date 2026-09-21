@@ -4,9 +4,9 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v2.2-dev proof/audit Studio is verified on main.**
+**v2.3-dev control-plane hardening is in progress.**
 
-v2.1 established authenticated Studio control delegation through the control plane. v2.2 adds read-only proof/audit views backed by the content-addressed proof vault and optional local trust policy.
+v2.1 established authenticated Studio control delegation through the control plane. v2.2 added read-only proof/audit views backed by the content-addressed proof vault and optional local trust policy. v2.3 adds durable idempotency and replay/concurrency protection for authenticated control mutations.
 
 ## Core loop
 
@@ -57,6 +57,16 @@ Proof integrity and signatures establish integrity/authenticity properties under
 - Corrupted retained proofs fail closed as invalid audit records.
 - Missing proof vault configuration returns a clear `503` rather than fabricating proof state.
 - Proof/audit endpoints are read-only and use the existing Studio hardening/no-store boundary.
+
+## v2.3 control-plane idempotency
+
+- Authenticated mutation endpoints can use a durable SQLite idempotency ledger.
+- Dispatch, cancel, and resume mutations require an `Idempotency-Key` when the ledger is configured.
+- Reusing the same key for the same logical mutation replays the stored response without repeating the mutation.
+- Reusing a key for a different operation or payload is rejected as a conflict.
+- Concurrent use of the same key is fail-closed while the original mutation is pending.
+- Idempotency records survive control-plane process restart.
+- The SDK exposes mutation idempotency keys, and Studio generates per-action keys for control delegation.
 
 ## Next engineering gates
 

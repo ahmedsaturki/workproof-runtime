@@ -40,6 +40,22 @@ GOAL -> CONTRACT -> ROUTE -> ACT -> OBSERVE -> VERIFY -> RECONCILE/RECOVER -> DE
     Proof / Artifact
     durable evidence
 
+## Control mutation idempotency
+
+    Client
+      |
+      | Idempotency-Key
+      v
+    Authenticated Control Plane
+      |
+      +--> durable request ledger
+      |      |\n      |      +--> replay completed response\n      |      +--> reject key conflict\n      |      +--> reject concurrent duplicate\n      |
+      +--> mutation
+      |
+      +--> audit
+
+The durable request ledger protects authenticated control mutations from client retries and same-key races. It is intentionally separate from external-effect idempotency: a control mutation replay guarantee does not make a third-party write exactly-once.
+
 ## Control boundary
 
     Studio

@@ -1,6 +1,7 @@
 const http = require("http");
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
 const { URL } = require("url");
 const { JsonWorkRepository } = require("../packages/storage/src/json.js");
 const { listProofs } = require("../packages/evidence/src/vault.js");
@@ -90,7 +91,7 @@ function sanitizeWork(work: any): Record<string, unknown> {
   };
 }
 
-function sendJson(res: any, statusCode: number, body: Record<string, unknown>): void {
+function sendJson(res: any, statusCode: number, body: Record<string, unknown>, extraHeaders: Record<string, string> = {}): void {
   const payload = JSON.stringify(body);
   res.writeHead(statusCode, {
     "content-type": "application/json; charset=utf-8",
@@ -100,7 +101,8 @@ function sendJson(res: any, statusCode: number, body: Record<string, unknown>): 
     "x-frame-options": "DENY",
     "referrer-policy": "no-referrer",
     "permissions-policy": "camera=(), microphone=(), geolocation=()",
-    "connection": "close"
+    "connection": "close",
+    ...extraHeaders
   });
   res.end(payload);
 }
@@ -158,12 +160,20 @@ async function forwardControl(
   req: any,
   route: string,
   body?: unknown
-): Promise<{ status: number; payload: Record<string, unknown> }> {
+): Promise<{ status: number; payload: Record<string, unknown>; headers?: Record<string, string> }> {
   if (!controlPlaneUrl) return { status: 503, payload: { error: "control-not-configured" } };
   const token = authHeader(req);
   if (!token) return { status: 401, payload: { error: "unauthorized" } };
 
   const headers: Record<string, string> = { authorization: token };
+  const idempotencyKey = req.headers?.["idempotency-key"];
+  if (idempotencyKey !== undefined) {
+    const value = Array.isArray(idempotencyKey) ? idempotencyKey[0] : String(idempotencyKey);
+    if (!/^[A-Za-z0-9._~-]{1,200}$/.test(value)) {
+      return { status: 400, payload: { error: "invalid-idempotency-key" } };
+    }
+    headers["idempotency-key"] = value;
+  }
   if (body !== undefined) headers["content-type"] = "application/json";
   const response = await fetch(`${controlPlaneUrl}${route}`, {
     method: "POST",
@@ -180,6 +190,9 @@ async function forwardControl(
   if (data?.work) {
     return {
       status: response.status,
+      headers: response.headers.get("x-idempotency-replayed") === "true"
+        ? { "x-idempotency-replayed": "true" }
+        : undefined,
       payload: {
         version: "2.1",
         ...(data.requestId ? { requestId: data.requestId } : {}),
@@ -314,7 +327,7 @@ async function control(route, body) {
   if (!value) { setActionStatus("Enter a control token."); return; }
   if (!selectedId && route !== "/api/control/dispatch") { setActionStatus("Select a Work Object first."); return; }
   setActionStatus("Sending…");
-  const headers = {"authorization":"Bearer " + value};
+  const headers = {"authorization":"Bearer " + value, "idempotency-key": crypto.randomUUID().replace(/-/g, "")};
   if (body !== undefined) headers["content-type"] = "application/json";
   const response = await fetch(route, {method:"POST", headers, body: body === undefined ? undefined : JSON.stringify(body)});
   const data = await response.json();
@@ -487,7 +500,7 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
           return;
         }
         const forwarded = await forwardControl(configuredControlPlane, req, "/v1/work/dispatch", input);
-        sendJson(res, forwarded.status, forwarded.payload);
+        sendJson(res, forwarded.status, forwarded.payload, forwarded.headers);
         return;
       }
 
@@ -557,7 +570,7 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
           `/v1/work/${encodeURIComponent(workId)}/${action}`,
           {}
         );
-        sendJson(res, forwarded.status, forwarded.payload);
+        sendJson(res, forwarded.status, forwarded.payload, forwarded.headers);
         return;
       }
 
