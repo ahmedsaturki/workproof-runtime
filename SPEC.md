@@ -1,8 +1,8 @@
-# WorkProof Runtime Specification - v2.8-dev
+# WorkProof Runtime Specification - v2.9-dev
 
 ## 1. Purpose
 
-Represent a bounded digital outcome as durable work, execute it through explicit capabilities and worker ownership, safely handle external effects, independently verify outcomes, preserve portable proof, manage proof lifecycle, recover persisted execution after worker loss, and expose a user-facing Studio with authenticated control delegation, read-only proof/audit views, worker visibility, diagnostic lease visibility, and bounded operational filtering.
+Represent a bounded digital outcome as durable work, execute it through explicit capabilities and worker ownership, safely handle external effects, independently verify outcomes, preserve portable proof, manage proof lifecycle, recover persisted execution after worker loss, and expose a user-facing Studio with authenticated control delegation, proof/audit views, worker visibility, diagnostic lease visibility, and bounded operational filtering.
 
 ## 2. Core loop
 
@@ -90,32 +90,41 @@ LeaseStatus contains:
 
 LeaseStatus must not contain an execution fencing token.
 
-The in-memory LeaseStore and persistent LeaseStore expose the same projection contract.
+## 11. Operational Work Filtering
 
-The authenticated control plane exposes `GET /v1/leases`. If no lease source is configured it returns HTTP 503.
+The Studio Work Object list supports:
+- free-text query `q` against Work Object ID and objective, bounded to 200 characters
+- exact `status` filtering over the bounded WorkStatus set
+- exact `risk` filtering over the bounded RiskClass set
+- positive safe-integer `limit` from 1 through MAX_WORKS
 
-Studio exposes `GET /api/leases`. In local mode it reads the configured lease source directly. In remote mode it delegates through the authenticated control plane and re-sanitizes the returned leases.
+The `/api/work` response includes:
+- `filters`
+- `total`
+- `byStatus`
+- `byRisk`
+- bounded `work[]`
 
-Lease visibility is diagnostic only and cannot acquire, renew, release, reassign, or otherwise mutate lease ownership.
+Invalid filter values fail closed with HTTP 400. Matching results are sorted deterministically by updated timestamp and Work Object ID. The operation is read-only and has no mutation or authorization side effects.
 
 ## 12. Studio
 
 Read surface:
 - `GET /` HTML dashboard
 - `GET /health` service health
-- `GET /api/work` bounded Work Object summary listing
+- `GET /api/work` bounded/filterable Work Object listing
 - `GET /api/work/:id` sanitized Work Object detail
 - `GET /api/workers` worker/liveness projection
 - `GET /api/leases` diagnostic execution lease projection
 - `GET /api/proofs?workId=:id` retained proof summaries
 - `GET /api/proof/:digest` retained proof audit detail
 
+The dashboard provides operational search/filter controls and summary cards derived from the filtered Work Object set.
+
 Optional control surface:
 - `POST /api/control/dispatch` -> authenticated control-plane dispatch
 - `POST /api/control/work/:id/cancel` -> authenticated control-plane cancel
 - `POST /api/control/work/:id/resume` -> authenticated control-plane resume
-
-Studio preserves the control-plane idempotency header when proxying replay responses, and its browser actions generate per-action keys.
 
 ## 13. CLI Lifecycle Surface
 
@@ -125,30 +134,19 @@ The CLI exposes work execution, proof inspection/verification, signer identity, 
 
 WorkProof is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, or distributed-consensus system.
 
-## 15. v2.8 Acceptance Target
+## 15. v2.9 Acceptance Target
 
-- v2.7 behavior remains passing.
-- read-only control-plane lease visibility is available when configured.
-- lease visibility requires authentication when routed remotely.
-- local Studio exposes lease status when configured.
-- remote Studio delegates lease visibility through the authenticated control plane.
-- the Studio re-sanitizes the remote response.
-- PersistentLeaseStore and LeaseStore provide the same visibility contract.
-- fencing tokens never cross the read-only visibility boundary.
-- missing sources fail closed with 503.
-- lease visibility routes do not mutate lease state.
+- v2.8 behavior remains passing.
+- bounded search, status, risk, and limit filters are available on `/api/work`.
+- operational summary counts are deterministic for the filtered set.
+- invalid filter inputs fail closed with 400.
+- query length is bounded.
+- result ordering is deterministic.
+- Studio renders filter controls and summary cards.
+- filtering does not mutate work, leases, proofs, or control state.
 - source audit
 - dependency audit
 - full integration suite
 - benchmark/demo/CLI verification
 - live GitHub smoke
 - green feature CI and green merged-main CI
-
-
-## 16. v2.9 Acceptance Target
-
-- bounded search, status, risk, and limit filters are available on `/api/work`.
-- operational summary counts are deterministic for the filtered set.
-- invalid filter inputs fail closed with 400.
-- Studio renders filter controls and summary cards.
-- filtering does not mutate work, leases, proofs, or control state.
