@@ -29,8 +29,14 @@ jobs:
       - name: Dependency security audit
         run: npm audit --audit-level=high
       - run: node scripts/verify-source-tree.js
-      - name: Run unit and integration tests
-        run: npm test
+      - name: Build TypeScript
+        run: npm run build
+        timeout-minutes: 2
+      - name: Run retention lifecycle suite
+        run: node --test dist/test/retention.test.js
+        timeout-minutes: 2
+      - name: Run full unit and integration suite
+        run: node --test dist/test/*.test.js
         timeout-minutes: 4
       - name: Run benchmark
         run: npm run benchmark
