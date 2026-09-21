@@ -272,6 +272,48 @@ function sanitizeWorkerStatus(worker: WorkerStatus): Record<string, unknown> {
   };
 }
 
+async function fetchRemoteWorkers(controlPlaneUrl: string | undefined, req: any): Promise<{ status: number; payload: Record<string, unknown> }> {
+  if (!controlPlaneUrl) return { status: 503, payload: { error: "control-not-configured" } };
+  const token = authHeader(req);
+  if (!token) return { status: 401, payload: { error: "unauthorized" } };
+
+  try {
+    const response = await fetch(`${controlPlaneUrl}/v1/workers`, {
+      method: "GET",
+      headers: { authorization: token }
+    });
+    const raw = await response.text();
+    let data: any = {};
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      return { status: 502, payload: { error: "control-plane-invalid-json" } };
+    }
+
+    if (!response.ok) {
+      return {
+        status: response.status,
+        payload: {
+          error: typeof data?.error === "string" ? data.error : "worker-status-request-failed"
+        }
+      };
+    }
+
+    const workerList = Array.isArray(data?.workers) ? data.workers : [];
+    return {
+      status: 200,
+      payload: {
+        version: "2.7",
+        source: "control-plane",
+        ...(Number.isSafeInteger(data?.staleAfterMs) ? { staleAfterMs: data.staleAfterMs } : {}),
+        workers: workerList.map((worker: WorkerStatus) => sanitizeWorkerStatus(worker))
+      }
+    };
+  } catch {
+    return { status: 503, payload: { error: "control-plane-unavailable" } };
+  }
+}
+
 function studioHtml(controlEnabled: boolean): string {
   return `<!doctype html>
 <html lang="en">
@@ -403,7 +445,8 @@ async function showProof(digest) {
 
 async function loadWorkers() {
   workers.innerHTML = "<div class='card'>Loading worker status…</div>";
-  const response = await fetch("/api/workers", {cache:"no-store"});
+  const workerHeaders = token.value.trim() ? {"authorization":"Bearer " + token.value.trim()} : {};
+  const response = await fetch("/api/workers", {cache:"no-store", headers: workerHeaders});
   const data = await response.json();
   if (response.status === 503) {
     workers.innerHTML = "<div class='card'>Worker visibility is not configured.</div>";
@@ -502,6 +545,11 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
       }
 
       if (method === "GET" && url.pathname === "/api/workers") {
+        if (configuredControlPlane) {
+          const remote = await fetchRemoteWorkers(configuredControlPlane, req);
+          sendJson(res, remote.status, remote.payload);
+          return;
+        }
         if (!options.workerStatusSource) {
           sendJson(res, 503, { error: "worker-status-not-configured" });
           return;
@@ -509,6 +557,7 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
         const workerList = options.workerStatusSource.listWorkerStatuses(workerStaleAfterMs);
         sendJson(res, 200, {
           version: "2.6",
+          source: "local",
           staleAfterMs: workerStaleAfterMs,
           workers: workerList.map(sanitizeWorkerStatus)
         });
