@@ -615,7 +615,7 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
       if (method === "GET" && url.pathname === "/health") {
         sendJson(res, 200, {
           status: "ok",
-          version: "2.2",
+          version: "2.8",
           mode: configuredControlPlane ? "authenticated-control" : "read-only",
           proofVault: Boolean(vaultDirectory)
         });
@@ -835,7 +835,7 @@ if (runtimeProcess.argv[1] && path.resolve(runtimeProcess.argv[1]) === path.reso
         process.stdout.write(JSON.stringify({
           studio: `http://${running.host}:${running.port}`,
           workDirectory: path.resolve(workDirectory),
-          version: "2.2",
+          version: "2.8",
           mode: controlPlaneUrlArg ? "authenticated-control" : "read-only",
           proofVault: Boolean(vaultDirectoryArg)
         }, null, 2) + "\n");
