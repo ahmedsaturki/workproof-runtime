@@ -12,12 +12,12 @@ V1.1 additions:
 - test/registry-auth.test.ts
 - test/registry-security.test.ts
 
-## Verified main
+## Main history
 
-- commit: 7eeefa13afa56acb9db5038ec3b5885f0724e46f
-- v1.1 merge CI run: #216 (in progress at documentation checkpoint; latest feature gate itself passed before merge)
-- v1.0 baseline CI: verified.
+- v1.1 implementation verification commit: 7eeefa13afa56acb9db5038ec3b5885f0724e46f
+- current main documentation head: cdaf5926a9ef6c388d476b1fd3c39ca396b8bf39
 - v1.1 feature gate: source audit + dependency audit + build/test + benchmark/demo/CLI + live GitHub smoke passed.
+- subsequent documentation synchronization also passed CI.
 
 ## Verification discipline
 
