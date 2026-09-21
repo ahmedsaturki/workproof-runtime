@@ -4,59 +4,36 @@ Date: 2026-09-21
 
 ## Current main
 
-**v2.9-dev operational work filtering is verified on main.**
+**v3.0-dev operational health projection is verified on main.**
 
-Current main commit:
-437516fb39e6f8c7469fc4540a0cf85f5e950391
+Current main implementation merge:
+4e0672fbbc51416d50330df47397b3162e50da72
 
-Latest merged-main CI:
-- run #761: success
-- source-tree audit: 143/143
-- dependency security audit: success
-- Chromium availability: success
-- Chromium/CDP preflight: success
-- strict TypeScript build: success
-- retention lifecycle: success
-- full unit/integration suite: success
-- benchmark: success
-- demo: success
-- CLI proof verification: success
-- CLI mission execution: success
-- live GitHub smoke: success
+Final audit commit:
+878d814cdd5b4ca9118daffa2e0d87026987e63c
 
-## Verified v2.9 gates
+Latest merged-main verification:
+- run #780: success on the v3.0 implementation merge
+- final documentation CI follows the audit commit
 
-- [x] bounded Work Object search by ID/objective
-- [x] exact status filtering
-- [x] exact risk-class filtering
-- [x] bounded result limit
-- [x] invalid filter inputs fail closed with 400
-- [x] bounded query length
-- [x] deterministic result ordering
-- [x] deterministic total/status/risk summaries
-- [x] Studio filter controls
-- [x] Studio operational summary cards
-- [x] v2.8 security, control, lease, proof, retention, worker, and fencing behavior preserved
-- [x] final feature/PR/merged-main verification
-- [x] final CI D-Bus hardening
-- [x] final audit and release-gate documentation
+## Verified v3.0 gates
 
-## Active next branch
-
-feature/v3.0-operational-health
-
-Target:
-- read-only operational health projection
-- effect and verification health summaries
-- optional worker and lease health summaries
-- deterministic attention queue with explicit reason codes
-- preserve all v2.9 security, control, lease, proof, retention, worker, and fencing boundaries
+- [x] read-only operational health overview
+- [x] Work status/risk distributions
+- [x] effect health distribution
+- [x] verification health distribution
+- [x] optional worker liveness summary
+- [x] optional lease active/expired summary
+- [x] deterministic attention queue
+- [x] explicit attention reason codes
+- [x] bounded attention output
+- [x] corrupt Work Objects excluded rather than guessed
+- [x] Studio health cards and attention UI
+- [x] v2.9 filtering and earlier security/control/lease/proof/retention/worker/fencing behavior preserved
+- [x] feature CI #779
+- [x] merged-main CI #780
 
 ## Remaining platform work
 
 - [ ] additional capability packs and external integrations beyond current foundations
-- [ ] richer operational visualization beyond filtering and summary cards
-
-## Verification rule
-
-A successful tool response is a receipt, not proof. Work is verified only when independent evidence satisfies the Work Contract success criteria.
+- [ ] richer operational visualization beyond health summaries and attention
