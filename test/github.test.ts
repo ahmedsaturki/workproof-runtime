@@ -11,11 +11,27 @@ const { registerGitHubPack, findGitHubIssueByMarker } = require("../packages/pac
 const { buildProofBundle } = require("../packages/evidence/src/bundle.js");
 const { buildIntegrityManifest, verifyProofIntegrity, canonicalJson } = require("../packages/evidence/src/integrity.js");
 
-function startFakeGitHub({ loseCreateAck = false } = {}) {
-  const issues = [];
+type FakeIssue = {
+  number: number;
+  title: string;
+  body: string;
+  html_url: string;
+  repository_url: string;
+  state: string;
+};
+
+type FakeGitHub = {
+  baseUrl: string;
+  server: any;
+  issues: FakeIssue[];
+  postCalls: number;
+};
+
+function startFakeGitHub({ loseCreateAck = false }: { loseCreateAck?: boolean } = {}): Promise<FakeGitHub> {
+  const issues: FakeIssue[] = [];
   let postCalls = 0;
   let nextIssue = 1;
-  const server = http.createServer((req, res) => {
+  const server = http.createServer((req: any, res: any) => {
     const url = new URL(req.url ?? "/", "http://127.0.0.1");
     if (req.method === "GET" && url.pathname === "/repos/acme/demo") {
       const body = JSON.stringify({ full_name: "acme/demo", default_branch: "main", private: false });
@@ -31,14 +47,15 @@ function startFakeGitHub({ loseCreateAck = false } = {}) {
     if (req.method === "POST" && url.pathname === "/repos/acme/demo/issues") {
       postCalls++;
       let raw = "";
-      req.on("data", chunk => raw += chunk.toString());
+      req.on("data", (chunk: any) => raw += chunk.toString());
       req.on("end", () => {
-        const input = JSON.parse(raw);
-        const issue = {
-          number: nextIssue++,
+        const input = JSON.parse(raw) as { title: string; body: string };
+        const number = nextIssue++;
+        const issue: FakeIssue = {
+          number,
           title: input.title,
           body: input.body,
-          html_url: `http://127.0.0.1/issues/${nextIssue - 1}`,
+          html_url: `http://127.0.0.1/issues/${number}`,
           repository_url: "http://127.0.0.1/repos/acme/demo",
           state: "open"
         };
@@ -55,11 +72,11 @@ function startFakeGitHub({ loseCreateAck = false } = {}) {
     res.writeHead(404);
     res.end();
   });
-  return new Promise(resolve => {
+  return new Promise<FakeGitHub>(resolve => {
     server.listen(0, "127.0.0.1", () => {
-      const port = server.address().port;
+      const address = server.address() as any;
       resolve({
-        baseUrl: `http://127.0.0.1:${port}`,
+        baseUrl: `http://127.0.0.1:${address.port}`,
         server,
         issues,
         get postCalls() { return postCalls; }
@@ -93,9 +110,9 @@ test("GitHub pack reads live-shaped repository state and independently verifies 
       riskClass: "read"
     }]);
     assert.equal(work.status, "verified");
-    assert.ok(work.artifacts.some(a => a.kind === "github-repository-verification"));
+    assert.ok(work.artifacts.some((a: any) => a.kind === "github-repository-verification"));
   } finally {
-    await new Promise(resolve => fake.server.close(resolve));
+    await new Promise<void>(resolve => fake.server.close(() => resolve()));
   }
 });
 
@@ -153,10 +170,10 @@ test("GitHub external write survives lost acknowledgement with one POST and appr
       approvedStore,
       approvedRegistry,
       approvedVerification,
-      async (_w, effectId) => {
+      async (_w: any, effectId: string) => {
         const found = await findGitHubIssueByMarker(input);
         if (!found) return false;
-        const effect = approvedWork.effects.find(e => e.effectId === effectId);
+        const effect = approvedWork.effects.find((e: any) => e.effectId === effectId);
         if (effect) effect.lastObservedState = { number: found.number, title: found.title };
         return true;
       },
@@ -173,10 +190,10 @@ test("GitHub external write survives lost acknowledgement with one POST and appr
     assert.equal(approvedWork.status, "verified");
     assert.equal(fake.postCalls, 1);
     assert.equal(approvedWork.effects[0].status, "verified");
-    assert.ok(approvedWork.events.some(e => e.type === "recovery.reconcile"));
-    assert.ok(approvedWork.artifacts.some(a => a.kind === "github-issue-state"));
+    assert.ok(approvedWork.events.some((e: any) => e.type === "recovery.reconcile"));
+    assert.ok(approvedWork.artifacts.some((a: any) => a.kind === "github-issue-state"));
   } finally {
-    await new Promise(resolve => fake.server.close(resolve));
+    await new Promise<void>(resolve => fake.server.close(() => resolve()));
   }
 });
 
