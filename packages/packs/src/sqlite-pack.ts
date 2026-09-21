@@ -84,7 +84,7 @@ function executeQuery(input: SQLiteQueryInput): { rows: Record<string, unknown>[
   }
 }
 
-function evidence(databasePath: string, kind: string, metadata: Record<string, unknown>): EvidenceRef {
+function evidence(databasePath: string, kind: string, metadata: Record<string, string | number | boolean>): EvidenceRef {
   return {
     id: `sqlite:${kind}:${path.resolve(databasePath)}`,
     kind,
