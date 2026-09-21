@@ -1,4 +1,4 @@
-import { WorkerStatus } from "../../coordination/src/leases";
+import { LeaseStatus, WorkerStatus } from "../../coordination/src/leases";
 
 const http = require("http");
 const fs = require("fs");
@@ -27,6 +27,7 @@ export interface ControlPlaneOptions {
   idempotencyDbPath?: string;
   workerStatusSource?: { listWorkerStatuses(staleAfterMs: number): WorkerStatus[] };
   workerStaleAfterMs?: number;
+  leaseStatusSource?: { listLeaseStatuses(): LeaseStatus[] };
 }
 
 export interface RunningControlPlane {
@@ -199,6 +200,19 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
         sendJson(res, decision.statusCode, {
           error: decision.statusCode === 401 ? "unauthorized" : "forbidden",
           requestId: id
+        });
+        return;
+      }
+
+      if (method === "GET" && url.pathname === "/v1/leases") {
+        if (!options.leaseStatusSource) {
+          sendJson(res, 503, { error: "lease-status-not-configured", requestId: id });
+          return;
+        }
+        sendJson(res, 200, {
+          version: "2.8",
+          requestId: id,
+          leases: options.leaseStatusSource.listLeaseStatuses()
         });
         return;
       }
