@@ -30,4 +30,4 @@ The v1.4 initial lease primitive is an in-memory authority. It establishes owner
 
 ## Milestone result
 
-The first v1.4 foundation gate is complete: feature CI and merged-main CI passed. Distributed worker correctness still requires later cross-process integration gates.
+The first v1.4 foundation gate is complete: feature CI and merged-main CI passed. The persistent cross-process implementation is the active v1.4.1 gate and must pass its own feature and merged-main verification.

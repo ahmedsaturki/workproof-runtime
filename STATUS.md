@@ -11,7 +11,7 @@ Main commit:
 
 Verification:
 - merged-main CI #379: success.
-- source audit: 96/96 required paths on the v1.4 foundation branch.
+- source audit: 96/96 required paths on the v1.4 foundation.
 - dependency security audit: success.
 - retention lifecycle suite: 9/9.
 - full sequential unit/integration suite: passed.
@@ -32,17 +32,25 @@ Verification:
 
 ## Current engineering gate
 
-**v1.4 — persistent distributed work foundations**
+**v1.4.1 — persistent cross-process ownership**
 
-The next gate should add:
-- persistent cross-process lease authority
-- worker execution ownership integrated with the runtime
-- explicit worker-loss reconciliation
-- authenticated control-plane dispatch
-- SDK-level Work Object/proof operations
-- generalized compensation/saga primitives
+Active branch:
+feature/v1.4-persistent-leases
 
-The in-memory lease layer deliberately remains a local ownership primitive, not a distributed consensus service.
+Implemented:
+- SQLite-backed persistent lease records.
+- Transactional cross-process acquisition using SQLite writer serialization.
+- Durable lease identity and revision semantics.
+- Persistent worker registration, heartbeat, offline state, and deterministic listing.
+- Cross-process integration probe using independent Node processes.
+
+Still pending:
+- merged-main verification for this gate.
+- Durable WorkEngine execution ownership integration.
+- Worker-loss reconciliation.
+- Authenticated control-plane dispatch.
+- SDK-level Work Object/proof operations.
+- Saga/compensation primitives.
 
 ## Verification rule
 

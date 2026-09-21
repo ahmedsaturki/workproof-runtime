@@ -1,6 +1,6 @@
 {
   "name": "operational-reality-core",
-  "version": "1.4.0-dev",
+  "version": "1.4.1-dev",
   "private": true,
   "description": "Outcome-first digital work kernel: work objects, capabilities, verification, reconciliation, and evidence.",
   "scripts": {
@@ -15,5 +15,8 @@
   },
   "devDependencies": {
     "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=24.15.0"
   }
 }

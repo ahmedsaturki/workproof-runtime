@@ -2,12 +2,18 @@
 
 ## Required source tree
 
-The verified v1.4 foundation contains **96 required paths** enforced by scripts/verify-source-tree.js.
+The active v1.4.1 persistent-lease branch contains **100 required paths** enforced by scripts/verify-source-tree.js.
 
 The v1.4 foundation adds:
 - docs/RELEASE-GATE-V1.4.md
 - packages/coordination/src/leases.ts
 - test/leases.test.ts
+
+The v1.4.1 persistent lease gate adds:
+- docs/RELEASE-GATE-V1.4.1.md
+- apps/lease-worker.ts
+- packages/coordination/src/persistent.ts
+- test/persistent-leases.test.ts
 
 The browser-reliability correction adds:
 - scripts/chromium-cdp-smoke.js (operational CI preflight; intentionally not part of the required source-path list)
@@ -30,7 +36,7 @@ The v1.2 trust-sync foundation remains covered by:
 - v1.2 merge commit: b6ef830d79dc432314a4da0f6e143ddb3a8b6f61
 - v1.3 retention merge commit: db5c8fa296f13828ccc461c60916457b87af7168
 - browser reliability merge commit: 6c01f201f6cec32ab6fa34a01fe878d3f47c5b0b
-- verified merged-main CI: run #379
+- verified merged-main CI: run #379 (v1.4 foundation)
 - v1.4 foundation result: source audit + dependency audit + retention suite + full sequential suite + benchmark/demo/CLI/live GitHub smoke all passed after the worker-ownership merge.
 
 ## Verification discipline
