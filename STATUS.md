@@ -27,7 +27,7 @@ Since the release target `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`, main has ad
 - [x] CLI proof verification
 - [x] CLI mission execution
 - [x] live GitHub integration smoke
-- [x] Main CI #922 for latest verified main
+- [x] Main CI for latest main: success
 
 ## Verified v3.3 gates
 
