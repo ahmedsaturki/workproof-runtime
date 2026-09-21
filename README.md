@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v1.4 worker-ownership foundation is verified on main; persistent cross-process coordination is the next gate.**
+**v1.4 worker-ownership foundation is verified on main; persistent cross-process coordination is the active gate.**
 
 The current main line combines durable proof objects, signed proof identity, explicit trusted signer policy, authenticated registry transport, signed trust snapshots, and a self-hosted proof-vault lifecycle with conservative retention and garbage collection.
 
@@ -53,10 +53,11 @@ WorkProof Runtime is not itself a generic agent framework, browser automation en
 
 ## v1.4 foundation
 - Deterministic in-memory lease authority for resource ownership.
+- Persistent SQLite lease authority for shared-host cross-process ownership.
 - Worker registration with explicit capability declarations.
 - Heartbeat/offline state.
 - Ownership-bound renew/release and expiry reaping.
 - The in-memory ownership foundation is verified on main after full CI.
-- Persistent cross-process coordination remains a separate gate.
+- Persistent cross-process coordination is implemented on feature/v1.4-persistent-leases and remains pending merged-main verification.
 
 This repository does not make a global novelty claim.
