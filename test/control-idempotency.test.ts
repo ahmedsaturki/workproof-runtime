@@ -27,6 +27,92 @@ test("control-plane dispatch replays a completed idempotency key after process r
   const root = tempDir("workproof-idempotency-replay-");
   const repo = new JsonWorkRepository(path.join(root, "work"));
   const ledgerPath = path.join(root, "control.sqlite");
+  const credential = issueCredential({ id: "writer-replay", permissions: ["write"] });
+  const policy = addIssuedCredential(createAuthPolicy(), credential);
+  let calls = 0;
+  const dispatch = async (input: Record<string, unknown>) => {
+    calls += 1;
+    const work = sampleWork(String(input.objective));
+    repo.save(work);
+    return work;
+  };
+
+  const first = await startControlPlane({
+    repository: repo,
+    authPolicy: policy,
+    idempotencyDbPath: ledgerPath,
+    dispatch
+  });
+  const url = `http://${first.host}:${first.port}/v1/work/dispatch`;
+  const headers = {
+    authorization: `Bearer ${credential.token}`,
+    "idempotency-key": "dispatch-replay-001",
+    "content-type": "application/json"
+  };
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ objective: "durable replay" })
+    });
+    assert.equal(response.status, 200);
+    assert.equal(calls, 1);
+  } finally {
+    await first.close();
+  }
+
+  const second = await startControlPlane({
+    repository: repo,
+    authPolicy: policy,
+    idempotencyDbPath: ledgerPath,
+    dispatch
+  });
+  try {
+    const replay = await fetch(`http://${second.host}:${second.port}/v1/work/dispatch`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ objective: "durable replay" })
+    });
+    assert.equal(replay.status, 200);
+    assert.equal(replay.headers.get("x-idempotency-replayed"), "true");
+    assert.equal(calls, 1);
+    const body = await replay.json();
+    assert.equal(body.work.contract.objective, "durable replay");
+  } finally {
+    await second.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+const assert = require("assert");
+const test = require("node:test");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+
+import { WorkStore } from "../packages/core/src/work";
+import { JsonWorkRepository } from "../packages/storage/src/json";
+import { issueCredential, createAuthPolicy, addIssuedCredential } from "../packages/registry/src/auth";
+import { startControlPlane } from "../packages/control-plane/src/http";
+
+function sampleWork(objective: string) {
+  const store = new WorkStore();
+  return store.create({
+    objective,
+    success: [],
+    deliverables: ["proof"],
+    riskClass: "read"
+  });
+}
+
+function tempDir(prefix: string): string {
+  return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+}
+
+test("control-plane dispatch replays a completed idempotency key after process restart", async () => {
+  const root = tempDir("workproof-idempotency-replay-");
+  const repo = new JsonWorkRepository(path.join(root, "work"));
+  const ledgerPath = path.join(root, "control.sqlite");
   const policy = addIssuedCredential(createAuthPolicy(), issueCredential({ id: "writer", permissions: ["write"] }));
   let calls = 0;
   const dispatch = async (input: Record<string, unknown>) => {
