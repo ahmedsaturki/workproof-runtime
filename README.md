@@ -101,7 +101,7 @@ Published image:
 
 Verified digest:
 
-`sha256:490dcb17e37c0f9a9cdbf7f30624d7d393f9fdb59b911cc9e86b9de681195617`
+`sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`
 
 The same digest is exposed by the immutable release-tag commit tag `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d). Container run #15 verified:
 
