@@ -570,7 +570,7 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
           `/v1/work/${encodeURIComponent(workId)}/${action}`,
           {}
         );
-        sendJson(res, forwarded.status, forwarded.payload);
+        sendJson(res, forwarded.status, forwarded.payload, forwarded.headers);
         return;
       }
 
