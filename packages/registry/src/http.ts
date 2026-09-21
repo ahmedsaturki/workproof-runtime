@@ -51,7 +51,7 @@ function readBody(req: any): Promise<string> {
   return new Promise((resolve, reject) => {
     let total = 0;
     const chunks: any[] = [];
-    req.on("data", (chunk: Buffer) => {
+    req.on("data", (chunk: any) => {
       total += chunk.length;
       if (total > MAX_BODY_BYTES) {
         reject(new Error("Request body too large"));
