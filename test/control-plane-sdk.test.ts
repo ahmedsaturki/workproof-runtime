@@ -85,6 +85,12 @@ test("authenticated control plane enforces read/write permissions and audits act
 
     const cancelled = await writer.cancel(work.id);
     assert.equal(cancelled.status, "cancelled");
+    const cancelledAgain = await writer.cancel(work.id);
+    assert.equal(cancelledAgain.status, "cancelled");
+    assert.equal(
+      cancelledAgain.events.filter((event) => event.type === "control.cancelled").length,
+      cancelled.events.filter((event) => event.type === "control.cancelled").length
+    );
     assert.ok(cancelled.events.some((event) => event.type === "control.cancelled"));
 
     const resumed = await writer.resume(work.id);
@@ -105,6 +111,11 @@ test("authenticated control plane enforces read/write permissions and audits act
     await server.close();
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("SDK rejects invalid URLs and malformed Work Objects", () => {
+  assert.throws(() => new ControlPlaneClient({ baseUrl: "ftp://localhost:1" }), /HTTP or HTTPS/);
+  assert.throws(() => parseWorkObject(JSON.stringify({ id: "x" })), /Invalid Work Object/);
 });
 
 test("control plane rejects unauthenticated access when an auth policy is configured", async () => {
