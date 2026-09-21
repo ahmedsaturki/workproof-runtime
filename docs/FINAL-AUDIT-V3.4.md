@@ -9,7 +9,7 @@ Date: 2026-09-21
 - Implementation merge: `fe662d5bb5337bde18772f22864434935d59f66f`
 - Feature CI: #864 (success)
 - Merged-main CI: #866 (success)
-- Final closeout commit: pending
+- Final closeout commit: this documentation closeout commit (SHA recorded in Git history).
 
 ## Verification target
 
