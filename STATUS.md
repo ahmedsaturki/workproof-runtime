@@ -59,6 +59,10 @@ Open issue #6 covers v0.8 trusted proof identities and key lifecycle policy:
 - merged-main CI run #71: success
 - checkpoint branch: checkpoint/v0.7-signed-proof-verified
 
+## Finalization note
+
+The current main HEAD is documentation-only on top of the verified v0.7 runtime. Its own CI run is the final repository-state gate.
+
 ## Verification rule
 
 A successful tool response is a receipt, not proof. Work is verified only when independent evidence satisfies the Work Contract success criteria.
