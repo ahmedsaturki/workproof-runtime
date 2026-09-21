@@ -4,30 +4,31 @@ Date: 2026-09-21
 
 ## Current main
 
-**v2.3-dev control-plane hardening is in progress.**
+**v2.3-dev control-plane hardening is verified on main.**
 
-Latest v2.2 proof/audit Studio merge:
-5deee742ad0b481ff4e55832b972706e84de3c01
+Merged v2.3 commit:
+47e09002f135c0d2f999b2465e5bfbd291db4c22
 
-Latest v2.2 feature CI:
-- CI #582: success.
+Merged-main CI:
+- CI #621: success
+- source-tree audit: 126/126
+- dependency security audit: success
+- full sequential test-file verification: 32/32
+- benchmark/demo/CLI/live GitHub smoke: success
 
-Latest v2.2 merged-main CI:
-- CI #583: success.
+## Verified v2.3 gates
 
-## Verified v2.2 gates
-
-- [x] retained proof summaries from authoritative proof vault
-- [x] proof integrity recomputation
-- [x] independent signature verification
-- [x] optional local trust-policy evaluation
-- [x] vault filesystem path isolation
-- [x] corrupted-proof fail-closed behavior
-- [x] read-only proof/audit endpoints
-- [x] missing-vault 503 behavior
-- [x] v2.1 Studio control remains intact
-- [x] feature CI #582
-- [x] merged-main CI #583
+- [x] durable SQLite idempotency ledger
+- [x] same-key replay without repeated mutation
+- [x] same-key logical conflict rejection
+- [x] concurrent same-key in-progress rejection
+- [x] idempotency persistence across process restart
+- [x] invalid idempotency-key validation
+- [x] SDK idempotency-key propagation
+- [x] Studio idempotency-key propagation and replay-header preservation
+- [x] feature CI on final v2.3 head
+- [x] merged-main CI on final v2.3 merge
+- [x] final v2.3 audit documentation
 
 ## Verified broader platform gates
 
@@ -41,17 +42,6 @@ Latest v2.2 merged-main CI:
 - [x] local Studio foundation
 - [x] authenticated Studio control delegation
 - [x] proof/audit Studio surface
-
-## Active next branch
-
-`feature/v2.3-control-idempotency`
-
-Target:
-- durable idempotency for authenticated control mutations
-- replay protection across process restart
-- same-key payload conflict detection
-- concurrent mutation race protection
-- SDK/Studio propagation
 
 ## Remaining platform work
 
