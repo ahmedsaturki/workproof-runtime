@@ -37,6 +37,82 @@ test("risk policy blocks high-risk operation without approval", () => {
   assert.match(result.reason, /approval/i);
 });
 
+
+test("resume does not re-execute an already acknowledged external effect", async () => {
+  const path = "/tmp/work-resume-no-duplicate";
+  fs.rmSync(path, { recursive: true, force: true });
+
+  let calls = 0;
+  const store = new WorkStore();
+  const registry = new CapabilityRegistry();
+  const verification = new VerificationEngine();
+  const capability = {
+    name: "resume-safe-writer",
+    version: "1",
+    operations: ["write_once"],
+    riskClass: "external_write",
+    execute: async () => {
+      calls++;
+      return { status: "accepted", externalEffectId: "external:1" };
+    }
+  };
+  registry.register(capability);
+  verification.register({
+    name: "resume-proof",
+    verify: async (ctx: any) => ({
+      id: ctx.criterion.id,
+      criterion: ctx.criterion.description,
+      passed: calls === 1,
+      evidence: []
+    })
+  });
+
+  const contract = {
+    objective: "write once and safely resume",
+    success: [{ id: "proof", description: "Exactly one external write occurred", verifier: "resume-proof", required: true }],
+    deliverables: [],
+    riskClass: "external_write"
+  };
+  const input = { value: "one" };
+  const step = {
+    id: "write",
+    operation: "write_once",
+    capability: "resume-safe-writer",
+    input,
+    idempotencyKey: "resume:write:1",
+    riskClass: "external_write"
+  };
+  const repo = new JsonWorkRepository(path);
+  const work = store.create(contract);
+  const firstEngine = new WorkEngine(store, registry, verification, async () => false, undefined, repo);
+  await firstEngine.run(work, [step]);
+  assert.equal(work.status, "verified");
+  assert.equal(calls, 1);
+
+  const loaded = repo.load(work.id);
+  const resumedStore = new WorkStore();
+  const resumedRegistry = new CapabilityRegistry();
+  const resumedVerification = new VerificationEngine();
+  resumedStore.register(loaded);
+  resumedRegistry.register(capability);
+  resumedVerification.register({
+    name: "resume-proof",
+    verify: async (ctx: any) => ({
+      id: ctx.criterion.id,
+      criterion: ctx.criterion.description,
+      passed: calls === 1,
+      evidence: []
+    })
+  });
+
+  const resumedEngine = new WorkEngine(resumedStore, resumedRegistry, resumedVerification, async () => false, undefined, repo);
+  await resumedEngine.run(loaded, [step]);
+
+  assert.equal(loaded.status, "verified");
+  assert.equal(calls, 1);
+  assert.ok(loaded.events.some((e: any) => e.type === "step.resumed"));
+});
+
 export {};
 
 test("router honors preferred capability and risk ceiling", () => {
