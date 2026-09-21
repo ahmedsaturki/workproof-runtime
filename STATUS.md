@@ -7,10 +7,10 @@ Date: 2026-09-21
 **v1.7 authenticated control-plane and SDK foundation is verified on main.**
 
 Main merge commit:
-86f8effb0e6178eb2f69d7b33472c7579be54d0f
+8f183ea43ebdc9558ca48c0982dca34919438a90
 
 Merged-main verification:
-- CI #448: success.
+- CI #449: success.
 - source audit: 113/113 required paths.
 - dependency security audit: success.
 - retention lifecycle suite: passed.
@@ -19,6 +19,22 @@ Merged-main verification:
 - demo: verified.
 - CLI proof and mission: verified.
 - live GitHub smoke: verified.
+
+## Active milestone
+
+**v1.8 — explicit saga/compensation semantics**
+
+Active branch:
+feature/v1.8-saga-compensation
+
+Acceptance targets:
+- first-class compensating effects with explicit auditable identity.
+- forward-effect to compensation linkage.
+- compensation policy and risk ceilings.
+- lost-acknowledgement reconciliation before duplicate compensation.
+- partial and unresolved states remain explicit.
+- persisted verified compensation is never replayed.
+- proof bundles preserve forward/compensation lineage.
 
 ## Closed milestones
 
@@ -32,23 +48,6 @@ Merged-main verification:
 - [x] v1.5 WorkEngine execution-lease binding.
 - [x] v1.6 durable worker-loss recovery.
 - [x] v1.7 authenticated control-plane and SDK foundation.
-
-## Current engineering gate
-
-**v1.8 — explicit saga/compensation semantics**
-
-Parent issue:
-#26
-
-New gate:
-#34
-
-Next acceptance targets:
-- first-class compensating work/actions with explicit auditable identity.
-- forward-effect to compensation linkage.
-- compensation policy and risk ceilings.
-- partial compensation and unresolved states remain explicit.
-- replay/recovery never assumes arbitrary rollback.
 
 ## Verification rule
 

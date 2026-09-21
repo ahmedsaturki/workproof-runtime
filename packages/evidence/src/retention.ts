@@ -175,7 +175,7 @@ function proofIntegrity(filePath: string): "verified" | "invalid" {
   try {
     const { verifyProofIntegrity } = require("./integrity");
     const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
-    const bundle = { version: data.version, work: data.work, effects: data.effects, artifacts: data.artifacts, verification: data.verification, events: data.events };
+    const bundle = { version: data.version, work: data.work, effects: data.effects, sagas: data.sagas ?? [], artifacts: data.artifacts, verification: data.verification, events: data.events };
     return data.integrity && verifyProofIntegrity(bundle, data.integrity) ? "verified" : "invalid";
   } catch {
     return "invalid";

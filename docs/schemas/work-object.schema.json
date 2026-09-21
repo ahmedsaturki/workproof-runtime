@@ -13,39 +13,145 @@
     "updatedAt"
   ],
   "properties": {
-    "id": {"type": "string"},
+    "id": {
+      "type": "string"
+    },
     "status": {
       "enum": [
-        "planned","running","waiting_verification","verified","partial","waiting_lease",
-        "failed","unresolved","unverifiable","cancelled"
+        "planned",
+        "running",
+        "waiting_verification",
+        "verified",
+        "partial",
+        "waiting_lease",
+        "failed",
+        "unresolved",
+        "unverifiable",
+        "cancelled"
       ]
     },
     "contract": {
       "type": "object",
-      "required": ["objective","success","deliverables","riskClass"],
+      "required": [
+        "objective",
+        "success",
+        "deliverables",
+        "riskClass"
+      ],
       "properties": {
-        "objective": {"type": "string"},
-        "inputs": {"type": "object"},
-        "constraints": {"type": "object"},
-        "success": {"type": "array"},
-        "deliverables": {"type": "array"},
-        "riskClass": {
-          "enum": ["read","local_write","external_write","destructive","financial"]
+        "objective": {
+          "type": "string"
         },
-        "approvalRequired": {"type": "boolean"}
+        "inputs": {
+          "type": "object"
+        },
+        "constraints": {
+          "type": "object"
+        },
+        "success": {
+          "type": "array"
+        },
+        "deliverables": {
+          "type": "array"
+        },
+        "riskClass": {
+          "enum": [
+            "read",
+            "local_write",
+            "external_write",
+            "destructive",
+            "financial"
+          ]
+        },
+        "approvalRequired": {
+          "type": "boolean"
+        }
       }
     },
-    "events": {"type": "array"},
+    "events": {
+      "type": "array"
+    },
     "effects": {
       "type": "array",
       "items": {
         "type": "object",
-        "properties": {"attemptLog": {"type": "array"}}
+        "properties": {
+          "attemptLog": {
+            "type": "array"
+          },
+          "kind": {
+            "enum": [
+              "forward",
+              "compensation"
+            ]
+          },
+          "sourceEffectId": {
+            "type": "string"
+          }
+        }
       }
     },
-    "artifacts": {"type": "array"},
-    "verification": {"type": ["object","null"]},
-    "createdAt": {"type": "string"},
-    "updatedAt": {"type": "string"}
+    "sagas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "sagaId",
+          "status",
+          "forwardEffectIds",
+          "compensationEffectIds",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "sagaId": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "planned",
+              "running",
+              "partial",
+              "compensated",
+              "unresolved",
+              "failed"
+            ]
+          },
+          "forwardEffectIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "compensationEffectIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array"
+    },
+    "verification": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
+    }
   }
 }

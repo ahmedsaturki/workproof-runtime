@@ -6,6 +6,10 @@ export type EffectStatus =
   | "planned" | "dispatched" | "acknowledged" | "unknown"
   | "observed" | "verified" | "reconciled" | "compensated" | "unresolved";
 
+export type EffectKind = "forward" | "compensation";
+
+export type SagaStatus = "planned" | "running" | "partial" | "compensated" | "unresolved" | "failed";
+
 export type RiskClass = "read" | "local_write" | "external_write" | "destructive" | "financial";
 
 export interface EvidenceRef {
@@ -68,6 +72,8 @@ export interface EffectAttempt {
 export interface EffectRecord {
   effectId: string;
   idempotencyKey: string;
+  kind?: EffectKind;
+  sourceEffectId?: string;
   operation?: string;
   capability: string;
   status: EffectStatus;
@@ -80,6 +86,15 @@ export interface EffectRecord {
   updatedAt: string;
 }
 
+export interface SagaRecord {
+  sagaId: string;
+  status: SagaStatus;
+  forwardEffectIds: string[];
+  compensationEffectIds: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface WorkObject {
   id: string;
   contract: WorkContract;
@@ -88,6 +103,7 @@ export interface WorkObject {
   effects: EffectRecord[];
   artifacts: EvidenceRef[];
   verification?: VerificationResult;
+  sagas?: SagaRecord[];
   createdAt: string;
   updatedAt: string;
 }
