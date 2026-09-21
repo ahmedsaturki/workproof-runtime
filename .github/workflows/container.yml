@@ -56,7 +56,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: echo "${GH_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
 
-      - name: Prepare immutable published image
+      - name: Prepare canonical published image
         env:
           IMAGE_TAG: ${{ steps.image.outputs.tag }}
         run: |
@@ -66,22 +66,35 @@ jobs:
           VERSION_IMAGE="ghcr.io/${IMAGE}:${IMAGE_TAG}"
           COMMIT_IMAGE="ghcr.io/${IMAGE}:${RELEASE_COMMIT}"
 
-          if docker pull "${VERSION_IMAGE}"; then
-            echo "Existing version tag found; release tag is immutable and will not be rebuilt or overwritten."
+          if docker pull "${COMMIT_IMAGE}"; then
+            echo "Canonical immutable commit image exists; it is the source of truth for this release."
+          elif docker pull "${VERSION_IMAGE}"; then
+            VERSION_LABEL="$(docker image inspect "${VERSION_IMAGE}" --format='{{index .Config.Labels "org.opencontainers.image.revision"}}')"
+            test "${VERSION_LABEL}" = "${RELEASE_COMMIT}"
+            docker tag "${VERSION_IMAGE}" "${COMMIT_IMAGE}"
+            docker push "${COMMIT_IMAGE}"
           else
             docker build --pull               --build-arg VERSION="${IMAGE_TAG}"               --build-arg VCS_REF="${RELEASE_COMMIT}"               -t "${VERSION_IMAGE}"               -t "${COMMIT_IMAGE}" .
+            docker push "${COMMIT_IMAGE}"
+          fi
+
+          COMMIT_DIGEST="$(docker image inspect "${COMMIT_IMAGE}" --format='{{index .RepoDigests 0}}')"
+          COMMIT_LABEL="$(docker image inspect "${COMMIT_IMAGE}" --format='{{index .Config.Labels "org.opencontainers.image.revision"}}')"
+          test "${COMMIT_LABEL}" = "${RELEASE_COMMIT}"
+
+          CURRENT_VERSION_DIGEST=""
+          if docker pull "${VERSION_IMAGE}"; then
+            CURRENT_VERSION_DIGEST="$(docker image inspect "${VERSION_IMAGE}" --format='{{index .RepoDigests 0}}')"
+          fi
+
+          if [ "${CURRENT_VERSION_DIGEST}" != "${COMMIT_DIGEST}" ]; then
+            echo "Repairing version tag to canonical immutable commit image."
+            docker tag "${COMMIT_IMAGE}" "${VERSION_IMAGE}"
             docker push "${VERSION_IMAGE}"
           fi
 
-          VERSION_DIGEST="$(docker image inspect "${VERSION_IMAGE}" --format='{{index .RepoDigests 0}}')"
-
-          if docker pull "${COMMIT_IMAGE}"; then
-            COMMIT_DIGEST="$(docker image inspect "${COMMIT_IMAGE}" --format='{{index .RepoDigests 0}}')"
-            test "${VERSION_DIGEST}" = "${COMMIT_DIGEST}"
-          else
-            docker tag "${VERSION_IMAGE}" "${COMMIT_IMAGE}"
-            docker push "${COMMIT_IMAGE}"
-          fi
+          FINAL_VERSION_DIGEST="$(docker image inspect "${VERSION_IMAGE}" --format='{{index .RepoDigests 0}}')"
+          test "${FINAL_VERSION_DIGEST}" = "${COMMIT_DIGEST}"
 
       - name: Runtime container smoke
         env:
