@@ -6,7 +6,7 @@ Date: 2026-09-21
 
 - Feature branch: `feature/v2.5-worker-lifecycle`
 - Scope: heartbeat-derived worker liveness, safe reassignment eligibility, and control-plane visibility
-- Implementation merge: pending CI verification
+- Final implementation merge: `234e4397ae8e98acf1fcdf5fd57c42188582ae8f`
 
 ## Required verification
 
@@ -33,6 +33,19 @@ Date: 2026-09-21
 
 Worker liveness and reassignment eligibility do not revoke an already-dispatched external request. Remote side-effect safety remains dependent on external idempotency, reconciliation, and any supported conditional fencing.
 
+## Verification evidence
+
+- Feature head: `c36d02cab606256d25df01ea40a36d06c368a448`
+- Feature CI #660: success
+- Merged-main CI #661: success
+- Source-tree audit: 133/133
+- Dependency security audit: success
+- Chromium/CDP preflight: success
+- Strict build: success
+- Retention lifecycle: success
+- Full sequential suite: success
+- Benchmark/demo/CLI/live GitHub smoke: success
+
 ## Status
 
-Provisional until feature and merged-main CI pass on the final v2.5 merge.
+**v2.5 verified on main.**
