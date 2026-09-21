@@ -52,7 +52,7 @@ test("CLI verify accepts an intact proof and rejects a tampered proof bundle", (
   fs.writeFileSync(proofPath, JSON.stringify(tampered, null, 2), "utf8");
   const invalid = spawnSync(nodeExecutable, [cli, "verify", proofPath], { encoding: "utf8" });
   assert.equal(invalid.status, 3);
-  assert.match(invalid.stdout, /invalid-integrity/);
+  assert.match(invalid.stdout, /integrity=invalid/);
 });
 
 test("CLI verify rejects altered integrity metadata even when the bundle digest is unchanged", () => {
@@ -67,7 +67,7 @@ test("CLI verify rejects altered integrity metadata even when the bundle digest 
   const cli = path.resolve("dist/packages/cli/src/index.js");
   const result = spawnSync(nodeExecutable, [cli, "verify", proofPath], { encoding: "utf8" });
   assert.equal(result.status, 3);
-  assert.match(result.stdout, /invalid-integrity/);
+  assert.match(result.stdout, /integrity=invalid/);
 });
 
 test("CLI verify keeps legacy proofs readable without an integrity manifest", () => {
