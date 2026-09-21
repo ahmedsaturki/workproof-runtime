@@ -199,6 +199,7 @@ export async function runBenchmark() {
   const summary = {
     suite: "Work Completion Benchmark V3",
     results,
+    cases: results,
     metrics: {
       totalCases: results.length,
       verifiedCases: verified,
