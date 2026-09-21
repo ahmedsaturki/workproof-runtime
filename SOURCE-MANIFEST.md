@@ -2,9 +2,9 @@
 
 ## Required source tree
 
-The active main v1.8 checkpoint contains 111 required paths. The v1.9 recovery branch contains 114 required paths enforced by scripts/verify-source-tree.js.
+The current main v1.9 closeout contains **115 required paths** enforced by scripts/verify-source-tree.js.
 
-The current tree includes:
+The tree includes:
 - proof registry and authenticated transport
 - signed proof identity and trusted signer policy
 - proof-vault retention, reachability, and GC
@@ -15,6 +15,7 @@ The current tree includes:
 - SDK Work Object round-trip
 - browser acceptance reliability preflight
 - live GitHub integration and external-write safety regression coverage
+- durable saga compensation recovery after worker loss
 
 ## Exact v0.4 local history
 
@@ -22,37 +23,25 @@ The current tree includes:
 - tag: v0.4.0-dev
 - exact development bundle: workproof-runtime-v0.4.0-dev.bundle
 
-V1.9 additions include:
+## v1.9 additions
+
 - docs/RELEASE-GATE-V1.9.md
+- docs/FINAL-AUDIT-V1.9.md
 - packages/runtime/src/saga-recovery.ts
 - test/saga-recovery.test.ts
+- persisted EffectRecord input for compensation reconstruction
+- work-object schema support for effect input
 
-## Verified main milestones
+## Verified main milestone evidence
 
-- v1.1 implementation verification commit: 7eeefa13afa56acb9db5038ec3b5885f0724e46f
-- v1.2 merge commit: b6ef830d79dc432314a4da0f6e143ddb3a8b6f61
-- v1.3 retention merge commit: db5c8fa296f13828ccc461c60916457b87af7168
-- browser reliability merge commit: 6c01f201f6cec32ab6fa34a01fe878d3f47c5b0b
-- v1.4 worker-ownership merge commit: 8dfbce5609e2eba967971cc2dd4ea464b0604504
-- v1.5 execution-lease merge commit: b09fbf40489944b09dbcb33dda73ba0fcb57fb04
-- v1.6 worker-loss recovery merge commit: b7a1bacd0d47baab7d759bb572351434ac5fdb60
-- v1.7 control-plane/SDK merge commit: 86f8effb0e6178eb2f69d7b33472c7579be54d0f
-
-## v1.8 additions
-
-- docs/RELEASE-GATE-V1.8.md
-- packages/compensation/src/engine.ts
-- test/compensation.test.ts
-- saga lineage preserved across proof/retention/registry/CLI integrity reconstruction
-
-## Current verification evidence
-
-- merged-main CI #476: success
-- source audit: 111/111
-- v1.8 feature CI #475: success
+- v1.9 merge commit: f0173fd9c0603fd1fa58ea6f722486f52a04f932
+- feature CI #528: success
+- merged-main CI #530: success
+- pre-closeout source audit on main: 114/114
+- closeout source audit target: 115/115 after FINAL-AUDIT-V1.9.md is included
 - dependency security audit: success
-- retention lifecycle suite: passed
-- full unit/integration suite: passed
+- retention lifecycle suite: success
+- sequential full integration verification: 30/30 test files passed
 - benchmark: passed
 - demo: verified
 - CLI proof + mission: verified
