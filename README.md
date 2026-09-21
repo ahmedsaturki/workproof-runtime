@@ -4,9 +4,9 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v2.8-dev diagnostic lease/fence visibility is verified on main.**
+**v2.9-dev operational work filtering is in progress.**
 
-The v2.8 line includes read-only lease diagnostics across the coordination layer, authenticated control plane, and Studio, with persistent-store parity and no fencing-token leakage through visibility surfaces.
+The active v2.9 line extends the verified v2.8 Studio with bounded search, status/risk filtering, result limits, and deterministic operational summaries. The filter layer is diagnostic only and does not alter execution or authorization semantics.
 
 ## Core loop
 
@@ -35,6 +35,16 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - v2.6 worker-aware Studio.
 - v2.7 authenticated remote worker visibility.
 - v2.8 diagnostic lease/fence visibility.
+
+## v2.9 operational work filtering
+
+- `GET /api/work` supports bounded free-text search by Work Object ID or objective.
+- `GET /api/work` supports explicit status and risk filters.
+- `GET /api/work` enforces a maximum result limit.
+- Invalid filter inputs fail closed with HTTP 400.
+- The API returns deterministic `total`, `byStatus`, and `byRisk` counts for the matched set.
+- Studio exposes search, status, risk, and limit controls and renders summary cards from the filtered result set.
+- Filtering never mutates a Work Object and never bypasses authorization, lease, proof, or control-plane semantics.
 
 ## v2.8 diagnostic lease/fence visibility
 
@@ -83,6 +93,6 @@ Lease visibility is diagnostic only. A visible lease is not proof that a worker 
 
 ## Next engineering gates
 
-Richer operational visualization/filtering and additional capability packs/integrations remain separate milestones.
+Additional capability packs/integrations and richer operational visualization remain separate milestones.
 
 This repository does not make a global novelty claim.

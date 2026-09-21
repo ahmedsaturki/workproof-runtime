@@ -406,6 +406,14 @@ button { background: #21262d; color: #e6edf3; border: 1px solid #30363d; padding
 <h2>Execution leases</h2>
 <div id="leases" class="grid"></div>
 </section>
+<section class="toolbar" aria-label="Work filters">
+<label><small>Search</small><br><input id="workQuery" autocomplete="off" placeholder="objective or work id"></label>
+<label><small>Status</small><br><select id="workStatus"><option value="">All</option><option value="new">New</option><option value="planned">Planned</option><option value="running">Running</option><option value="waiting_verification">Waiting verification</option><option value="verified">Verified</option><option value="partial">Partial</option><option value="waiting_lease">Waiting lease</option><option value="failed">Failed</option><option value="unresolved">Unresolved</option><option value="unverifiable">Unverifiable</option><option value="cancelled">Cancelled</option></select></label>
+<label><small>Risk</small><br><select id="workRisk"><option value="">All</option><option value="read">Read</option><option value="local_write">Local write</option><option value="external_write">External write</option><option value="destructive">Destructive</option><option value="financial">Financial</option></select></label>
+<label><small>Limit</small><br><input id="workLimit" type="number" min="1" max="1000" value="100"></label>
+<button id="clearFilters">Clear filters</button>
+</section>
+<section id="summary" class="grid"></section>
 <section id="list" class="grid"></section>
 <section id="detail" hidden>
 <h2 id="title"></h2>
@@ -431,6 +439,11 @@ const token = document.getElementById("token");
 const dispatchObjective = document.getElementById("dispatchObjective");
 const actionStatus = document.getElementById("actionStatus");
 const proofSection = document.getElementById("proofSection");
+const workQuery = document.getElementById("workQuery");
+const workStatus = document.getElementById("workStatus");
+const workRisk = document.getElementById("workRisk");
+const workLimit = document.getElementById("workLimit");
+const summary = document.getElementById("summary");
 const workers = document.getElementById("workers");
 const leases = document.getElementById("leases");
 const proofs = document.getElementById("proofs");
@@ -557,20 +570,31 @@ async function load() {
   detail.hidden = true;
   selectedId = null;
   list.innerHTML = "<div class='card'>Loading…</div>";
-  const response = await fetch("/api/work", {cache:"no-store"});
+  const params = new URLSearchParams();
+  if (workQuery.value.trim()) params.set("q", workQuery.value.trim());
+  if (workStatus.value) params.set("status", workStatus.value);
+  if (workRisk.value) params.set("risk", workRisk.value);
+  const limit = Number(workLimit.value);
+  if (Number.isInteger(limit) && limit > 0) params.set("limit", String(Math.min(limit, 1000)));
+  const response = await fetch("/api/work" + (params.toString() ? "?" + params.toString() : ""), {cache:"no-store"});
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || "Failed to load work");
+  summary.innerHTML =
+    "<article class='card'><small>Total matching</small><h3>" + Number(data.total) + "</h3></article>" +
+    "<article class='card'><small>Verified</small><h3>" + Number(data.byStatus?.verified || 0) + "</h3></article>" +
+    "<article class='card'><small>Active</small><h3>" + Number((data.byStatus?.running || 0) + (data.byStatus?.waiting_verification || 0) + (data.byStatus?.waiting_lease || 0)) + "</h3></article>" +
+    "<article class='card'><small>Risk: external write</small><h3>" + Number(data.byRisk?.external_write || 0) + "</h3></article>";
   list.innerHTML = "";
   for (const item of data.work) {
     const card = document.createElement("article");
     card.className = "card";
-    card.innerHTML = "<div><span class='badge'>" + esc(item.status) + "</span></div>" +
+    card.innerHTML = "<div><span class='badge'>" + esc(item.status) + "</span> <span class='badge'>" + esc(item.riskClass) + "</span></div>" +
       "<h3>" + esc(item.objective) + "</h3>" +
       "<small>" + esc(item.id) + " · effects " + item.effectCount + " · artifacts " + item.artifactCount + "</small>";
     card.onclick = () => show(item.id);
     list.appendChild(card);
   }
-  if (!data.work.length) list.innerHTML = "<div class='card'>No persisted Work Objects found.</div>";
+  if (!data.work.length) list.innerHTML = "<div class='card'>No Work Objects match the current filters.</div>";
 }
 
 async function show(id) {
@@ -586,6 +610,11 @@ async function show(id) {
 }
 
 document.getElementById("refresh").onclick = () => load().catch(error => { list.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
+document.getElementById("clearFilters").onclick = () => { workQuery.value = ""; workStatus.value = ""; workRisk.value = ""; workLimit.value = "100"; load().catch(error => { list.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; }); };
+[workQuery, workStatus, workRisk, workLimit].forEach((element) => {
+  element.addEventListener("change", () => load().catch(error => { list.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; }));
+  if (element === workQuery) element.addEventListener("keydown", (event) => { if (event.key === "Enter") load().catch(error => { list.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; }); });
+});
 document.getElementById("dispatch").onclick = () => control("/api/control/dispatch", {objective: dispatchObjective.value.trim()});
 document.getElementById("resume").onclick = () => control("/api/control/work/" + encodeURIComponent(selectedId) + "/resume", {});
 document.getElementById("cancel").onclick = () => control("/api/control/work/" + encodeURIComponent(selectedId) + "/cancel", {});
@@ -615,7 +644,7 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
       if (method === "GET" && url.pathname === "/health") {
         sendJson(res, 200, {
           status: "ok",
-          version: "2.8",
+          version: "2.9",
           mode: configuredControlPlane ? "authenticated-control" : "read-only",
           proofVault: Boolean(vaultDirectory)
         });
@@ -666,17 +695,48 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
       }
 
       if (method === "GET" && url.pathname === "/api/work") {
-        const files = repository.list().filter((file: string) => file.endsWith(".json")).slice(0, MAX_WORKS);
-        const work = [];
+        const query = (url.searchParams.get("q") ?? "").trim().toLowerCase();
+        if (query.length > 200) {
+          sendJson(res, 400, { error: "query-too-long" });
+          return;
+        }
+        const status = (url.searchParams.get("status") ?? "").trim();
+        const risk = (url.searchParams.get("risk") ?? "").trim();
+        const limitRaw = url.searchParams.get("limit");
+        const limit = limitRaw === null ? 100 : Number(limitRaw);
+        const validStatuses = new Set([
+          "new", "planned", "running", "waiting_verification", "verified", "partial",
+          "waiting_lease", "failed", "unresolved", "unverifiable", "cancelled"
+        ]);
+        const validRisks = new Set(["read", "local_write", "external_write", "destructive", "financial"]);
+        if (!Number.isSafeInteger(limit) || limit < 1 || limit > MAX_WORKS) {
+          sendJson(res, 400, { error: "invalid-limit" });
+          return;
+        }
+        if (status && !validStatuses.has(status)) {
+          sendJson(res, 400, { error: "invalid-status" });
+          return;
+        }
+        if (risk && !validRisks.has(risk)) {
+          sendJson(res, 400, { error: "invalid-risk" });
+          return;
+        }
+
+        const files = repository.list().filter((file: string) => file.endsWith(".json"));
+        const matched = [];
         for (const file of files) {
           const id = file.slice(0, -".json".length);
           if (!isWorkId(id)) continue;
           try {
             const value = sanitizeWork(repository.load(id));
-            work.push({
+            if (status && value.status !== status) continue;
+            if (risk && value.riskClass !== risk) continue;
+            if (query && !String(value.id).toLowerCase().includes(query) && !String(value.objective).toLowerCase().includes(query)) continue;
+            matched.push({
               id: value.id,
               objective: value.objective,
-              status: value.status,
+              status: String(value.status),
+              riskClass: String(value.riskClass),
               updatedAt: value.updatedAt,
               effectCount: Array.isArray(value.effects) ? value.effects.length : 0,
               artifactCount: Array.isArray(value.artifacts) ? value.artifacts.length : 0
@@ -685,8 +745,24 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
             // A corrupt individual Work Object is omitted from the dashboard list.
           }
         }
-        work.sort((a: any, b: any) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
-        sendJson(res, 200, { version: "2.1", work });
+        matched.sort((a: any, b: any) => {
+          const byUpdated = String(b.updatedAt).localeCompare(String(a.updatedAt));
+          return byUpdated || String(a.id).localeCompare(String(b.id));
+        });
+        const byStatus: Record<string, number> = {};
+        const byRisk: Record<string, number> = {};
+        for (const item of matched) {
+          byStatus[item.status] = (byStatus[item.status] ?? 0) + 1;
+          byRisk[item.riskClass] = (byRisk[item.riskClass] ?? 0) + 1;
+        }
+        sendJson(res, 200, {
+          version: "2.9",
+          filters: { q: query, status: status || null, risk: risk || null, limit },
+          total: matched.length,
+          byStatus,
+          byRisk,
+          work: matched.slice(0, limit)
+        });
         return;
       }
 
@@ -835,7 +911,7 @@ if (runtimeProcess.argv[1] && path.resolve(runtimeProcess.argv[1]) === path.reso
         process.stdout.write(JSON.stringify({
           studio: `http://${running.host}:${running.port}`,
           workDirectory: path.resolve(workDirectory),
-          version: "2.8",
+          version: "2.9",
           mode: controlPlaneUrlArg ? "authenticated-control" : "read-only",
           proofVault: Boolean(vaultDirectoryArg)
         }, null, 2) + "\n");

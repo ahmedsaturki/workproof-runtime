@@ -2,7 +2,7 @@
 
 ## 1. Purpose
 
-Represent a bounded digital outcome as durable work, execute it through explicit capabilities and worker ownership, safely handle external effects, independently verify outcomes, preserve portable proof, manage proof lifecycle, recover persisted execution after worker loss, and expose a user-facing Studio with authenticated control delegation, read-only proof/audit views, worker visibility, and diagnostic lease visibility.
+Represent a bounded digital outcome as durable work, execute it through explicit capabilities and worker ownership, safely handle external effects, independently verify outcomes, preserve portable proof, manage proof lifecycle, recover persisted execution after worker loss, and expose a user-facing Studio with authenticated control delegation, read-only proof/audit views, worker visibility, diagnostic lease visibility, and bounded operational filtering.
 
 ## 2. Core loop
 
@@ -98,7 +98,7 @@ Studio exposes `GET /api/leases`. In local mode it reads the configured lease so
 
 Lease visibility is diagnostic only and cannot acquire, renew, release, reassign, or otherwise mutate lease ownership.
 
-## 11. Studio
+## 12. Studio
 
 Read surface:
 - `GET /` HTML dashboard
@@ -117,15 +117,15 @@ Optional control surface:
 
 Studio preserves the control-plane idempotency header when proxying replay responses, and its browser actions generate per-action keys.
 
-## 12. CLI Lifecycle Surface
+## 13. CLI Lifecycle Surface
 
 The CLI exposes work execution, proof inspection/verification, signer identity, registry operations, proof-vault lifecycle, and local Studio launch.
 
-## 13. Non-goals
+## 14. Non-goals
 
 WorkProof is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, or distributed-consensus system.
 
-## 14. v2.8 Acceptance Target
+## 15. v2.8 Acceptance Target
 
 - v2.7 behavior remains passing.
 - read-only control-plane lease visibility is available when configured.
@@ -143,3 +143,12 @@ WorkProof is not itself a generic agent framework, browser automation engine, wo
 - benchmark/demo/CLI verification
 - live GitHub smoke
 - green feature CI and green merged-main CI
+
+
+## 16. v2.9 Acceptance Target
+
+- bounded search, status, risk, and limit filters are available on `/api/work`.
+- operational summary counts are deterministic for the filtered set.
+- invalid filter inputs fail closed with 400.
+- Studio renders filter controls and summary cards.
+- filtering does not mutate work, leases, proofs, or control state.
