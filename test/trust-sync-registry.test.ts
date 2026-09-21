@@ -104,13 +104,16 @@ test("registry client rejects a transport-level trust snapshot with invalid cryp
   const pair = generateProofKeyPair();
   const policy = createTrustPolicy();
   const snapshot = signTrustPolicySnapshot(buildTrustPolicySnapshot(policy, 1), pair.privateKey);
+  const originalSignature = snapshot.signature.signature;
+  const replacement = originalSignature[0] === "A" ? "B" : "A";
   const forged = {
     ...snapshot,
     signature: {
       ...snapshot.signature,
-      signature: snapshot.signature.signature.slice(0, -1) + (snapshot.signature.signature.endsWith("A") ? "B" : "A")
+      signature: replacement + originalSignature.slice(1)
     }
   };
+  assert.notEqual(forged.signature.signature, originalSignature);
   const server = http.createServer((_req: any, res: any) => {
     const body = JSON.stringify({ version: "1.2", snapshot: forged });
     res.writeHead(200, { "content-type": "application/json", "content-length": Buffer.byteLength(body) });
