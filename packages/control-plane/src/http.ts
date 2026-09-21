@@ -155,9 +155,9 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
       if (method === "POST" && actionMatch) {
         const workId = requireWorkId(actionMatch[1]);
         const action = actionMatch[2];
+        const work = options.repository.load(workId);
         const mutation = beginIdempotentMutation(req, res, action, { workId }, id);
         if (mutation.handled) return;
-        const work = options.repository.load(workId);
 
         if (action === "cancel") {
           if (work.status === "verified" || work.status === "failed") {
