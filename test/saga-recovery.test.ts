@@ -252,4 +252,29 @@ test("saga recovery refuses to execute when another owner still holds the recove
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
+
+test("saga recovery refuses corrupt persisted compensation lineage instead of reporting no work", async () => {
+  const dir = tempDir("workproof-saga-invalid-");
+  const repo = new JsonWorkRepository(path.join(dir, "work"));
+  const clock = new FakeClock();
+  const leaseStore = new PersistentLeaseStore(path.join(dir, "leases.db"), { clock });
+  const { store, registry, work, saga } = fixture();
+
+  saga.compensationEffectIds.push("missing-compensation-effect");
+  repo.save(work);
+
+  const result = await coordinator(repo, new WorkStore(), registry, leaseStore, "replacement-worker").recover({
+    workId: work.id,
+    sagaId: saga.sagaId,
+    verifyExternalState: async () => false
+  });
+
+  assert.equal(result.status, "unresolved");
+  assert.deepEqual(result.invalidCompensationEffectIds, ["missing-compensation-effect"]);
+  assert.ok(repo.load(work.id).events.some((event: WorkEvent) => event.type === "saga.recovery.invalid_lineage"));
+
+  leaseStore.close();
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
 export {};
