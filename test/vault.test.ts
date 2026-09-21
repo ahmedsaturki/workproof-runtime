@@ -130,4 +130,23 @@ test("vault rejects proof and artifact paths that escape the vault", () => {
 });
 
 
+test("vault does not silently collapse the same proof under different signer identities", () => {
+  const dir = "/tmp/workproof-vault-signers";
+  const { proofPath } = writeFixture(dir, false);
+  const vault = path.join(dir, "vault");
+  const first = publishProof(proofPath, vault);
+
+  const pair = generateProofKeyPair();
+  const base = JSON.parse(fs.readFileSync(proofPath, "utf8"));
+  const alternateSignature = require("../packages/evidence/src/signature.js").signProof(base, pair.privateKey);
+  fs.writeFileSync(proofPath, JSON.stringify({ ...base, signature: alternateSignature }, null, 2), "utf8");
+
+  assert.throws(
+    () => publishProof(proofPath, vault),
+    /different signer identity/
+  );
+  assert.equal(listProofs(vault)[0].digest, first.digest);
+});
+
+
 export {};
