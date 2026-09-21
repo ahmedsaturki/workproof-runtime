@@ -109,4 +109,25 @@ test("vault rejects index artifact references that are absent from the proof", (
 });
 
 
+test("vault rejects proof and artifact paths that escape the vault", () => {
+  const dir = "/tmp/workproof-vault-paths";
+  const { proofPath } = writeFixture(dir, true);
+  const vault = path.join(dir, "vault");
+  const record = publishProof(proofPath, vault);
+  const indexPath = path.join(vault, "index.json");
+  const index = JSON.parse(fs.readFileSync(indexPath, "utf8"));
+
+  index.records[0].proofPath = path.join(dir, "artifact.txt");
+  fs.writeFileSync(indexPath, JSON.stringify(index, null, 2), "utf8");
+  assert.throws(() => listProofs(vault), /Invalid proof vault record/);
+
+  const clean = publishProof(proofPath, path.join(dir, "vault-clean"));
+  const cleanIndexPath = path.join(dir, "vault-clean", "index.json");
+  const cleanIndex = JSON.parse(fs.readFileSync(cleanIndexPath, "utf8"));
+  cleanIndex.records[0].artifacts["/outside"] = clean.artifacts[Object.keys(clean.artifacts)[0]];
+  fs.writeFileSync(cleanIndexPath, JSON.stringify(cleanIndex, null, 2), "utf8");
+  assert.throws(() => listProofs(path.join(dir, "vault-clean")), /Invalid proof vault artifact reference/);
+});
+
+
 export {};
