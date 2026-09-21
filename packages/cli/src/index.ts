@@ -41,6 +41,10 @@ function writeKey(path: string, content: string, mode: number): void {
 }
 
 function generateKeys(privatePath: string, publicPath: string): void {
+  if (privatePath === publicPath) throw new Error("Private and public key paths must differ");
+  if (fs.existsSync(privatePath) || fs.existsSync(publicPath)) {
+    throw new Error("Refusing to overwrite an existing key file");
+  }
   const pair = generateProofKeyPair();
   writeKey(privatePath, pair.privateKey, 0o600);
   writeKey(publicPath, pair.publicKey, 0o644);
