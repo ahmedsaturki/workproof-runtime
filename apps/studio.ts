@@ -1,6 +1,7 @@
 const http = require("http");
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
 const { URL } = require("url");
 const { JsonWorkRepository } = require("../packages/storage/src/json.js");
 const { listProofs } = require("../packages/evidence/src/vault.js");
