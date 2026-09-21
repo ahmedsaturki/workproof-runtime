@@ -1,0 +1,9 @@
+{
+  "$schema": "../schemas/pack.schema.json",
+  "name": "pack.git.local.change",
+  "version": "0.1.0",
+  "capabilities": ["pack.git.local.change@0.1.0"],
+  "verifiers": ["pack.git.local.change"],
+  "policies": ["local_write"],
+  "fixtures": ["lab/fixtures/git-local-pack.json", "test/git-local-pack.test.ts"]
+}
