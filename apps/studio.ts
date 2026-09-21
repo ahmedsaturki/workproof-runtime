@@ -91,7 +91,7 @@ function sanitizeWork(work: any): Record<string, unknown> {
   };
 }
 
-function sendJson(res: any, statusCode: number, body: Record<string, unknown>): void {
+function sendJson(res: any, statusCode: number, body: Record<string, unknown>, extraHeaders: Record<string, string> = {}): void {
   const payload = JSON.stringify(body);
   res.writeHead(statusCode, {
     "content-type": "application/json; charset=utf-8",
@@ -101,7 +101,8 @@ function sendJson(res: any, statusCode: number, body: Record<string, unknown>): 
     "x-frame-options": "DENY",
     "referrer-policy": "no-referrer",
     "permissions-policy": "camera=(), microphone=(), geolocation=()",
-    "connection": "close"
+    "connection": "close",
+    ...extraHeaders
   });
   res.end(payload);
 }
@@ -159,7 +160,7 @@ async function forwardControl(
   req: any,
   route: string,
   body?: unknown
-): Promise<{ status: number; payload: Record<string, unknown> }> {
+): Promise<{ status: number; payload: Record<string, unknown>; headers?: Record<string, string> }> {
   if (!controlPlaneUrl) return { status: 503, payload: { error: "control-not-configured" } };
   const token = authHeader(req);
   if (!token) return { status: 401, payload: { error: "unauthorized" } };
@@ -189,6 +190,9 @@ async function forwardControl(
   if (data?.work) {
     return {
       status: response.status,
+      headers: response.headers.get("x-idempotency-replayed") === "true"
+        ? { "x-idempotency-replayed": "true" }
+        : undefined,
       payload: {
         version: "2.1",
         ...(data.requestId ? { requestId: data.requestId } : {}),
@@ -496,7 +500,7 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
           return;
         }
         const forwarded = await forwardControl(configuredControlPlane, req, "/v1/work/dispatch", input);
-        sendJson(res, forwarded.status, forwarded.payload);
+        sendJson(res, forwarded.status, forwarded.payload, forwarded.headers);
         return;
       }
 
