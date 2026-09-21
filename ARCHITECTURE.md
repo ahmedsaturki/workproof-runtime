@@ -57,6 +57,8 @@ GOAL -> CONTRACT -> ROUTE -> ACT -> OBSERVE -> VERIFY -> RECONCILE/RECOVER -> DE
 
 The Studio never becomes the authority for authorization or mutation semantics. Its control endpoints are a same-origin proxy and sanitize returned Work Objects.
 
+The proof/audit view is a read-only projection over the authoritative proof vault. It recomputes integrity, signature validity, and optional trust state instead of trusting presentation metadata, and it does not expose vault filesystem paths.
+
 ## Core packages
 
 ### packages/core
