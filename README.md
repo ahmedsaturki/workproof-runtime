@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v1.3 is verified on main; v1.4 worker-ownership foundations are in progress.**
+**v1.4 worker-ownership foundation is verified on main; persistent cross-process coordination is the next gate.**
 
 The current main line combines durable proof objects, signed proof identity, explicit trusted signer policy, authenticated registry transport, signed trust snapshots, and a self-hosted proof-vault lifecycle with conservative retention and garbage collection.
 
@@ -52,10 +52,11 @@ Ed25519 signatures provide cryptographic authenticity under the embedded public 
 WorkProof Runtime is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, or hosted identity provider. Those systems can be integrated as adapters while the Work Object, effect, verification, recovery, and proof semantics remain invariant.
 
 ## v1.4 foundation
-- Deterministic lease authority for resource ownership.
+- Deterministic in-memory lease authority for resource ownership.
 - Worker registration with explicit capability declarations.
 - Heartbeat/offline state.
 - Ownership-bound renew/release and expiry reaping.
-- Current lease authority is intentionally in-memory; persistent cross-process coordination remains a separate gate.
+- The in-memory ownership foundation is verified on main after full CI.
+- Persistent cross-process coordination remains a separate gate.
 
 This repository does not make a global novelty claim.
