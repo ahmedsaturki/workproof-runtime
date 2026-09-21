@@ -1,5 +1,5 @@
 import { CapabilityRegistry } from "../../capabilities/src/registry";
-import { Capability, CapabilityReceipt, EffectAttempt, EffectRecord, WorkObject } from "../../core/src/types";
+import { Capability, CapabilityReceipt, EffectAttempt, EffectRecord, ExecutionFence, WorkObject } from "../../core/src/types";
 
 export type RecoveryDecision = "reconcile" | "retry" | "substitute" | "stop";
 
@@ -17,8 +17,9 @@ export async function executeWithSafety(args: {
   registry: CapabilityRegistry;
   verifyExternalState: (work: WorkObject, effect: EffectRecord) => Promise<boolean>;
   contextLog: (type: string, message: string, data?: Record<string, unknown>) => void;
+  executionFence?: ExecutionFence;
 }): Promise<CapabilityReceipt> {
-  const { work, capability, request, effect, verifyExternalState, contextLog } = args;
+  const { work, capability, request, effect, verifyExternalState, contextLog, executionFence } = args;
   if (effect.status === "unknown" || effect.status === "dispatched") {
     contextLog("recovery.reconcile", "Reconciling ambiguous effect before retry", { effectId: effect.effectId });
     try {
@@ -34,6 +35,7 @@ export async function executeWithSafety(args: {
     }
   }
 
+  executionFence?.assertOwned();
   effect.attempts += 1;
   effect.status = "dispatched";
   effect.updatedAt = new Date().toISOString();
@@ -43,7 +45,8 @@ export async function executeWithSafety(args: {
   try {
     receipt = await capability.execute(request, {
       work, effect,
-      log: contextLog
+      log: contextLog,
+      executionFence
     });
   } catch (error) {
     // A transport/runtime exception after dispatch is ambiguous by default.
