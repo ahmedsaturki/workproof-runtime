@@ -2,32 +2,32 @@
 
 ## Required source tree
 
-The v1.3 browser-reliability patch contains **93 required paths** enforced by scripts/verify-source-tree.js.
+The verified v1.3 main line contains **93 required paths** enforced by scripts/verify-source-tree.js.
 
-V1.2 additions include:
+The browser-reliability correction adds:
+- scripts/chromium-cdp-smoke.js (operational CI preflight; intentionally not part of the required source-path list)
 
-V1.3 additions include:
-- scripts/chromium-cdp-smoke.js (operational CI preflight; not part of the required source-path list)
+The v1.3 lifecycle adds:
 - docs/RELEASE-GATE-V1.3.md
 - packages/evidence/src/retention.ts
 - test/retention.test.ts
+
+The v1.2 trust-sync foundation remains covered by:
 - docs/RELEASE-GATE-V1.2.md
 - docs/SECURITY-V1.2.md
 - packages/evidence/src/trust-sync.ts
 - packages/registry/src/trust-snapshots.ts
-- test/trust-sync.test.ts
-- test/trust-sync-registry.test.ts
-- test/trust-sync-security.test.ts
-- namespace-scoped signer trust regression coverage
+- trust-sync regression suites
 
 ## Main history
 
 - v1.1 implementation verification commit: 7eeefa13afa56acb9db5038ec3b5885f0724e46f
 - v1.2 merge commit: b6ef830d79dc432314a4da0f6e143ddb3a8b6f61
-- v1.2 feature CI: run #298
-- v1.2 merged-main CI: run #299
-- result: source audit + dependency audit + 77/77 tests + benchmark/demo/CLI + live GitHub smoke all passed.
+- v1.3 retention merge commit: db5c8fa296f13828ccc461c60916457b87af7168
+- browser reliability merge commit: 6c01f201f6cec32ab6fa34a01fe878d3f47c5b0b
+- verified merged-main CI: run #358
+- result: source audit + dependency audit + 9/9 retention tests + 23/23 test files + benchmark/demo/CLI/live GitHub smoke all passed
 
 ## Verification discipline
 
-Path completeness, compilation, tests, benchmark, live smoke, and acceptance behavior are separate gates. Passing one does not imply the others passed.
+Path completeness, compilation, tests, benchmark, live smoke, browser environment readiness, and acceptance behavior are separate gates. Passing one does not imply the others passed.

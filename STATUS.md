@@ -4,48 +4,42 @@ Date: 2026-09-21
 
 ## Current main
 
-**v1.2-dev signed trust-policy synchronization is verified on main.**
+**v1.3 retention, reachability, garbage collection, and browser-acceptance reliability are verified on main.**
 
-Current main audit head:
-be845ab160de3597de3781630cc7bb0a1b646259
+Main commit:
+6c01f201f6cec32ab6fa34a01fe878d3f47c5b0b
 
 Verification:
-- run #300: success, final v1.2 audit/documentation state.
-- run #299: success, v1.2 merged-main verification.
-- v1.2 feature and merged-main verification previously passed 77/77 tests, dependency audit, source audit, benchmark/demo/CLI, live GitHub smoke, and trust-sync security regressions.
+- merged-main CI #358: success.
+- source audit: 93/93 required paths.
+- dependency security audit: success.
+- retention suite: 9/9.
+- full sequential suite: 23/23 test files.
+- benchmark V2: passed.
+- demo: verified.
+- CLI proof: verified.
+- CLI mission: verified.
+- live GitHub smoke: verified.
 
-## Active next gate
-
-Branch: **feature/v1.3-retention-gc**
-
-Goal:
-- content inventory
-- explicit retention classes
-- protected pins
-- reachability graph
-- dry-run garbage collection
-- integrity-gated deletion
-- namespace-conservative lifecycle boundaries
-- orphan detection/repair
-- crash-safe index updates and journal recovery
-- user-facing vault lifecycle commands
-
-## Verified foundation
+## Closed milestones
 
 - [x] v1.0 self-hosted proof registry.
 - [x] v1.1 authenticated registry.
 - [x] v1.2 signed trust-policy synchronization.
-- [x] proof integrity and cryptographic proof identity.
-- [x] trust policy separation from cryptographic validity.
+- [x] v1.3 retention/reachability/GC lifecycle.
+- [x] v1.3 browser acceptance reliability correction.
 
-## Remaining platform work
+## Current engineering gate
 
-- [ ] v1.3 retention and garbage collection.
-- [ ] generalized compensation/saga engine.
-- [ ] external browser navigation where permitted.
-- [ ] distributed/remote workers and control plane.
-- [ ] Studio / REST / SDK surfaces.
-- [ ] hosted/managed deployment.
+**v1.4 — distributed work execution and control-plane foundations**
+
+The next milestone is intentionally separate from v1.3. It should address:
+- durable remote worker/process execution boundaries
+- a minimal authenticated REST/control-plane surface
+- SDK-level Work Object and proof operations
+- generalized compensation/saga primitives
+- explicit execution leases and recovery ownership
+- clear separation between local runtime state and remotely retained proof
 
 ## Verification rule
 

@@ -1,56 +1,54 @@
 # WorkProof Runtime
 
-Outcome-first digital work runtime: execute real work, reconcile external effects, verify outcomes, and preserve proof.
+Outcome-first digital work runtime: execute real work, reconcile external effects, verify outcomes, preserve proof, and manage proof lifecycle.
 
 ## Current status
 
-**v1.3-dev retention, reachability, and garbage-collection hardening is in progress.**
+**v1.3 is verified on main.**
 
-The current main line has verified proof integrity, cryptographic identity, trusted signer policy, authenticated registry transport, signed trust snapshots, and auditable trust-state transitions. The active v1.3 branch extends the self-hosted proof vault with explicit retention classes, protected pins, reachability-based collection, namespace-conservative GC, integrity-gated deletion, and crash-safe repair.
+The current main line combines durable proof objects, signed proof identity, explicit trusted signer policy, authenticated registry transport, signed trust snapshots, and a self-hosted proof-vault lifecycle with conservative retention and garbage collection.
 
 ## Core loop
 
 Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify -> Recover/Substitute -> Deliver -> Proof -> Retain
 
-## Verified v1.2 foundation
+## Verified v1.3 scope
 
-- Versioned signed trust-policy snapshots.
-- Explicit trusted administrative signer identities.
-- Namespace-scoped signer authorization.
-- Authenticated registry trust transport.
-- Client-side snapshot digest/signature validation.
-- Revocation propagation.
-- Persistent snapshot index and audit history.
+- Content inventory for proof and artifact objects.
+- Deterministic retention classes and explicit retention overrides.
+- Protected pins and proof-to-artifact reachability.
+- Dry-run and journaled garbage collection.
+- Integrity-gated deletion with conservative namespace boundaries.
+- Orphan detection and repair.
+- Lifecycle audit events.
+- User-facing vault inventory, retention, pin, unpin, GC, and repair commands.
+- CI browser acceptance reliability with explicit CDP preflight and configurable browser binary.
+- Full merged-main verification after the browser reliability correction.
 
-## v1.3 retention and GC
+## Verification evidence
 
-- Content inventory for proof, artifact, and supplied trust-snapshot objects.
-- Default retention classes: ephemeral, standard, long, permanent.
-- Explicit proof/artifact/snapshot retention overrides.
-- Protected pins with optional expiry.
-- Reachability from retained proofs to their artifacts.
-- Deterministic dry-run garbage-collection plans.
-- Integrity verification is required before a proof/artifact becomes deletable.
-- Namespace-scoped collection is conservative and does not delete unscoped content.
-- Index-first GC journal prevents a crash from leaving authoritative metadata pointing at newly deleted proofs.
-- Orphan detection and repair of missing proof/artifact references.
-- Audit events for retention and destructive lifecycle operations.
-
-## CLI lifecycle
-
-- `workctl vault-inventory <vault-dir>`
-- `workctl vault-retain <digest> <vault-dir> <ephemeral|standard|long|permanent> [namespace]`
-- `workctl vault-pin <digest> <vault-dir> [reason] [namespace] [expiresAt]`
-- `workctl vault-unpin <digest> <vault-dir>`
-- `workctl vault-gc <vault-dir>` produces a dry-run plan.
-- `workctl vault-gc <vault-dir> --execute` applies the same verified plan.
-- `workctl vault-gc <vault-dir> --namespace <name>` scopes collection conservatively.
-- `workctl vault-repair <vault-dir>` reconciles stale index references and stale GC journals.
+- 93 required source paths audited.
+- Dependency audit passed.
+- Retention suite: 9/9.
+- Full test-file suite: 23/23.
+- Benchmark V2 passed.
+- Demo verified.
+- CLI proof verification and mission execution verified.
+- Live GitHub smoke verified.
+- Merged-main CI run #358 passed on commit `6c01f201f6cec32ab6fa34a01fe878d3f47c5b0b`.
 
 ## Safety boundary
 
-Garbage collection never treats age alone as sufficient evidence for deletion. Protected roots, explicit retention, reachability, namespace scope, and content integrity are evaluated before a proof or artifact becomes deletable.
+Garbage collection never treats age alone as sufficient evidence for deletion. Protected roots, explicit retention, reachability, namespace scope, and content integrity are evaluated before deletion.
 
-Trust snapshots are inventoried as protected external content in v1.3; destructive lifecycle management of distributed registry objects remains a separate registry-level milestone.
+A capability receipt is not proof of the final outcome. External side effects require independent verification or reconciliation.
+
+SHA-256 integrity is tamper-evident metadata, not a cryptographic signature.
+
+Ed25519 signatures provide cryptographic authenticity under the embedded public key; trusted-key acceptance, revocation, and distribution remain separate policy concerns.
+
+## Product boundary
+
+WorkProof Runtime is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, or hosted identity provider. Those systems can be integrated as adapters while the Work Object, effect, verification, recovery, and proof semantics remain invariant.
 
 This repository does not make a global novelty claim.
