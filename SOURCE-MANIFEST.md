@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The current v2.1 closeout contains **121 required paths** enforced by scripts/verify-source-tree.js.
+The current v2.1 closeout contains **123 required paths** enforced by scripts/verify-source-tree.js.
 
 The tree includes:
 - proof registry and authenticated transport
@@ -18,6 +18,7 @@ The tree includes:
 - durable saga compensation recovery after worker loss
 - local read-only Studio
 - authenticated Studio control delegation
+- read-only proof/audit views backed by the proof vault
 
 ## Exact v0.4 local history
 
