@@ -52,9 +52,9 @@ The final distribution-ready v3.4 source tree contains **179 required paths**, e
 - Release target: `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`.
 - Release verification run: #21 (success).
 - GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.2`.
-- GHCR digest: `sha256:490dcb17e37c0f9a9cdbf7f30624d7d393f9fdb59b911cc9e86b9de681195617`.
-- Container verification run: #15 (success).
-- Main CI: #893 (success).
+- GHCR digest: `sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`.
+- Container verification run: #25 (success).
+- Main CI: latest 900-series verification passed.
 
 ## Verification rule
 
