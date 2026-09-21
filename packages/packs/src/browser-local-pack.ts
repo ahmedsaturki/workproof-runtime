@@ -70,7 +70,22 @@ async function waitFor(ws: WebSocket & { call?: (m: string, p?: any) => Promise<
 function choosePort(): number { return 9300 + (randomBytes(2).readUInt16BE(0) % 500); }
 
 function ensureBrowser(port: number): any {
-  return spawn("chromium", ["--headless=new", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage", `--remote-debugging-port=${port}`, `--user-data-dir=/tmp/operational-reality-chromium-${port}`, "about:blank"], { stdio: ["ignore", "ignore", "ignore"] });
+  const profile = `/tmp/workproof-chromium-${process.pid}-${port}-${randomBytes(4).toString("hex")}`;
+  const browser = spawn("chromium", [
+    "--headless=new",
+    "--no-sandbox",
+    "--disable-gpu",
+    "--disable-dev-shm-usage",
+    "--no-first-run",
+    "--no-default-browser-check",
+    "--disable-background-networking",
+    "--remote-debugging-address=127.0.0.1",
+    `--remote-debugging-port=${port}`,
+    `--user-data-dir=${profile}`,
+    "about:blank"
+  ], { stdio: ["ignore", "ignore", "ignore"], detached: true });
+  try { browser.unref?.(); } catch {}
+  return browser;
 }
 
 class LocalBrowserCapability implements Capability {
