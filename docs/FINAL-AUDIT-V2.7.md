@@ -6,7 +6,7 @@ Date: 2026-09-21
 
 - Feature branch: `feature/v2.7-remote-worker-studio`
 - Scope: authenticated remote worker visibility in Studio
-- Implementation merge: pending CI verification
+- Final implementation merge: `df3bda90e10e17f5e683a153c68d7537e9d4a2c0`
 
 ## Required verification
 
@@ -34,6 +34,19 @@ Date: 2026-09-21
 
 Remote worker visibility is a read path. It does not grant Studio control-plane authority and does not replace lease/fencing semantics.
 
+## Verification evidence
+
+- Feature head: `9f0932a88ab78621a08f6d73973825d5787da94c`
+- Feature CI #694: success
+- Merged-main CI #695: success
+- Source-tree audit: 137/137
+- Dependency security audit: success
+- Chromium/CDP preflight: success
+- Strict build: success
+- Retention lifecycle: success
+- Full sequential suite: success
+- Benchmark/demo/CLI/live GitHub smoke: success
+
 ## Status
 
-Provisional until feature and merged-main CI pass on the final v2.7 merge.
+**v2.7 verified on main.**
