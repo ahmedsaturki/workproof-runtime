@@ -4,6 +4,8 @@ Date: 2026-09-21
 
 ## Acceptance gates
 
+The v3.4 source-tree target is 170 required source paths before final closeout.
+
 - [x] M001 research-to-artifact executable.
 - [x] M002 HTTP discovery executable.
 - [x] M003 bounded Git change capability and remote verification.
