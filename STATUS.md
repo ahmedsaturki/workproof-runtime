@@ -2,31 +2,37 @@
 
 Date: 2026-09-21
 
-## Verified local source
+## Current state
 
-- 53 tracked files
-- local commit: `8cd9b7d841191b8a030bb462ac8dbd271f8259ca`
-- local tag: `v0.4.0-dev`
-- 22/22 tests passed
-- benchmark passed
-- CLI mission verified
-- ambiguous HTTP effect reconciliation verified
-- publication reconciliation verified
-- capability substitution verified
-- risk/approval enforcement verified
-- persistence verified
-- controlled browser acceptance verified
+Verified development baseline on GitHub.
 
-## Remote main
+Remote main contains all 53 required source paths plus repository governance and operational documents.
 
-The remote repository contains a verified kernel checkpoint plus progressively synced capability, policy, verification, recovery, evidence, storage, CLI, pack, fixture, and repository metadata files.
+## Verification
 
-The complete 53-file local source tree is preserved in the exact local source bundle. Full remote-tree parity remains an explicit gate tracked in Issue #1.
+- required source-tree audit: PASS
+- GitHub Actions run 12: PASS
+- 22/22 automated tests: PASS
+- benchmark: PASS
+- demo: VERIFIED
+- CLI mission/proof: VERIFIED
+- Chromium/CDP controlled acceptance: PASS
+- HTTP ambiguous-effect reconciliation: PASS
+- controlled publication reconciliation: PASS
+- capability substitution: PASS
+- approval/risk enforcement: PASS
+- persistence/reload: PASS
 
-## Release discipline
+## Not production-complete
 
-No production-release claim is made until:
-1. the remote tree matches the verified 53-file source manifest;
-2. CI runs from that exact remote tree;
-3. the full benchmark runs from the remote checkout;
-4. the v0.4.0-dev tag is verified remotely.
+- no live third-party email/social/financial/destructive actions
+- no distributed workers
+- no remote control plane
+- no Studio
+- no marketplace/registry
+- no generalized compensation engine
+- no global novelty claim
+
+## Next milestone
+
+Prove real browser navigation plus at least one real third-party integration and two-system failure/reconciliation behavior under explicit policy controls.
