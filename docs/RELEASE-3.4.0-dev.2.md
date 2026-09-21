@@ -25,3 +25,6 @@ Coherent prerelease for the verified v3.4 operator benchmark and self-host distr
 - humanInterventionCount: 0
 
 This is a prerelease. `package.json` remains `private: true`; no npm registry publication is claimed.
+
+
+Release branch baseline: c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d
