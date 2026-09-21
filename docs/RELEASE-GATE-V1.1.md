@@ -21,6 +21,7 @@ Extend the verified self-hosted registry with explicit transport authentication,
 - [x] Malformed and invalid proof protections remain active.
 - [x] Missing proof digest maps to 404.
 - [x] End-to-end authorization and namespace tests.
+- [x] Focused security regression evidence and dependency audit gate.
 - [ ] Distributed trust-policy synchronization.
 - [ ] Remote identity providers.
 - [ ] Replication conflict policy.
