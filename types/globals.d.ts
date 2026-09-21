@@ -13,3 +13,4 @@ declare const Buffer: {
 };
 declare function require(name: string): any;
 declare const module: { exports: any };
+declare function fetch(input: string, init?: any): Promise<any>;
