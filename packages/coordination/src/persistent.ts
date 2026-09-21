@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { DatabaseSync } = require("node:sqlite");
 
-import { LeaseClock, LeaseAcquireResult, LeaseRecord, WorkerRecord, WorkerStatus, ReassignmentCheck, inspectWorker } from "./leases";
+import { LeaseClock, LeaseAcquireResult, LeaseRecord, LeaseStatus, WorkerRecord, WorkerStatus, ReassignmentCheck, inspectWorker, projectLeaseStatus } from "./leases";
 
 interface SqlLeaseRow {
   lease_number: number;
@@ -322,5 +322,12 @@ export class PersistentLeaseStore {
     this.reapExpired();
     return (this.db.prepare("SELECT * FROM leases ORDER BY resource_id").all() as SqlLeaseRow[])
       .map((row) => cloneLease(this.leaseFromRow(row)));
+  }
+
+  listLeaseStatuses(): LeaseStatus[] {
+    this.reapExpired();
+    const nowMs = this.clock.nowMs();
+    return (this.db.prepare("SELECT * FROM leases ORDER BY resource_id").all() as SqlLeaseRow[])
+      .map((row) => projectLeaseStatus(this.leaseFromRow(row), nowMs));
   }
 }
