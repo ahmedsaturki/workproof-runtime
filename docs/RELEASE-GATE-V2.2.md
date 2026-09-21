@@ -16,8 +16,8 @@ Expose retained proof and audit information through the local Studio without exp
 - [x] Corrupted retained proofs fail closed as invalid.
 - [x] Proof endpoints are read-only.
 - [x] Missing proof-vault configuration returns a clear 503.
-- [ ] Feature CI green on final head.
-- [ ] Merged-main CI green on merge commit.
+- [x] Feature CI #582 green on final head.
+- [x] Merged-main CI #583 green on merge commit.
 
 ## Safety boundary
 
@@ -25,4 +25,4 @@ The Studio remains a presentation and read layer. It does not mutate proof-vault
 
 ## Milestone result
 
-The v2.2 proof and audit Studio milestone is complete only after feature CI and merged-main CI pass on the final implementation state.
+**v2.2-dev proof and audit Studio is verified on main.** Feature CI #582 and merged-main CI #583 both passed on the final implementation state.
