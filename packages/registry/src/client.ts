@@ -1,3 +1,4 @@
+const { URL } = require("url");
 const { digestProofBundle, verifyProofIntegrity } = require("../../evidence/src/integrity.js");
 
 function proofBundle(data: any): Record<string, unknown> {
