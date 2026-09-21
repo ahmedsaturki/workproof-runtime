@@ -7,8 +7,15 @@ const { authorize, namespaceVault } = require("./auth");
 const { URL } = require("url");
 const { publishProof, listProofs, inspectProof } = require("../../evidence/src/vault.js");
 const { digestProofBundle, verifyProofIntegrity } = require("../../evidence/src/integrity.js");
+const {
+  publishTrustSnapshot,
+  getTrustSnapshot,
+  listTrustSnapshots,
+  getCurrentTrustSnapshot,
+  applyTrustSnapshot
+} = require("./trust-snapshots.js");
 
-export const REGISTRY_VERSION = "1.1";
+export const REGISTRY_VERSION = "1.2";
 const MAX_BODY_BYTES = 5 * 1024 * 1024;
 
 function sendJson(res: any, statusCode: number, body: Record<string, unknown>): void {
@@ -85,6 +92,7 @@ export interface RegistryServerOptions {
   host?: string;
   port?: number;
   authPolicy?: import("./auth").RegistryAuthPolicy;
+  trustedAdminKeyIds?: Set<string> | string[];
 }
 
 export interface RunningRegistryServer {
@@ -113,6 +121,7 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
   const port = options.port ?? 0;
   fs.mkdirSync(options.vaultDir, { recursive: true });
 
+  const trustedAdminKeyIds = new Set(options.trustedAdminKeyIds ?? []);
   const auditPath = path.join(options.vaultDir, "auth-events.jsonl");
   if (!fs.existsSync(auditPath)) fs.writeFileSync(auditPath, "", { encoding: "utf8", mode: 0o600 });
   fs.chmodSync(auditPath, 0o600);
@@ -130,7 +139,9 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
         return;
       }
 
-      const requiredPermission = method === "POST" && url.pathname === "/v1/proofs" ? "write" : "read";
+      let requiredPermission: "read" | "write" | "trust" = "read";
+      if (method === "POST" && url.pathname === "/v1/proofs") requiredPermission = "write";
+      if (url.pathname.startsWith("/v1/trust/")) requiredPermission = "trust";
       const decision = authorize(options.authPolicy, req.headers, requiredPermission);
       const requestId = crypto.randomBytes(8).toString("hex");
       audit({
@@ -154,6 +165,45 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
       }
 
       const effectiveVault = namespaceVault(options.vaultDir, decision.namespace);
+
+      if (method === "GET" && url.pathname === "/v1/trust/snapshots") {
+        sendJson(res, 200, { version: REGISTRY_VERSION, records: listTrustSnapshots(effectiveVault) });
+        return;
+      }
+
+      if (method === "GET" && url.pathname === "/v1/trust/current") {
+        const current = getCurrentTrustSnapshot(effectiveVault, trustedAdminKeyIds);
+        if (!current) { sendJson(res, 404, { error: "no-current-trust-snapshot" }); return; }
+        sendJson(res, 200, { version: REGISTRY_VERSION, snapshot: current });
+        return;
+      }
+
+      const trustDigestMatch = /^\/v1\/trust\/snapshots\/([0-9a-f]{64})$/.exec(url.pathname);
+      if (method === "GET" && trustDigestMatch) {
+        const snapshot = getTrustSnapshot(effectiveVault, trustDigestMatch[1], trustedAdminKeyIds);
+        sendJson(res, 200, { version: REGISTRY_VERSION, snapshot });
+        return;
+      }
+
+      if (method === "POST" && url.pathname === "/v1/trust/snapshots") {
+        const raw = await readBody(req);
+        let snapshot: any;
+        try { snapshot = JSON.parse(raw); } catch { sendJson(res, 400, { error: "invalid-json" }); return; }
+        const record = publishTrustSnapshot(effectiveVault, snapshot, trustedAdminKeyIds);
+        sendJson(res, 200, { version: REGISTRY_VERSION, status: "published", record, snapshot });
+        return;
+      }
+
+      if (method === "POST" && url.pathname === "/v1/trust/apply") {
+        const raw = await readBody(req);
+        let input: any;
+        try { input = JSON.parse(raw); } catch { sendJson(res, 400, { error: "invalid-json" }); return; }
+        if (!input?.digest || !/^[0-9a-f]{64}$/.test(input.digest)) { sendJson(res, 400, { error: "trust-snapshot-digest-required" }); return; }
+        const snapshot = getTrustSnapshot(effectiveVault, input.digest, trustedAdminKeyIds);
+        const applied = applyTrustSnapshot(effectiveVault, snapshot, trustedAdminKeyIds, Boolean(input.allowRollback));
+        sendJson(res, 200, { version: REGISTRY_VERSION, status: applied.decision, current: applied.current });
+        return;
+      }
 
       if (method === "GET" && url.pathname === "/v1/proofs") {
         sendJson(res, 200, { version: REGISTRY_VERSION, records: listProofs(effectiveVault) });
@@ -202,6 +252,11 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
         return;
       }
 
+      if (trustDigestMatch || url.pathname === "/v1/trust/snapshots" || url.pathname === "/v1/trust/current" || url.pathname === "/v1/trust/apply") {
+        sendJson(res, 405, { error: "method-not-allowed" });
+        return;
+      }
+
       if (routed) {
         sendJson(res, 405, { error: "method-not-allowed" });
         return;
@@ -210,7 +265,7 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
       sendJson(res, 404, { error: "not-found" });
     } catch (error) {
       const message = String(error);
-      const status = /Unknown proof digest/i.test(message) ? 404 : (/integrity|digest|Invalid proof|Proof integrity/i.test(message) ? 422 : 500);
+      const status = /Unknown (proof|trust snapshot) digest|no-current-trust-snapshot/i.test(message) ? 404 : (/untrusted-signer|trust snapshot (conflict|rollback-required)/i.test(message) ? 403 : (/invalid|integrity|digest|Invalid proof|Proof integrity/i.test(message) ? 422 : 500));
       sendJson(res, status, { error: message });
     }
   });
