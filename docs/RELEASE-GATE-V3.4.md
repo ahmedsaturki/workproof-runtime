@@ -26,7 +26,7 @@ The final distribution-ready v3.4 source tree contains **179 required paths**, e
 - [x] Merged-main CI #866.
 - [x] Final documentation/source-tree closeout CI #872.
 - [x] Final closeout record verification CI #875.
-- [x] Latest main CI #893.
+- [x] Latest main CI for the current main commit: success.
 
 ### Distribution
 
