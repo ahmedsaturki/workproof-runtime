@@ -2,6 +2,8 @@
 
 Date: 2026-09-22
 
+Verification note: latest-main documentation synchronization is itself CI-gated.
+
 ## Current main
 
 **v3.4 benchmark and v3.4.0-dev.2 distribution path are verified.**
