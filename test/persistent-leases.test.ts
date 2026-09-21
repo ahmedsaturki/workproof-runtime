@@ -3,6 +3,10 @@ const test = require("node:test");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+
+function tempDir(prefix: string): string {
+  return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+}
 const { fork } = require("child_process");
 
 import type { LeaseAcquireResult, LeaseClock, LeaseRecord, WorkerRecord } from "../packages/coordination/src/leases";
