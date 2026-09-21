@@ -12,6 +12,12 @@ Merged v2.4 commit:
 Merged v2.5 commit:
 234e4397ae8e98acf1fcdf5fd57c42188582ae8f
 
+Merged v2.6 commit:
+172757754264398137a2982ca62a5d5449028f04
+
+Merged v2.5 commit:
+234e4397ae8e98acf1fcdf5fd57c42188582ae8f
+
 Merged-main CI:
 - CI #653: success
 - source-tree audit: 131/131 required paths
