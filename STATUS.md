@@ -2,62 +2,50 @@
 
 Date: 2026-09-21
 
-## Current state
+## Current main
 
-### main
-**v0.5-dev integration milestone verified.**
+v0.5-dev integration milestone is verified on main.
 
 Verified main commit:
-- d9af0d9358e3ceae4468bdf546f1990353feb7bb
+e3010a83513ec25806cd9524481a2cca6dd5bbf2
 
-Latest main GitHub Actions verification:
-- run #34: PASS
-- source-tree audit: PASS
-- strict TypeScript build: PASS
-- 28/28 automated tests: PASS
-- benchmark: PASS
-- demo: VERIFIED
-- CLI proof verification + mission execution: VERIFIED
-- live GitHub repository smoke: PASS
+Latest main CI:
+- run #35: success
+- run #34: success
 
-### v0.5 capabilities now on main
-- live GitHub repository read capability
-- independent repository verification
-- approval-gated GitHub issue external-write capability
-- deterministic idempotency marker
-- lost-acknowledgement reconciliation without duplicate write
-- two-system lost-acknowledgement reconciliation without duplicate writes
-- persisted-effect resume protection
-- proof-bundle SHA-256 integrity verification
-- GitHub pack compatibility manifest
-- strict external-input validation
+## Active next branch
 
-## v0.5 gates
+feature/v0.6-proof-cli
 
-- [x] GitHub REST read capability with explicit risk.
-- [x] Independent verifier for live repository state.
-- [x] GitHub Actions live read-only smoke against the actual repository.
-- [x] External-write capability behind approval policy.
-- [x] Local lost-acknowledgement regression without duplicate write.
-- [x] Two independent external systems reconcile lost acknowledgements without duplicate writes.
-- [x] Persisted acknowledged effects are not re-executed on resume.
-- [x] Proof integrity checks.
+Target:
+- user-facing proof integrity validation in workctl
+- tamper detection with dedicated exit code
+- backward compatibility for proofs without integrity manifests
+- metadata validation for proof integrity manifests
+
+## Verified v0.5 main gates
+
+- [x] GitHub REST read capability.
+- [x] Independent GitHub verifier.
+- [x] Live GitHub read-only smoke.
+- [x] Approval-gated external write.
+- [x] Lost-ack reconciliation without duplicate write.
+- [x] Two-system lost-ack reconciliation without duplicate writes.
+- [x] Persisted-effect resume protection.
+- [x] Proof integrity library.
 - [x] Pack compatibility manifest.
 - [x] Final merged-main audit.
 
-## Explicit non-claims / remaining platform work
+## Remaining platform work
 
-- GitHub marker-based idempotency is reconciliation-based, not an atomic remote idempotency primitive for concurrent independent workers.
-- SHA-256 proof integrity is not a digital signature.
-- CI does not perform an irreversible live third-party write.
-- Generalized compensation/saga remains future work.
-- External browser navigation remains environment-dependent and is not claimed from local injected-page acceptance.
-- Distributed/remote workers, remote control plane, Studio, REST API, SDK, and marketplace/registry remain future product surfaces.
+- [ ] v0.6 proof CLI feature merge and final CI.
+- [ ] Signed proof identity / non-repudiation.
+- [ ] Remote proof registry and artifact retention.
+- [ ] Generalized compensation/saga engine.
+- [ ] External browser navigation where permitted.
+- [ ] Distributed/remote workers and control plane.
+- [ ] Studio / REST / SDK surfaces.
 
 ## Verification rule
 
-A successful tool response is a receipt, not proof. Work is considered verified only when independent evidence satisfies the Work Contract success criteria.
-
-## Release posture
-
-v0.5-dev integration is verified on main. The repository is not presented as a finished production platform until the remaining platform-level controls and surfaces are implemented and independently verified.
+A successful tool response is a receipt, not proof. Work is verified only when independent evidence satisfies the Work Contract success criteria.
