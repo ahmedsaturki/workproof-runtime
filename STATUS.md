@@ -3,6 +3,7 @@
 Date: 2026-09-22
 
 Verification note: latest-main documentation synchronization is itself CI-gated.
+Chromium CDP smoke is environment-isolated from D-Bus and uses a bounded startup window.
 
 ## Current main
 
