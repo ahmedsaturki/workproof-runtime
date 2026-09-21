@@ -731,8 +731,8 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
             matched.push({
               id: value.id,
               objective: value.objective,
-              status: value.status,
-              riskClass: value.riskClass,
+              status: String(value.status),
+              riskClass: String(value.riskClass),
               updatedAt: value.updatedAt,
               effectCount: Array.isArray(value.effects) ? value.effects.length : 0,
               artifactCount: Array.isArray(value.artifacts) ? value.artifacts.length : 0
