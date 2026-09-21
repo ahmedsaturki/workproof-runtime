@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { DatabaseSync } = require("node:sqlite");
 
-import { LeaseClock, LeaseAcquireResult, LeaseRecord, WorkerRecord } from "./leases";
+import { LeaseClock, LeaseAcquireResult, LeaseRecord, WorkerRecord, WorkerStatus, ReassignmentCheck, inspectWorker } from "./leases";
 
 interface SqlLeaseRow {
   lease_number: number;
@@ -209,6 +209,25 @@ export class PersistentLeaseStore {
   listWorkers(): WorkerRecord[] {
     return (this.db.prepare("SELECT * FROM workers ORDER BY worker_id").all() as SqlWorkerRow[])
       .map((row) => cloneWorker(this.workerFromRow(row)));
+  }
+
+  listWorkerStatuses(staleAfterMs: number): WorkerStatus[] {
+    return this.listWorkers().map((worker) => inspectWorker(worker, this.clock.nowMs(), staleAfterMs));
+  }
+
+  getWorkerStatus(workerId: string, staleAfterMs: number): WorkerStatus | null {
+    const worker = this.getWorker(workerId);
+    return worker ? inspectWorker(worker, this.clock.nowMs(), staleAfterMs) : null;
+  }
+
+  checkReassignment(resourceId: string, workerId: string, staleAfterMs: number): ReassignmentCheck {
+    const worker = this.getWorkerStatus(workerId, staleAfterMs);
+    if (!worker) return { eligible: false, reason: "worker-missing" };
+    if (!worker.reassignmentEligible) return { eligible: false, reason: "worker-active", worker };
+    const lease = this.get(resourceId);
+    if (lease && lease.ownerId === workerId) return { eligible: false, reason: "lease-active", worker, lease };
+    if (lease && lease.ownerId !== workerId) return { eligible: false, reason: "lease-owned-by-other", worker, lease };
+    return { eligible: true, reason: worker.liveness === "offline" ? "worker-offline" : "lease-free", worker };
   }
 
   acquire(resourceId: string, ownerId: string, ttlMs: number): LeaseAcquireResult {

@@ -104,6 +104,25 @@ export class LeaseStore {
     return Array.from(this.workers.values()).sort((a, b) => a.workerId.localeCompare(b.workerId)).map(cloneWorker);
   }
 
+  listWorkerStatuses(staleAfterMs: number): WorkerStatus[] {
+    return this.listWorkers().map((worker) => inspectWorker(worker, this.clock.nowMs(), staleAfterMs));
+  }
+
+  getWorkerStatus(workerId: string, staleAfterMs: number): WorkerStatus | null {
+    const worker = this.getWorker(workerId);
+    return worker ? inspectWorker(worker, this.clock.nowMs(), staleAfterMs) : null;
+  }
+
+  checkReassignment(resourceId: string, workerId: string, staleAfterMs: number): ReassignmentCheck {
+    const worker = this.getWorkerStatus(workerId, staleAfterMs);
+    if (!worker) return { eligible: false, reason: "worker-missing" };
+    if (!worker.reassignmentEligible) return { eligible: false, reason: "worker-active", worker };
+    const lease = this.get(resourceId);
+    if (lease && lease.ownerId === workerId) return { eligible: false, reason: "lease-active", worker, lease };
+    if (lease && lease.ownerId !== workerId) return { eligible: false, reason: "lease-owned-by-other", worker, lease };
+    return { eligible: true, reason: worker.liveness === "offline" ? "worker-offline" : "lease-free", worker };
+  }
+
   acquire(resourceId: string, ownerId: string, ttlMs: number): LeaseAcquireResult {
     requireNonEmpty(resourceId, "resourceId");
     requireNonEmpty(ownerId, "ownerId");
@@ -196,4 +215,54 @@ export class LeaseStore {
     this.reapExpired();
     return Array.from(this.leases.values()).sort((a, b) => a.resourceId.localeCompare(b.resourceId)).map(cloneLease);
   }
+}
+
+
+export type WorkerLiveness = "active" | "stale" | "offline";
+
+export interface WorkerStatus extends WorkerRecord {
+  liveness: WorkerLiveness;
+  heartbeatAgeMs: number;
+  staleAfterMs: number;
+  reassignmentEligible: boolean;
+}
+
+export type ReassignmentReason =
+  | "worker-missing"
+  | "worker-active"
+  | "lease-active"
+  | "lease-owned-by-other"
+  | "worker-stale"
+  | "worker-offline"
+  | "lease-free";
+
+export interface ReassignmentCheck {
+  eligible: boolean;
+  reason: ReassignmentReason;
+  worker?: WorkerStatus;
+  lease?: LeaseRecord;
+}
+
+function requireStaleAfter(staleAfterMs: number): void {
+  if (!Number.isSafeInteger(staleAfterMs) || staleAfterMs <= 0) {
+    throw new Error("Worker stale threshold must be a positive safe integer");
+  }
+}
+
+export function inspectWorker(worker: WorkerRecord, nowMs: number, staleAfterMs: number): WorkerStatus {
+  if (!Number.isSafeInteger(nowMs) || nowMs < 0) throw new Error("Worker inspection time must be a non-negative safe integer");
+  requireStaleAfter(staleAfterMs);
+  const heartbeat = Date.parse(worker.lastHeartbeatAt);
+  if (!Number.isFinite(heartbeat)) throw new Error("Worker heartbeat timestamp is invalid");
+  const heartbeatAgeMs = Math.max(0, nowMs - heartbeat);
+  const liveness: WorkerLiveness =
+    worker.state === "offline" ? "offline" :
+    heartbeatAgeMs > staleAfterMs ? "stale" : "active";
+  return {
+    ...cloneWorker(worker),
+    liveness,
+    heartbeatAgeMs,
+    staleAfterMs,
+    reassignmentEligible: liveness !== "active"
+  };
 }

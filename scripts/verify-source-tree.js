@@ -118,6 +118,7 @@ const required = [
   "test/registry-client.test.ts",
   "test/registry.test.ts",
   "test/runtime.test.ts",
+  "test/worker-lifecycle.test.ts",
   "test/signature.test.ts",
   "test/trust-cli.test.ts",
   "test/trust-sync.test.ts",
