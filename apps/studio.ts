@@ -365,6 +365,163 @@ async function fetchRemoteWorkers(controlPlaneUrl: string | undefined, req: any)
   }
 }
 
+const MAX_ATTENTION = 100;
+
+function attentionReasons(work: any): { code: string; detail: string }[] {
+  const reasons: { code: string; detail: string }[] = [];
+  const add = (code: string, detail: string) => {
+    if (!reasons.some(reason => reason.code === code)) reasons.push({ code, detail });
+  };
+
+  const status = String(work?.status ?? "unknown");
+  if (status === "failed") add("work-failed", "Work Object is failed.");
+  if (status === "unresolved") add("work-unresolved", "Work Object has unresolved outcome state.");
+  if (status === "unverifiable") add("work-unverifiable", "Work Object has no independently verified outcome.");
+  if (status === "partial") add("work-partial", "Work Object is only partially complete.");
+  if (status === "waiting_verification") add("waiting-verification", "Work Object is waiting for verification.");
+  if (status === "waiting_lease") add("waiting-lease", "Work Object is waiting for an execution lease.");
+
+  const effects = Array.isArray(work?.effects) ? work.effects : [];
+  for (const effect of effects) {
+    const effectStatus = String(effect?.status ?? "unknown");
+    if (effectStatus === "unknown") add("effect-unknown", "An effect outcome is ambiguous or unknown.");
+    if (effectStatus === "unresolved") add("effect-unresolved", "An effect remains unresolved.");
+  }
+
+  const verificationStatus = work?.verification?.status ? String(work.verification.status) : "";
+  if (verificationStatus === "failed") add("verification-failed", "A verification result failed.");
+  if (verificationStatus === "partial") add("verification-partial", "Verification is partial.");
+  if (verificationStatus === "unverifiable") add("verification-unverifiable", "Verification is not independently sufficient.");
+
+  return reasons;
+}
+
+function buildOperationalOverview(repository: any, options: StudioOptions): Record<string, unknown> {
+  const byStatus: Record<string, number> = {};
+  const byRisk: Record<string, number> = {};
+  const effectByStatus: Record<string, number> = {};
+  const verificationByStatus: Record<string, number> = {};
+  const attention: any[] = [];
+  let totalWork = 0;
+  let totalEffects = 0;
+  let verifiedWork = 0;
+
+  const files = repository.list().filter((file: string) => file.endsWith(".json"));
+  for (const file of files) {
+    const id = file.slice(0, -".json".length);
+    if (!isWorkId(id)) continue;
+    try {
+      const work = repository.load(id);
+      if (!work || typeof work !== "object") continue;
+      const status = String(work.status ?? "unknown");
+      const riskClass = String(work.contract?.riskClass ?? "unknown");
+      byStatus[status] = (byStatus[status] ?? 0) + 1;
+      byRisk[riskClass] = (byRisk[riskClass] ?? 0) + 1;
+      totalWork += 1;
+      if (status === "verified") verifiedWork += 1;
+
+      const effects = Array.isArray(work.effects) ? work.effects : [];
+      totalEffects += effects.length;
+      for (const effect of effects) {
+        const effectStatus = String(effect?.status ?? "unknown");
+        effectByStatus[effectStatus] = (effectByStatus[effectStatus] ?? 0) + 1;
+      }
+
+      const verificationStatus = work.verification?.status ? String(work.verification.status) : "not-present";
+      verificationByStatus[verificationStatus] = (verificationByStatus[verificationStatus] ?? 0) + 1;
+
+      const reasons = attentionReasons(work);
+      if (reasons.length) {
+        attention.push({
+          workId: work.id,
+          objective: String(work.contract?.objective ?? ""),
+          status,
+          riskClass,
+          updatedAt: String(work.updatedAt ?? ""),
+          reasons
+        });
+      }
+    } catch {
+      // Corrupt Work Objects are excluded from the projection rather than guessed.
+    }
+  }
+
+  attention.sort((a, b) => {
+    const byUpdated = String(b.updatedAt).localeCompare(String(a.updatedAt));
+    return byUpdated || String(a.workId).localeCompare(String(b.workId));
+  });
+
+  const workerHealth: Record<string, unknown> = options.workerStatusSource
+    ? (() => {
+        const workers = options.workerStatusSource!.listWorkerStatuses(options.workerStaleAfterMs ?? 30_000);
+        const byLiveness: Record<string, number> = {};
+        let reassignmentEligible = 0;
+        for (const worker of workers) {
+          const liveness = String(worker.liveness);
+          byLiveness[liveness] = (byLiveness[liveness] ?? 0) + 1;
+          if (worker.reassignmentEligible) reassignmentEligible += 1;
+        }
+        return {
+          configured: true,
+          total: workers.length,
+          byLiveness,
+          reassignmentEligible
+        };
+      })()
+    : { configured: false };
+
+  const leaseHealth: Record<string, unknown> = options.leaseStatusSource
+    ? (() => {
+        const leases = options.leaseStatusSource!.listLeaseStatuses();
+        let active = 0;
+        let expired = 0;
+        for (const lease of leases) {
+          if (lease.active) active += 1;
+          else expired += 1;
+        }
+        return {
+          configured: true,
+          total: leases.length,
+          active,
+          expired
+        };
+      })()
+    : { configured: false };
+
+  const attentionByReason: Record<string, number> = {};
+  for (const item of attention) {
+    for (const reason of item.reasons) {
+      attentionByReason[reason.code] = (attentionByReason[reason.code] ?? 0) + 1;
+    }
+  }
+
+  return {
+    version: "3.0",
+    work: {
+      total: totalWork,
+      verified: verifiedWork,
+      byStatus,
+      byRisk
+    },
+    effects: {
+      total: totalEffects,
+      byStatus: effectByStatus,
+      attention: (effectByStatus.unknown ?? 0) + (effectByStatus.unresolved ?? 0)
+    },
+    verification: {
+      byStatus: verificationByStatus,
+      notVerified: totalWork - verifiedWork
+    },
+    workers: workerHealth,
+    leases: leaseHealth,
+    attention: {
+      total: attention.length,
+      byReason: attentionByReason,
+      items: attention.slice(0, MAX_ATTENTION)
+    }
+  };
+}
+
 function studioHtml(controlEnabled: boolean): string {
   return `<!doctype html>
 <html lang="en">
@@ -405,6 +562,14 @@ button { background: #21262d; color: #e6edf3; border: 1px solid #30363d; padding
 <section id="leasesSection">
 <h2>Execution leases</h2>
 <div id="leases" class="grid"></div>
+</section>
+<section>
+<h2>Operational health</h2>
+<div id="overview" class="grid"></div>
+</section>
+<section>
+<h2>Attention queue</h2>
+<div id="attention" class="grid"></div>
 </section>
 <section class="toolbar" aria-label="Work filters">
 <label><small>Search</small><br><input id="workQuery" autocomplete="off" placeholder="objective or work id"></label>
@@ -447,6 +612,8 @@ const summary = document.getElementById("summary");
 const workers = document.getElementById("workers");
 const leases = document.getElementById("leases");
 const proofs = document.getElementById("proofs");
+const overview = document.getElementById("overview");
+const attention = document.getElementById("attention");
 let selectedId = null;
 
 function setActionStatus(message) {
@@ -512,6 +679,46 @@ async function showProof(digest) {
   proofs.prepend(detailCard);
 }
 
+async function loadOverview() {
+  overview.innerHTML = "<div class='card'>Loading operational health…</div>";
+  attention.innerHTML = "<div class='card'>Loading attention queue…</div>";
+  const response = await fetch("/api/operations/overview", {cache:"no-store"});
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || "Failed to load operational overview");
+
+  const workerTotal = data.workers?.configured ? Number(data.workers.total || 0) : null;
+  const workerIssues = data.workers?.configured
+    ? Number((data.workers.byLiveness?.stale || 0) + (data.workers.byLiveness?.offline || 0))
+    : null;
+  const leaseActive = data.leases?.configured ? Number(data.leases.active || 0) : null;
+
+  overview.innerHTML =
+    "<article class='card'><small>Work Objects</small><h3>" + Number(data.work?.total || 0) + "</h3><small>verified " + Number(data.work?.verified || 0) + "</small></article>" +
+    "<article class='card'><small>Effects needing attention</small><h3>" + Number(data.effects?.attention || 0) + "</h3><small>unknown + unresolved</small></article>" +
+    "<article class='card'><small>Work not verified</small><h3>" + Number(data.verification?.notVerified || 0) + "</h3><small>requires outcome evidence</small></article>" +
+    "<article class='card'><small>Attention items</small><h3>" + Number(data.attention?.total || 0) + "</h3><small>" + Object.keys(data.attention?.byReason || {}).length + " reason codes</small></article>" +
+    (workerTotal === null ? "<article class='card'><small>Workers</small><h3>Not configured</h3></article>" :
+      "<article class='card'><small>Workers</small><h3>" + workerTotal + "</h3><small>stale/offline " + workerIssues + "</small></article>") +
+    (leaseActive === null ? "<article class='card'><small>Active leases</small><h3>Not configured</h3></article>" :
+      "<article class='card'><small>Active leases</small><h3>" + leaseActive + "</h3></article>");
+
+  attention.innerHTML = "";
+  for (const item of (data.attention?.items || [])) {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML =
+      "<div><span class='badge'>" + esc(item.status) + "</span> <span class='badge'>" + esc(item.riskClass) + "</span></div>" +
+      "<h3>" + esc(item.objective) + "</h3>" +
+      "<small>" + esc(item.workId) + "</small>" +
+      "<ul>" + item.reasons.map(reason => "<li>" + esc(reason.code) + " — " + esc(reason.detail) + "</li>").join("") + "</ul>";
+    card.onclick = () => show(item.workId);
+    attention.appendChild(card);
+  }
+  if (!data.attention?.items?.length) {
+    attention.innerHTML = "<div class='card'>No attention items in the current persisted Work set.</div>";
+  }
+}
+
 async function loadWorkers() {
   workers.innerHTML = "<div class='card'>Loading worker status…</div>";
   const workerHeaders = token.value.trim() ? {"authorization":"Bearer " + token.value.trim()} : {};
@@ -565,6 +772,7 @@ async function loadLeases() {
   if (!data.leases.length) leases.innerHTML = "<div class='card'>No active execution leases.</div>";
 }
 async function load() {
+  await loadOverview().catch(error => { overview.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; attention.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
   await loadWorkers().catch(error => { workers.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
   await loadLeases().catch(error => { leases.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
   detail.hidden = true;
@@ -644,7 +852,7 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
       if (method === "GET" && url.pathname === "/health") {
         sendJson(res, 200, {
           status: "ok",
-          version: "2.9",
+          version: "3.0",
           mode: configuredControlPlane ? "authenticated-control" : "read-only",
           proofVault: Boolean(vaultDirectory)
         });
@@ -691,6 +899,12 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
           staleAfterMs: workerStaleAfterMs,
           workers: workerList.map(sanitizeWorkerStatus)
         });
+        return;
+      }
+
+      if (method === "GET" && url.pathname === "/api/operations/overview") {
+        const overview = buildOperationalOverview(repository, options);
+        sendJson(res, 200, overview);
         return;
       }
 
