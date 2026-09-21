@@ -161,6 +161,7 @@ function walkFiles(root: string): string[] {
   const stack = [root];
   while (stack.length) {
     const current = stack.pop();
+    if (!current) continue;
     const stat = fs.statSync(current);
     if (stat.isDirectory()) {
       for (const child of fs.readdirSync(current)) stack.push(path.join(current, child));
@@ -245,8 +246,8 @@ export function inventoryVault(vaultDir: string, registryDirs: string[] = []): I
     if (!isDigest(digest)) continue;
     const entry = retentionForDigest(retention, digest, "artifact");
     const pin = activePin(retention, digest, "artifact", at);
-    const keepUntil = expiry(entry, retention.policy, entry?.createdAt ?? now());
-    const kept = Boolean(pin) || keepUntil === null || keepUntil > at;
+    const keepUntil = entry ? expiry(entry, retention.policy, entry.createdAt) : null;
+    const kept = Boolean(pin) || (entry !== undefined && (keepUntil === null || (keepUntil as number) > at));
     objects.push({ kind: "artifact", digest, filePath, bytes: fs.statSync(filePath).size, managed: true, integrity: artifactIntegrity(filePath, digest), protected: kept, reachable: kept, ...(entry?.namespace ? { namespace: entry.namespace } : {}) });
   }
   for (const registryDir of registryDirs) {
