@@ -221,4 +221,115 @@ test("Studio control routes require a bearer token and delegate mutation to the 
   }
 });
 
+
+test("Studio exposes retained proof audit metadata without vault paths", async () => {
+  const root = tempDir("workproof-studio-proof-");
+  const workRoot = path.join(root, "work");
+  const vaultRoot = path.join(root, "vault");
+  const repository = new JsonWorkRepository(workRoot);
+  const auth = require("../packages/evidence/src/trust.js");
+  const signing = require("../packages/evidence/src/signature.js");
+  const proofApi = require("../packages/evidence/src/bundle.js");
+  const integrityApi = require("../packages/evidence/src/integrity.js");
+  const vaultApi = require("../packages/evidence/src/vault.js");
+
+  const work = workFixture();
+  repository.save(work);
+  const pair = signing.generateProofKeyPair();
+  const proof = proofApi.buildProofBundle(work);
+  const integrity = integrityApi.buildIntegrityManifest(work);
+  const signature = signing.signProof({ ...proof, integrity }, pair.privateKey);
+  const proofPath = path.join(root, "proof.json");
+  fs.writeFileSync(proofPath, JSON.stringify({ ...proof, integrity, signature }, null, 2), "utf8");
+  const record = vaultApi.publishProof(proofPath, vaultRoot);
+
+  const trustPolicy = auth.createTrustPolicy();
+  auth.trustKey(trustPolicy, pair.publicKey, "studio-test");
+  const trustPolicyPath = path.join(root, "trust.json");
+  auth.saveTrustPolicy(trustPolicyPath, trustPolicy);
+
+  const studio = await startStudio({
+    workDirectory: workRoot,
+    vaultDirectory: vaultRoot,
+    trustPolicyPath,
+    port: 0
+  });
+
+  try {
+    const base = `http://127.0.0.1:${studio.port}`;
+    const proofs = await fetch(`${base}/api/proofs?workId=${encodeURIComponent(work.id)}`);
+    assert.equal(proofs.status, 200);
+    const list = await proofs.json();
+    assert.equal(list.proofs.length, 1);
+    assert.equal(list.proofs[0].digest, record.digest);
+    assert.equal(list.proofs[0].integrity, "verified");
+    assert.equal(list.proofs[0].signature, "verified");
+    assert.equal(list.proofs[0].trust, "trusted");
+    assert.equal(list.proofs[0].proofPath, undefined);
+    assert.equal(list.proofs[0]._vaultDirectory, undefined);
+
+    const detail = await fetch(`${base}/api/proof/${record.digest}`);
+    assert.equal(detail.status, 200);
+    const body = await detail.json();
+    assert.equal(body.proof.digest, record.digest);
+    assert.equal(body.proof.workId, work.id);
+    assert.equal(body.proof.integrity, "verified");
+    assert.equal(body.proof.signature, "verified");
+    assert.equal(body.proof.trust, "trusted");
+    assert.equal(body.proof.proofPath, undefined);
+
+    const missing = await fetch(`${base}/api/proof/${"0".repeat(64)}`);
+    assert.equal(missing.status, 404);
+  } finally {
+    await studio.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("Studio proof audit reports corrupted retained proof as invalid", async () => {
+  const root = tempDir("workproof-studio-proof-corrupt-");
+  const workRoot = path.join(root, "work");
+  const vaultRoot = path.join(root, "vault");
+  const repository = new JsonWorkRepository(workRoot);
+  const vaultApi = require("../packages/evidence/src/vault.js");
+  const proofApi = require("../packages/evidence/src/bundle.js");
+  const integrityApi = require("../packages/evidence/src/integrity.js");
+
+  const work = workFixture();
+  repository.save(work);
+  const proof = proofApi.buildProofBundle(work);
+  const integrity = integrityApi.buildIntegrityManifest(work);
+  const proofPath = path.join(root, "proof.json");
+  fs.writeFileSync(proofPath, JSON.stringify({ ...proof, integrity }, null, 2), "utf8");
+  const record = vaultApi.publishProof(proofPath, vaultRoot);
+  const retained = JSON.parse(fs.readFileSync(record.proofPath, "utf8"));
+  retained.work.status = "failed";
+  fs.writeFileSync(record.proofPath, JSON.stringify(retained, null, 2), "utf8");
+
+  const studio = await startStudio({ workDirectory: workRoot, vaultDirectory: vaultRoot, port: 0 });
+  try {
+    const response = await fetch(`http://127.0.0.1:${studio.port}/api/proof/${record.digest}`);
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(body.proof.integrity, "invalid");
+    assert.equal(body.proof.signature, "not-present");
+  } finally {
+    await studio.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("Studio proof APIs fail closed when the vault is not configured", async () => {
+  const root = tempDir("workproof-studio-no-vault-");
+  const studio = await startStudio({ workDirectory: root, port: 0 });
+  try {
+    const response = await fetch(`http://127.0.0.1:${studio.port}/api/proofs`);
+    assert.equal(response.status, 503);
+    assert.equal((await response.json()).error, "proof-vault-not-configured");
+  } finally {
+    await studio.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 export {};
