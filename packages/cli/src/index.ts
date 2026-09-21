@@ -12,6 +12,7 @@ const { registerLocalBrowserPack } = require("../../packs/src/browser-local-pack
 const { registerSQLitePack } = require("../../packs/src/sqlite-pack.js");
 const { registerDataTransformPack } = require("../../packs/src/data-transform-pack.js");
 const { registerMessageOutboxPack } = require("../../packs/src/message-outbox-pack.js");
+const { registerGitLocalPack } = require("../../packs/src/git-local-pack.js");
 const { buildProofBundle } = require("../../evidence/src/bundle.js");
 const { buildIntegrityManifest, verifyProofIntegrity } = require("../../evidence/src/integrity.js");
 const { generateProofKeyPair, signProof, verifyProofSignature, proofKeyId } = require("../../evidence/src/signature.js");
@@ -262,6 +263,7 @@ async function runMission(file: string): Promise<void> {
   registerSQLitePack(registry, verification);
   registerDataTransformPack(registry, verification);
   registerMessageOutboxPack(registry, verification);
+  registerGitLocalPack(registry, verification);
   const work = store.create({
     objective: spec.objective,
     inputs: spec.inputs ?? {},
