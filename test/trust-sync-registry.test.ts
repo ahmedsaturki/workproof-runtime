@@ -69,6 +69,8 @@ test("two authenticated registries publish, pull, apply, conflict, reject forged
     assert.equal(currentB.epoch, 2);
     const listedB = await listTrustSnapshotsFromRegistry(urlB, credB.token);
     assert.equal(listedB.length, 2);
+    assert.equal(listedB[0].path, `${listedB[0].digest}.json`);
+    assert.equal(path.isAbsolute(String(listedB[0].path)), false);
 
     const conflictPolicy = JSON.parse(JSON.stringify(policy2));
     conflictPolicy.keys[0].reason = "same-epoch conflict";
