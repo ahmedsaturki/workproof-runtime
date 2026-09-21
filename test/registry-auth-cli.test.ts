@@ -82,10 +82,10 @@ test("registry server entrypoint loads an auth policy file and enforces it end-t
     policyPath
   ], { stdio: ["ignore", "pipe", "pipe"] });
 
-  const output = [];
+  const output: string[] = [];
   const start = new Promise<any>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error("registry server startup timed out")), 5000);
-    child.stdout.on("data", (chunk) => {
+    child.stdout.on("data", (chunk: any) => {
       output.push(chunk.toString());
       const joined = output.join("");
       try {
@@ -94,11 +94,11 @@ test("registry server entrypoint loads an auth policy file and enforces it end-t
         resolve(info);
       } catch {}
     });
-    child.stderr.on("data", (chunk) => {
+    child.stderr.on("data", (chunk: any) => {
       if (String(chunk).trim()) reject(new Error(String(chunk)));
     });
     child.on("error", reject);
-    child.on("exit", (code) => {
+    child.on("exit", (code: number | null) => {
       if (code !== null && code !== 0) reject(new Error(`registry server exited: ${code}`));
     });
   });
@@ -109,7 +109,7 @@ test("registry server entrypoint loads an auth policy file and enforces it end-t
     const port = Number(info.registry.split(":").pop());
 
     const unauthorized = await new Promise((resolve, reject) => {
-      const req = http.get({ host: "127.0.0.1", port, path: "/v1/proofs" }, (res) => {
+      const req = http.get({ host: "127.0.0.1", port, path: "/v1/proofs" }, (res: any) => {
         res.resume();
         res.on("end", () => resolve(res.statusCode));
       });
@@ -123,7 +123,7 @@ test("registry server entrypoint loads an auth policy file and enforces it end-t
         port,
         path: "/v1/proofs",
         headers: { authorization: `Bearer ${token}` }
-      }, (res) => {
+      }, (res: any) => {
         res.resume();
         res.on("end", () => resolve(res.statusCode));
       });
