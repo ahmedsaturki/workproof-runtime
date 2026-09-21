@@ -48,7 +48,7 @@ test("vault publication is content-addressed and idempotent", () => {
   assert.ok(fs.existsSync(first.artifacts[artifactPath]));
 });
 
-test("vault restore verifies proof integrity and rejects corruption", () => {
+test("vault restore verifies proof and retained artifact integrity", () => {
   const dir = "/tmp/workproof-vault-restore";
   const { proofPath } = writeFixture(dir, false);
   const vault = path.join(dir, "vault");
@@ -62,6 +62,25 @@ test("vault restore verifies proof integrity and rejects corruption", () => {
     work: { ...JSON.parse(fs.readFileSync(record.proofPath, "utf8")).work, status: "failed" }
   }, null, 2), "utf8");
   assert.throws(() => restoreProof(vault, record.digest, path.join(dir, "bad.json")), /integrity verification/);
+});
+
+
+test("vault rejects a corrupted retained artifact during publish and restore", () => {
+  const dir = "/tmp/workproof-vault-artifact-corruption";
+  const { proofPath, artifactPath } = writeFixture(dir);
+  const vault = path.join(dir, "vault");
+  const record = publishProof(proofPath, vault);
+  fs.writeFileSync(record.artifacts[artifactPath], "tampered\n", "utf8");
+
+  assert.throws(
+    () => publishProof(proofPath, vault),
+    /Existing vault artifact failed integrity verification/
+  );
+
+  assert.throws(
+    () => restoreProof(vault, record.digest, path.join(dir, "restored.json")),
+    /Vault artifact failed integrity verification/
+  );
 });
 
 export {};
