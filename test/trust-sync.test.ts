@@ -49,9 +49,8 @@ test("snapshot reconciliation is monotonic by epoch and explicit on conflict or 
   assert.equal(applyTrustPolicySnapshot(newer.snapshot, current, new Set([first.key.keyId]), true).epoch, 1);
 });
 
-test("revoked or unrelated identity cannot become an accepted administrative signer through key ID alone", () => {
-  const { snapshot, trust, key } = signedSnapshot();
-  revokeKey(trust, key.keyId, "rotation");
+test("unknown or unrelated identities cannot be accepted as administrative signers", () => {
+  const { snapshot, key } = signedSnapshot();
   assert.equal(verifyTrustPolicySnapshot(snapshot, new Set()), "untrusted-signer");
   const unrelated = generateProofKeyPair();
   assert.notEqual(proofKeyId(unrelated.publicKey), key.keyId);
