@@ -1,14 +1,12 @@
 # WorkProof Runtime
 
-Outcome-first digital work runtime: execute real work, reconcile external effects, verify outcomes, preserve proof, manage proof lifecycle, recover execution after worker loss, and expose authenticated control.
+Outcome-first digital work runtime: execute real work, reconcile external effects, verify outcomes, preserve proof, manage proof lifecycle, recover execution after worker loss, expose authenticated control, and provide a local operational Studio.
 
 ## Current status
 
-**v1.9 durable saga recovery is verified on main.**
+**v2.0-dev Studio foundation is in progress.**
 
-Main merged commit: `f0173fd9c0603fd1fa58ea6f722486f52a04f932`
-
-The v1.9 milestone adds durable compensation recovery after worker/process loss while preserving explicit ownership, reconciliation, verification, and proof semantics.
+The active v2.0 branch adds a dependency-free, read-only local Studio over persisted Work Objects. The UI is backed by the same JSON Work Object repository used by the runtime and keeps control actions behind the authenticated control plane.
 
 ## Core loop
 
@@ -29,34 +27,26 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - v1.8 explicit saga/compensation semantics.
 - v1.9 durable saga recovery.
 
-## v1.9 durable saga recovery
+## v2.0 Studio foundation
 
-- Recoverable sagas can be discovered from persisted Work Objects.
-- Recovery owns a dedicated saga lease before executing compensation.
-- Expired worker ownership can be replaced deterministically.
-- Verified compensation is skipped on resume.
-- Pending compensation input and lineage are reconstructed from durable effect state.
-- Ambiguous acknowledgements reconcile before any retry.
-- A stale owner stops when a replacement worker takes over.
-- Corrupt persisted compensation lineage fails closed as unresolved.
-- Recovery events and saga state are persisted for audit.
-
-## Verification evidence
-
-The v1.9 candidate passed feature CI #528. The merged-main CI #530 also passed source audit, security audit, build, retention, full sequential integration verification, benchmark, demo, CLI proof/mission, and live GitHub smoke.
+- Local Studio is served directly by Node.js with no frontend framework dependency.
+- Persisted Work Objects are listed from the authoritative JSON repository.
+- A detail view exposes status, effects, artifacts, verification checks, and recent events.
+- Sensitive execution inputs, constraints, and raw effect receipts are not exposed by the Studio API.
+- The Studio API is read-only in this milestone.
+- HTTP responses include no-store and browser hardening headers.
+- CLI entrypoint: `npm run studio`.
 
 ## Safety boundary
 
 Compensation is not guaranteed rollback. The runtime records what was attempted, what was independently verified, and what remains unresolved.
 
-GitHub marker-based idempotency is reconciliation-based, not an atomic exactly-once primitive across independent writers.
+The Studio foundation is intentionally read-only. Dispatch, resume, and cancellation remain behind the authenticated control-plane contract.
 
 Proof integrity and signatures establish integrity/authenticity properties under their defined trust boundaries; they do not create an organization-wide trust or revocation policy by themselves.
 
-Saga recovery is ownership recovery plus bounded compensation execution. It is not an automatic rollback guarantee and does not create global exactly-once semantics across arbitrary independent writers.
-
 ## Next engineering gates
 
-Multi-user signer trust policy, broader distributed worker/control-plane hardening, additional capabilities/integrations, and product-facing Studio surfaces remain separate milestones.
+Authenticated Studio controls through the control plane, broader distributed worker/control-plane hardening, additional capability packs/integrations, and richer proof/audit views remain separate milestones.
 
 This repository does not make a global novelty claim.
