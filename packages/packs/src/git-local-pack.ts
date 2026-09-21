@@ -55,6 +55,13 @@ function runGitDir(gitDir: string, args: string[]): string {
   }).trim();
 }
 
+function showGitFile(gitDir: string, refAndPath: string): string {
+  return execFileSync("git", ["--git-dir", gitDir, "show", refAndPath], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"]
+  });
+}
+
 function validate(input: GitLocalChangeInput): void {
   if (!validPath(input.repoPath) || !fs.existsSync(path.resolve(input.repoPath))) throw new Error("repoPath is invalid");
   if (!validPath(input.remotePath) || !fs.existsSync(path.resolve(input.remotePath))) throw new Error("remotePath is invalid");
@@ -139,7 +146,7 @@ class GitLocalChangeVerifier implements Verifier {
       validate(input);
       const remotePath = path.resolve(input.remotePath);
       const remoteCommit = runGitDir(remotePath, ["rev-parse", input.branch]);
-      const raw = runGitDir(remotePath, ["show", input.branch + ":" + input.filePath]);
+      const raw = showGitFile(remotePath, input.branch + ":" + input.filePath);
       const contentMatches = raw === input.content;
       const passed = contentMatches && /^[0-9a-f]{40}$/.test(remoteCommit);
       return {
