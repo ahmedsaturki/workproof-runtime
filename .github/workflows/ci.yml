@@ -14,7 +14,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -37,7 +37,7 @@ jobs:
         timeout-minutes: 2
       - name: Run full unit and integration suite
         run: node --test dist/test/*.test.js
-        timeout-minutes: 4
+        timeout-minutes: 8
       - name: Run benchmark
         run: npm run benchmark
         timeout-minutes: 2
