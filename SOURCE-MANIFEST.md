@@ -2,14 +2,14 @@
 
 ## Required source tree
 
-The v2.8 finalization branch contains **141 required paths** enforced by scripts/verify-source-tree.js.
+The verified v2.8 main tree contains **141 required paths** enforced by scripts/verify-source-tree.js.
 
 v2.8 additions include:
 - docs/FINAL-AUDIT-V2.8.md
 - docs/RELEASE-GATE-V2.8.md
 - test/lease-visibility.test.ts
 
-v2.8.1 hardening adds persistence parity for the same LeaseStatus projection contract.
+The v2.8 finalization also includes PersistentLeaseStore parity for the same LeaseStatus projection.
 
 ## v0.4 local exact history
 
@@ -17,12 +17,15 @@ v2.8.1 hardening adds persistence parity for the same LeaseStatus projection con
 - tag: v0.4.0-dev
 - exact development bundle: workproof-runtime-v0.4.0-dev.bundle
 
-## Verified main before finalization
+## Verified main
 
-- v2.8 implementation merge: 44ed49dac589389bdad9bbcb6e177a74f43767f9
-- merged-main CI #710: success
-- feature CI #708 and PR CI #709: success
-- persistent lease visibility parity was identified as a post-merge hardening requirement.
+- final v2.8 main commit before documentation closeout: aed65c8ecf770efa7ae1d2c2aa2500133a5dbf81
+- initial v2.8 implementation merge: 44ed49dac589389bdad9bbcb6e177a74f43767f9
+- finalization PR: #60
+- finalization feature CI: #726
+- finalization PR CI: #727
+- finalization merged-main CI: #728
+- result: source audit + dependency security + CDP + strict build + retention + full suite + benchmark + demo + CLI + live GitHub smoke all passed
 
 ## Verification discipline
 
