@@ -6,7 +6,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 **v0.5-dev integration milestone is verified on main.**
 
-The runtime now has a real third-party read integration plus a controlled external-write path, with approval, reconciliation, independent verification, proof integrity, cross-system fault injection, and persisted-effect resume protection.
+The next hardening branch, `feature/v0.6-proof-cli`, promotes proof integrity into the user-facing CLI: generated proof files carry a SHA-256 integrity manifest and `workctl verify` validates it, including explicit tamper detection.
 
 ## Core loop
 
@@ -25,15 +25,22 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - GitHub pack compatibility is declared and tested.
 - GitHub inputs are validated before network access.
 
+## v0.6 proof CLI
+
+- `workctl run` emits an integrity manifest with the proof.
+- `workctl verify` validates the manifest when present.
+- Tampered proof content returns an integrity-specific failure.
+- Legacy proofs without an integrity manifest remain readable.
+
 ## CI evidence
 
-Main run #34 passed the complete verification pipeline: source-tree audit, strict TypeScript build, 28/28 tests, benchmark, demo, CLI proof/mission, and live read-only GitHub smoke.
+The merged v0.5 main checkpoint passed the complete verification pipeline, including 28/28 automated tests and live read-only GitHub smoke.
 
 ## Safety boundary
 
 A capability receipt is not proof of the final outcome. External side effects require independent state verification or reconciliation.
 
-GitHub issue idempotency is deliberately marker/reconciliation-based. It must not be described as an atomic exactly-once guarantee across concurrent workers.
+GitHub issue idempotency is marker/reconciliation-based and is not an atomic exactly-once guarantee across concurrent independent writers.
 
 SHA-256 integrity is tamper-evident metadata, not a cryptographic signature.
 
@@ -43,6 +50,6 @@ WorkProof Runtime is not a replacement for agents, browsers, workflow engines, M
 
 ## Next engineering gates
 
-General compensation/saga primitives, environment-permitted external browser navigation, worker/process boundaries, remote control-plane/API/SDK surfaces, and a user-facing Studio remain separate milestones.
+Signed proof identity, remote proof/artifact retention, generalized compensation/saga semantics, external browser navigation where permitted, worker/process boundaries, remote control-plane/API/SDK surfaces, and user-facing Studio remain separate milestones.
 
 This repository does not make a global novelty claim.

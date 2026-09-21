@@ -2,15 +2,11 @@
 
 ## Required source tree
 
-The verified main v0.5-dev source tree contains **59 required paths** enforced by scripts/verify-source-tree.js.
+The v0.6 proof-CLI branch contains **61 required paths** enforced by scripts/verify-source-tree.js.
 
-V0.5 additions include:
-- docs/FINAL-AUDIT-V0.5.md
-- docs/packs/github-pack.json
-- docs/RELEASE-GATE-V0.5.md
-- packages/evidence/src/integrity.ts
-- test/github.test.ts
-- test/two-system.test.ts
+V0.6 additions include:
+- docs/RELEASE-GATE-V0.6.md
+- test/cli-integrity.test.ts
 
 ## v0.4 local exact history
 
@@ -21,7 +17,7 @@ V0.5 additions include:
 ## Verified main
 
 - commit: d9af0d9358e3ceae4468bdf546f1990353feb7bb
-- CI run: #34
+- v0.5 CI run: #34 and final documentation CI run: #35
 - result: source audit + strict build + 28/28 tests + benchmark + demo + CLI + live GitHub read smoke all passed
 
 ## Verification discipline
