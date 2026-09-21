@@ -4,35 +4,39 @@ Date: 2026-09-21
 
 ## Current state
 
-Verified development baseline on GitHub.
+### main
+Verified v0.4 development baseline.
 
-Remote main contains all 53 required source paths plus repository governance and operational documents.
+### feature/v0.5-github-integration
+v0.5 integration branch contains:
+- live GitHub repository read smoke
+- GitHub repository independent verifier
+- approval-gated GitHub issue write capability
+- deterministic issue idempotency marker
+- lost-acknowledgement reconciliation without duplicate POST
+- proof integrity digest
+- pack compatibility manifest
+- effect operation context
 
-## Verification
+## v0.5 gates
 
-- required source-tree audit: PASS
-- GitHub Actions run 12: PASS
-- 22/22 automated tests: PASS
-- benchmark: PASS
-- demo: VERIFIED
-- CLI mission/proof: VERIFIED
-- Chromium/CDP controlled acceptance: PASS
-- HTTP ambiguous-effect reconciliation: PASS
-- controlled publication reconciliation: PASS
-- capability substitution: PASS
-- approval/risk enforcement: PASS
-- persistence/reload: PASS
+- [x] GitHub REST read capability with explicit risk.
+- [x] Independent verifier for live repository state.
+- [x] GitHub Actions live read smoke against the actual repository.
+- [x] External-effect write path behind approval policy.
+- [x] Local lost-acknowledgement regression without duplicate write.
+- [x] Proof integrity checks.
+- [x] Pack compatibility manifest.
+- [ ] Two independent real external systems under coordinated fault injection.
+- [ ] Generalized compensation/saga engine.
+- [ ] Real browser navigation against an external site where environment policy permits it.
+- [ ] Distributed/remote workers.
+- [ ] Studio / REST / SDK product surfaces.
 
-## Not production-complete
+## Verification rule
 
-- no live third-party email/social/financial/destructive actions
-- no distributed workers
-- no remote control plane
-- no Studio
-- no marketplace/registry
-- no generalized compensation engine
-- no global novelty claim
+Do not classify a work item as completed solely because a tool returned success. Completion requires independent evidence matching the Work Contract's success criteria.
 
-## Next milestone
+## Release posture
 
-Prove real browser navigation plus at least one real third-party integration and two-system failure/reconciliation behavior under explicit policy controls.
+v0.5 remains a development milestone until its remaining cross-system and worker/control-plane gates are independently verified.

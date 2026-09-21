@@ -1,59 +1,109 @@
-# Operational Reality Core — v0.1 Specification
+# WorkProof Runtime Specification - v0.5-dev
 
-## Purpose
+## 1. Purpose
 
-Reconstruct observable system behavior from evidence-bearing executions and represent it as a versioned operational model that can be compared across runs or releases.
+Represent a user's bounded digital outcome as a durable Work Object, execute it through explicit capabilities, safely handle external effects, independently verify the outcome, and preserve portable proof.
 
-## Explicit non-goals
+## 2. Core loop
 
-- Not a browser automation framework.
-- Not a generic workflow engine.
-- Not a knowledge graph product.
-- Not an agent runtime.
-- Not an observability backend.
-- Not an LLM requirement.
-- Not an exploit or penetration-testing product.
+GOAL -> CONTRACT -> ROUTE -> ACT -> OBSERVE -> VERIFY -> RECONCILE/RECOVER -> DELIVER -> PROVE
 
-## Core primitive
+## 3. Work Contract
 
-`Observation → Evidence → Transition → Model → Diff`
+A Work Contract contains:
+- objective
+- inputs
+- constraints
+- success criteria
+- deliverables
+- risk class
+- optional approval requirement
 
-### Observation
+A step's risk class must not exceed the contract risk class.
 
-An atomic execution observation connecting an action on an entity with an observed state transition and optional effects, dependencies, environment, and evidence.
+## 4. Capability contract
 
-### Evidence
+Every capability declares:
+- stable name
+- version
+- supported operations
+- risk class
+- executable behavior
 
-A stable reference to a concrete artifact such as a DOM snapshot, screenshot, HTTP exchange, response, event, log, or trace.
+Capabilities are replaceable adapters. Routing must respect risk ceilings.
 
-### Transition
+## 5. Effect contract
 
-A normalized fact of the form:
+An Effect Record tracks:
+- effect ID
+- idempotency key
+- operation
+- capability
+- risk class
+- attempts
+- attempt log
+- receipt / observed state
+- lifecycle timestamps
 
-`entity type + action + state before + state after`
+A repeated idempotency key resolves to the same durable effect record.
 
-with aggregated effects, surfaces, evidence, and environments.
+## 6. External-effect safety
 
-### Model
+For external writes:
+- policy can require approval before execution
+- the capability should expose a deterministic idempotency strategy
+- an ambiguous outcome must be reconciled against external state before a blind retry
+- successful completion is not declared until the Work Contract's success criteria are independently checked
 
-A deterministic set of observed transitions and known states for a bounded observation corpus.
+The GitHub issue capability requires idempotencyMarker and writes the marker into the issue body so reconciliation can identify an already-created issue after a lost acknowledgement.
 
-### Diff
+## 7. Verification contract
 
-A semantic comparison of two models that highlights added, removed, and changed transitions and side effects.
+A verifier receives the Work Object, a success criterion, and known evidence and returns:
+- criterion
+- pass/fail status
+- details
+- evidence references
 
-## Evidence discipline
+Boolean-only completion is insufficient.
 
-The implementation MUST distinguish observed data from inferred data. The v0.1 model contains only observations explicitly supplied by adapters; future inference layers must mark derived claims and confidence separately.
+## 8. Evidence and proof
 
-## Determinism
+Evidence references identify concrete observed states, artifacts, URLs, or receipts.
 
-Given identical ordered observations, normalization MUST yield the same model identifier and transition ordering.
+Proof bundles can be hashed using canonical JSON plus SHA-256. The digest is tamper-evident integrity metadata; it is not a digital signature.
 
-## Privacy / local-first
+## 9. Persistence
 
-The core package must work without cloud services, hosted databases, API keys, or language models.
+A Work Object may be persisted after major transitions, effect planning, step completion, and final verification.
 
-## v0.1 acceptance test
+## 10. Packs
 
-Given two versions of the supplied Order Lab fixture, the engine must identify that the `order.approve` transition remains present while `notification_sent` was removed and `invoice_created` was added.
+A pack is compatible only when its declared capabilities, verifiers, policies, fixtures, and version metadata agree with the implemented extension.
+
+The GitHub pack manifest is stored at docs/packs/github-pack.json.
+
+## 11. Non-goals
+
+The runtime is not defined as:
+- a generic agent framework
+- a browser automation engine
+- a workflow/queue product
+- a memory database
+- an observability backend
+- an OSINT graph
+- an LLM requirement
+
+Those systems can be integrated as capabilities or adapters.
+
+## 12. v0.5 acceptance target
+
+The v0.5 development gate requires:
+- live GitHub read integration
+- independently verified repository state
+- controlled GitHub external-write capability behind approval
+- local lost-acknowledgement fault injection with no duplicate write
+- evidence-bearing reconciliation
+- proof integrity verification
+- pack compatibility metadata
+- green CI

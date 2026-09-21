@@ -23,6 +23,7 @@ const required = [
   "docs/RELEASE-GATE-V0.2.md",
   "docs/RELEASE-GATE-V0.3.md",
   "docs/RELEASE-GATE-V0.4.md",
+  "docs/RELEASE-GATE-V0.5.md",
   "docs/REPO-BOOTSTRAP.md",
   "docs/SPEC-V0.4.md",
   "docs/packs/github-pack.json",
