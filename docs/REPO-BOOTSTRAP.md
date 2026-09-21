@@ -1,34 +1,27 @@
 # Repository Bootstrap
 
-## Target repository
+## Repository
 
-`ahmedsaturki/workproof-runtime`
+ahmedsaturki/workproof-runtime
 
-The GitHub connector available to this workspace can read and mutate existing repositories, branches, files, commits, and pull requests, but it does not expose repository-creation permission/action. The remote repository therefore must be created once by the owner.
+The remote repository has now been created and is actively synced.
 
-## Create the empty repository
+## Current baseline
 
-Create a new GitHub repository named:
+- default branch: main
+- verified development line: v0.4.0-dev semantics
+- 53 required source paths present
+- GitHub Actions verification is configured
+- Issue #1 tracks the sync and audit history
 
-`workproof-runtime`
+## Local exact snapshot
 
-Do not initialize it with a README, .gitignore, or license; this workspace already contains them.
+The exact original local Git object snapshot is preserved in:
 
-## After creation
+workproof-runtime-v0.4.0-dev.bundle
 
-From the root of this workspace:
+That bundle can be used when exact Git-object/history parity is required. The remote repository currently preserves the verified source tree and an independently audited commit history, but not a byte-identical clone of the local object database.
 
-```bash
-git remote add origin git@github.com:ahmedsaturki/workproof-runtime.git
-git push -u origin main
-```
+## Development rule
 
-The current branch may be renamed to `main` before the first push if desired:
-
-```bash
-git branch -M main
-```
-
-## Current source-of-truth rule
-
-Until the remote exists, this local repository and its verified archives are the source of truth. Do not create a second competing repository for the same codebase.
+Use main only for verified changes. For risky architectural work, use a feature branch and run the full benchmark before merging.
