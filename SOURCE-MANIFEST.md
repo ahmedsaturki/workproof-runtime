@@ -2,7 +2,11 @@
 
 ## Required source tree
 
-The verified v2.9 main tree contains **143 required paths** enforced by scripts/verify-source-tree.js.
+The active v3.0 branch contains **144 required paths** enforced by scripts/verify-source-tree.js.
+
+V3.0 additions include:
+- docs/RELEASE-GATE-V3.0.md
+- operational health projection additions in apps/studio.ts and test/studio.test.ts
 
 V2.9 additions include:
 - docs/FINAL-AUDIT-V2.9.md

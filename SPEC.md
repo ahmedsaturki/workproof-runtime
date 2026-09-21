@@ -1,4 +1,4 @@
-# WorkProof Runtime Specification - v2.9-dev
+# WorkProof Runtime Specification - v3.0-dev
 
 ## 1. Purpose
 
@@ -134,7 +134,7 @@ The CLI exposes work execution, proof inspection/verification, signer identity, 
 
 WorkProof is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, or distributed-consensus system.
 
-## 15. v2.9 Acceptance Target
+## 15. Operational Health Projection
 
 - v2.8 behavior remains passing.
 - bounded search, status, risk, and limit filters are available on `/api/work`.
@@ -149,4 +149,17 @@ WorkProof is not itself a generic agent framework, browser automation engine, wo
 - full integration suite
 - benchmark/demo/CLI verification
 - live GitHub smoke
+- green feature CI and green merged-main CI
+
+
+## 16. v3.0 Acceptance Target
+
+- v2.9 behavior remains passing
+- GET /api/operations/overview is bounded and deterministic
+- effect and verification health are evidence-derived from valid persisted Work Objects
+- optional worker and lease health never fabricates state
+- attention reason codes are explicit and deterministic
+- Studio renders operational health cards and an attention queue
+- projection is read-only and does not change execution, authorization, lease ownership, proof state, or control state
+- source audit, dependency audit, full integration suite, benchmark, demo, CLI verification, live GitHub smoke
 - green feature CI and green merged-main CI

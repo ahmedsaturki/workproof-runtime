@@ -41,6 +41,17 @@ Latest merged-main CI:
 - [x] final CI D-Bus hardening
 - [x] final audit and release-gate documentation
 
+## Active next branch
+
+feature/v3.0-operational-health
+
+Target:
+- read-only operational health projection
+- effect and verification health summaries
+- optional worker and lease health summaries
+- deterministic attention queue with explicit reason codes
+- preserve all v2.9 security, control, lease, proof, retention, worker, and fencing boundaries
+
 ## Remaining platform work
 
 - [ ] additional capability packs and external integrations beyond current foundations
