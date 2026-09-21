@@ -2,10 +2,6 @@
 
 Date: 2026-09-21
 
-## Scope
-
-Add an Email / messaging capability family as a local durable outbox before any external SMTP delivery.
-
 ## Acceptance gates
 
 - [x] No new npm runtime dependency.
@@ -20,13 +16,15 @@ Add an Email / messaging capability family as a local durable outbox before any 
 - [x] Independent persisted-message verification.
 - [x] Pack compatibility manifest and fixture.
 - [x] CLI registration.
-- [ ] Feature CI.
-- [ ] Merged-main CI.
+- [x] Feature CI #808.
+- [x] PR #71 merged.
+- [x] Merged-main CI #809.
+- [x] Final documentation/source-tree closeout is validated by the CI run for this closeout commit.
 
 ## Safety boundary
 
 This milestone never sends an external message. It creates a local `local_write` artifact. SMTP or remote messaging remains a separate, approval-gated capability.
 
-## Verification requirement
+## Milestone result
 
-The capability receipt is not proof. The verifier re-reads the persisted message and compares it to the deterministic representation.
+**v3.3-dev local deterministic message outbox is implementation-verified on main; the closeout commit is the final recordkeeping gate.**

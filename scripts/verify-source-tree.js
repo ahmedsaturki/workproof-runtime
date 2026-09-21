@@ -36,6 +36,7 @@ const required = [
   "docs/FINAL-AUDIT-V3.0.md",
   "docs/FINAL-AUDIT-V3.1.md",
   "docs/FINAL-AUDIT-V3.2.md",
+  "docs/FINAL-AUDIT-V3.3.md",
   "docs/OPERATING-MODEL.md",
   "docs/PRODUCT-DIRECTION-V10.md",
   "docs/PRODUCT-DIRECTION-V9.md",

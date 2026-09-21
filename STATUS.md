@@ -4,16 +4,16 @@ Date: 2026-09-21
 
 ## Current main
 
-**v3.2-dev declarative data transformation capability is verified on main.**
+**v3.3-dev local deterministic message outbox is implementation-verified on main. The current commit is the documentation/source-tree closeout state.**
 
 Current main:
-c3562b96df23c1c8d500c48e0591833e96236306
+c5e951056461c37f45bed8bb8406d119880d63df
 
-Verified gates:
-- feature CI #798: success
-- PR #69: merged
-- merged-main CI #800: success
-- source-tree audit: 155/155 implementation required paths
+Verified implementation gates:
+- feature CI #808: success
+- PR #71: merged
+- merged-main CI #809: success
+- source-tree audit on merged implementation: 162/162
 - dependency security audit: 0 vulnerabilities
 - Chromium/CDP preflight: success
 - strict build: success
@@ -25,29 +25,30 @@ Verified gates:
 - CLI mission execution: success
 - live GitHub smoke: success
 
-## Verified v3.2 gates
+## Verified v3.3 gates
 
-- [x] deterministic JSON transformation
-- [x] declarative filter
-- [x] explicit field projection
-- [x] stable sort
-- [x] 500-row output cap
-- [x] 2 MiB input size bound
-- [x] 20-level input depth bound
-- [x] 10,000 input-item bound
-- [x] safe field-name validation
-- [x] arbitrary expression/code execution excluded
+- [x] deterministic local RFC-style message composition
+- [x] deterministic Message-ID and SHA-256 identity
+- [x] digest-addressed local outbox persistence
+- [x] idempotent duplicate handling
+- [x] strict address/header validation
+- [x] message size bounds
 - [x] evidence-bearing capability result
-- [x] independent persisted-artifact verification
+- [x] independent persisted-message verification
 - [x] pack manifest and fixture
 - [x] CLI registration
 - [x] feature CI
 - [x] merged-main CI
 
+## Safety boundary
+
+External message delivery is not part of v3.3. The capability writes a local outbox artifact and does not send SMTP or remote messages.
+
 ## Remaining platform work
 
 - [ ] additional capability packs and external integrations beyond current foundations
 - [ ] richer operational visualization beyond health summaries and attention
+- [ ] benchmark evidence for real multi-capability operator missions and induced failure modes
 
 ## Verification rule
 

@@ -2,7 +2,15 @@
 
 ## Required source tree
 
-The verified v3.2 implementation tree contains **155 required paths** enforced by scripts/verify-source-tree.js. The final audit documentation adds one required path, bringing the post-audit target to 156.
+The verified v3.3 implementation tree contains **162 required paths** enforced by scripts/verify-source-tree.js. The final audit documentation adds one required path, bringing the closeout target to 163.
+
+V3.3 additions include:
+- docs/FINAL-AUDIT-V3.3.md
+- docs/RELEASE-GATE-V3.3.md
+- docs/packs/message-outbox-pack.json
+- lab/fixtures/message-outbox-pack.json
+- packages/packs/src/message-outbox-pack.ts
+- test/message-outbox.test.ts
 
 V3.2 additions include:
 - docs/FINAL-AUDIT-V3.2.md
@@ -33,16 +41,14 @@ V3.1 additions include:
 - v3.0 operational health merge commit: 4e0672fbbc51416d50330df47397b3162e50da72
 - v3.1 SQLite pack merge commit: 449ad75806c3c0f1dab748598dd1f85c65047afc
 - v3.2 data-transform merge commit: c3562b96df23c1c8d500c48e0591833e96236306
-- v2.9 implementation CI: #751
-- CI hardening PR: #63, CI #760
+- v3.3 message-outbox merge commit: c5e951056461c37f45bed8bb8406d119880d63df
 - v2.9 final merged-main CI: #761
-- v3.0 feature PR: #65, CI #779
 - v3.0 final merged-main CI: #780
-- v3.1 feature CI: #793
 - v3.1 final merged-main CI: #795
-- v3.2 feature CI: #798
 - v3.2 final merged-main CI: #800
-- result: source audit + dependency security + Chromium/CDP + strict build + retention + full suite + benchmark + demo + CLI + live GitHub smoke all passed for the verified v3.2 implementation
+- v3.3 feature CI: #808
+- v3.3 final merged-main CI: #809
+- result: source audit + dependency security + Chromium/CDP + strict build + retention + full suite + benchmark + demo + CLI + live GitHub smoke all passed for the verified v3.3 implementation
 
 ## Verification discipline
 
