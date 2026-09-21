@@ -25,6 +25,8 @@ jobs:
         run: |
           command -v chromium
           chromium --version
+      - name: Chromium CDP preflight
+        run: node scripts/chromium-cdp-smoke.js
       - run: npm install
       - name: Dependency security audit
         run: npm audit --audit-level=high
