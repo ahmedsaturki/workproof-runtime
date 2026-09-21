@@ -14,8 +14,8 @@ Persist lease and worker ownership state so multiple local processes can safely 
 - [x] Expiry is evaluated from durable timestamps.
 - [x] Persistent worker registration deduplicates capabilities.
 - [x] Worker metadata and heartbeat state survive reopen.
-- [x] Two independent Node processes cannot both acquire the same resource.
-- [x] Cross-process winner/loser behavior is deterministic at the ownership contract level: exactly one owner is granted and another receives busy.
+- [x] Six independent Node processes cannot both acquire the same resource.
+- [x] Cross-process winner/loser behavior is deterministic at the ownership contract level: exactly one owner is granted and all other contenders receive busy.
 - [x] No external runtime dependency is required beyond Node.js 24.x built-in SQLite.
 - [ ] Durable WorkEngine execution leases.
 - [ ] Worker-loss reconciliation.

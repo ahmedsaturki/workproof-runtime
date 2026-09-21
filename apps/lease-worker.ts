@@ -8,26 +8,28 @@ if (!dbPath || !workerId || !resourceId || !ttlText) {
 } else {
   const ttlMs = Number(ttlText);
   const store = new PersistentLeaseStore(dbPath);
-  const send = (message: Record<string, unknown>) => runtimeProcess.send?.(message);
+  const send = (message: Record<string, unknown>): void => {
+    runtimeProcess.send?.(message);
+  };
 
-  const finish = () => {
+  const finish = (code: number): void => {
     store.close();
     runtimeProcess.disconnect?.();
-    runtimeProcess.exit(0);
+    runtimeProcess.exit(code);
   };
 
   send({ type: "ready", workerId });
 
   runtimeProcess.on("message", (message: unknown) => {
     if (message !== "go") return;
+
     try {
       const result = store.acquire(resourceId, workerId, ttlMs);
       send({ type: "result", workerId, result });
+      finish(0);
     } catch (error) {
       send({ type: "error", workerId, error: String(error) });
-      runtimeProcess.exitCode = 2;
-    } finally {
-      finish();
+      finish(2);
     }
   });
 }

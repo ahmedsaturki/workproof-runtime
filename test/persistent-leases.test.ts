@@ -37,7 +37,6 @@ interface WorkerChild {
   once(event: "error", listener: (error: Error) => void): WorkerChild;
   send(message: string): void;
   kill(): boolean;
-  disconnect(): void;
 }
 
 interface WorkerHandle {
@@ -137,26 +136,23 @@ test("persistent lease state survives reopening and preserves owner identity", (
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
-test("two independent Node processes cannot both acquire the same persistent lease", async () => {
+test("six independent Node processes cannot both acquire the same persistent lease", async () => {
   const { dir, db } = tempDb("workproof-cross-process-");
-  const workerA = startWorker(db, "worker-a", "shared-work", 60_000);
-  const workerB = startWorker(db, "worker-b", "shared-work", 60_000);
+  const workers: WorkerHandle[] = Array.from({ length: 6 }, (_, index) =>
+    startWorker(db, `worker-${String.fromCharCode(97 + index)}`, "shared-work", 60_000)
+  );
 
   try {
-    await Promise.all([workerA.ready, workerB.ready]);
+    await Promise.all(workers.map((worker: WorkerHandle) => worker.ready));
+    const resultPromises = workers.map((worker: WorkerHandle) => awaitResult(worker));
+    for (const worker of workers) worker.child.send("go");
+    const results: WorkerResultMessage[] = await Promise.all(resultPromises);
 
-    const resultA = awaitResult(workerA);
-    const resultB = awaitResult(workerB);
-    workerA.child.send("go");
-    workerB.child.send("go");
-
-    const results: WorkerResultMessage[] = await Promise.all([resultA, resultB]);
     const acquired = results.filter((item: WorkerResultMessage) => item.result.status === "acquired");
     const busy = results.filter((item: WorkerResultMessage) => item.result.status === "busy");
-
     assert.equal(acquired.length, 1);
-    assert.equal(busy.length, 1);
-    assert.notEqual(acquired[0].workerId, busy[0].workerId);
+    assert.equal(busy.length, 5);
+    assert.equal(new Set(results.map((item: WorkerResultMessage) => item.workerId)).size, 6);
 
     const store = new PersistentLeaseStore(db);
     const persisted = store.get("shared-work");
@@ -177,8 +173,9 @@ test("two independent Node processes cannot both acquire the same persistent lea
     }
     store.close();
   } finally {
-    if (workerA.child.connected) workerA.child.kill();
-    if (workerB.child.connected) workerB.child.kill();
+    for (const worker of workers) {
+      if (worker.child.connected) worker.child.kill();
+    }
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
