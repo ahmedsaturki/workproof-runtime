@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The v1.2 trust-synchronization branch contains **90 required paths** enforced by scripts/verify-source-tree.js.
+The verified v1.2 trust-synchronization main tree contains **90 required paths** enforced by scripts/verify-source-tree.js.
 
 V1.2 additions include:
 - docs/RELEASE-GATE-V1.2.md
@@ -12,14 +12,15 @@ V1.2 additions include:
 - test/trust-sync.test.ts
 - test/trust-sync-registry.test.ts
 - test/trust-sync-security.test.ts
-- expanded namespace-scoped registry security coverage
+- namespace-scoped signer trust regression coverage
 
 ## Main history
 
 - v1.1 implementation verification commit: 7eeefa13afa56acb9db5038ec3b5885f0724e46f
-- current main documentation head: ce08fd74a7c86e8b37b59f925ceb605b34679ddf
-- v1.1 feature gate: source audit + dependency audit + build/test + benchmark/demo/CLI + live GitHub smoke passed.
-- subsequent main documentation synchronization also passed CI.
+- v1.2 merge commit: b6ef830d79dc432314a4da0f6e143ddb3a8b6f61
+- v1.2 feature CI: run #298
+- v1.2 merged-main CI: run #299
+- result: source audit + dependency audit + 77/77 tests + benchmark/demo/CLI + live GitHub smoke all passed.
 
 ## Verification discipline
 

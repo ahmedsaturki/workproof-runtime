@@ -4,32 +4,39 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-v1.2-dev signed trust-policy synchronization is the active integration gate.
+**v1.2-dev signed trust-policy synchronization is verified on main.**
 
-The proof boundary separates integrity, cryptographic signature, trust policy, durable retention, registry transport, and registry authorization.
+The runtime now separates proof integrity, cryptographic identity, trust policy, authenticated registry access, signed trust snapshots, namespace-scoped administrative signer authorization, and auditable state transitions.
 
-## v1.2 trust snapshots
+## Core loop
 
-- `buildTrustPolicySnapshot` creates a versioned snapshot with an explicit epoch and canonical SHA-256 digest.
-- `signTrustPolicySnapshot` attaches an Ed25519 signature to the canonical snapshot envelope.
-- `verifyTrustPolicySnapshot` checks snapshot shape, digest, signature, and an explicit administrative-key allowlist.
-- `reconcileTrustPolicySnapshot` distinguishes accept, noop, conflict, rollback-required, untrusted-signer, and invalid.
-- `applyTrustPolicySnapshot` never silently replaces a newer epoch.
-- Administrative signer trust can be scoped per authenticated namespace; a key trusted in one namespace is not implicitly trusted in another.
-- Registry clients validate trust-snapshot digest and cryptographic signature after transport rather than treating HTTP success as proof.
-- Trust snapshot records expose logical content identifiers rather than absolute server filesystem paths.
-- When the registry server is started with an admin-trust directory, namespaced credentials load `<namespace>.json` and unscoped credentials may use `global.json`.
+Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify -> Recover/Substitute -> Deliver -> Proof
+
+## Verified v1.2 scope
+
+- Versioned trust-policy snapshots with canonical SHA-256 digests.
+- Ed25519 administrative signatures with explicit trusted signer identities.
+- Deterministic accept/noop/conflict/rollback reconciliation by epoch.
+- Authenticated registry trust publish/pull/list/current/apply transport.
+- Namespace-scoped administrative signer trust.
+- Client-side trust snapshot digest/signature verification after transport.
+- Revocation state propagation through signed snapshots.
+- Logical content-addressed snapshot paths without absolute filesystem disclosure.
+- Persistent trust snapshot index and audit event history.
+- Dependency/security audit and full CI verification.
 
 ## Security boundary
 
-Registry authentication answers who may call the registry.
+Registry authentication answers who may call protected registry endpoints.
 Proof signatures answer which key signed a proof.
 Trust policy answers which proof identities are accepted.
 Trust snapshots answer whether one trust-policy state may replace another.
-Administrative signer authorization is a separate namespace-aware gate for trust snapshot mutation.
+Administrative signer authorization is namespace-aware when namespaces are configured.
+
+The runtime does not claim distributed consensus merely from signed snapshot replication.
 
 ## Next engineering gate
 
-Registry-to-registry snapshot transport, signed snapshot replication, revocation propagation, persistent rollback/audit history, retention garbage collection, generalized compensation/saga semantics, distributed workers/control plane, and Studio/REST/SDK remain separate milestones.
+**v1.3 retention, reachability, and garbage collection**: content inventory, protected roots, retention classes, dry-run deletion, orphan detection/repair, namespace-aware boundaries, and crash-safe lifecycle management.
 
 This repository does not make a global novelty claim.

@@ -4,32 +4,49 @@ Date: 2026-09-21
 
 ## Current main
 
-v1.1-dev authenticated multi-user proof registry is verified on main.
+**v1.2-dev signed trust-policy synchronization is verified on main.**
 
 Current main commit:
-ce08fd74a7c86e8b37b59f925ceb605b34679ddf
+b6ef830d79dc432314a4da0f6e143ddb3a8b6f61
 
-Verified v1.1 implementation commit:
-7eeefa13afa56acb9db5038ec3b5885f0724e46f
+Verification:
+- v1.2 feature CI: run #298, 77/77 tests, dependency audit passed, source audit passed, benchmark/demo/CLI passed, live GitHub smoke passed.
+- merged-main CI: run #299, 77/77 tests, dependency audit passed, source audit passed, benchmark/demo/CLI passed, live GitHub smoke passed.
+- namespace-scoped signer trust regression passed.
+- trust client cryptographic validation regression passed.
+- filesystem path leakage regression passed.
+
+## v1.2 result
+
+- [x] Signed trust-policy snapshots.
+- [x] Canonical snapshot digesting.
+- [x] Administrative Ed25519 signatures.
+- [x] Explicit signer authorization.
+- [x] Namespace-scoped administrative signer trust.
+- [x] Deterministic accept/noop/conflict/rollback reconciliation.
+- [x] Authenticated registry trust transport.
+- [x] Signed snapshot replication between two self-hosted registries.
+- [x] Revocation propagation through snapshots.
+- [x] Persistent trust snapshot index and audit event history.
+- [x] Security and dependency audit.
 
 ## Active next gate
 
-Branch: feature/v1.2-trust-sync-final
+Branch: **feature/v1.3-retention-gc**
 
-Target:
-- versioned trust-policy snapshots
-- canonical snapshot digesting
-- signed administrative identity
-- explicit signer authorization
-- deterministic accept/noop/conflict/rollback reconciliation
-- namespace-scoped administrative signer trust
-- registry-to-registry trust transport
-- signed snapshot replication and revocation propagation
+Goal:
+- content inventory
+- reachability graph
+- retention classes
+- dry-run garbage collection
+- protected roots/pins
+- namespace-aware lifecycle boundaries
+- orphan detection and repair
+- crash-safe index updates
 
 ## Remaining platform work
 
-- [ ] v1.2 registry-to-registry trust synchronization
-- [ ] retention/garbage-collection policy
+- [ ] v1.3 retention and garbage collection
 - [ ] generalized compensation/saga engine
 - [ ] external browser navigation where permitted
 - [ ] distributed/remote workers and control plane

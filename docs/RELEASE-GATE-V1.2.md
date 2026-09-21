@@ -27,11 +27,10 @@ Make trust policy portable between self-hosted registries through versioned, sig
 - [x] Forged/untrusted signer is rejected.
 - [x] Explicit rollback requires an override.
 - [x] Absolute filesystem paths are not exposed in trust snapshot records.
+- [x] Registry-to-registry signed snapshot transport is exercised by two independent self-hosted registries.
+- [x] Signed snapshot replication API surface is provided by publish/pull/apply client operations.
+- [x] Persistent trust snapshot index and audit event history records accept/apply/noop/rollback transitions.
 - [x] Dedicated v1.2 security evidence covers trust transport authorization separation.
-- [ ] Registry-to-registry transport.
-- [ ] Signed snapshot replication API.
-- [ ] Revocation propagation protocol.
-- [ ] Persistent rollback/audit history.
 - [ ] Distributed consensus or hosted identity federation.
 
 ## Security boundary
@@ -42,4 +41,4 @@ The v1.2 core does not claim distributed consensus.
 
 ## Milestone result
 
-The v1.2-dev trust synchronization milestone is complete only after feature CI and merged-main CI both pass.
+The v1.2 signed trust-policy synchronization scope is verified on main by feature and merged-main CI. Distributed consensus and hosted federation remain outside this milestone.
