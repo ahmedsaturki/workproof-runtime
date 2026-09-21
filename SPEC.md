@@ -134,7 +134,7 @@ The CLI exposes work execution, proof inspection/verification, signer identity, 
 
 WorkProof is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, or distributed-consensus system.
 
-## 15. Operational Health Projection
+## 15. v2.9 Acceptance Baseline
 
 - v2.8 behavior remains passing.
 - bounded search, status, risk, and limit filters are available on `/api/work`.
