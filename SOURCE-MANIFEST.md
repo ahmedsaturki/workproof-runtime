@@ -2,13 +2,13 @@
 
 ## Required source tree
 
-The v0.7 signed-proof branch contains **64 required paths** enforced by scripts/verify-source-tree.js.
+The v0.7 signed-proof source tree contains **64 required paths** enforced by scripts/verify-source-tree.js.
 
-V0.6 additions include:
+V0.6 additions:
 - docs/RELEASE-GATE-V0.6.md
 - test/cli-integrity.test.ts
 
-V0.7 additions include:
+V0.7 additions:
 - docs/RELEASE-GATE-V0.7.md
 - packages/evidence/src/signature.ts
 - test/signature.test.ts
@@ -21,9 +21,10 @@ V0.7 additions include:
 
 ## Verified main
 
-- commit: e3010a83513ec25806cd9524481a2cca6dd5bbf2
-- v0.5 CI runs: #34 (merged integration) and #35 (final documentation audit)
-- result: source audit + strict build + 28/28 tests + benchmark + demo + CLI + live GitHub read smoke all passed
+- commit: e4f3711861e31cec3fff923be3fbba045d3487f5
+- v0.7 feature CI run: #70
+- v0.7 merged-main CI run: #71
+- result: source audit + strict build + 33/33 tests + benchmark + demo + CLI + browser/HTTP/publication/recovery paths + live GitHub read smoke all passed
 
 ## Verification discipline
 

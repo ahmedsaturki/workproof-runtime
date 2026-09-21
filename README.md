@@ -4,9 +4,9 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v0.7-dev signed-proof identity hardening is in progress.**
+**v0.7-dev signed-proof identity is verified on `main`.**
 
-The active branch, `feature/v0.7-signed-proof`, carries the user-facing v0.6 proof integrity CLI and adds self-contained Ed25519 proof signatures. Proof files can be signed with a generated key pair and independently verified without contacting a remote service.
+The runtime now carries the user-facing v0.6 proof integrity CLI plus self-contained Ed25519 proof signatures. Proof files can be signed with a generated key pair and independently verified without contacting a remote service.
 
 ## Core loop
 
@@ -42,6 +42,15 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - The signed payload is canonicalized and excludes only the signature field itself.
 - Signature failure is distinct from proof-integrity failure.
 - Private keys are written with owner-only permissions by the CLI on supported filesystems.
+- Key generation refuses accidental overwrite of existing key files.
+
+## Verification evidence
+
+- Feature branch CI run #70: success.
+- Merged-main CI run #71: success.
+- Source-tree audit: 64 required paths, none missing.
+- `npm run check`: success, including 33 automated tests and the live GitHub smoke.
+- Browser, HTTP ambiguity/reconciliation, publication, persisted-effect, approval, substitution, and two-system regression paths remain covered.
 
 ## Safety boundary
 
@@ -53,12 +62,16 @@ SHA-256 integrity is tamper-evident metadata, not a cryptographic signature.
 
 Ed25519 signatures provide cryptographic authenticity for a proof when the public key is trusted; they do not by themselves establish a trust policy or key revocation/distribution system.
 
+Private proof-signing keys are currently emitted as PKCS#8 PEM with owner-only file permissions; they are not encrypted at rest by the CLI.
+
 ## Product boundary
 
 WorkProof Runtime is not a replacement for agents, browsers, workflow engines, MCP registries, memory systems, or observability platforms. Those systems can be integrated as adapters while the Work Object, effect, verification, recovery, and proof semantics remain invariant.
 
-## Next engineering gates
+## Next engineering gate
 
-Multi-user proof trust policy, remote proof/artifact retention, generalized compensation/saga semantics, external browser navigation where permitted, worker/process boundaries, remote control-plane/API/SDK surfaces, and user-facing Studio remain separate milestones.
+v0.8 is tracked in issue #6: local trusted-key policy, explicit trusted/revoked/unknown states, optional required-signature policy, and key lifecycle semantics.
+
+Remote proof/artifact retention, generalized compensation/saga semantics, external browser navigation where permitted, worker/process boundaries, remote control-plane/API/SDK surfaces, and user-facing Studio remain separate milestones.
 
 This repository does not make a global novelty claim.

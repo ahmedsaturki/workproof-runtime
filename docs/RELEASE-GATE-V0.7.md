@@ -15,14 +15,24 @@ Extend proof integrity with self-contained Ed25519 signatures so a proof can car
 - [x] Verify the signature independently from the original signing process.
 - [x] Detect signature-only tampering separately from bundle-integrity tampering.
 - [x] Keep verification compatible with unsigned/legacy proofs.
+- [x] Protect existing private/public key files from accidental overwrite.
+- [x] Feature branch CI passes.
+- [x] Merged-main CI passes.
 - [ ] Multi-user trust policy / trusted key registry.
 - [ ] Key rotation / revocation semantics.
 - [ ] Remote proof registry and artifact retention.
+
+## Verification evidence
+
+- Feature branch: `feature/v0.7-signed-proof`, CI run #70 succeeded.
+- Merged main: `e4f3711861e31cec3fff923be3fbba045d3487f5`, CI run #71 succeeded.
 
 ## Safety boundary
 
 A valid Ed25519 signature authenticates a proof under the embedded public key. Trusting that key is a separate policy decision. No global identity, revocation, or non-repudiation claim is made by the runtime alone.
 
+The CLI currently emits PKCS#8 PEM private keys with owner-only file permissions, but does not encrypt them at rest.
+
 ## Milestone result
 
-The v0.7-dev signed-proof milestone is complete only after its feature branch and merged main CI both pass.
+The v0.7-dev signed-proof milestone is verified on main. The next trust-policy work is tracked separately in issue #6.
