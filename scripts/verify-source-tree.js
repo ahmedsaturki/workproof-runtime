@@ -55,6 +55,7 @@ const required = [
   "test/browser.test.ts",
   "test/discovery.test.ts",
   "test/external.test.ts",
+  "test/cli-integrity.test.ts",
   "test/github.test.ts",
   "test/kernel.test.ts",
   "test/publication.test.ts",

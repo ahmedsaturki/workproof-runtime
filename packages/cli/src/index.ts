@@ -1,4 +1,5 @@
 const fs = require("fs");
+const cp = require("child_process");
 const { WorkStore } = require("../../core/src/work.js");
 const { CapabilityRegistry } = require("../../capabilities/src/registry.js");
 const { VerificationEngine } = require("../../verification/src/engine.js");
@@ -9,6 +10,8 @@ const { registerResearchPack } = require("../../packs/src/research-pack.js");
 const { registerWebDiscoveryPack } = require("../../packs/src/web-discovery-pack.js");
 const { registerPublicationPack } = require("../../packs/src/publication-pack.js");
 const { registerLocalBrowserPack } = require("../../packs/src/browser-local-pack.js");
+const { buildProofBundle } = require("../../evidence/src/bundle.js");
+const { buildIntegrityManifest, verifyProofIntegrity } = require("../../evidence/src/integrity.js");
 
 function usage(): void {
   process.stdout.write(`workctl
@@ -17,6 +20,17 @@ function usage(): void {
   verify <proof.json>
   summarize <proof.json>
 `);
+}
+
+function proofBundleFromFile(data: any): Record<string, unknown> {
+  return {
+    version: data.version,
+    work: data.work,
+    effects: data.effects,
+    artifacts: data.artifacts,
+    verification: data.verification,
+    events: data.events
+  };
 }
 
 async function runMission(file: string): Promise<void> {
@@ -42,9 +56,11 @@ async function runMission(file: string): Promise<void> {
   const repo = new JsonWorkRepository(spec.workDirectory ?? "./work-runs");
   const engine = new WorkEngine(store, registry, verification, async () => false, spec.policy, repo);
   await engine.run(work, spec.steps);
-  const proof = spec.proofPath ?? `./${work.id}.json`;
-  fs.writeFileSync(proof, JSON.stringify({ work, effects: work.effects, artifacts: work.artifacts, verification: work.verification, events: work.events }, null, 2), "utf8");
-  process.stdout.write(JSON.stringify({ id: work.id, status: work.status, proof, events: work.events.length, effects: work.effects.length }, null, 2) + "\n");
+  const proof = buildProofBundle(work);
+  const integrity = buildIntegrityManifest(work);
+  fs.writeFileSync(spec.proofPath ?? `./${work.id}.json`, JSON.stringify({ ...proof, integrity }, null, 2), "utf8");
+  const proofPath = spec.proofPath ?? `./${work.id}.json`;
+  process.stdout.write(JSON.stringify({ id: work.id, status: work.status, proof: proofPath, events: work.events.length, effects: work.effects.length, integrity: integrity.digest }, null, 2) + "\n");
   if (work.status !== "verified") process.exitCode = 2;
 }
 
@@ -60,8 +76,18 @@ else {
     process.stdout.write(`${data.work.status}: ${data.work.objective}\nEffects: ${data.effects.length}\nArtifacts: ${data.artifacts.length}\nEvents: ${data.events.length}\n`);
   } else if (command === "verify") {
     const status = data.verification?.status ?? "unverified";
-    process.stdout.write(`${status}\n`);
-    process.exitCode = status === "verified" ? 0 : 2;
+    if (data.integrity) {
+      const valid = verifyProofIntegrity(proofBundleFromFile(data), data.integrity);
+      if (!valid) {
+        process.stdout.write("invalid-integrity\n");
+        process.exitCode = 3;
+        process.exit();
+      }
+      process.stdout.write(`integrity=verified; status=${status}\n`);
+    } else {
+      process.stdout.write(`status=${status}; integrity=not-present\n`);
+    }
+    if (status !== "verified") process.exitCode = 2;
   } else { usage(); process.exitCode = 1; }
 }
 
