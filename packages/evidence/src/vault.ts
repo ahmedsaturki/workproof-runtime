@@ -115,7 +115,17 @@ export function sha256File(filePath: string): string {
 
 function localArtifactPath(uri: string): string | null {
   if (!uri) return null;
-  const candidate = uri.startsWith("file://") ? uri.slice("file://".length) : uri;
+  let candidate = uri;
+  if (uri.startsWith("file://")) {
+    try {
+      candidate = decodeURIComponent(uri.slice("file://".length));
+      if (candidate.startsWith("/") && /^\/[A-Za-z]:[\\/]/.test(candidate)) {
+        candidate = candidate.slice(1);
+      }
+    } catch {
+      return null;
+    }
+  }
   try {
     if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate;
   } catch {
