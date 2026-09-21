@@ -80,7 +80,11 @@ test("CLI verify separates signature tampering from proof-integrity tampering", 
   assert.equal(runCli("sign", proofPath, privatePath).status, 0);
 
   const signed = JSON.parse(fs.readFileSync(proofPath, "utf8"));
-  signed.signature = { ...signed.signature, signature: signed.signature.signature.slice(0, -2) + "AA" };
+  const first = signed.signature.signature[0];
+  signed.signature = {
+    ...signed.signature,
+    signature: (first === "A" ? "B" : "A") + signed.signature.signature.slice(1)
+  };
   fs.writeFileSync(proofPath, JSON.stringify(signed, null, 2), "utf8");
   const signatureTampered = runCli("verify", proofPath);
   assert.equal(signatureTampered.status, 4);
