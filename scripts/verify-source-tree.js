@@ -158,7 +158,7 @@ const required = [
   "test/data-transform.test.ts",
   "test/message-outbox.test.ts",
   "test/git-local-pack.test.ts",
-  "test/operator-benchmark.test.ts
+  "test/operator-benchmark.test.ts",
   "test/trust-cli.test.ts",
   "test/trust-sync.test.ts",
   "test/trust-sync-registry.test.ts",
