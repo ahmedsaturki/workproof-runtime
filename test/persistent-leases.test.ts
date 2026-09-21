@@ -72,8 +72,8 @@ test("persistent lease state survives reopening and preserves owner identity", (
   assert.equal(restored.ownerId, "worker-a");
   const renewed = reopened.acquire("work-1", "worker-a", 2000);
   assert.equal(renewed.status, "renewed");
-  assert.equal(renewed.leaseId, acquired.lease.leaseId);
-  assert.equal(renewed.revision, 2);
+  assert.equal(renewed.result.lease.leaseId, acquired.lease.leaseId);
+  assert.equal(renewed.result.lease.revision, 2);
   assert.deepEqual(reopened.getWorker("worker-a").capabilities, ["github.read"]);
   reopened.close();
 
