@@ -7,7 +7,6 @@ Date: 2026-09-21
 Make WorkProof proof records portable across processes and machines through a self-hosted HTTP registry backed by the content-addressed local vault.
 
 ## Acceptance gates
-
 - [x] HTTP health endpoint.
 - [x] POST proof publication.
 - [x] GET proof metadata by digest.
@@ -22,6 +21,8 @@ Make WorkProof proof records portable across processes and machines through a se
 - [x] Idempotent duplicate publication.
 - [x] Local/self-hosted operation with no managed service dependency.
 - [x] End-to-end local HTTP regression tests.
+- [x] Release-candidate CI passed.
+- [x] Merged-main CI run #175 passed with 55/55 tests and live GitHub smoke.
 - [ ] Authenticated multi-user access.
 - [ ] Remote replication conflict policy.
 - [ ] Retention/garbage-collection policy.
@@ -33,4 +34,4 @@ The registry transports and stores proof; it does not establish trust. Integrity
 
 ## Milestone result
 
-The v1.0-dev registry milestone is complete only after feature CI and merged-main CI both pass.
+The v1.0-dev self-hosted registry milestone is verified on main at commit 265a580b1352a610957e88c0954a02e736ad6886. The unchecked items are explicitly follow-on platform work, not prerequisites to the local registry gate.

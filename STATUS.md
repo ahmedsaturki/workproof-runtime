@@ -4,58 +4,68 @@ Date: 2026-09-21
 
 ## Current main
 
-v0.9-dev content-addressed proof vault is verified on main.
+v1.0-dev self-hosted proof registry is verified on main.
 
 Current main commit:
-1b025eb8da677fb6e4ac84875103f5f76dc1a137
+265a580b1352a610957e88c0954a02e736ad6886
 
 Latest main CI:
-- run #140: success
-- source audit: 71/71 required paths verified
-- automated tests: 49/49 passed
+- run #175: success
+- source audit: 75/75 required paths verified
+- automated tests: 55/55 passed
 - benchmark: passed
 - demo: verified
 - CLI proof verification + mission execution: verified
 - live GitHub repository smoke: passed
 
-## Verified v0.9 proof vault
+## Verified proof foundation
 
-- [x] Content-addressed proof storage by SHA-256 digest.
-- [x] Atomic proof/index writes.
-- [x] Local artifact retention by SHA-256 content digest.
+- [x] v0.6 user-facing proof integrity CLI.
+- [x] v0.7 Ed25519 signed proof identity.
+- [x] v0.8 local trusted proof policy.
+- [x] v0.9 content-addressed local proof vault.
+- [x] v1.0 self-hosted proof registry and verified HTTP client.
+
+## Verified v1.0 registry
+
+- [x] HTTP health endpoint.
+- [x] Proof publication by POST.
+- [x] Proof list endpoint.
+- [x] Digest-based proof metadata retrieval.
+- [x] Digest-based proof content retrieval.
+- [x] Client-side integrity check before publication.
+- [x] Client-side digest verification after retrieval.
+- [x] Server-side integrity enforcement before retention.
+- [x] Server-side re-verification before egress.
 - [x] Idempotent duplicate publication.
-- [x] Integrity validation before publication and restore.
-- [x] Corrupt retained proof/artifact rejection.
-- [x] Vault path confinement.
-- [x] Artifact reference binding validation.
-- [x] CLI publish/list/inspect/restore lifecycle.
-- [x] Feature-vault implementation merged to main.
-- [x] Merged-main CI run #140: 49/49 tests and all integration gates passed.
-- [x] v0.9 issue closed as completed.
+- [x] Malformed JSON rejection.
+- [x] Corrupted retained proof detection.
+- [x] Local/self-hosted operation without a managed dependency.
+- [x] End-to-end registry server/client test coverage.
+- [x] Release-candidate CI passed.
+- [x] Merged-main CI run #175 passed completely.
 
-## Active v1.0 gate
+## Active next gate
 
-Current branch:
-feature/v1.0-proof-registry
+v1.1 authenticated multi-user registry and trust synchronization.
 
 Target:
-- HTTP registry protocol over the existing content-addressed vault.
-- Verified client publish/get/list transport.
-- Idempotent remote publication.
-- Integrity enforcement at registry ingress and egress.
-- Local/self-hosted operation with no managed service dependency.
-- End-to-end local HTTP tests.
+- Pluggable authentication for registry clients.
+- Explicit read/write authorization.
+- Namespace or tenant isolation.
+- Trust-policy synchronization with cryptographic-vs-policy separation.
+- Audit evidence for authorization decisions.
+- End-to-end unauthorized/authorized access tests.
 
 ## Remaining platform work
-
-- [ ] v1.0 registry/replication.
-- [ ] Authenticated multi-user access.
+- [ ] v1.1 authenticated multi-user registry.
 - [ ] Distributed trust synchronization.
+- [ ] Retention/garbage-collection policy.
 - [ ] Generalized compensation/saga engine.
 - [ ] External browser navigation where permitted.
 - [ ] Distributed/remote workers and control plane.
 - [ ] Studio / REST / SDK surfaces.
-- [ ] Retention garbage collection / policy automation.
+- [ ] Hosted/managed deployment.
 
 ## Verification rule
 
