@@ -61,6 +61,19 @@ The tree includes:
 - full sequential suite: success
 - benchmark/demo/CLI/live GitHub smoke: success
 
+## v2.6 merged-main verification
+
+- feature head: `bb4b4784b45af90bb9464d51d14c466143881cdb`
+- feature CI #677: success
+- merged commit: `172757754264398137a2982ca62a5d5449028f04`
+- merged-main CI #678: success
+- source-tree audit: 135/135
+- dependency security audit: success
+- strict build: success
+- retention lifecycle: success
+- full sequential suite: success
+- benchmark/demo/CLI/live GitHub smoke: success
+
 ## v2.4 merged-main verification
 
 - feature head: `8f11968bb06dfc6b3958aac5435afd0fe5f60569`
