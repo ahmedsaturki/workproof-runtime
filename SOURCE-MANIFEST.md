@@ -22,6 +22,11 @@ The current tree includes:
 - tag: v0.4.0-dev
 - exact development bundle: workproof-runtime-v0.4.0-dev.bundle
 
+V1.9 additions include:
+- docs/RELEASE-GATE-V1.9.md
+- packages/runtime/src/saga-recovery.ts
+- test/saga-recovery.test.ts
+
 ## Verified main milestones
 
 - v1.1 implementation verification commit: 7eeefa13afa56acb9db5038ec3b5885f0724e46f
