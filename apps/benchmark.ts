@@ -19,7 +19,7 @@ type CaseResult = {
   effects: number;
   artifacts: number;
   events: number;
-  details: Record<string, unknown>;
+  details: Record<string, unknown> & { postRequests?: number; reconciled?: boolean; substituted?: boolean };
 };
 
 
