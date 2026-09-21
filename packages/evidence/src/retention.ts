@@ -273,7 +273,7 @@ export function planGarbageCollection(vaultDir: string, options: { namespace?: s
   const protectedRoots: string[] = [];
   const reachable = new Set<string>();
   const warnings: string[] = [];
-  const recordByDigest = new Map(index.records.map((record: any) => [record.digest, record]));
+  const recordByDigest = (digest: string): any => index.records.find((record: any) => record.digest === digest);
   for (const object of inventory) {
     const entry = retentionForDigest(retention, object.digest, object.kind);
     const pin = activePin(retention, object.digest, object.kind, at);
@@ -294,7 +294,7 @@ export function planGarbageCollection(vaultDir: string, options: { namespace?: s
   }
   for (const key of Array.from(reachable).filter((item) => item.startsWith("proof:"))) {
     const digest = key.slice(6);
-    const record = recordByDigest.get(digest);
+    const record = recordByDigest(digest);
     if (!record) continue;
     for (const artifactPath of Object.values(record.artifacts ?? {})) {
       if (typeof artifactPath !== "string") continue;
