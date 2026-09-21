@@ -49,8 +49,7 @@ async function main() {
   await executeWithSafety({
     work,
     capability,
-    request: { operation: "create_file", input: { path: target, content: "verified
-" }, idempotencyKey: effect.idempotencyKey },
+    request: { operation: "create_file", input: { path: target, content: "verified\n" }, idempotencyKey: effect.idempotencyKey },
     effect,
     registry,
     verifyExternalState: async () => fs.existsSync(target),
@@ -61,11 +60,9 @@ async function main() {
   await verifier.verify(work);
   const proof = buildProofBundle(work);
   fs.writeFileSync("./mission-proof.json", JSON.stringify(proof, null, 2));
-  process.stdout.write(JSON.stringify({ status: work.status, effects: work.effects.length, events: work.events.length }, null, 2) + "
-");
+  process.stdout.write(JSON.stringify({ status: work.status, effects: work.effects.length, events: work.events.length }, null, 2) + "\n");
 }
 
-main().catch((err) => { process.stderr?.write(String(err) + "
-"); process.exitCode = 1; });
+main().catch((err) => { process.stderr?.write(String(err) + "\n"); process.exitCode = 1; });
 
 export {};
