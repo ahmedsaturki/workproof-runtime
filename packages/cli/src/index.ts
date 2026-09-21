@@ -108,7 +108,7 @@ function registryAuthRevoke(credentialId: string, policyPath: string, reason?: s
   const policy = loadAuthPolicy(policyPath);
   const next = revokeCredential(policy, credentialId, reason);
   saveAuthPolicy(policyPath, next);
-  const record = next.credentials.find((item) => item.id === credentialId);
+  const record = next.credentials.find((item: any) => item.id === credentialId);
   process.stdout.write(JSON.stringify({
     status: "revoked",
     policy: policyPath,
@@ -119,7 +119,7 @@ function registryAuthRevoke(credentialId: string, policyPath: string, reason?: s
 
 function registryAuthList(policyPath: string): void {
   const policy = loadAuthPolicy(policyPath);
-  process.stdout.write(JSON.stringify(policy.credentials.map((item) => ({
+  process.stdout.write(JSON.stringify(policy.credentials.map((item: any) => ({
     id: item.id,
     permissions: item.permissions,
     namespace: item.namespace ?? null,
