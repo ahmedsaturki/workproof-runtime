@@ -62,7 +62,7 @@ export async function executeCompensation(args: {
 
   if (!compensationCapability && decision.allowed) throw new Error("No compensation capability can satisfy operation=" + request.operation);
 
-  const effect = store.addCompensationEffect(work, request.sagaId, source.effectId, compensationCapability?.name ?? "unresolved", request.riskClass, request.idempotencyKey, request.operation);
+  const effect = store.addCompensationEffect(work, request.sagaId, source.effectId, compensationCapability?.name ?? "unresolved", request.riskClass, request.idempotencyKey, request.operation, request.input);
 
   if (!decision.allowed) {
     effect.status = "unresolved";
