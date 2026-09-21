@@ -161,6 +161,11 @@ export function publishProof(proofFile: string, vaultDir: string): VaultRecord {
       throw new Error("Existing vault proof failed integrity verification");
     }
     if (existing.integrity.digest !== digest) throw new Error("Existing vault proof digest mismatch");
+    const existingSigner = existing.signature?.keyId;
+    const incomingSigner = data.signature?.keyId;
+    if (existingSigner !== incomingSigner) {
+      throw new Error("Proof digest is already retained under a different signer identity");
+    }
   }
 
   const artifacts: Record<string, string> = {};
