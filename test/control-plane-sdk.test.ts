@@ -36,8 +36,8 @@ test("authenticated control plane enforces read/write permissions and audits act
   const policy = createAuthPolicy();
   const readCred = issueCredential({ id: "reader", permissions: ["read"] });
   const writeCred = issueCredential({ id: "writer", permissions: ["write"] });
-  addIssuedCredential(policy, readCred);
-  const withWriter = addIssuedCredential(policy, writeCred);
+  const withReader = addIssuedCredential(policy, readCred);
+  const withWriter = addIssuedCredential(withReader, writeCred);
   const auditPath = path.join(root, "audit.jsonl");
 
   const dispatched: string[] = [];
@@ -109,8 +109,8 @@ test("control plane rejects unauthenticated access when an auth policy is config
   repo.save(work);
   const policy = createAuthPolicy();
   const issued = issueCredential({ id: "reader", permissions: ["read"] });
-  addIssuedCredential(policy, issued);
-  const server = await startControlPlane({ repository: repo, authPolicy: policy });
+  const withReader = addIssuedCredential(policy, issued);
+  const server = await startControlPlane({ repository: repo, authPolicy: withReader });
   try {
     const response = await fetch(`http://${server.host}:${server.port}/v1/work/${work.id}`);
     assert.equal(response.status, 401);
