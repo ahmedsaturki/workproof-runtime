@@ -48,6 +48,19 @@ The tree includes:
 - packages/recovery/src/engine.ts fence propagation
 - test/fencing.test.ts
 
+## v2.7 merged-main verification
+
+- feature head: `9f0932a88ab78621a08f6d73973825d5787da94c`
+- feature CI #694: success
+- merged commit: `df3bda90e10e17f5e683a153c68d7537e9d4a2c0`
+- merged-main CI #695: success
+- source-tree audit: 137/137
+- dependency security audit: success
+- strict build: success
+- retention lifecycle: success
+- full sequential suite: success
+- benchmark/demo/CLI/live GitHub smoke: success
+
 ## v2.5 merged-main verification
 
 - feature head: `c36d02cab606256d25df01ea40a36d06c368a448`
