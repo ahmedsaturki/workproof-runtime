@@ -4,9 +4,9 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v2.8-dev diagnostic lease/fence visibility is being finalized on main.**
+**v2.8-dev diagnostic lease/fence visibility is verified on main.**
 
-v2.1 established authenticated Studio control delegation through the control plane. v2.2 added read-only proof/audit views backed by the content-addressed proof vault and optional local trust policy. v2.3 added durable control idempotency. v2.4 added execution fencing. v2.5 added worker lifecycle hardening. v2.6 added worker-aware Studio. v2.7 added authenticated remote worker visibility. v2.8 adds read-only lease/fence diagnostics without exposing execution fencing tokens.
+The v2.8 line includes read-only lease diagnostics across the coordination layer, authenticated control plane, and Studio, with persistent-store parity and no fencing-token leakage through visibility surfaces.
 
 ## Core loop
 
@@ -34,17 +34,38 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - v2.5 worker lifecycle/reassignment hardening.
 - v2.6 worker-aware Studio.
 - v2.7 authenticated remote worker visibility.
+- v2.8 diagnostic lease/fence visibility.
 
 ## v2.8 diagnostic lease/fence visibility
 
 - The control plane exposes a read-only lease projection through `GET /v1/leases`.
 - Studio exposes local and authenticated remote lease projections through `GET /api/leases`.
 - Lease projections include resource, owner, lease identity, revision, timing, and active state.
-- The Studio and control plane do not expose execution fencing tokens or mutate lease ownership through these read surfaces.
+- Studio and control-plane visibility surfaces do not expose execution fencing tokens.
 - Remote lease visibility requires a valid bearer credential.
-- Missing lease sources fail closed with an explicit HTTP 503.
-- Persistent and in-memory lease authorities share the same sanitized lease projection contract.
-- Existing worker, proof/audit, control, vault, and security boundaries remain intact.
+- Missing lease sources fail closed with HTTP 503.
+- Persistent and in-memory lease authorities share the same sanitized LeaseStatus projection contract.
+- Visibility routes are diagnostic and do not acquire, renew, release, or reassign leases.
+
+## Final v2.8 verification evidence
+
+- Initial implementation feature CI #708: success.
+- Initial implementation PR CI #709: success.
+- Initial merged-main CI #710: success.
+- Finalization feature CI #726: success.
+- Finalization PR CI #727: success.
+- Final merged-main CI #728: success.
+- Finalization corrected the source manifest to 141 required paths.
+- Dependency security audit: 0 vulnerabilities.
+- Chromium/CDP preflight: success.
+- Strict TypeScript build: success.
+- Retention lifecycle: success.
+- Full unit/integration suite: success.
+- Benchmark: success.
+- Demo: success.
+- CLI proof verification: success.
+- CLI mission execution: success.
+- Live GitHub smoke: success.
 
 ## Safety boundary
 
