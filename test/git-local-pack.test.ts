@@ -11,7 +11,7 @@ const { VerificationEngine } = require("../packages/verification/src/engine.js")
 const { WorkEngine } = require("../packages/runtime/src/engine.js");
 const { registerGitLocalPack } = require("../packages/packs/src/git-local-pack.js");
 
-function git(cwd, args) {
+function git(cwd: string, args: string[]): string {
   return execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
 }
 
@@ -58,7 +58,7 @@ test("local git capability commits, pushes, and independently verifies remote st
     assert.equal(fs.readFileSync(path.join(f.repo, "verified.txt"), "utf8"), "verified\n");
     assert.equal(git(f.remote, ["show", "main:verified.txt"]), "verified");
     assert.equal(work.effects[0].status, "acknowledged");
-    assert.ok(work.artifacts.some(a => a.kind === "git-remote-verification"));
+    assert.ok(work.artifacts.some((a: any) => a.kind === "git-remote-verification"));
   } finally {
     fs.rmSync(f.root, { recursive: true, force: true });
   }
