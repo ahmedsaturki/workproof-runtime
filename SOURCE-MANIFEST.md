@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The v2.8 finalization branch contains **140 required paths** enforced by scripts/verify-source-tree.js.
+The v2.8 finalization branch contains **141 required paths** enforced by scripts/verify-source-tree.js.
 
 v2.8 additions include:
 - docs/FINAL-AUDIT-V2.8.md
