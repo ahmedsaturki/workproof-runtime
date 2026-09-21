@@ -498,6 +498,178 @@ test("Studio reports an unavailable remote control plane as 503", async () => {
 });
 
 
+test("Studio exposes a deterministic operational health projection and attention queue", async () => {
+  const root = tempDir("workproof-studio-health-");
+  const repository = new JsonWorkRepository(root);
+
+  const verified = workFixture();
+  verified.id = "health-verified";
+  verified.updatedAt = "2026-09-21T01:00:00.000Z";
+
+  const failed = workFixture();
+  failed.id = "health-failed";
+  failed.status = "failed";
+  failed.updatedAt = "2026-09-21T02:00:00.000Z";
+  failed.verification = {
+    status: "failed",
+    verifiedAt: "2026-09-21T02:00:00.000Z",
+    checks: [{
+      criterion: "state is verified",
+      status: "failed",
+      details: "verification failed",
+      evidence: []
+    }]
+  };
+
+  const ambiguous = workFixture();
+  ambiguous.id = "health-ambiguous";
+  ambiguous.status = "running";
+  ambiguous.updatedAt = "2026-09-21T03:00:00.000Z";
+  ambiguous.effects = [{
+    ...ambiguous.effects[0],
+    effectId: "effect-ambiguous",
+    status: "unknown"
+  }];
+
+  const partial = workFixture();
+  partial.id = "health-partial";
+  partial.status = "partial";
+  partial.updatedAt = "2026-09-21T04:00:00.000Z";
+  partial.verification = {
+    status: "partial",
+    verifiedAt: "2026-09-21T04:00:00.000Z",
+    checks: [{
+      criterion: "state is verified",
+      status: "failed",
+      details: "partial evidence",
+      evidence: []
+    }]
+  };
+
+  for (const work of [verified, failed, ambiguous, partial]) repository.save(work);
+
+  const workerStatuses = [
+    {
+      version: "0.1",
+      workerId: "health-active",
+      capabilities: ["github.read"],
+      state: "active",
+      registeredAt: "2026-09-21T00:00:00.000Z",
+      lastHeartbeatAt: "2026-09-21T04:00:00.000Z",
+      liveness: "active",
+      heartbeatAgeMs: 10,
+      staleAfterMs: 1000,
+      reassignmentEligible: false
+    },
+    {
+      version: "0.1",
+      workerId: "health-stale",
+      capabilities: ["browser"],
+      state: "active",
+      registeredAt: "2026-09-21T00:00:00.000Z",
+      lastHeartbeatAt: "2026-09-21T03:00:00.000Z",
+      liveness: "stale",
+      heartbeatAgeMs: 61000,
+      staleAfterMs: 1000,
+      reassignmentEligible: true
+    }
+  ];
+
+  const leaseStatuses = [
+    {
+      version: "0.1",
+      leaseId: "health-lease-active",
+      resourceId: "health-resource-1",
+      ownerId: "health-active",
+      acquiredAt: "2026-09-21T03:00:00.000Z",
+      renewedAt: "2026-09-21T04:00:00.000Z",
+      expiresAt: "2026-09-21T05:00:00.000Z",
+      revision: 2,
+      active: true
+    },
+    {
+      version: "0.1",
+      leaseId: "health-lease-expired",
+      resourceId: "health-resource-2",
+      ownerId: "health-stale",
+      acquiredAt: "2026-09-21T01:00:00.000Z",
+      renewedAt: "2026-09-21T01:30:00.000Z",
+      expiresAt: "2026-09-21T02:00:00.000Z",
+      revision: 1,
+      active: false
+    }
+  ];
+
+  const studio = await startStudio({
+    workDirectory: root,
+    port: 0,
+    workerStatusSource: {
+      listWorkerStatuses: () => workerStatuses
+    },
+    leaseStatusSource: {
+      listLeaseStatuses: () => leaseStatuses
+    }
+  });
+
+  try {
+    const base = `http://127.0.0.1:${studio.port}`;
+    const response = await fetch(`${base}/api/operations/overview`);
+    assert.equal(response.status, 200);
+    const data = await response.json();
+
+    assert.equal(data.version, "3.0");
+    assert.equal(data.work.total, 4);
+    assert.equal(data.work.verified, 1);
+    assert.equal(data.work.byStatus.verified, 1);
+    assert.equal(data.work.byStatus.failed, 1);
+    assert.equal(data.work.byStatus.running, 1);
+    assert.equal(data.work.byStatus.partial, 1);
+
+    assert.equal(data.effects.total, 4);
+    assert.equal(data.effects.byStatus.verified, 3);
+    assert.equal(data.effects.byStatus.unknown, 1);
+    assert.equal(data.effects.attention, 1);
+
+    assert.equal(data.verification.byStatus.verified, 1);
+    assert.equal(data.verification.byStatus.failed, 1);
+    assert.equal(data.verification.byStatus.partial, 1);
+    assert.equal(data.verification.notVerified, 3);
+
+    assert.equal(data.workers.configured, true);
+    assert.equal(data.workers.total, 2);
+    assert.equal(data.workers.byLiveness.active, 1);
+    assert.equal(data.workers.byLiveness.stale, 1);
+    assert.equal(data.workers.reassignmentEligible, 1);
+
+    assert.equal(data.leases.configured, true);
+    assert.equal(data.leases.total, 2);
+    assert.equal(data.leases.active, 1);
+    assert.equal(data.leases.expired, 1);
+
+    assert.equal(data.attention.total, 3);
+    assert.equal(data.attention.byReason["work-failed"], 1);
+    assert.equal(data.attention.byReason["effect-unknown"], 1);
+    assert.equal(data.attention.byReason["work-partial"], 1);
+    assert.equal(data.attention.byReason["verification-failed"], 1);
+    assert.equal(data.attention.byReason["verification-partial"], 1);
+    assert.deepEqual(data.attention.items.map((item: any) => item.workId), [
+      "health-partial",
+      "health-ambiguous",
+      "health-failed"
+    ]);
+
+    const persistedBefore = JSON.stringify(repository.load("health-ambiguous"));
+    const second = await fetch(`${base}/api/operations/overview`);
+    assert.equal(second.status, 200);
+    const secondData = await second.json();
+    assert.deepEqual(secondData, data);
+    assert.equal(JSON.stringify(repository.load("health-ambiguous")), persistedBefore);
+  } finally {
+    await studio.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("Studio work API supports safe search, status/risk filters, limits, and operational summaries", async () => {
   const root = tempDir("workproof-studio-filters-");
   const repository = new JsonWorkRepository(root);
