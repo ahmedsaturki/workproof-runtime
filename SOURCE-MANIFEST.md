@@ -2,13 +2,15 @@
 
 ## Required source tree
 
-The active v1.1 authenticated registry branch contains **80 required paths** enforced by scripts/verify-source-tree.js.
+The active v1.1 authenticated registry branch contains **82 required paths** enforced by scripts/verify-source-tree.js.
 
 V1.1 additions:
 - docs/RELEASE-GATE-V1.1.md
 - packages/registry/src/auth.ts
 - test/registry-auth-cli.test.ts
 - test/registry-auth.test.ts
+- test/registry-security.test.ts
+- docs/SECURITY-V1.1.md
 
 ## Verified main
 
