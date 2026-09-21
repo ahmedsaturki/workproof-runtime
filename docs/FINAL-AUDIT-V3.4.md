@@ -10,7 +10,7 @@ Date: 2026-09-21
 - Feature CI: #864 (success)
 - Merged-main CI: #866 (success)
 - Final closeout commit: `b32913e033c178d15f170e004ef79dff9834911a`
-- Final documentation/source-tree closeout CI: #872 (success).
+- Final documentation/source-tree closeout CI: #872 (success)
 
 ## Verification target
 
@@ -40,8 +40,7 @@ Date: 2026-09-21
 
 ## Status
 
-**v3.4 is fully verified through implementation, merge, benchmark, documentation, and source-tree closeout.**
-
+**v3.4 is fully verified through implementation, merge, benchmark, documentation, source-tree closeout, and verified prerelease distribution.**
 
 ## Recorded benchmark outcome
 
@@ -55,3 +54,19 @@ Date: 2026-09-21
 - humanInterventionCount: 0.
 - M004 produced exactly one POST and reconciled the existing effect.
 - M005 used two primary attempts, then substituted a compatible fallback and independently verified the stored outcome.
+
+## Distribution closeout
+
+- GitHub Release: `v3.4.0-dev.2`, release id 393311702.
+- Release target: `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`.
+- Post-publication release verification run #21: success.
+- Release assets: 5/5, SHA256 re-check: success.
+- Published benchmark semantic verification: success.
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.2`.
+- GHCR digest: `sha256:490dcb17e37c0f9a9cdbf7f30624d7d393f9fdb59b911cc9e86b9de681195617`.
+- Container verification run #15: success.
+- OCI version/revision verification: success.
+- Published-image `/health` smoke: success.
+- Latest main CI #893: success.
+
+The public production-host portion remains an external infrastructure boundary; the repository includes the deployable container, compose configuration, and runbook but does not claim to have provisioned a public host, DNS, TLS, authentication, or production secrets.

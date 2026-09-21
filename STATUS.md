@@ -1,40 +1,30 @@
 # WorkProof Runtime Status
 
-Date: 2026-09-21
+Date: 2026-09-22
 
 ## Current main
 
-**v3.4-dev executable operator benchmark is fully verified on main, including documentation/source-tree closeout.**
+**v3.4 benchmark and v3.4.0-dev.2 distribution path are verified.**
 
-v3.3 implementation main:
-c5e951056461c37f45bed8bb8406d119880d63df
+Latest main:
+`8d899f9a9abe0ef1a3aca316d717cc325b00b6c0`
 
-v3.4 implementation merge:
-fe662d5bb5337bde18772f22864434935d59f66f
+The latest three main commits after the release target changed only distribution workflow logic; the runtime source included in the release remains unchanged from tag target `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`.
 
-v3.4 documentation closeout baseline:
-b32913e033c178d15f170e004ef79dff9834911a
+## Verified main gates
 
-Latest verified v3.4 closeout record:
-db96cf137bc744a523cb175dd4e0ba95c0646e60
-
-Verified implementation gates:
-- feature CI #808: success
-- PR #71: merged
-- merged-main CI #809: success
-- source-tree audit on merged implementation: 162/162
-- dependency security audit: 0 vulnerabilities
-- Chromium/CDP preflight: success
-- strict build: success
-- retention lifecycle: success
-- full unit/integration suite: success
-- benchmark: success
-- demo: success
-- CLI proof verification: success
-- CLI mission execution: success
-- live GitHub smoke: success
-- documentation/source-tree closeout CI #811: success
-- closeout record correction CI #812: success
+- [x] source tree: 179/179
+- [x] dependency security audit: 0 vulnerabilities
+- [x] Chromium/CDP preflight
+- [x] strict TypeScript build
+- [x] retention lifecycle
+- [x] full unit/integration suite
+- [x] operator benchmark
+- [x] demo
+- [x] CLI proof verification
+- [x] CLI mission execution
+- [x] live GitHub integration smoke
+- [x] final main CI #893
 
 ## Verified v3.3 gates
 
@@ -51,21 +41,52 @@ Verified implementation gates:
 - [x] feature CI
 - [x] merged-main CI
 
-## Safety boundary
+## Verified v3.4 benchmark
 
-External message delivery is not part of v3.3. The capability writes a local outbox artifact and does not send SMTP or remote messages.
+M001-M005 all verify successfully:
 
-## v3.4 verified implementation
+- verifiedCompletionRate: 1.0
+- falseDoneCount: 0
+- duplicateExternalEffectCount: 0
+- ambiguousOutcomeResolvedCount: 1
+- capabilitySubstitutionCount: 1
+- evidenceCompleteRate: 1.0
+- humanInterventionCount: 0
 
-The executable benchmark covers M001-M005: research, HTTP discovery, Git mutation, ambiguous-effect reconciliation, and capability substitution.
+## Release distribution
 
-Feature CI #864 and merged-main CI #866 passed the full verification chain. The merged benchmark artifact reports 5/5 verified cases, verifiedCompletionRate=1, falseDoneCount=0, duplicateExternalEffectCount=0, ambiguousOutcomeResolvedCount=1, capabilitySubstitutionCount=1, evidenceCompleteRate=1, and humanInterventionCount=0.
+### GitHub Release
 
-## Remaining platform work
+- tag: `v3.4.0-dev.2`
+- release id: 393311702
+- target commit: `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`
+- release verification run: #21 (success)
+- assets: 5/5 present and re-downloaded
+- SHA256 verification: success
+- published benchmark semantic verification: success
 
-- [ ] additional capability packs and external integrations beyond current foundations
-- [ ] richer operational visualization beyond health summaries and attention
-- [ ] benchmark evidence for real multi-capability operator missions and induced failure modes
+### GHCR
+
+- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.2`
+- digest: `sha256:490dcb17e37c0f9a9cdbf7f30624d7d393f9fdb59b911cc9e86b9de681195617`
+- immutable tag: `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`
+- container verification run: #15 (success)
+- OCI version/revision checks: success
+- published-image `/health`: success
+
+## Operational boundary
+
+- [x] reproducible source archive
+- [x] npm-compatible package artifact
+- [x] GitHub Release publication
+- [x] post-publication release verification
+- [x] GHCR container publication
+- [x] published image smoke
+- [x] localhost-bound production compose
+- [x] production deployment runbook
+- [ ] public production host/DNS/TLS/auth/secrets provisioning
+
+The unchecked line is deliberately external infrastructure, not a missing repository implementation.
 
 ## Verification rule
 

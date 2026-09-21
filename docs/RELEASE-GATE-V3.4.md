@@ -1,10 +1,12 @@
 # Release Gate v3.4-dev - Executable Operator Benchmark
 
-Date: 2026-09-21
+Date: 2026-09-22
 
 ## Acceptance gates
 
-The v3.4 source-tree target is 171 required source paths before final closeout.
+The final distribution-ready v3.4 source tree contains **179 required paths**, enforced by `scripts/verify-source-tree.js`.
+
+### Benchmark and runtime
 
 - [x] M001 research-to-artifact executable.
 - [x] M002 HTTP discovery executable.
@@ -23,21 +25,41 @@ The v3.4 source-tree target is 171 required source paths before final closeout.
 - [x] PR #73 merge (`fe662d5bb5337bde18772f22864434935d59f66f`).
 - [x] Merged-main CI #866.
 - [x] Final documentation/source-tree closeout CI #872.
+- [x] Final closeout record verification CI #875.
+- [x] Latest main CI #893.
+
+### Distribution
+
+- [x] Reproducible npm-compatible package artifact.
+- [x] Reproducible source archive.
+- [x] Machine-readable benchmark asset.
+- [x] RELEASE-MANIFEST asset.
+- [x] SHA256SUMS asset.
+- [x] Published GitHub Release `v3.4.0-dev.2`.
+- [x] Release target matches tag commit.
+- [x] Published assets re-downloaded and SHA256-verified.
+- [x] Published benchmark re-validated semantically.
+- [x] GHCR image publication.
+- [x] Version tag and immutable release-commit tag resolve to the same image digest.
+- [x] OCI version/revision labels verified.
+- [x] Published image `/health` smoke verified.
+- [x] Localhost-bound production compose.
+- [x] Production deployment runbook.
+
+## Recorded distribution evidence
+
+- GitHub Release id: 393311702.
+- Release target: `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`.
+- Release verification run: #21 (success).
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.2`.
+- GHCR digest: `sha256:490dcb17e37c0f9a9cdbf7f30624d7d393f9fdb59b911cc9e86b9de681195617`.
+- Container verification run: #15 (success).
+- Main CI: #893 (success).
 
 ## Verification rule
 
 A mission counts as complete only when its required outcome is independently verified with evidence.
 
+## Deployment boundary
 
-## Verified benchmark result
-
-- M001-M005: 5/5 verified.
-- verifiedCompletionRate: 1.0.
-- falseDoneCount: 0.
-- duplicateExternalEffectCount: 0.
-- ambiguousOutcomeResolvedCount: 1.
-- capabilitySubstitutionCount: 1.
-- evidenceCompleteRate: 1.0.
-- humanInterventionCount: 0.
-- M004 POST count: 1; reconciliation: true.
-- M005 primary calls: 2; substitution: true; fallback stored: true.
+The repository provides the deployable runtime and self-hosting instructions. A public Internet deployment still requires an externally provisioned host, DNS, TLS, authentication/authorization, and production secrets.

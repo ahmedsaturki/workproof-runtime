@@ -2,6 +2,16 @@
 
 Coherent prerelease for the verified v3.4 operator benchmark and self-host distribution path.
 
+## Release identity
+
+- GitHub Release id: 393311702
+- tag: `v3.4.0-dev.2`
+- target commit: `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`
+- release verification run: #21 (success)
+- final main CI: #893 (success)
+
+The release assets were published from the release target and then re-downloaded and verified after publication.
+
 ## Included
 
 - M001-M005 executable benchmark with independent verification
@@ -10,10 +20,11 @@ Coherent prerelease for the verified v3.4 operator benchmark and self-host distr
 - post-publication GitHub Release asset verification
 - GHCR container distribution with OCI provenance
 - image tag/digest consistency verification
+- OCI version/revision verification against the release target
 - published-image `/health` smoke test
 - localhost-bound production compose and deployment runbook
 
-## Baseline evidence
+## Benchmark evidence
 
 - 5/5 benchmark cases verified
 - verifiedCompletionRate: 1.0
@@ -24,4 +35,15 @@ Coherent prerelease for the verified v3.4 operator benchmark and self-host distr
 - evidenceCompleteRate: 1.0
 - humanInterventionCount: 0
 
+## GHCR evidence
+
+- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.2`
+- digest: `sha256:490dcb17e37c0f9a9cdbf7f30624d7d393f9fdb59b911cc9e86b9de681195617`
+- container verification run: #15 (success)
+- version tag and immutable `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d` tag matched by digest
+
+## Scope boundary
+
 This is a prerelease. `package.json` remains `private: true`; no npm registry publication is claimed.
+
+The repository provides a self-hostable production container and localhost-bound compose configuration. It does not claim that a public production host, DNS, TLS, authentication/authorization, or production secrets have been provisioned.
