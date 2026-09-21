@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The current v2.1 branch contains **119 required paths** enforced by scripts/verify-source-tree.js.
+The current v2.1 branch contains **120 required paths** enforced by scripts/verify-source-tree.js.
 
 The tree includes:
 - proof registry and authenticated transport
