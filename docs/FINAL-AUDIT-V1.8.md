@@ -27,6 +27,11 @@ Date: 2026-09-21
 - Proof bundle, retention, vault, registry HTTP/client, and CLI integrity reconstruction preserve saga lineage.
 - Work-object schema remains backward-compatible for legacy objects without the optional saga field.
 
+## Governance verification
+
+- Governance audit commit: 57fc0bc97bec28ec517d009771c6b40d83c99e5e
+- This audit file is intentionally committed on main so the final documentation state is itself subject to CI.
+
 ## CI evidence
 
 The merged-main run passed:
