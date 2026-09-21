@@ -96,4 +96,17 @@ test("vault rejects malformed or duplicated index records", () => {
 });
 
 
+test("vault rejects index artifact references that are absent from the proof", () => {
+  const dir = "/tmp/workproof-vault-reference";
+  const { proofPath } = writeFixture(dir, true);
+  const vault = path.join(dir, "vault");
+  const record = publishProof(proofPath, vault);
+  const indexPath = path.join(vault, "index.json");
+  const index = JSON.parse(fs.readFileSync(indexPath, "utf8"));
+  index.records[0].artifacts["file:///unrelated.txt"] = Object.values(record.artifacts)[0];
+  fs.writeFileSync(indexPath, JSON.stringify(index, null, 2), "utf8");
+  assert.throws(() => restoreProof(vault, record.digest, path.join(dir, "restored.json")), /absent from proof/);
+});
+
+
 export {};
