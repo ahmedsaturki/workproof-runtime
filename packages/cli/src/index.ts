@@ -21,7 +21,7 @@ function usage(): void {
 
 async function runMission(file: string): Promise<void> {
   const spec = JSON.parse(fs.readFileSync(file, "utf8"));
-  if (!spec?.objective || !Array.isArray(spec.steps))) throw new Error("Mission spec requires objective and steps[]");
+  if (!spec?.objective || !Array.isArray(spec?.steps)) throw new Error("Mission spec requires objective and steps[]");
   const store = new WorkStore();
   const registry = new CapabilityRegistry();
   const verification = new VerificationEngine();
