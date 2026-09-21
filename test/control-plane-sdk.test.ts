@@ -90,12 +90,12 @@ test("authenticated control plane enforces read/write permissions and audits act
     const resumed = await writer.resume(work.id);
     assert.equal(resumed.status, "verified");
 
-    const audit = fs.readFileSync(auditPath, "utf8").trim().split("\n").map((line) => JSON.parse(line));
-    assert.ok(audit.some((entry) => entry.reason === "permission-denied"));
-    assert.ok(audit.some((entry) => entry.action === "dispatch"));
-    assert.ok(audit.some((entry) => entry.action === "cancel"));
-    assert.ok(audit.some((entry) => entry.action === "resume"));
-    assert.ok(audit.every((entry) => typeof entry.requestId === "string"));
+    const audit = fs.readFileSync(auditPath, "utf8").trim().split("\n").map((line: string): Record<string, any> => JSON.parse(line));
+    assert.ok(audit.some((entry: Record<string, any>) => entry.reason === "permission-denied"));
+    assert.ok(audit.some((entry: Record<string, any>) => entry.action === "dispatch"));
+    assert.ok(audit.some((entry: Record<string, any>) => entry.action === "cancel"));
+    assert.ok(audit.some((entry: Record<string, any>) => entry.action === "resume"));
+    assert.ok(audit.every((entry: Record<string, any>) => typeof entry.requestId === "string"));
   } finally {
     await server.close();
     fs.rmSync(root, { recursive: true, force: true });
