@@ -2,7 +2,11 @@
 
 ## Required source tree
 
-The verified v2.8 main tree contains **141 required paths** enforced by scripts/verify-source-tree.js.
+The active v2.9 operational-filtering branch contains **142 required paths** enforced by scripts/verify-source-tree.js.
+
+v2.9 additions include:
+- docs/RELEASE-GATE-V2.9.md
+- Operational filtering additions in apps/studio.ts and test/studio.test.ts
 
 v2.8 additions include:
 - docs/FINAL-AUDIT-V2.8.md
