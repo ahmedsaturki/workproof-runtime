@@ -10,17 +10,19 @@ const { PersistentLeaseStore } = require("../packages/coordination/src/persisten
 const { JsonWorkRepository } = require("../packages/storage/src/json.js");
 const { SagaRecoveryCoordinator } = require("../packages/runtime/src/saga-recovery.js");
 
-class FakeClock {
-  constructor(value = 1_700_000_000_000) { this.value = value; }
-  nowMs() { return this.value; }
-  advance(ms) { this.value += ms; }
+import type { Capability, CapabilityRequest, EffectRecord, WorkEvent, WorkObject, SagaRecord, LeaseClock } from "../packages/core/src/types";
+
+class FakeClock implements LeaseClock {
+  constructor(public value: number = 1_700_000_000_000) {}
+  nowMs(): number { return this.value; }
+  advance(ms: number): void { this.value += ms; }
 }
 
-function tempDir(prefix) {
+function tempDir(prefix: string): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 }
 
-function fixture() {
+function fixture(): { store: WorkStore; registry: CapabilityRegistry; work: WorkObject; saga: SagaRecord; compA: EffectRecord; compB: EffectRecord } {
   const store = new WorkStore();
   const registry = new CapabilityRegistry();
   const work = store.create({
@@ -45,7 +47,7 @@ function fixture() {
   return { store, registry, work, saga, compA, compB };
 }
 
-function coordinator(repo, store, registry, leaseStore, ownerId, ttlMs = 1000) {
+function coordinator(repo: JsonWorkRepository, store: WorkStore, registry: CapabilityRegistry, leaseStore: PersistentLeaseStore, ownerId: string, ttlMs = 1000): SagaRecoveryCoordinator {
   return new SagaRecoveryCoordinator(repo, store, registry, {
     authority: leaseStore,
     ownerId,
@@ -64,8 +66,8 @@ test("durable saga recovery skips verified compensation, acquires after worker l
   repo.save(work);
   const persisted = repo.load(work.id);
   assert.equal(persisted.sagas[0].status, "partial");
-  assert.equal(persisted.effects.find(effect => effect.effectId === compA.effectId).status, "verified");
-  assert.equal(persisted.effects.find(effect => effect.effectId === compB.effectId).status, "planned");
+  assert.equal(persisted.effects.find((effect: EffectRecord) => effect.effectId === compA.effectId).status, "verified");
+  assert.equal(persisted.effects.find((effect: EffectRecord) => effect.effectId === compB.effectId).status, "planned");
 
   const state = new Set(["B"]);
   let calls = 0;
@@ -103,8 +105,8 @@ test("durable saga recovery skips verified compensation, acquires after worker l
   assert.equal(after.effects.find(effect => effect.effectId === compA.effectId).status, "verified");
   assert.equal(after.effects.find(effect => effect.effectId === compB.effectId).status, "verified");
   assert.equal(after.sagas[0].status, "compensated");
-  assert.ok(after.events.some(event => event.type === "saga.recovery.started"));
-  assert.ok(after.events.some(event => event.type === "saga.recovery.finished"));
+  assert.ok(after.events.some((event: WorkEvent) => event.type === "saga.recovery.started"));
+  assert.ok(after.events.some((event: WorkEvent) => event.type === "saga.recovery.finished"));
   const recoveryStart = after.events.find(event => event.type === "saga.recovery.started");
   assert.deepEqual(recoveryStart.data.recoveredFromLeaseIds, [oldLease.lease.leaseId]);
 
@@ -244,7 +246,7 @@ test("saga recovery refuses to execute when another owner still holds the recove
 
   assert.equal(result.status, "waiting_lease");
   assert.equal(calls, 0);
-  assert.ok(repo.load(work.id).events.some(event => event.type === "saga.recovery.waiting_lease"));
+  assert.ok(repo.load(work.id).events.some((event: WorkEvent) => event.type === "saga.recovery.waiting_lease"));
 
   leaseStore.close();
   fs.rmSync(dir, { recursive: true, force: true });
