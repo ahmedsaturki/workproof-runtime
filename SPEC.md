@@ -1,4 +1,4 @@
-# WorkProof Runtime Specification - v3.2-dev
+# WorkProof Runtime Specification - v3.4-dev
 
 ## 1. Purpose
 
