@@ -86,6 +86,19 @@ test("message outbox is deterministic and idempotent for the same payload", asyn
   }
 });
 
+test("message outbox rejects unsupported operations before writing", async () => {
+  const f = fixture();
+  try {
+    const { registry } = setup();
+    const capability = registry.get("pack.messaging.outbox");
+    const result = await capability.execute({ operation: "send", input: f.input }, { work: {}, effect: undefined, log: () => {} });
+    assert.equal(result.status, "rejected");
+    assert.equal(fs.readdirSync(f.dir).length, 0);
+  } finally {
+    fs.rmSync(f.dir, { recursive: true, force: true });
+  }
+});
+
 test("message outbox rejects header injection, malformed addresses, and oversized content", async () => {
   const f = fixture();
   try {
