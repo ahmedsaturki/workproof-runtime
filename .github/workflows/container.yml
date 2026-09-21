@@ -51,29 +51,37 @@ jobs:
           fi
           echo "commit=${RELEASE_COMMIT}" >> "$GITHUB_OUTPUT"
 
-      - name: Build image
+      - name: Login to GHCR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "${GH_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
+
+      - name: Prepare immutable published image
         env:
           IMAGE_TAG: ${{ steps.image.outputs.tag }}
         run: |
           set -euo pipefail
           IMAGE="${GITHUB_REPOSITORY,,}"
           RELEASE_COMMIT="${{ steps.source.outputs.commit }}"
-          docker build --pull             --build-arg VERSION="${IMAGE_TAG}"             --build-arg VCS_REF="${RELEASE_COMMIT}"             -t "ghcr.io/${IMAGE}:${IMAGE_TAG}"             -t "ghcr.io/${IMAGE}:${RELEASE_COMMIT}" .
+          VERSION_IMAGE="ghcr.io/${IMAGE}:${IMAGE_TAG}"
+          COMMIT_IMAGE="ghcr.io/${IMAGE}:${RELEASE_COMMIT}"
 
-      - name: Login to GHCR
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: echo "${GH_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
+          if docker pull "${VERSION_IMAGE}"; then
+            echo "Existing version tag found; release tag is immutable and will not be rebuilt or overwritten."
+          else
+            docker build --pull               --build-arg VERSION="${IMAGE_TAG}"               --build-arg VCS_REF="${RELEASE_COMMIT}"               -t "${VERSION_IMAGE}"               -t "${COMMIT_IMAGE}" .
+            docker push "${VERSION_IMAGE}"
+          fi
 
-      - name: Push image
-        env:
-          IMAGE_TAG: ${{ steps.image.outputs.tag }}
-          RELEASE_COMMIT: ${{ steps.source.outputs.commit }}
-        run: |
-          set -euo pipefail
-          IMAGE="${GITHUB_REPOSITORY,,}"
-          docker push "ghcr.io/${IMAGE}:${IMAGE_TAG}"
-          docker push "ghcr.io/${IMAGE}:${RELEASE_COMMIT}"
+          VERSION_DIGEST="$(docker image inspect "${VERSION_IMAGE}" --format='{{index .RepoDigests 0}}')"
+
+          if docker pull "${COMMIT_IMAGE}"; then
+            COMMIT_DIGEST="$(docker image inspect "${COMMIT_IMAGE}" --format='{{index .RepoDigests 0}}')"
+            test "${VERSION_DIGEST}" = "${COMMIT_DIGEST}"
+          else
+            docker tag "${VERSION_IMAGE}" "${COMMIT_IMAGE}"
+            docker push "${COMMIT_IMAGE}"
+          fi
 
       - name: Runtime container smoke
         env:
@@ -115,6 +123,7 @@ jobs:
           STATUS="$(curl -sS -o /dev/null -w '%{http_code}'             -H "Authorization: Bearer ${TOKEN}"             -H "Accept: application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json"             "https://ghcr.io/v2/${IMAGE}/manifests/${IMAGE_TAG}")"
           test "${STATUS}" = "200"
           echo "anonymous GHCR manifest pull verified"
+
       - name: Record image digest and provenance
         env:
           IMAGE_TAG: ${{ steps.image.outputs.tag }}
