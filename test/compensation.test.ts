@@ -48,7 +48,7 @@ test("compensation is explicit, linked, independently verified, and replay-safe"
   const proof = buildProofBundle(work);
   assert.equal((proof).sagas.length, 1);
   assert.equal((proof).sagas[0].compensationEffectIds.length, 2);
-  assert.ok((proof).effects.some(e => e.sourceEffectId === one.effectId));
+  assert.ok((proof).effects.some((e: any) => e.sourceEffectId === one.effectId));
 });
 
 test("lost compensation acknowledgement reconciles without duplicate write", async () => {
