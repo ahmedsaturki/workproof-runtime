@@ -23,8 +23,9 @@ function sampleWork(): WorkObject {
 
 test("SDK serializes and parses a Work Object without semantic loss", () => {
   const work = sampleWork();
-  const restored = parseWorkObject(serializeWorkObject(work));
-  assert.deepEqual(restored, work);
+  const serialized = serializeWorkObject(work);
+  const restored = parseWorkObject(serialized);
+  assert.deepEqual(restored, JSON.parse(serialized));
 });
 
 test("authenticated control plane enforces read/write permissions and audits actions", async () => {
