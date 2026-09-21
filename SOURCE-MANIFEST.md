@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The v0.9 proof-vault branch contains **70 required paths** enforced by scripts/verify-source-tree.js.
+The v0.9 proof-vault branch contains **71 required paths** enforced by scripts/verify-source-tree.js.
 
 V0.6 additions:
 - docs/RELEASE-GATE-V0.6.md
