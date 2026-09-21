@@ -56,7 +56,6 @@ export function parseWorkObject(raw: string): WorkObject {
   ) {
     throw new Error("Invalid Work Object");
   }
-  if (!Object.prototype.hasOwnProperty.call(value, "verification")) value.verification = undefined;
   return value as WorkObject;
 }
 
