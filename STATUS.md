@@ -68,11 +68,12 @@ M001-M005 all verify successfully:
 ### GHCR
 
 - image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.2`
-- digest: `sha256:490dcb17e37c0f9a9cdbf7f30624d7d393f9fdb59b911cc9e86b9de681195617`
+- digest: `sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`
 - immutable tag: `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`
-- container verification run: #15 (success)
+- container verification run: #25 (success)
 - OCI version/revision checks: success
 - published-image `/health`: success
+- anonymous GHCR pull: success
 
 ## Operational boundary
 
