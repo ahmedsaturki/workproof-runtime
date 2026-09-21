@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The current v2.3 closeout contains **127 required paths** enforced by scripts/verify-source-tree.js.
+The current v2.4 fencing branch contains **131 required paths** enforced by scripts/verify-source-tree.js.
 
 The tree includes:
 - proof registry and authenticated transport
@@ -20,13 +20,24 @@ The tree includes:
 - authenticated Studio control delegation
 - read-only proof/audit views backed by the proof vault
 - durable control-plane idempotency
+- execution fencing token and stale-worker execution boundary
 
 ## v2.3 additions
 
 - packages/control-plane/src/idempotency.ts
 - test/control-idempotency.test.ts
 - docs/RELEASE-GATE-V2.3.md
+- docs/RELEASE-GATE-V2.4.md
+- docs/FINAL-AUDIT-V2.4.md
 - docs/FINAL-AUDIT-V2.3.md
+
+## V2.4 additions
+
+- apps/fenced-worker.ts
+- packages/core/src/types.ts ExecutionFence contract
+- packages/runtime/src/engine.ts fencing boundary
+- packages/recovery/src/engine.ts fence propagation
+- test/fencing.test.ts
 
 ## Verified main milestone evidence
 

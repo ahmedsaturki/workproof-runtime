@@ -40,6 +40,28 @@ GOAL -> CONTRACT -> ROUTE -> ACT -> OBSERVE -> VERIFY -> RECONCILE/RECOVER -> DE
     Proof / Artifact
     durable evidence
 
+## Execution fencing
+
+    Worker
+      |
+      | acquire(resource)
+      v
+    Persistent Lease Authority
+      |
+      | leaseId + revision
+      v
+    ExecutionFence
+      |\
+      | +--> assertOwned() before capability
+      |\
+      | +--> token -> optional conditional external write
+      |
+      +--> capability
+      |
+      +--> assertOwned() after capability
+
+Lease acquisition prevents competing ownership; fencing prevents an older owner from crossing a guarded execution boundary after takeover. External systems must explicitly honor a token if they support fencing; internal checks alone cannot revoke an already-dispatched third-party request.
+
 ## Control mutation idempotency
 
     Client

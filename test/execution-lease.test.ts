@@ -186,7 +186,8 @@ test("WorkEngine does not declare success after losing ownership mid-step", asyn
       }
       throw new Error("simulated worker lease loss");
     },
-    release: () => true
+    release: () => true,
+    assertOwned: () => lease
   };
 
   let executions = 0;

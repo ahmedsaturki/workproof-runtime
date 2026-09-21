@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v2.3-dev control-plane hardening is verified on main.**
+**v2.4-dev distributed execution fencing hardening is in progress.**
 
 v2.1 established authenticated Studio control delegation through the control plane. v2.2 added read-only proof/audit views backed by the content-addressed proof vault and optional local trust policy. v2.3 adds durable idempotency and replay/concurrency protection for authenticated control mutations.
 
@@ -30,6 +30,7 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - v2.1 authenticated Studio control delegation.
 - v2.2 proof/audit Studio.
 - v2.3 durable control mutation idempotency.
+- v2.4 execution fencing token boundary.
 
 ## v2.1 authenticated Studio control
 
@@ -91,6 +92,16 @@ Studio control is not a new control plane: authorization, state transitions, and
 Proof integrity and signatures establish integrity/authenticity properties under their defined trust boundaries; they do not create an organization-wide trust or revocation policy by themselves.
 
 Control-plane idempotency protects the authenticated mutation boundary but does not make external capability execution exactly-once.
+
+## v2.4 distributed execution fencing
+
+- Execution leases expose a fencing token derived from lease identity and current revision.
+- Capability code receives the active execution fence through `CapabilityContext`.
+- WorkEngine asserts ownership before crossing the capability execution boundary.
+- WorkEngine also asserts ownership after capability execution so a takeover cannot be silently accepted.
+- Persistent and in-memory lease authorities expose authoritative `assertOwned`.
+- A dedicated two-process regression proves an old worker cannot assert ownership after lease takeover.
+- External systems may enforce the token at their own conditional-write boundary; WorkProof does not claim universal remote fencing.
 
 ## Next engineering gates
 

@@ -122,10 +122,20 @@ export interface CapabilityReceipt {
   evidence?: EvidenceRef[];
 }
 
+export interface ExecutionFence {
+  resourceId: string;
+  leaseId: string;
+  ownerId: string;
+  revision: number;
+  token: string;
+  assertOwned(): void;
+}
+
 export interface CapabilityContext {
   work: WorkObject;
   effect?: EffectRecord;
   log: (type: string, message: string, data?: Record<string, unknown>) => void;
+  executionFence?: ExecutionFence;
 }
 
 export interface Capability {
