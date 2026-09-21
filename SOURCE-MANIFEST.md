@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The current v2.4 verified main tree contains **131 required paths** enforced by scripts/verify-source-tree.js.
+The current v2.5 verified main tree contains **133 required paths** enforced by scripts/verify-source-tree.js.
 
 The tree includes:
 - proof registry and authenticated transport
@@ -47,6 +47,19 @@ The tree includes:
 - packages/runtime/src/engine.ts fencing boundary
 - packages/recovery/src/engine.ts fence propagation
 - test/fencing.test.ts
+
+## v2.5 merged-main verification
+
+- feature head: `c36d02cab606256d25df01ea40a36d06c368a448`
+- feature CI #660: success
+- merged commit: `234e4397ae8e98acf1fcdf5fd57c42188582ae8f`
+- merged-main CI #661: success
+- source-tree audit: 133/133
+- dependency security audit: success
+- strict build: success
+- retention lifecycle: success
+- full sequential suite: success
+- benchmark/demo/CLI/live GitHub smoke: success
 
 ## v2.4 merged-main verification
 
