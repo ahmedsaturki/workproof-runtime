@@ -2,6 +2,7 @@ const http = require("http");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const { URL } = require("url");
 const { publishProof, listProofs, inspectProof } = require("../../evidence/src/vault.js");
 const { digestProofBundle, verifyProofIntegrity } = require("../../evidence/src/integrity.js");
 
@@ -49,7 +50,7 @@ function routeDigest(url: string): { digest: string; content: boolean } | null {
 function readBody(req: any): Promise<string> {
   return new Promise((resolve, reject) => {
     let total = 0;
-    const chunks: Buffer[] = [];
+    const chunks: any[] = [];
     req.on("data", (chunk: Buffer) => {
       total += chunk.length;
       if (total > MAX_BODY_BYTES) {
