@@ -568,6 +568,10 @@ test("Studio work API supports safe search, status/risk filters, limits, and ope
     assert.equal(invalidLimit.status, 400);
     assert.equal((await invalidLimit.json()).error, "invalid-limit");
 
+    const tooLongQuery = await fetch(`${base}/api/work?q=${"x".repeat(201)}`);
+    assert.equal(tooLongQuery.status, 400);
+    assert.equal((await tooLongQuery.json()).error, "query-too-long");
+
     const page = await fetch(base);
     const html = await page.text();
     assert.match(html, /Work filters/);
