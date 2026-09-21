@@ -8,7 +8,7 @@ const { URL } = require("url");
 const { publishProof, listProofs, inspectProof } = require("../../evidence/src/vault.js");
 const { digestProofBundle, verifyProofIntegrity } = require("../../evidence/src/integrity.js");
 
-export const REGISTRY_VERSION = "1.0";
+export const REGISTRY_VERSION = "1.1";
 const MAX_BODY_BYTES = 5 * 1024 * 1024;
 
 function sendJson(res: any, statusCode: number, body: Record<string, unknown>): void {
