@@ -141,9 +141,13 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
           sendJson(res, 400, { error: "dispatch-body-must-be-object", requestId: id });
           return;
         }
+        const mutation = beginIdempotentMutation(req, res, "dispatch", input, id);
+        if (mutation.handled) return;
         const work = await options.dispatch(input);
-        audit({ version: "0.1", requestId: id, action: "dispatch", workId: work.id, status: work.status, at: new Date().toISOString() });
-        sendJson(res, 200, { version: "1.0", requestId: id, work });
+        const response = { version: "1.0", requestId: id, work };
+        if (mutation.key) idempotency!.complete(mutation.key, 200, response);
+        audit({ version: "0.1", requestId: id, action: "dispatch", workId: work.id, status: work.status, ...(mutation.key ? { idempotencyKey: mutation.key } : {}), at: new Date().toISOString() });
+        sendJson(res, 200, response);
         return;
       }
 
@@ -151,11 +155,15 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
       if (method === "POST" && actionMatch) {
         const workId = requireWorkId(actionMatch[1]);
         const action = actionMatch[2];
+        const mutation = beginIdempotentMutation(req, res, action, { workId }, id);
+        if (mutation.handled) return;
         const work = options.repository.load(workId);
 
         if (action === "cancel") {
           if (work.status === "verified" || work.status === "failed") {
-            sendJson(res, 409, { error: `work-already-terminal:${work.status}`, requestId: id });
+            const response = { error: `work-already-terminal:${work.status}`, requestId: id };
+            if (mutation.key) idempotency!.complete(mutation.key, 409, response);
+            sendJson(res, 409, response);
             return;
           }
           if (work.status !== "cancelled") {
@@ -170,8 +178,10 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
             work.updatedAt = work.events[work.events.length - 1].at;
             options.repository.save(work);
           }
-          audit({ version: "0.1", requestId: id, action: "cancel", workId, status: work.status, at: new Date().toISOString() });
-          sendJson(res, 200, { version: "1.0", requestId: id, work });
+          const response = { version: "1.0", requestId: id, work };
+          if (mutation.key) idempotency!.complete(mutation.key, 200, response);
+          audit({ version: "0.1", requestId: id, action: "cancel", workId, status: work.status, ...(mutation.key ? { idempotencyKey: mutation.key } : {}), at: new Date().toISOString() });
+          sendJson(res, 200, response);
           return;
         }
 
@@ -180,12 +190,16 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
           return;
         }
         if (work.status === "verified") {
-          sendJson(res, 409, { error: "work-already-verified", requestId: id });
+          const response = { error: "work-already-verified", requestId: id };
+          if (mutation.key) idempotency!.complete(mutation.key, 409, response);
+          sendJson(res, 409, response);
           return;
         }
         const resumed = await options.resume(work);
-        audit({ version: "0.1", requestId: id, action: "resume", workId, status: resumed.status, at: new Date().toISOString() });
-        sendJson(res, 200, { version: "1.0", requestId: id, work: resumed });
+        const response = { version: "1.0", requestId: id, work: resumed };
+        if (mutation.key) idempotency!.complete(mutation.key, 200, response);
+        audit({ version: "0.1", requestId: id, action: "resume", workId, status: resumed.status, ...(mutation.key ? { idempotencyKey: mutation.key } : {}), at: new Date().toISOString() });
+        sendJson(res, 200, response);
         return;
       }
 
