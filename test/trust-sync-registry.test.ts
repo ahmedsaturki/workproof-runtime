@@ -108,7 +108,7 @@ test("registry client rejects a transport-level trust snapshot with invalid cryp
     ...snapshot,
     signature: {
       ...snapshot.signature,
-      signature: "A" + snapshot.signature.signature.slice(1)
+      signature: snapshot.signature.signature.slice(0, -1) + (snapshot.signature.signature.endsWith("A") ? "B" : "A")
     }
   };
   const server = http.createServer((_req: any, res: any) => {
