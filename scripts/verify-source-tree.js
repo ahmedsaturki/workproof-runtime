@@ -41,6 +41,7 @@ const required = [
   "packages/core/src/work.ts",
   "packages/evidence/src/bundle.ts",
   "packages/evidence/src/integrity.ts",
+  "packages/evidence/src/signature.ts",
   "packages/packs/src/browser-local-pack.ts",
   "packages/packs/src/github-pack.ts",
   "packages/packs/src/local-pack.ts",
@@ -61,6 +62,7 @@ const required = [
   "test/kernel.test.ts",
   "test/publication.test.ts",
   "test/runtime.test.ts",
+  "test/signature.test.ts",
   "test/two-system.test.ts",
   "tsconfig.json",
   "types/globals.d.ts"
