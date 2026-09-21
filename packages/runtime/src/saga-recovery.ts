@@ -41,6 +41,7 @@ export interface SagaRecoveryResult {
   completedCompensationEffectIds: string[];
   skippedVerifiedEffectIds: string[];
   attemptsByEffectId: Record<string, number>;
+  invalidCompensationEffectIds?: string[];
 }
 
 function resourceId(workId: string, sagaId: string): string {
@@ -53,6 +54,17 @@ function isVerified(effect: EffectRecord): boolean {
 
 function isPending(effect: EffectRecord): boolean {
   return effect.kind === "compensation" && !isVerified(effect);
+}
+
+function validateSagaLineage(work: WorkObject, saga: SagaRecord): string[] {
+  return saga.compensationEffectIds.filter(effectId => {
+    const effect = work.effects.find(item => item.effectId === effectId);
+    if (!effect || effect.kind !== "compensation" || !effect.sourceEffectId) return true;
+    return (
+      !saga.forwardEffectIds.includes(effect.sourceEffectId) ||
+      !work.effects.some(source => source.effectId === effect.sourceEffectId && source.kind !== "compensation")
+    );
+  });
 }
 
 function requireCompensationInput(effect: EffectRecord): void {
@@ -105,6 +117,24 @@ export class SagaRecoveryCoordinator {
     this.store.register(work);
     const saga = work.sagas?.find(item => item.sagaId === args.sagaId);
     if (!saga) throw new Error("Unknown saga: " + args.sagaId);
+
+    const invalidCompensationEffectIds = validateSagaLineage(work, saga);
+    if (invalidCompensationEffectIds.length) {
+      this.store.event(work, "saga.recovery.invalid_lineage", "Saga recovery refused because persisted compensation lineage is invalid", {
+        sagaId: saga.sagaId,
+        invalidCompensationEffectIds
+      });
+      this.repository.save(work);
+      return {
+        status: "unresolved",
+        workId: work.id,
+        sagaId: saga.sagaId,
+        completedCompensationEffectIds: [],
+        skippedVerifiedEffectIds: [],
+        attemptsByEffectId: {},
+        invalidCompensationEffectIds
+      };
+    }
 
     const pending = saga.compensationEffectIds
       .map(effectId => work.effects.find(effect => effect.effectId === effectId))
@@ -283,7 +313,8 @@ export class SagaRecoveryCoordinator {
       leaseId: currentLease.leaseId,
       completedCompensationEffectIds,
       skippedVerifiedEffectIds,
-      attemptsByEffectId
+      attemptsByEffectId,
+      ...(invalidCompensationEffectIds.length ? { invalidCompensationEffectIds } : {})
     };
   }
 }
