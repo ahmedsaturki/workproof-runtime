@@ -1,5 +1,4 @@
 const fs = require("fs");
-const cp = require("child_process");
 const { WorkStore } = require("../../core/src/work.js");
 const { CapabilityRegistry } = require("../../capabilities/src/registry.js");
 const { VerificationEngine } = require("../../verification/src/engine.js");
@@ -81,13 +80,16 @@ else {
       if (!valid) {
         process.stdout.write("invalid-integrity\n");
         process.exitCode = 3;
-        process.exit();
+      } else {
+        process.stdout.write(`integrity=verified; status=${status}\n`);
       }
-      process.stdout.write(`integrity=verified; status=${status}\n`);
     } else {
       process.stdout.write(`status=${status}; integrity=not-present\n`);
+      if (status !== "verified") process.exitCode = 2;
     }
-    if (status !== "verified") process.exitCode = 2;
+    if (data.integrity && verifyProofIntegrity(proofBundleFromFile(data), data.integrity)) {
+      if (status !== "verified") process.exitCode = 2;
+    }
   } else { usage(); process.exitCode = 1; }
 }
 
