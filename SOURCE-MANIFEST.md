@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The active main v1.6 branch contains 102 required paths enforced by scripts/verify-source-tree.js.
+The active main v1.7 branch contains 113 required paths enforced by scripts/verify-source-tree.js.
 
 The current tree includes:
 - proof registry and authenticated transport
@@ -11,6 +11,8 @@ The current tree includes:
 - persistent cross-process lease authority
 - WorkEngine execution-lease binding
 - durable worker-loss recovery
+- authenticated control plane
+- SDK Work Object round-trip
 - browser acceptance reliability preflight
 - live GitHub integration and external-write safety regression coverage
 
@@ -20,7 +22,7 @@ The current tree includes:
 - tag: v0.4.0-dev
 - exact development bundle: workproof-runtime-v0.4.0-dev.bundle
 
-## Verified main history
+## Verified main milestones
 
 - v1.1 implementation verification commit: 7eeefa13afa56acb9db5038ec3b5885f0724e46f
 - v1.2 merge commit: b6ef830d79dc432314a4da0f6e143ddb3a8b6f61
@@ -29,11 +31,12 @@ The current tree includes:
 - v1.4 worker-ownership merge commit: 8dfbce5609e2eba967971cc2dd4ea464b0604504
 - v1.5 execution-lease merge commit: b09fbf40489944b09dbcb33dda73ba0fcb57fb04
 - v1.6 worker-loss recovery merge commit: b7a1bacd0d47baab7d759bb572351434ac5fdb60
+- v1.7 control-plane/SDK merge commit: 86f8effb0e6178eb2f69d7b33472c7579be54d0f
 
 ## Current verification evidence
 
-- merged-main CI #422: success
-- source audit: 102/102
+- merged-main CI #448: success
+- source audit: 113/113
 - dependency security audit: success
 - retention lifecycle suite: passed
 - full unit/integration suite: passed
@@ -44,4 +47,4 @@ The current tree includes:
 
 ## Verification discipline
 
-Path completeness, compilation, tests, benchmark, live smoke, browser environment readiness, retention behavior, and acceptance behavior are separate gates. Passing one does not imply the others passed.
+Source-tree completeness, compilation, dependency audit, retention lifecycle, full integration suite, benchmark, demo, CLI, and live smoke are separate gates. Passing one does not imply the others passed.

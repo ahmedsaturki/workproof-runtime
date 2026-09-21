@@ -4,14 +4,14 @@ Date: 2026-09-21
 
 ## Current main
 
-**v1.6 worker-loss recovery is verified on main.**
+**v1.7 authenticated control-plane and SDK foundation is verified on main.**
 
-Main commit:
-b7a1bacd0d47baab7d759bb572351434ac5fdb60
+Main merge commit:
+86f8effb0e6178eb2f69d7b33472c7579be54d0f
 
 Merged-main verification:
-- CI #422: success.
-- source audit: 102/102 required paths.
+- CI #448: success.
+- source audit: 113/113 required paths.
 - dependency security audit: success.
 - retention lifecycle suite: passed.
 - full sequential unit/integration suite: passed.
@@ -31,22 +31,24 @@ Merged-main verification:
 - [x] v1.4.1 persistent cross-process lease authority.
 - [x] v1.5 WorkEngine execution-lease binding.
 - [x] v1.6 durable worker-loss recovery.
+- [x] v1.7 authenticated control-plane and SDK foundation.
 
 ## Current engineering gate
 
-**v1.7 — authenticated control-plane and SDK foundation**
+**v1.8 — explicit saga/compensation semantics**
 
 Parent issue:
 #26
+
 New gate:
-#31
+#34
 
 Next acceptance targets:
-- authenticated status, dispatch, cancel, and resume primitives.
-- durable and auditable control-plane state transitions.
-- SDK round-trip preservation of Work Object and proof references.
-- authorization remains distinct from cryptographic proof verification.
-- saga/compensation remains a later explicit gate.
+- first-class compensating work/actions with explicit auditable identity.
+- forward-effect to compensation linkage.
+- compensation policy and risk ceilings.
+- partial compensation and unresolved states remain explicit.
+- replay/recovery never assumes arbitrary rollback.
 
 ## Verification rule
 

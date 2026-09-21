@@ -14,11 +14,11 @@ Expose thin authenticated control and SDK surfaces around the durable Work Objec
 - [x] Mutating control requests generate auditable request IDs.
 - [x] Verified/failed work cannot be cancelled remotely.
 - [x] Repeated cancellation is idempotent.
-- [x] SDK serializes and parses Work Objects using JSON-visible semantics.
+- [x] SDK serializes/parses Work Objects using JSON-visible semantics.
 - [x] SDK HTTP client exercises the control plane.
 - [x] URL and work-id validation occurs before network access.
-- [ ] Final feature CI green on final head.
-- [ ] Final merged-main CI green on merge commit.
+- [x] Final feature CI green on final head.
+- [x] Final merged-main CI green on merge commit.
 
 ## Safety boundary
 
@@ -35,4 +35,4 @@ The control plane does not guarantee exactly-once delivery for arbitrary externa
 
 ## Milestone result
 
-v1.7 is complete only after the final feature head and the merged-main commit both pass the complete verification pipeline.
+**v1.7 authenticated control-plane and SDK foundation is verified on main.** Main merge commit: 86f8effb0e6178eb2f69d7b33472c7579be54d0f. Merged-main CI: #448 success.
