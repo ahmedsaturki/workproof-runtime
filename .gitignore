@@ -7,3 +7,5 @@ benchmark-result.json
 work-runs/
 workctl-research-proof.json
 # Runtime-generated proof and benchmark outputs
+
+proof-vault/

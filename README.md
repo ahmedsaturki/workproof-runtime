@@ -4,37 +4,24 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v0.8-dev trusted-proof policy is in progress.**
+**v0.9-dev local proof vault is in progress.**
 
-WorkProof now has a three-layer proof boundary:
+WorkProof's proof boundary now has four separable concerns:
 1. deterministic SHA-256 integrity,
 2. Ed25519 cryptographic signature,
-3. explicit local trust policy for the signing identity.
+3. explicit trust policy,
+4. durable content-addressed retention.
 
-The active v0.8 branch adds trusted/revoked/unknown key state, local policy persistence, and optional policy-enforced CLI verification.
+The v0.9 branch adds a local proof vault so verified proofs and local artifacts can be retained and restored without a hosted dependency.
 
 ## Core loop
 
 Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify -> Recover/Substitute -> Deliver -> Proof
 
-## Verified v0.5 scope
-
-- GitHub REST repository read + independent verifier.
-- GitHub issue creation declared as external_write.
-- Human approval enforced before external-write execution.
-- Deterministic idempotency marker with pre-write reconciliation.
-- Lost-acknowledgement test proves one POST produces one issue.
-- Two independent external systems reconcile ambiguous writes without duplicate writes.
-- Persisted acknowledged effects are skipped on resume instead of being re-executed.
-- Proof bundles support canonical SHA-256 integrity verification.
-- GitHub pack compatibility is declared and tested.
-- GitHub inputs are validated before network access.
-
 ## v0.6 proof CLI
 
 - `workctl run` emits an integrity manifest with the proof.
 - `workctl verify` validates the manifest when present.
-- Integrity metadata is checked for version, algorithm, work identity, and digest shape.
 - Tampered proof content returns an integrity-specific failure.
 - Legacy proofs without an integrity manifest remain readable.
 
@@ -43,8 +30,6 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - `workctl keygen <private.pem> <public.pem>` creates an Ed25519 identity.
 - `workctl sign <proof.json> <private.pem>` embeds a self-contained proof signature.
 - `workctl verify <proof.json>` independently validates the signature when present.
-- Signature identity is bound to a SHA-256-derived key identifier.
-- The signed payload is canonicalized and excludes only the signature field itself.
 - Signature failure is distinct from proof-integrity failure.
 - Key generation refuses accidental overwrite of existing key files.
 
@@ -57,17 +42,25 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - Unknown identities are not promoted to trusted automatically.
 - Revoked identities remain cryptographically valid but fail the required-trust policy.
 
+## v0.9 proof vault
+
+- `workctl vault-publish <proof.json> <vault-dir>` stores a proof by its content digest.
+- `workctl vault-list <vault-dir>` lists retained proof records.
+- `workctl vault-inspect <digest> <vault-dir>` shows a single retained record.
+- `workctl vault-restore <digest> <vault-dir> <output.json>` verifies and restores a proof.
+- Publishing the same digest twice is idempotent.
+- Local artifact files referenced by retained proofs are copied into the vault by SHA-256 content digest.
+- Corrupt vault proofs are rejected during restore.
+
 ## Safety boundary
 
 A capability receipt is not proof of the final outcome. External side effects require independent state verification or reconciliation.
 
-GitHub issue idempotency is marker/reconciliation-based and is not an atomic exactly-once guarantee across concurrent independent writers.
-
 SHA-256 integrity is tamper-evident metadata, not a cryptographic signature.
 
-Ed25519 authenticates the proof under its embedded public key; a local trust policy decides whether that identity is accepted in a given environment.
+Ed25519 authenticates a proof under its embedded public key; the local trust policy decides whether that identity is accepted.
 
-The local trust policy is an explicit policy artifact, not a global identity or revocation service.
+The proof vault provides durability, not trust. Vault records are re-verified on publication and restore.
 
 ## Product boundary
 
@@ -75,6 +68,6 @@ WorkProof Runtime is not a replacement for agents, browsers, workflow engines, M
 
 ## Next engineering gate
 
-Remote proof/artifact retention and distributed trust synchronization come after the local trust-policy milestone.
+Remote proof registry / replicated retention comes after the local content-addressed vault is verified.
 
 This repository does not make a global novelty claim.

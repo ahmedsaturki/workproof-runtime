@@ -44,6 +44,7 @@ const required = [
   "packages/evidence/src/integrity.ts",
   "packages/evidence/src/signature.ts",
   "packages/evidence/src/trust.ts",
+  "packages/evidence/src/vault.ts",
   "packages/packs/src/browser-local-pack.ts",
   "packages/packs/src/github-pack.ts",
   "packages/packs/src/local-pack.ts",
@@ -67,6 +68,8 @@ const required = [
   "test/signature.test.ts",
   "test/trust-cli.test.ts",
   "test/trust.test.ts",
+  "test/vault-cli.test.ts",
+  "test/vault.test.ts",
   "test/two-system.test.ts",
   "tsconfig.json",
   "types/globals.d.ts"
