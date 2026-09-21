@@ -87,7 +87,8 @@
           },
           "sourceEffectId": {
             "type": "string"
-          }
+          },
+          "input": {}
         }
       }
     },

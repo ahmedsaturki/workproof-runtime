@@ -62,7 +62,7 @@ export async function executeCompensation(args: {
 
   if (!compensationCapability && decision.allowed) throw new Error("No compensation capability can satisfy operation=" + request.operation);
 
-  const effect = store.addCompensationEffect(work, request.sagaId, source.effectId, compensationCapability?.name ?? "unresolved", request.riskClass, request.idempotencyKey, request.operation);
+  const effect = store.addCompensationEffect(work, request.sagaId, source.effectId, compensationCapability?.name ?? "unresolved", request.riskClass, request.idempotencyKey, request.operation, request.input);
 
   if (!decision.allowed) {
     effect.status = "unresolved";
@@ -112,6 +112,28 @@ export async function executeCompensation(args: {
       continue;
     }
     if (receipt.status === "ambiguous") {
+      let reconciled = false;
+      try {
+        reconciled = await verifyExternalState(work, effect);
+      } catch (error) {
+        log("compensation.reconcile_failed", "Compensation acknowledgement was ambiguous and reconciliation failed; preserving ambiguity", {
+          sagaId: saga.sagaId,
+          sourceEffectId: source.effectId,
+          compensationEffectId: effect.effectId,
+          error: String(error)
+        });
+      }
+
+      if (reconciled) {
+        effect.status = "verified";
+        log("compensation.reconciled", "Ambiguous compensation was resolved by external-state reconciliation", {
+          sagaId: saga.sagaId,
+          sourceEffectId: source.effectId,
+          compensationEffectId: effect.effectId
+        });
+        break;
+      }
+
       if (attempt === maxAttempts) effect.status = "unresolved";
       continue;
     }

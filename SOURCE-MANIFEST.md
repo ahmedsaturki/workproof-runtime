@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The active main v1.8 branch contains 111 required paths enforced by scripts/verify-source-tree.js.
+The active main v1.8 checkpoint contains 111 required paths. The v1.9 recovery branch contains 114 required paths enforced by scripts/verify-source-tree.js.
 
 The current tree includes:
 - proof registry and authenticated transport
@@ -21,6 +21,11 @@ The current tree includes:
 - local commit: 8cd9b7d841191b8a030bb462ac8dbd271f8259ca
 - tag: v0.4.0-dev
 - exact development bundle: workproof-runtime-v0.4.0-dev.bundle
+
+V1.9 additions include:
+- docs/RELEASE-GATE-V1.9.md
+- packages/runtime/src/saga-recovery.ts
+- test/saga-recovery.test.ts
 
 ## Verified main milestones
 

@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v1.8 explicit saga/compensation semantics are verified on main.**
+**v1.9 durable saga recovery hardening is in progress on the feature branch.**
 
 Compensation is modeled as explicit auditable work linked to originating forward effects. The runtime does not treat arbitrary external effects as automatically reversible.
 
@@ -37,6 +37,16 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - Verified compensation is not replayed after persistence/resume.
 - Proof bundles and proof-retention paths preserve saga lineage.
 - Legacy work objects remain readable without a saga field.
+
+## v1.9 durable saga recovery
+
+- Recoverable sagas can be discovered from persisted Work Objects.
+- Recovery owns a dedicated saga lease before executing compensation.
+- Expired worker ownership can be replaced deterministically.
+- Verified compensation is skipped on resume.
+- Pending compensation input and lineage are reconstructed from durable effect state.
+- Ambiguous acknowledgements reconcile before any retry.
+- A stale owner stops when a replacement worker takes over.
 
 ## Safety boundary
 

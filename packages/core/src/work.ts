@@ -53,10 +53,11 @@ export class WorkStore {
     this.event(work, "artifact.added", `Artifact added: ${evidence.id}`, { kind: evidence.kind });
   }
 
-  addEffect(work: WorkObject, capability: string, riskClass: EffectRecord["riskClass"], idempotencyKey: string, operation?: string): EffectRecord {
+  addEffect(work: WorkObject, capability: string, riskClass: EffectRecord["riskClass"], idempotencyKey: string, operation?: string, input?: unknown): EffectRecord {
     const existing = work.effects.find(e => e.idempotencyKey === idempotencyKey);
     if (existing) {
       if (!existing.operation && operation) existing.operation = operation;
+      if (existing.input === undefined && input !== undefined) existing.input = input;
       return existing;
     }
     const t = now();
@@ -64,6 +65,7 @@ export class WorkStore {
       effectId: id("effect"),
       idempotencyKey,
       operation,
+      input,
       kind: "forward",
       capability,
       riskClass,
@@ -103,7 +105,8 @@ export class WorkStore {
     capability: string,
     riskClass: EffectRecord["riskClass"],
     idempotencyKey: string,
-    operation?: string
+    operation?: string,
+    input?: unknown
   ): EffectRecord {
     const saga = work.sagas?.find(item => item.sagaId === sagaId);
     if (!saga) throw new Error("Unknown saga: " + sagaId);
@@ -119,7 +122,7 @@ export class WorkStore {
       return existing;
     }
 
-    const effect = this.addEffect(work, capability, riskClass, idempotencyKey, operation);
+    const effect = this.addEffect(work, capability, riskClass, idempotencyKey, operation, input);
     effect.kind = "compensation";
     effect.sourceEffectId = sourceEffectId;
     saga.compensationEffectIds.push(effect.effectId);
