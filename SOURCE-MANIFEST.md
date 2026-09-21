@@ -2,18 +2,20 @@
 
 ## Required source tree
 
-The verified v3.0 main tree contains **145 required paths** enforced by scripts/verify-source-tree.js.
+The verified v3.1 main tree contains **151 required paths** enforced by scripts/verify-source-tree.js.
+
+V3.1 additions include:
+- docs/FINAL-AUDIT-V3.1.md
+- docs/RELEASE-GATE-V3.1.md
+- docs/packs/sqlite-pack.json
+- lab/fixtures/database-pack.json
+- packages/packs/src/sqlite-pack.ts
+- test/sqlite.test.ts
 
 V3.0 additions include:
-- docs/RELEASE-GATE-V3.0.md
 - docs/FINAL-AUDIT-V3.0.md
+- docs/RELEASE-GATE-V3.0.md
 - operational health projection additions in apps/studio.ts and test/studio.test.ts
-
-V2.9 additions include:
-- docs/FINAL-AUDIT-V2.9.md
-- docs/RELEASE-GATE-V2.9.md
-- operational filtering additions in apps/studio.ts and test/studio.test.ts
-- CI headless Chrome/D-Bus preflight hardening in .github/workflows/ci.yml
 
 ## v0.4 local exact history
 
@@ -25,9 +27,15 @@ V2.9 additions include:
 
 - v2.9 implementation merge commit: b8be593242d19e3251914855801fc505aa19a566
 - CI preflight hardening merge commit: 437516fb39e6f8c7469fc4540a0cf85f5e950391
+- v3.0 operational health merge commit: 4e0672fbbc51416d50330df47397b3162e50da72
+- v3.1 SQLite pack merge commit: 449ad75806c3c0f1dab748598dd1f85c65047afc
 - v2.9 implementation CI: #751
 - CI hardening PR: #63, CI #760
-- final merged-main CI: #761
+- v2.9 final merged-main CI: #761
+- v3.0 feature PR: #65, CI #779
+- v3.0 final merged-main CI: #780
+- v3.1 feature CI: #793
+- v3.1 final merged-main CI: #795
 - result: source audit + dependency security + Chromium/CDP + strict build + retention + full suite + benchmark + demo + CLI + live GitHub smoke all passed
 
 ## Verification discipline

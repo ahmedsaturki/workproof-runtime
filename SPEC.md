@@ -1,8 +1,8 @@
-# WorkProof Runtime Specification - v3.0-dev
+# WorkProof Runtime Specification - v3.1-dev
 
 ## 1. Purpose
 
-Represent a bounded digital outcome as durable work, execute it through explicit capabilities and worker ownership, safely handle external effects, independently verify outcomes, preserve portable proof, manage proof lifecycle, recover persisted execution after worker loss, and expose a user-facing Studio with authenticated control delegation, proof/audit views, worker visibility, diagnostic lease visibility, and bounded operational filtering.
+Represent a bounded digital outcome as durable work, execute it through explicit capabilities and worker ownership, safely handle external effects, independently verify outcomes, preserve portable proof, manage proof lifecycle, recover persisted execution after worker loss, and expose a user-facing Studio with authenticated control delegation, proof/audit views, worker visibility, diagnostic lease visibility, bounded operational filtering, and bounded operational health projections.
 
 ## 2. Core loop
 
@@ -21,7 +21,7 @@ A Work Contract contains:
 
 A step's risk class must not exceed the contract risk class.
 
-## 4. Capability, Effect, Worker, Lease, and Saga Contracts
+## 4. Capability, Effect, Worker, Lease, Saga, and Database Contracts
 
 Capabilities declare stable names, versions, supported operations, risk classes, and executable behavior.
 
@@ -30,6 +30,12 @@ Effects track effect identity, idempotency, operation, capability, risk, attempt
 Workers expose bounded status including liveness and reassignment eligibility.
 
 Execution and recovery leases establish explicit worker ownership. Saga recovery uses a separate recovery lease and durable compensation lineage.
+
+The SQLite database pack provides:
+- `pack.database.sqlite.query` as a local read capability with one SELECT statement, bounded SQL/parameters, and bounded output.
+- `pack.database.sqlite.upsert` as a local_write capability constrained to a parameterized conflict-key upsert.
+- independent verifiers that read persisted SQLite state directly.
+- evidence references identifying the observed database path and verification state.
 
 ## 5. Verification and Evidence
 
@@ -93,73 +99,56 @@ LeaseStatus must not contain an execution fencing token.
 ## 11. Operational Work Filtering
 
 The Studio Work Object list supports:
-- free-text query `q` against Work Object ID and objective, bounded to 200 characters
-- exact `status` filtering over the bounded WorkStatus set
-- exact `risk` filtering over the bounded RiskClass set
-- positive safe-integer `limit` from 1 through MAX_WORKS
+- free-text query q against Work Object ID and objective, bounded to 200 characters
+- exact status filtering over the bounded WorkStatus set
+- exact risk filtering over the bounded RiskClass set
+- positive safe-integer limit from 1 through MAX_WORKS
 
-The `/api/work` response includes:
-- `filters`
-- `total`
-- `byStatus`
-- `byRisk`
-- bounded `work[]`
+The /api/work response includes filters, total, byStatus, byRisk, and bounded work[].
 
-Invalid filter values fail closed with HTTP 400. Matching results are sorted deterministically by updated timestamp and Work Object ID. The operation is read-only and has no mutation or authorization side effects.
+Invalid filter values fail closed with HTTP 400. Matching results are sorted deterministically by updated timestamp and Work Object ID. The operation is read-only.
 
 ## 12. Studio
 
 Read surface:
-- `GET /` HTML dashboard
-- `GET /health` service health
-- `GET /api/work` bounded/filterable Work Object listing
-- `GET /api/work/:id` sanitized Work Object detail
-- `GET /api/workers` worker/liveness projection
-- `GET /api/leases` diagnostic execution lease projection
-- `GET /api/proofs?workId=:id` retained proof summaries
-- `GET /api/proof/:digest` retained proof audit detail
+- GET / HTML dashboard
+- GET /health service health
+- GET /api/work bounded/filterable Work Object listing
+- GET /api/work/:id sanitized Work Object detail
+- GET /api/workers worker/liveness projection
+- GET /api/leases diagnostic execution lease projection
+- GET /api/proofs?workId=:id retained proof summaries
+- GET /api/proof/:digest retained proof audit detail
+- GET /api/operations/overview bounded operational health projection
 
-The dashboard provides operational search/filter controls and summary cards derived from the filtered Work Object set.
-
-Optional control surface:
-- `POST /api/control/dispatch` -> authenticated control-plane dispatch
-- `POST /api/control/work/:id/cancel` -> authenticated control-plane cancel
-- `POST /api/control/work/:id/resume` -> authenticated control-plane resume
+Optional control surface delegates mutation to the authenticated control plane.
 
 ## 13. CLI Lifecycle Surface
 
-The CLI exposes work execution, proof inspection/verification, signer identity, registry operations, proof-vault lifecycle, and local Studio launch.
+The CLI exposes work execution, proof inspection/verification, signer identity, trust/registry operations, proof-vault lifecycle, and local Studio launch. Mission execution can use the registered SQLite capability pack.
 
 ## 14. Non-goals
 
 WorkProof is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, or distributed-consensus system.
 
-## 15. v2.9 Acceptance Baseline
+## 15. v3.0 Operational Health
 
-- v2.8 behavior remains passing.
-- bounded search, status, risk, and limit filters are available on `/api/work`.
-- operational summary counts are deterministic for the filtered set.
-- invalid filter inputs fail closed with 400.
-- query length is bounded.
-- result ordering is deterministic.
-- Studio renders filter controls and summary cards.
-- filtering does not mutate work, leases, proofs, or control state.
-- source audit
-- dependency audit
-- full integration suite
-- benchmark/demo/CLI verification
-- live GitHub smoke
-- green feature CI and green merged-main CI
+- GET /api/operations/overview is bounded and deterministic.
+- Effect and verification health are evidence-derived from valid persisted Work Objects.
+- Optional worker and lease health never fabricates state.
+- Attention reason codes are explicit and deterministic.
+- Studio renders operational health cards and an attention queue.
+- Projection is read-only.
 
+## 16. v3.1 SQLite Acceptance Target
 
-## 16. v3.0 Acceptance Target
-
-- v2.9 behavior remains passing
-- GET /api/operations/overview is bounded and deterministic
-- effect and verification health are evidence-derived from valid persisted Work Objects
-- optional worker and lease health never fabricates state
-- attention reason codes are explicit and deterministic
-- Studio renders operational health cards and an attention queue
-- projection is read-only and does not change execution, authorization, lease ownership, proof state, or control state
+- v3.0 behavior remains passing.
+- SQLite query capability is SELECT-only and locally scoped.
+- SQL length, parameters, rows, identifiers, and expected row limits are enforced.
+- SQLite upsert uses parameterized SQL with an explicit conflict key and local_write risk.
+- Query and upsert verifiers re-read persisted state independently.
+- Capability and verifier results carry evidence references.
+- Pack manifest and fixture remain aligned with implementation.
+- CLI registers the pack for normal mission execution.
 - source audit, dependency audit, full integration suite, benchmark, demo, CLI verification, live GitHub smoke
 - green feature CI and green merged-main CI

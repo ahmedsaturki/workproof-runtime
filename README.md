@@ -4,9 +4,9 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.0-dev operational health projection is verified on main.**
+**v3.1-dev SQLite database capability pack is verified on main.**
 
-The verified v3.0 line extends v2.9 with a read-only operational health projection and deterministic attention queue derived from persisted Work Objects, effects, verification state, and optionally configured worker and lease sources.
+The verified v3.1 line extends v3.0 with a bounded local SQLite capability family for real file-backed database work, independent verification, and explicit local-write semantics without adding a runtime dependency.
 
 ## Core loop
 
@@ -16,18 +16,36 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 
 v1.0 through v3.0 are preserved as verified milestones, covering proof registry and trust, retention, worker ownership and recovery, control-plane idempotency, fencing, saga recovery, authenticated Studio control, proof/audit, lease visibility, operational filtering, and operational health projection.
 
-## v3.0 operational health
+## v3.1 SQLite database pack
 
-- GET /api/operations/overview is a read-only health projection.
-- Work summaries include total and verified counts plus status and risk distributions.
-- Effect summaries distinguish recorded effect statuses and explicitly count unknown/unresolved effects.
-- Verification summaries distinguish recorded verification states and not-verified work.
-- Optional worker and lease sources produce bounded health summaries only when configured.
-- Attention items expose explicit reason codes and deterministic details.
-- Attention output is bounded and deterministically ordered.
-- Corrupt persisted Work Objects are skipped rather than guessed.
-- Studio renders health cards and the attention queue.
-- The projection never mutates work, leases, proofs, authorization, or execution.
+- `pack.database.sqlite.query` executes one SELECT statement against a local SQLite file.
+- SQL length is bounded to 20,000 characters.
+- Query parameters are bounded to 50 supported values.
+- Result output is bounded to 500 rows and reports truncation explicitly.
+- `pack.database.sqlite.upsert` provides parameterized upsert semantics with an explicit conflict key.
+- Upsert risk is declared `local_write`.
+- Identifiers are constrained to safe SQLite identifier syntax.
+- Query and upsert outcomes produce evidence references.
+- Independent verifiers re-read persisted SQLite state instead of trusting capability receipts.
+- The pack uses Node 24's built-in `node:sqlite`; no new npm runtime dependency is required.
+- CLI mission registration includes the SQLite pack.
+- Pack compatibility metadata and fixture-backed tests are included.
+
+## v3.1 verification evidence
+
+- feature CI #793: success on the final v3.1 feature head.
+- merged-main CI #795: success on merge commit `449ad75806c3c0f1dab748598dd1f85c65047afc`.
+- source-tree audit: 150/150 before final audit documentation.
+- dependency security audit: 0 vulnerabilities.
+- Chromium/CDP preflight: success.
+- strict TypeScript build: success.
+- retention lifecycle suite: success.
+- full unit/integration suite: success.
+- benchmark: success.
+- demo: success.
+- CLI proof verification: success.
+- CLI mission execution: success.
+- live GitHub smoke: success.
 
 ## Safety boundary
 
@@ -35,9 +53,15 @@ A capability receipt is not proof of the final outcome. External side effects re
 
 Operational health is diagnostic only. Healthy workers, active leases, or prior verification do not prove a current external outcome.
 
+The SQLite pack is local-only. It does not expose arbitrary write SQL, and its upsert operation is not a claim of third-party exactly-once behavior.
+
 Compensation is not guaranteed rollback. The runtime records what was attempted, what was independently verified, and what remains unresolved.
 
 Proof integrity and signatures establish integrity and authenticity under their defined trust boundaries; they do not create an organization-wide trust or revocation policy by themselves.
+
+## Product boundary
+
+WorkProof Runtime is not a replacement for agents, browsers, workflow engines, MCP registries, memory systems, observability backends, or OSINT graphs. Those systems can be integrated as capabilities or adapters while Work Object, effect, verification, recovery, and proof semantics remain invariant.
 
 ## Next engineering gates
 
