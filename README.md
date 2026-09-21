@@ -124,6 +124,14 @@ Control-plane idempotency protects the authenticated mutation boundary but does 
 - Studio does not expose lease internals or filesystem paths and does not authorize worker mutations.
 - Unconfigured worker visibility fails closed with HTTP 503.
 
+## v2.7 authenticated remote worker visibility
+
+- Studio uses the configured authenticated control plane as the authoritative worker-status source when remote mode is enabled.
+- Missing bearer credentials fail closed with HTTP 401.
+- Remote control-plane outages become explicit HTTP 503 responses.
+- The Studio re-sanitizes remote worker state before returning it and keeps local worker-source mode intact for single-host deployments.
+- Remote worker visibility is read-only and does not acquire leases or authorize reassignment.
+
 ## Next engineering gates
 
 Additional capability packs/integrations, remote/distributed Studio mode, and richer visualization beyond proof/audit inspection remain separate milestones.

@@ -425,4 +425,76 @@ test("Studio exposes sanitized worker liveness without becoming a mutation autho
   }
 });
 
+
+test("Studio proxies worker liveness through the authenticated control plane without local authority", async () => {
+  const root = tempDir("workproof-studio-remote-workers-");
+  const controlRoot = path.join(root, "control-work");
+  const studioRoot = path.join(root, "studio-work");
+  const repo = new JsonWorkRepository(controlRoot);
+  const auth = require("../packages/registry/src/auth.js");
+  const policy = auth.createAuthPolicy();
+  const reader = auth.issueCredential({ id: "worker-reader", permissions: ["read"] });
+  const controlPolicy = auth.addIssuedCredential(policy, reader);
+  const coordination = require("../packages/coordination/src/leases.js");
+  const workers = new coordination.LeaseStore();
+  workers.registerWorker({ workerId: "remote-worker", capabilities: ["github.read"] });
+
+  const control = await require("../packages/control-plane/src/http.js").startControlPlane({
+    repository: repo,
+    authPolicy: controlPolicy,
+    workerStatusSource: workers,
+    workerStaleAfterMs: 750
+  });
+
+  const studio = await startStudio({
+    workDirectory: studioRoot,
+    port: 0,
+    controlPlaneUrl: `http://127.0.0.1:${control.port}`
+  });
+
+  try {
+    const base = `http://127.0.0.1:${studio.port}`;
+    const missing = await fetch(`${base}/api/workers`);
+    assert.equal(missing.status, 401);
+    assert.equal((await missing.json()).error, "unauthorized");
+
+    const response = await fetch(`${base}/api/workers`, {
+      headers: { authorization: `Bearer ${reader.token}` }
+    });
+    assert.equal(response.status, 200);
+    const data = await response.json();
+    assert.equal(data.version, "2.7");
+    assert.equal(data.source, "control-plane");
+    assert.equal(data.staleAfterMs, 750);
+    assert.equal(data.workers.length, 1);
+    assert.equal(data.workers[0].workerId, "remote-worker");
+    assert.equal(data.workers[0].liveness, "active");
+    assert.equal(data.workers[0].leaseId, undefined);
+    assert.equal(data.workers[0].metadata, undefined);
+  } finally {
+    await studio.close();
+    await control.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("Studio reports an unavailable remote control plane as 503", async () => {
+  const root = tempDir("workproof-studio-remote-unavailable-");
+  const studio = await startStudio({
+    workDirectory: root,
+    port: 0,
+    controlPlaneUrl: "http://127.0.0.1:1"
+  });
+  try {
+    const response = await fetch(`http://127.0.0.1:${studio.port}/api/workers`, {
+      headers: { authorization: "Bearer unavailable-test" }
+    });
+    assert.equal(response.status, 503);
+    assert.equal((await response.json()).error, "control-plane-unavailable");
+  } finally {
+    await studio.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 export {};
