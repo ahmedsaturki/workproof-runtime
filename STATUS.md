@@ -4,10 +4,13 @@ Date: 2026-09-21
 
 ## Current main
 
-**v3.3-dev local deterministic message outbox is fully verified on main, including documentation/source-tree closeout.**
+**v3.4-dev executable operator benchmark is merged and functionally verified on main; documentation closeout is in progress.**
 
-Implementation main:
+v3.3 implementation main:
 c5e951056461c37f45bed8bb8406d119880d63df
+
+v3.4 implementation merge:
+fe662d5bb5337bde18772f22864434935d59f66f
 
 Documentation closeout baseline:
 5e26ab0bb78ebb986513c08abe0809c0d75a1145
@@ -52,11 +55,11 @@ Verified implementation gates:
 
 External message delivery is not part of v3.3. The capability writes a local outbox artifact and does not send SMTP or remote messages.
 
-## Current v3.4 benchmark work
+## v3.4 verified implementation
 
-The executable benchmark now covers M001-M005: research, HTTP discovery, Git mutation, ambiguous-effect reconciliation, and capability substitution.
+The executable benchmark covers M001-M005: research, HTTP discovery, Git mutation, ambiguous-effect reconciliation, and capability substitution.
 
-The benchmark is evidence-bearing and fail-closed and reports verified completion, false-done, duplicate effects, ambiguity recovery, substitution, evidence completeness, and human intervention.
+Feature CI #864 and merged-main CI #866 passed the full verification chain. The merged benchmark artifact reports 5/5 verified cases, verifiedCompletionRate=1, falseDoneCount=0, duplicateExternalEffectCount=0, ambiguousOutcomeResolvedCount=1, capabilitySubstitutionCount=1, evidenceCompleteRate=1, and humanInterventionCount=0.
 
 ## Remaining platform work
 
