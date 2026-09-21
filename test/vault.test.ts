@@ -124,9 +124,13 @@ test("vault rejects proof and artifact paths that escape the vault", () => {
   const clean = publishProof(proofPath, path.join(dir, "vault-clean"));
   const cleanIndexPath = path.join(dir, "vault-clean", "index.json");
   const cleanIndex = JSON.parse(fs.readFileSync(cleanIndexPath, "utf8"));
-  cleanIndex.records[0].artifacts["/outside"] = clean.artifacts[Object.keys(clean.artifacts)[0]];
+  const recordedArtifactPath = clean.artifacts[Object.keys(clean.artifacts)[0]];
+  cleanIndex.records[0].artifacts["file:///outside"] = recordedArtifactPath;
   fs.writeFileSync(cleanIndexPath, JSON.stringify(cleanIndex, null, 2), "utf8");
-  assert.throws(() => listProofs(path.join(dir, "vault-clean")), /Invalid proof vault artifact reference/);
+  assert.throws(
+    () => restoreProof(path.join(dir, "vault-clean"), clean.digest, path.join(dir, "restored.json")),
+    /Vault artifact reference is absent from proof/
+  );
 });
 
 
