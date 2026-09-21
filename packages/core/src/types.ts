@@ -1,6 +1,6 @@
 export type WorkStatus =
   | "planned" | "running" | "waiting_verification" | "verified"
-  | "partial" | "failed" | "unresolved" | "unverifiable" | "cancelled";
+  | "partial" | "waiting_lease" | "failed" | "unresolved" | "unverifiable" | "cancelled";
 
 export type EffectStatus =
   | "planned" | "dispatched" | "acknowledged" | "unknown"
