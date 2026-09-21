@@ -4,9 +4,9 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v1.8 explicit saga/compensation semantics are in development.**
+**v1.8 explicit saga/compensation semantics are verified on main.**
 
-The runtime models compensation as explicit auditable work linked to its originating forward effect. Compensation is never treated as automatic rollback.
+Compensation is modeled as explicit auditable work linked to originating forward effects. The runtime does not treat arbitrary external effects as automatically reversible.
 
 ## Core loop
 
@@ -24,26 +24,30 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - v1.5 WorkEngine execution-lease binding.
 - v1.6 worker-loss recovery.
 - v1.7 authenticated control-plane and SDK foundation.
+- v1.8 explicit saga/compensation semantics.
 
 ## v1.8 saga/compensation
 
-- Compensation uses a distinct effect kind and independent effect identity.
-- Every compensation is linked to an originating forward effect.
-- Saga state tracks forward and compensation effect lineage.
+- Compensation has its own effect kind and effect identity.
+- Each compensation links to its originating forward effect.
+- Saga state tracks forward and compensation lineage explicitly.
 - Compensation obeys work risk ceilings and approval policy.
-- Lost acknowledgements reconcile external state before another compensation write.
-- Partial and unresolved compensation remain explicit.
-- Persisted verified compensation is not replayed.
-- Proof bundles preserve saga/effect lineage.
+- Ambiguous/lost acknowledgements reconcile external state before duplicate writes.
+- Partial, unresolved, and fully compensated states remain explicit.
+- Verified compensation is not replayed after persistence/resume.
+- Proof bundles and proof-retention paths preserve saga lineage.
+- Legacy work objects remain readable without a saga field.
 
 ## Safety boundary
 
 Compensation is not guaranteed rollback. The runtime records what was attempted, what was independently verified, and what remains unresolved.
 
-Control-plane authentication, proof signatures, signer trust, retention, and worker leases remain separate concerns with their existing boundaries.
+GitHub marker-based idempotency is reconciliation-based, not an atomic exactly-once primitive across independent writers.
+
+Proof integrity and signatures establish integrity/authenticity properties under their defined trust boundaries; they do not create an organization-wide trust or revocation policy by themselves.
 
 ## Next engineering gates
 
-External browser navigation where permitted, further worker/control-plane hardening, broader capability packs, and product-facing Studio surfaces remain separate milestones.
+Explicit saga recovery after worker/process loss, multi-user signer trust policy, further worker/control-plane hardening, broader capabilities, and product-facing Studio surfaces remain separate milestones.
 
 This repository does not make a global novelty claim.

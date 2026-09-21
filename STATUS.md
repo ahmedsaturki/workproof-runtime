@@ -4,50 +4,42 @@ Date: 2026-09-21
 
 ## Current main
 
-**v1.7 authenticated control-plane and SDK foundation is verified on main.**
+**v1.8 explicit saga and compensation semantics are verified on main.**
 
 Main merge commit:
-8f183ea43ebdc9558ca48c0982dca34919438a90
+545dffda29c04249677f9605e5709f8e8c9d2ffb
 
 Merged-main verification:
-- CI #449: success.
-- source audit: 113/113 required paths.
+- CI #476: success.
+- source audit: 111/111 required paths.
 - dependency security audit: success.
-- retention lifecycle suite: passed.
-- full sequential unit/integration suite: passed.
+- retention lifecycle suite: 9/9 passed.
+- full unit/integration suite: passed.
 - benchmark: passed.
 - demo: verified.
 - CLI proof and mission: verified.
 - live GitHub smoke: verified.
 
-## Active milestone
+## Verified v1.8 gates
 
-**v1.8 — explicit saga/compensation semantics**
+- [x] First-class compensating effects with explicit identity.
+- [x] Forward-effect to compensation linkage.
+- [x] Compensation risk ceilings and approval policy.
+- [x] Lost-acknowledgement reconciliation without duplicate write.
+- [x] Partial and unresolved saga states remain explicit.
+- [x] Persisted verified compensation is not replayed.
+- [x] Proof, retention, vault, registry, and CLI preserve saga lineage.
+- [x] Legacy work objects remain schema-compatible.
+- [x] Feature CI and merged-main CI both pass.
 
-Active branch:
-feature/v1.8-saga-compensation
+## Remaining saga hardening
 
-Acceptance targets:
-- first-class compensating effects with explicit auditable identity.
-- forward-effect to compensation linkage.
-- compensation policy and risk ceilings.
-- lost-acknowledgement reconciliation before duplicate compensation.
-- partial and unresolved states remain explicit.
-- persisted verified compensation is never replayed.
-- proof bundles preserve forward/compensation lineage.
-
-## Closed milestones
-
-- [x] v1.0 self-hosted proof registry.
-- [x] v1.1 authenticated registry.
-- [x] v1.2 signed trust-policy synchronization.
-- [x] v1.3 retention/reachability/GC lifecycle.
-- [x] Browser acceptance reliability correction.
-- [x] v1.4 deterministic worker ownership.
-- [x] v1.4.1 persistent cross-process lease authority.
-- [x] v1.5 WorkEngine execution-lease binding.
-- [x] v1.6 durable worker-loss recovery.
-- [x] v1.7 authenticated control-plane and SDK foundation.
+- [ ] Recover partially completed sagas after worker/process loss as an explicit end-to-end acceptance path.
+- [ ] Multi-user proof trust policy for signed identities.
+- [ ] Broader remote proof/artifact lifecycle surfaces.
+- [ ] External browser navigation where permitted.
+- [ ] Further worker/control-plane hardening.
+- [ ] Studio / wider product surfaces.
 
 ## Verification rule
 

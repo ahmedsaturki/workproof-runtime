@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The active main v1.7 branch contains 113 required paths enforced by scripts/verify-source-tree.js.
+The active main v1.8 branch contains 111 required paths enforced by scripts/verify-source-tree.js.
 
 The current tree includes:
 - proof registry and authenticated transport
@@ -33,10 +33,18 @@ The current tree includes:
 - v1.6 worker-loss recovery merge commit: b7a1bacd0d47baab7d759bb572351434ac5fdb60
 - v1.7 control-plane/SDK merge commit: 86f8effb0e6178eb2f69d7b33472c7579be54d0f
 
+## v1.8 additions
+
+- docs/RELEASE-GATE-V1.8.md
+- packages/compensation/src/engine.ts
+- test/compensation.test.ts
+- saga lineage preserved across proof/retention/registry/CLI integrity reconstruction
+
 ## Current verification evidence
 
-- merged-main CI #448: success
-- source audit: 113/113
+- merged-main CI #476: success
+- source audit: 111/111
+- v1.8 feature CI #475: success
 - dependency security audit: success
 - retention lifecycle suite: passed
 - full unit/integration suite: passed
