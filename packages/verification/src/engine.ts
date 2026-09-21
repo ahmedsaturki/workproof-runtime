@@ -20,14 +20,12 @@ export class VerificationEngine {
       const check = await verifier.verify({ work, criterion, artifacts: work.artifacts });
       checks.push(check);
       for (const evidence of check.evidence) {
-        if (!work.artifacts.some(a => a.id === evidence.id)) {
-          work.artifacts.push(evidence);
-        }
+        if (!work.artifacts.some(a => a.id === evidence.id)) work.artifacts.push(evidence);
       }
     }
 
     if (checks.length === 0) {
-      const result: VerificationBesult = { status: "unverifiable", checks: [], verifiedAt: now() };
+      const result: VerificationResult = { status: "unverifiable", checks: [], verifiedAt: now() };
       work.verification = result;
       work.status = "unverifiable";
       work.events.push({ id: `evt_${Date.now()}`, type: "verification.completed", at: result.verifiedAt, message: "Verification status: unverifiable; no success criteria defined" });
@@ -37,12 +35,12 @@ export class VerificationEngine {
 
     const required = checks.filter((_, i) => work.contract.success[i]?.required);
     const passedRequired = required.filter(c => c.passed).length;
-    const status = required.length === 0
+    const status: VerificationResult["status"] = required.length === 0
       ? "unverifiable"
       : passedRequired === required.length
         ? "verified"
         : passedRequired > 0 ? "partial" : "failed";
-    const result: VerificationBesult = { status, checks, verifiedAt: now() };
+    const result: VerificationResult = { status, checks, verifiedAt: now() };
     work.verification = result;
     work.status = status;
     work.events.push({ id: `evt_${Date.now()}`, type: "verification.completed", at: result.verifiedAt, message: `Verification status: ${status}` });
