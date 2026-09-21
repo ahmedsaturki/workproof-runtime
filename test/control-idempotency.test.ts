@@ -145,7 +145,11 @@ test("concurrent control mutations with the same idempotency key execute only on
   const policy = addIssuedCredential(createAuthPolicy(), credential);
   let calls = 0;
   let releaseBarrier: (() => void) | undefined;
+  let markEntered: (() => void) | undefined;
 
+  const entered = new Promise<void>((resolve) => {
+    markEntered = resolve;
+  });
   const barrier = new Promise<void>((resolve) => {
     releaseBarrier = resolve;
   });
@@ -156,6 +160,7 @@ test("concurrent control mutations with the same idempotency key execute only on
     idempotencyDbPath: path.join(root, "control.sqlite"),
     dispatch: async (input) => {
       calls += 1;
+      markEntered?.();
       await barrier;
       const work = sampleWork(String(input.objective));
       repo.save(work);
@@ -177,7 +182,7 @@ test("concurrent control mutations with the same idempotency key execute only on
       body: JSON.stringify({ objective: "race" })
     });
 
-    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    await entered;
 
     const second = await fetch(url, {
       method: "POST",
