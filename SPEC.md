@@ -1,4 +1,4 @@
-# WorkProof Runtime Specification - v1.6-dev
+# WorkProof Runtime Specification - v1.9-dev
 
 ## 1. Purpose
 
@@ -55,17 +55,31 @@ Recovery rules:
 - ambiguous external effects must reconcile against external state before a blind retry.
 - ownership loss or stale-owner operations never establish verified success.
 
-## 7. Verification and Evidence
+## 7. Saga Recovery
+
+A persisted saga may be recovered independently of the original worker.
+
+Recovery rules:
+- a saga recovery lease is acquired before compensation execution.
+- an unexpired live recovery lease causes the replacement worker to remain in waiting state.
+- expired recovery ownership can be reaped and replaced by a new worker.
+- verified compensation effects are never replayed.
+- pending compensation effects are reconstructed from persisted operation, capability, input, risk, source-effect lineage, and idempotency identity.
+- ambiguous compensation acknowledgements reconcile against external state before another write.
+- if ownership moves during recovery, the stale worker stops before executing another compensation.
+- the recovering worker persists saga state and lineage after every compensation attempt.
+
+## 8. Verification and Evidence
 
 A verifier receives the Work Object, success criterion, and known evidence and returns criterion-specific status, details, and evidence references.
 
 Proof bundles identify the durable work, effects, artifacts, verification, and events. Canonical SHA-256 provides tamper-evident integrity. Ed25519 signatures can provide cryptographic authenticity under an embedded public key. Trust policy determines whether a signing identity is accepted.
 
-## 8. Persistence
+## 9. Persistence
 
 Work state, lease state, worker registration, vault indexes, trust snapshots, and lifecycle metadata use authoritative persistence where recovery or ownership depends on durable state.
 
-## 9. Proof Vault Lifecycle
+## 10. Proof Vault Lifecycle
 
 The proof vault stores content-addressed proof files and artifacts.
 
@@ -77,21 +91,27 @@ Retention classes:
 
 Explicit retention entries override the default class. Explicit pins create protected roots and may have an expiration. Namespace-scoped lifecycle operations are conservative: unscoped content is not deleted under a namespace filter.
 
-## 10. Reachability and Garbage Collection
+## 11. Reachability and Garbage Collection
 
 A retained proof is a root for every artifact reference stored in its vault index record. Explicitly retained or pinned artifacts are independently rooted.
 
 Collection uses a plan phase and a journaled execute phase. Age alone is never sufficient for deletion. Corrupt or unverified proof/artifact content is not automatically deleted.
 
-## 11. CLI Lifecycle Surface
+## 12. CLI Lifecycle Surface
 
 The CLI exposes work execution, proof inspection/verification, signer identity, registry operations, and proof-vault lifecycle operations.
 
-## 12. Non-goals
+## 13. Non-goals
 
 WorkProof is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, or distributed-consensus system.
 
-## 13. v1.6 Acceptance Target
+## 14. v1.9 Acceptance Target
+- durable saga recovery after worker loss
+- replacement ownership after expired recovery lease
+- verified compensation not replayed
+- pending compensation executes once in the controlled handoff path
+- ambiguous compensation reconciliation before retry
+- stale recovery worker cannot continue after lease ownership moves
 
 - persisted recoverable Work Object discovery
 - replacement-owner WorkEngine resume
