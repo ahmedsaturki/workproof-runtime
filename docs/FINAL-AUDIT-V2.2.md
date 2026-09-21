@@ -5,28 +5,49 @@ Date: 2026-09-21
 ## Release identity
 
 - v2.1 closeout commit: `459528427a5cd5c0cf0e70a1933a91613dcaf477`
-- v2.2 implementation branch: `feature/v2.2-proof-audit-studio`
-- Package version: `2.2.0-dev`
+- v2.2 implementation merge: `5deee742ad0b481ff4e55832b972706e84de3c01`
+- feature branch: `feature/v2.2-proof-audit-studio`
+- package version: `2.2.0-dev`
 
-## Verification scope
+## CI evidence
 
-The v2.2 branch adds retained proof and audit visibility on top of the verified v2.1 Studio control boundary.
+- Feature CI #582: **success** on final implementation head.
+- Merged-main CI #583: **success** on merge commit.
+- Required source tree: **123/123** verified.
+- Dependency security audit: success.
+- Chromium availability and CDP preflight: success.
+- TypeScript build: success.
+- Retention lifecycle suite: success.
+- Full unit/integration suite: success.
+- Benchmark: success.
+- Demo: success.
+- CLI proof verification: success.
+- CLI mission execution: success.
+- Live GitHub integration smoke: success.
 
-## Behavioral verification
+## v2.2 behavioral verification
 
 - Retained proof summaries are sourced from the authoritative proof-vault index.
 - Proof audit detail recomputes integrity from retained proof material.
-- Signature validity is recomputed from the retained proof and embedded public key.
+- Signature validity is recomputed independently.
 - Optional local trust state is evaluated through the existing trust-policy implementation.
 - Vault filesystem paths are omitted from Studio proof responses.
 - Corrupted retained proofs are surfaced as invalid rather than trusted.
-- Missing vault configuration returns a clear 503.
-- Proof and audit endpoints remain read-only.
-
-## Gate status
-
-The final feature and merged-main CI runs must verify the final branch state before this audit is marked closed.
+- Missing proof-vault configuration returns HTTP 503.
+- Proof and audit endpoints are read-only.
+- Existing v2.1 authenticated control remains delegated to the control plane.
+- Existing v2.0/v2.1 Studio behavior remains covered by the Studio test suite.
 
 ## Safety boundary
 
-Cryptographic validity, signer identity, and organizational trust remain separate controls. The proof/audit surface does not mutate the vault or trust policy.
+The proof/audit surface is read-only. Cryptographic validity, signer identity, and organizational trust remain separate controls.
+
+## Defects found and corrected
+
+- The initial v2.2 source audit failed correctly when newly referenced release-gate/audit documents were absent; both were added before acceptance.
+- CI then verified the resulting 123/123 source tree and complete integration pipeline.
+- No verification gate was bypassed for the final green result.
+
+## Closeout
+
+**v2.2-dev proof/audit Studio is implemented and independently verified on feature CI and merged-main CI.**
