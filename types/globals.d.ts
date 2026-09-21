@@ -10,7 +10,7 @@ declare const process: {
 };
 declare const Buffer: {
   from(input: string, encoding?: string): any;
-  byteLength(input: string): number;
+  byteLength(input: string, encoding?: string): number;
   concat(chunks: any[]): any;
 };
 declare function require(name: string): any;
