@@ -1,4 +1,4 @@
-# WorkProof Runtime Specification - v2.3-dev
+# WorkProof Runtime Specification - v2.4-dev
 
 ## 1. Purpose
 
@@ -63,7 +63,24 @@ Invalid keys are rejected at the control-plane boundary. Idempotency records con
 
 Control-plane idempotency is separate from external capability idempotency; it does not create exactly-once semantics for third-party systems.
 
-## 9. Studio
+## 9. Execution fencing
+
+An execution lease provides an `ExecutionFence` to the active capability.
+
+The fence contains:
+- resource identity
+- current lease identity
+- current revision
+- an opaque `leaseId:revision` token
+- an authoritative `assertOwned()` operation
+
+The token is dynamic across lease renewals while retaining the same lease identity. A takeover changes lease identity, causing the old fence assertion to fail.
+
+WorkEngine asserts the fence immediately before capability execution and again after execution. A post-execution fence failure converts the step to an unresolved state requiring reconciliation rather than silently accepting stale-worker work.
+
+Capability adapters may pass the token to an external system that supports conditional fencing. The runtime does not claim universal protection for systems that ignore the token.
+
+## 10. Studio
 
 The v2.3 Studio remains a local operational surface over persisted Work Objects with optional authenticated control delegation.
 
@@ -82,15 +99,15 @@ Optional control surface:
 
 Studio preserves the control-plane idempotency header when proxying replay responses, and its browser actions generate per-action keys.
 
-## 10. CLI Lifecycle Surface
+## 11. CLI Lifecycle Surface
 
 The CLI exposes work execution, proof inspection/verification, signer identity, registry operations, proof-vault lifecycle, and local Studio launch.
 
-## 11. Non-goals
+## 12. Non-goals
 
 WorkProof is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, or distributed-consensus system.
 
-## 12. v2.3 Acceptance Target
+## 13. v2.4 Acceptance Target
 
 - v2.2 behavior remains passing.
 - durable control mutation idempotency is enabled and tested.
@@ -106,4 +123,5 @@ WorkProof is not itself a generic agent framework, browser automation engine, wo
 - full integration suite
 - benchmark/demo/CLI verification
 - live GitHub smoke
+- multi-process stale-worker fencing regression
 - green feature CI and green merged-main CI
