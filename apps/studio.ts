@@ -3,6 +3,10 @@ const path = require("path");
 const fs = require("fs");
 const { URL } = require("url");
 const { JsonWorkRepository } = require("../packages/storage/src/json.js");
+const { listProofs } = require("../packages/evidence/src/vault.js");
+const { loadTrustPolicy, evaluateProofTrust } = require("../packages/evidence/src/trust.js");
+const { verifyProofIntegrity } = require("../packages/evidence/src/integrity.js");
+const { verifyProofSignature } = require("../packages/evidence/src/signature.js");
 
 const MAX_WORKS = 1000;
 const MAX_BODY_BYTES = 1024 * 1024;
@@ -12,6 +16,8 @@ export interface StudioOptions {
   host?: string;
   port?: number;
   controlPlaneUrl?: string;
+  vaultDirectory?: string;
+  trustPolicyPath?: string;
 }
 
 export interface RunningStudio {
@@ -189,6 +195,55 @@ async function forwardControl(
   };
 }
 
+function proofBundleFromFile(data: any): Record<string, unknown> {
+  return {
+    version: data.version,
+    work: data.work,
+    effects: data.effects,
+    sagas: data.sagas ?? [],
+    artifacts: data.artifacts,
+    verification: data.verification,
+    events: data.events
+  };
+}
+
+function proofAuditSummary(record: any, vaultDirectory: string, trustPolicyPath?: string): Record<string, unknown> {
+  const data = JSON.parse(fs.readFileSync(record.proofPath, "utf8"));
+  const integrity = Boolean(data.integrity && verifyProofIntegrity(proofBundleFromFile(data), data.integrity));
+  let signature: "verified" | "invalid" | "not-present" = "not-present";
+  let trust: string = "not-present";
+  if (data.signature) {
+    signature = verifyProofSignature(data, data.signature) ? "verified" : "invalid";
+    trust = trustPolicyPath
+      ? evaluateProofTrust(loadTrustPolicy(trustPolicyPath), data.signature)
+      : "unknown";
+  }
+  return {
+    digest: record.digest,
+    workId: record.workId,
+    signerKeyId: record.signerKeyId ?? null,
+    createdAt: record.createdAt,
+    publishedAt: record.publishedAt,
+    artifactCount: Object.keys(record.artifacts ?? {}).length,
+    integrity: integrity ? "verified" : "invalid",
+    signature,
+    trust,
+    verification: data.verification ? {
+      status: data.verification.status,
+      verifiedAt: data.verification.verifiedAt,
+      checks: Array.isArray(data.verification.checks)
+        ? data.verification.checks.map((check: any) => ({
+            criterion: check.criterion,
+            status: check.status,
+            details: check.details,
+            evidence: Array.isArray(check.evidence) ? check.evidence : []
+          }))
+        : []
+    } : null,
+    _vaultDirectory: vaultDirectory
+  };
+}
+
 function studioHtml(controlEnabled: boolean): string {
   return `<!doctype html>
 <html lang="en">
@@ -231,6 +286,10 @@ button { background: #21262d; color: #e6edf3; border: 1px solid #30363d; padding
 <button id="cancel">Cancel</button>
 </div>
 <pre id="payload"></pre>
+<section id="proofSection" hidden>
+<h3>Proof & audit</h3>
+<div id="proofs"></div>
+</section>
 </section>
 </main>
 <script>
@@ -242,6 +301,8 @@ const payload = document.getElementById("payload");
 const token = document.getElementById("token");
 const dispatchObjective = document.getElementById("dispatchObjective");
 const actionStatus = document.getElementById("actionStatus");
+const proofSection = document.getElementById("proofSection");
+const proofs = document.getElementById("proofs");
 let selectedId = null;
 
 function setActionStatus(message) {
@@ -265,6 +326,46 @@ async function control(route, body) {
 
 function esc(value) {
   return String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+async function loadProofs(workId) {
+  proofSection.hidden = false;
+  proofs.innerHTML = "<div class='card'>Loading proof audit…</div>";
+  const response = await fetch("/api/proofs?workId=" + encodeURIComponent(workId), {cache:"no-store"});
+  const data = await response.json();
+  if (response.status === 503) {
+    proofSection.hidden = true;
+    return;
+  }
+  if (!response.ok) throw new Error(data.error || "Failed to load proof audit");
+  proofs.innerHTML = "";
+  for (const proof of data.proofs) {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML =
+      "<div><span class='badge'>" + esc(proof.integrity) + "</span> " +
+      "<span class='badge'>" + esc(proof.signature) + "</span> " +
+      "<span class='badge'>" + esc(proof.trust) + "</span></div>" +
+      "<h4>" + esc(proof.digest) + "</h4>" +
+      "<small>published " + esc(proof.publishedAt) + " · artifacts " + proof.artifactCount + "</small>";
+    card.onclick = () => showProof(proof.digest);
+    proofs.appendChild(card);
+  }
+  if (!data.proofs.length) proofs.innerHTML = "<div class='card'>No retained proof found for this Work Object.</div>";
+}
+
+async function showProof(digest) {
+  const response = await fetch("/api/proof/" + encodeURIComponent(digest), {cache:"no-store"});
+  const data = await response.json();
+  if (!response.ok) { setActionStatus(data.error || "Failed to load proof audit."); return; }
+  const detailCard = document.createElement("article");
+  detailCard.className = "card";
+  detailCard.innerHTML = "<div><span class='badge'>" + esc(data.proof.integrity) + "</span> " +
+    "<span class='badge'>" + esc(data.proof.signature) + "</span> " +
+    "<span class='badge'>" + esc(data.proof.trust) + "</span></div>" +
+    "<h4>Proof " + esc(data.proof.digest) + "</h4>" +
+    "<pre>" + esc(JSON.stringify(data.proof, null, 2)) + "</pre>";
+  proofs.prepend(detailCard);
 }
 
 async function load() {
@@ -295,6 +396,7 @@ async function show(id) {
   meta.textContent = data.work.status + " · " + data.work.id;
   payload.textContent = JSON.stringify(data.work, null, 2);
   detail.hidden = false;
+  await loadProofs(id).catch(error => { proofSection.hidden = false; proofs.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
   window.scrollTo({top: document.body.scrollHeight, behavior:"smooth"});
 }
 
@@ -314,6 +416,7 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
   const workDirectory = path.resolve(options.workDirectory);
   const repository = new JsonWorkRepository(workDirectory);
   const configuredControlPlane = options.controlPlaneUrl ? controlBaseUrl(options.controlPlaneUrl) : undefined;
+  const vaultDirectory = options.vaultDirectory ? path.resolve(options.vaultDirectory) : undefined;
 
   const server = http.createServer(async (req: any, res: any) => {
     try {
@@ -321,7 +424,12 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
       const url = new URL(String(req.url ?? "/"), `http://${host}`);
 
       if (method === "GET" && url.pathname === "/health") {
-        sendJson(res, 200, { status: "ok", version: "2.1", mode: configuredControlPlane ? "authenticated-control" : "read-only" });
+        sendJson(res, 200, {
+          status: "ok",
+          version: "2.2",
+          mode: configuredControlPlane ? "authenticated-control" : "read-only",
+          proofVault: Boolean(vaultDirectory)
+        });
         return;
       }
 
@@ -383,6 +491,62 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
         return;
       }
 
+      if (method === "GET" && url.pathname === "/api/proofs") {
+        if (!vaultDirectory) {
+          sendJson(res, 503, { error: "proof-vault-not-configured" });
+          return;
+        }
+        const workId = url.searchParams.get("workId");
+        if (workId !== null && !isWorkId(workId)) {
+          sendJson(res, 400, { error: "invalid-work-id" });
+          return;
+        }
+        const records = listProofs(vaultDirectory)
+          .filter((record: any) => workId === null || record.workId === workId)
+          .slice(0, 100);
+        const proofs = records.map((record: any) => {
+          try {
+            return proofAuditSummary(record, vaultDirectory, options.trustPolicyPath);
+          } catch {
+            return {
+              digest: record.digest,
+              workId: record.workId,
+              signerKeyId: record.signerKeyId ?? null,
+              createdAt: record.createdAt,
+              publishedAt: record.publishedAt,
+              artifactCount: Object.keys(record.artifacts ?? {}).length,
+              integrity: "invalid",
+              signature: "invalid",
+              trust: "unknown",
+              verification: null
+            };
+          }
+        }).map((proof: any) => {
+          const { _vaultDirectory, ...publicProof } = proof;
+          return publicProof;
+        });
+        sendJson(res, 200, { version: "2.2", proofs });
+        return;
+      }
+
+      const proofMatch = /^\/api\/proof\/([0-9a-f]{64})$/.exec(url.pathname);
+      if (method === "GET" && proofMatch) {
+        if (!vaultDirectory) {
+          sendJson(res, 503, { error: "proof-vault-not-configured" });
+          return;
+        }
+        const digest = proofMatch[1];
+        const record = listProofs(vaultDirectory).find((item: any) => item.digest === digest);
+        if (!record) {
+          sendJson(res, 404, { error: "unknown-proof" });
+          return;
+        }
+        const proof = proofAuditSummary(record, vaultDirectory, options.trustPolicyPath);
+        const { _vaultDirectory, ...publicProof } = proof;
+        sendJson(res, 200, { version: "2.2", proof: publicProof });
+        return;
+      }
+
       const controlMatch = /^\/api\/control\/work\/([A-Za-z0-9._-]+)\/(cancel|resume)$/.exec(url.pathname);
       if (method === "POST" && controlMatch) {
         const workId = controlMatch[1];
@@ -431,7 +595,7 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
 const runtimeProcess = require("process");
 
 if (runtimeProcess.argv[1] && path.resolve(runtimeProcess.argv[1]) === path.resolve(__filename)) {
-  const [, , workDirectoryArg, portArg, hostArg, controlPlaneUrlArg] = process.argv;
+  const [, , workDirectoryArg, portArg, hostArg, controlPlaneUrlArg, vaultDirectoryArg, trustPolicyPathArg] = process.argv;
   const workDirectory = workDirectoryArg ?? "./work-runs";
   const port = portArg ? Number(portArg) : 8788;
   const host = hostArg ?? "127.0.0.1";
@@ -444,8 +608,9 @@ if (runtimeProcess.argv[1] && path.resolve(runtimeProcess.argv[1]) === path.reso
         process.stdout.write(JSON.stringify({
           studio: `http://${running.host}:${running.port}`,
           workDirectory: path.resolve(workDirectory),
-          version: "2.1",
-          mode: controlPlaneUrlArg ? "authenticated-control" : "read-only"
+          version: "2.2",
+          mode: controlPlaneUrlArg ? "authenticated-control" : "read-only",
+          proofVault: Boolean(vaultDirectoryArg)
         }, null, 2) + "\n");
       })
       .catch((error) => {
