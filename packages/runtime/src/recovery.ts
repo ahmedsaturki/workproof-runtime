@@ -48,11 +48,10 @@ export class WorkRecoveryCoordinator {
       .filter((id): id is string => Boolean(id))
       .map((workId) => {
         const work = this.repository.load(workId);
-        return {
-          workId,
-          status: work.status,
-          eligibility: recoverableStatuses.has(work.status) ? "recoverable" : "not_recoverable"
-        };
+        const eligibility: RecoveryEligibility = recoverableStatuses.has(work.status)
+          ? "recoverable"
+          : "not_recoverable";
+        return { workId, status: work.status, eligibility };
       })
       .filter((candidate) => candidate.eligibility === "recoverable")
       .sort((a, b) => a.workId.localeCompare(b.workId));
