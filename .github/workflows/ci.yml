@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: workproof-runtime-ci-${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Install Chromium for browser acceptance tests
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium
+      - run: npm install
+      - run: node scripts/verify-source-tree.js
+      - run: npm run check
+      - name: Live GitHub integration smoke
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: npm run live-github-smoke
