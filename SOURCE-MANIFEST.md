@@ -2,7 +2,17 @@
 
 ## Required source tree
 
-The verified v3.3 implementation tree contains **162 required paths** enforced by scripts/verify-source-tree.js. The final audit documentation adds one required path, bringing the closeout target to 163. Closeout CI #811 verified all 163 required paths.
+The v3.4 benchmark implementation tree contains 171 required paths enforced by scripts/verify-source-tree.js before final v3.4 audit closeout.
+
+V3.4 additions include:
+- docs/BENCHMARK-V3.md
+- docs/FINAL-AUDIT-V3.4.md
+- docs/RELEASE-GATE-V3.4.md
+- docs/packs/git-local-pack.json
+- lab/fixtures/git-local-pack.json
+- packages/packs/src/git-local-pack.ts
+- test/git-local-pack.test.ts
+- test/operator-benchmark.test.ts
 
 V3.3 additions include:
 - docs/FINAL-AUDIT-V3.3.md
@@ -33,6 +43,11 @@ V3.1 additions include:
 - local commit: 8cd9b7d841191b8a030bb462ac8dbd271f8259ca
 - tag: v0.4.0-dev
 - exact development bundle: workproof-runtime-v0.4.0-dev.bundle
+
+## V3.4 benchmark branch
+
+- feature branch: feature/v3.4-operator-benchmark
+- implementation and final CI evidence: pending
 
 ## Verified main
 
