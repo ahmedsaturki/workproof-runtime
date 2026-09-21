@@ -3,6 +3,7 @@ const test = require("node:test");
 const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
+const nodeExecutable = require("process").execPath;
 
 const { buildProofBundle } = require("../packages/evidence/src/bundle.js");
 const { buildIntegrityManifest } = require("../packages/evidence/src/integrity.js");
@@ -37,7 +38,7 @@ test("CLI verify accepts an intact proof and rejects a tampered proof bundle", (
   fs.writeFileSync(proofPath, JSON.stringify({ ...proof, integrity }, null, 2), "utf8");
 
   const cli = path.resolve("dist/packages/cli/src/index.js");
-  const valid = spawnSync(process.execPath, [cli, "verify", proofPath], { encoding: "utf8" });
+  const valid = spawnSync(nodeExecutable, [cli, "verify", proofPath], { encoding: "utf8" });
   assert.equal(valid.status, 0);
   assert.match(valid.stdout, /integrity=verified/);
   assert.match(valid.stdout, /status=verified/);
