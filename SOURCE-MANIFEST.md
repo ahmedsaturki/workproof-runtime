@@ -50,7 +50,7 @@ V3.1 additions include:
 - implementation merge commit: fe662d5bb5337bde18772f22864434935d59f66f
 - feature CI: #864
 - merged-main CI: #866
-- final documentation/source-tree closeout: pending
+- final documentation/source-tree closeout CI: #872 (success)
 
 ## v3.4 verified benchmark evidence
 

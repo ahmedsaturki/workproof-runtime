@@ -9,7 +9,8 @@ Date: 2026-09-21
 - Implementation merge: `fe662d5bb5337bde18772f22864434935d59f66f`
 - Feature CI: #864 (success)
 - Merged-main CI: #866 (success)
-- Final closeout commit: this documentation closeout commit (SHA recorded in Git history).
+- Final closeout commit: `b32913e033c178d15f170e004ef79dff9834911a`
+- Final documentation/source-tree closeout CI: #872 (success).
 
 ## Verification target
 
@@ -39,7 +40,7 @@ Date: 2026-09-21
 
 ## Status
 
-**v3.4 implementation is merged and functionally verified; final documentation/source-tree closeout is pending.**
+**v3.4 is fully verified through implementation, merge, benchmark, documentation, and source-tree closeout.**
 
 
 ## Recorded benchmark outcome

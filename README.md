@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.4-dev executable operator benchmark is merged and functionally verified on main; documentation closeout is in progress.**
+**v3.4-dev executable operator benchmark is fully verified on main, including documentation/source-tree closeout.**
 
 The v3.3 line adds a bounded, deterministic local messaging outbox without external SMTP delivery.
 

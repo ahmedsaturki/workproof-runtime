@@ -22,7 +22,7 @@ The v3.4 source-tree target is 171 required source paths before final closeout.
 - [x] Feature CI #864.
 - [x] PR #73 merge (`fe662d5bb5337bde18772f22864434935d59f66f`).
 - [x] Merged-main CI #866.
-- [x] Final documentation/source-tree closeout CI (this closeout commit; verification recorded by its green CI run).
+- [x] Final documentation/source-tree closeout CI #872.
 
 ## Verification rule
 

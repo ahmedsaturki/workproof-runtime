@@ -4,7 +4,7 @@ Date: 2026-09-21
 
 ## Current main
 
-**v3.4-dev executable operator benchmark is merged and functionally verified on main; documentation closeout is in progress.**
+**v3.4-dev executable operator benchmark is fully verified on main, including documentation/source-tree closeout.**
 
 v3.3 implementation main:
 c5e951056461c37f45bed8bb8406d119880d63df
