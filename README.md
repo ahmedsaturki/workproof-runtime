@@ -16,7 +16,9 @@ The proof boundary separates integrity, cryptographic signature, trust policy, d
 - `reconcileTrustPolicySnapshot` distinguishes accept, noop, conflict, rollback-required, untrusted-signer, and invalid.
 - `applyTrustPolicySnapshot` never silently replaces a newer epoch.
 - Administrative signer trust can be scoped per authenticated namespace; a key trusted in one namespace is not implicitly trusted in another.
-- The synchronization core is transport-independent and does not claim distributed consensus.
+- Registry clients validate trust-snapshot digest and cryptographic signature after transport rather than treating HTTP success as proof.
+- Trust snapshot records expose logical content identifiers rather than absolute server filesystem paths.
+- When the registry server is started with an admin-trust directory, namespaced credentials load `<namespace>.json` and unscoped credentials may use `global.json`.
 
 ## Security boundary
 
