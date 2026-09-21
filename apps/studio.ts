@@ -164,6 +164,14 @@ async function forwardControl(
   if (!token) return { status: 401, payload: { error: "unauthorized" } };
 
   const headers: Record<string, string> = { authorization: token };
+  const idempotencyKey = req.headers?.["idempotency-key"];
+  if (idempotencyKey !== undefined) {
+    const value = Array.isArray(idempotencyKey) ? idempotencyKey[0] : String(idempotencyKey);
+    if (!/^[A-Za-z0-9._~-]{1,200}$/.test(value)) {
+      return { status: 400, payload: { error: "invalid-idempotency-key" } };
+    }
+    headers["idempotency-key"] = value;
+  }
   if (body !== undefined) headers["content-type"] = "application/json";
   const response = await fetch(`${controlPlaneUrl}${route}`, {
     method: "POST",
@@ -314,7 +322,7 @@ async function control(route, body) {
   if (!value) { setActionStatus("Enter a control token."); return; }
   if (!selectedId && route !== "/api/control/dispatch") { setActionStatus("Select a Work Object first."); return; }
   setActionStatus("Sending…");
-  const headers = {"authorization":"Bearer " + value};
+  const headers = {"authorization":"Bearer " + value, "idempotency-key": crypto.randomUUID().replace(/-/g, "")};
   if (body !== undefined) headers["content-type"] = "application/json";
   const response = await fetch(route, {method:"POST", headers, body: body === undefined ? undefined : JSON.stringify(body)});
   const data = await response.json();
