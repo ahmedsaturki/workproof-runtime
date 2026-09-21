@@ -1,0 +1,86 @@
+name: Container
+
+on:
+  push:
+    branches:
+      - "release/**"
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: workproof-runtime-container-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - name: Determine image tag
+        id: image
+        shell: bash
+        run: echo "tag=${GITHUB_REF_NAME#release/}" >> "$GITHUB_OUTPUT"
+
+      - name: Build image
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          set -euo pipefail
+          IMAGE="${GITHUB_REPOSITORY,,}"
+          docker build --pull -t "ghcr.io/${IMAGE}:${IMAGE_TAG}" -t "ghcr.io/${IMAGE}:${GITHUB_SHA}" .
+
+      - name: Login to GHCR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "${GH_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
+
+      - name: Push image
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          set -euo pipefail
+          IMAGE="${GITHUB_REPOSITORY,,}"
+          docker push "ghcr.io/${IMAGE}:${IMAGE_TAG}"
+          docker push "ghcr.io/${IMAGE}:${GITHUB_SHA}"
+
+      - name: Runtime container smoke
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          set -euo pipefail
+          IMAGE="${GITHUB_REPOSITORY,,}"
+          NAME="workproof-runtime-smoke"
+          DATA_DIR="${RUNNER_TEMP}/workproof-runtime-data"
+          mkdir -p "${DATA_DIR}"
+          docker run -d --rm --name "${NAME}" -p 8788:8788 -v "${DATA_DIR}:/data/work-runs" "ghcr.io/${IMAGE}:${IMAGE_TAG}"
+
+          cleanup() {
+            docker logs "${NAME}" || true
+            docker stop "${NAME}" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8788/health | grep -q '"status":"ok"'; then
+              echo "container health verified"
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "container health check failed"
+          exit 1
+
+      - name: Record image digest
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          set -euo pipefail
+          IMAGE="${GITHUB_REPOSITORY,,}"
+          docker image inspect "ghcr.io/${IMAGE}:${IMAGE_TAG}" --format='{{index .RepoDigests 0}}'
