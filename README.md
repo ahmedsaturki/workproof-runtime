@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.3-dev local deterministic message outbox is implementation-verified on main; this commit is the documentation/source-tree closeout state.**
+**v3.3-dev local deterministic message outbox is fully verified on main, including documentation/source-tree closeout.**
 
 The v3.3 line adds a bounded, deterministic local messaging outbox without external SMTP delivery.
 
@@ -40,6 +40,7 @@ v1.0 through v3.2 remain verified foundations for proof registry/trust, retentio
 - Feature CI #808: success.
 - PR #71: merged.
 - Merged-main CI #809: success on `c5e951056461c37f45bed8bb8406d119880d63df`.
+- Documentation/source-tree closeout CI #811: success on the final closeout commit.
 - Source-tree audit on merged implementation: 162 required paths.
 - Dependency security audit: 0 vulnerabilities.
 - Chromium/CDP preflight: success.

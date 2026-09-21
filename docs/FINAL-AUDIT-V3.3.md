@@ -55,6 +55,7 @@ Date: 2026-09-21
 - CLI proof verification: success
 - CLI mission execution: success
 - Live GitHub integration smoke: success
+- Documentation/source-tree closeout CI #811: success
 
 ## Safety boundary
 
@@ -66,4 +67,4 @@ This audit document, the updated release gate, status, README, source manifest, 
 
 ## Status
 
-**v3.3 implementation verified on main; final documentation/source-tree closeout is the active recordkeeping gate.**
+**v3.3 fully verified on main, including final documentation/source-tree closeout.**

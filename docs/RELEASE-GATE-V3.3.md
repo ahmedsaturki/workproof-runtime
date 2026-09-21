@@ -19,7 +19,7 @@ Date: 2026-09-21
 - [x] Feature CI #808.
 - [x] PR #71 merged.
 - [x] Merged-main CI #809.
-- [x] Final documentation/source-tree closeout is validated by the CI run for this closeout commit.
+- [x] Final documentation/source-tree closeout CI #811.
 
 ## Safety boundary
 
@@ -27,4 +27,4 @@ This milestone never sends an external message. It creates a local `local_write`
 
 ## Milestone result
 
-**v3.3-dev local deterministic message outbox is implementation-verified on main; the closeout commit is the final recordkeeping gate.**
+**v3.3-dev local deterministic message outbox is fully closeout-verified on main.**
