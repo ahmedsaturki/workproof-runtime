@@ -91,7 +91,7 @@ test("authenticated control plane enforces read/write permissions and audits act
     assert.equal(resumed.status, "verified");
 
     await assert.rejects(
-      () => writer.cancel(created.id),
+      () => writer.cancel(work.id),
       /work-already-terminal/
     );
 
