@@ -70,7 +70,9 @@ test("Studio serves an operational dashboard and sanitized Work Object APIs", as
     assert.equal(page.status, 200);
     const html = await page.text();
     assert.match(html, /WorkProof Studio/);
-    assert.match(html, /content-security-policy/i);
+    assert.match(page.headers.get("content-security-policy") ?? "", /default-src 'self'/i);
+    assert.equal(page.headers.get("x-content-type-options"), "nosniff");
+    assert.equal(page.headers.get("cache-control"), "no-store");
 
     const list = await fetch(`${base}/api/work`);
     assert.equal(list.status, 200);
