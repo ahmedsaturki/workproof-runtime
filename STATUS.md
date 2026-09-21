@@ -4,16 +4,16 @@ Date: 2026-09-21
 
 ## Current main
 
-**v1.4 worker-ownership foundation is verified on main.**
+**v1.5 WorkEngine execution-lease integration is verified on main.**
 
 Main commit:
-8e5e5627a170e681105965dc4e9c6dbf50a74906
+b09fbf40489944b09dbcb33dda73ba0fcb57fb04
 
 Verification:
-- merged-main CI #379: success.
-- source audit: 96/96 required paths on the v1.4 foundation.
+- merged-main CI #410: success.
+- source audit: 101/101 required paths.
 - dependency security audit: success.
-- retention lifecycle suite: 9/9.
+- retention lifecycle suite: passed.
 - full sequential unit/integration suite: passed.
 - benchmark: passed.
 - demo: verified.
@@ -29,28 +29,23 @@ Verification:
 - [x] v1.3 retention/reachability/GC lifecycle.
 - [x] v1.3 browser acceptance reliability correction.
 - [x] v1.4 deterministic worker-ownership foundation.
+- [x] v1.4.1 persistent cross-process lease authority.
+- [x] v1.5 WorkEngine execution-lease binding.
 
 ## Current engineering gate
 
-**v1.4.1 — persistent cross-process ownership**
+**v1.6 — worker-loss recovery and authenticated control-plane foundation**
 
-Active branch:
-feature/v1.4-persistent-leases
+Parent issue:
+#26
 
-Implemented:
-- SQLite-backed persistent lease records.
-- Transactional cross-process acquisition using SQLite writer serialization.
-- Durable lease identity and revision semantics.
-- Persistent worker registration, heartbeat, offline state, and deterministic listing.
-- Cross-process integration probe using independent Node processes.
-
-Still pending:
-- merged-main verification for this gate.
-- Durable WorkEngine execution ownership integration.
-- Worker-loss reconciliation.
-- Authenticated control-plane dispatch.
-- SDK-level Work Object/proof operations.
-- Saga/compensation primitives.
+Next acceptance targets:
+- durable Work Object reload after worker loss.
+- deterministic lease-expiry recovery without duplicate external effects.
+- authenticated control-plane dispatch primitives.
+- SDK round-trip preservation of Work Object and proof semantics.
+- explicit saga/compensation primitives.
+- complete CI and live integration verification.
 
 ## Verification rule
 
