@@ -2,9 +2,10 @@
 
 ## Required source tree
 
-The v0.5 development branch contains 58 required paths enforced by scripts/verify-source-tree.js.
+The verified main v0.5-dev source tree contains **59 required paths** enforced by scripts/verify-source-tree.js.
 
-The additional v0.5 paths include:
+V0.5 additions include:
+- docs/FINAL-AUDIT-V0.5.md
 - docs/packs/github-pack.json
 - docs/RELEASE-GATE-V0.5.md
 - packages/evidence/src/integrity.ts
@@ -17,12 +18,11 @@ The additional v0.5 paths include:
 - tag: v0.4.0-dev
 - exact development bundle: workproof-runtime-v0.4.0-dev.bundle
 
-## Remote branches
+## Verified main
 
-- main: v0.4 verified baseline at e28aed00dd75e4633ec63429cde590dd49a44892
-- feature/v0.5-github-integration: v0.5 integration work
-
-Remote history was reconstructed from verified source content through GitHub commits; it is not byte-identical to the local Git object database.
+- commit: d9af0d9358e3ceae4468bdf546f1990353feb7bb
+- CI run: #34
+- result: source audit + strict build + 28/28 tests + benchmark + demo + CLI + live GitHub read smoke all passed
 
 ## Verification discipline
 

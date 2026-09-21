@@ -1,38 +1,47 @@
-# Release Gate v0.5-dev - Real Integration and External-Effect Safety
+# Release Gate v0.5-dev - Verified Integration Milestone
 
 Date: 2026-09-21
 
-## Scope
-
-This gate moves WorkProof Runtime beyond purely local adapters and proves that external integration semantics survive realistic failures.
-
-## Acceptance gates
+## Verified on merged main
 
 ### Integration
 - [x] GitHub REST repository read capability.
 - [x] Independent repository-state verifier.
 - [x] GitHub Actions live smoke against the real repository.
 
-### External write safety
-- [x] GitHub issue creation capability declared as external_write.
+### External-write safety
+- [x] GitHub issue creation declared as external_write.
 - [x] Runtime approval gate blocks execution before the POST.
 - [x] Deterministic idempotency marker is mandatory.
-- [x] Lost acknowledgement is reconciled from external state before retry.
+- [x] Lost acknowledgement reconciles from external state before retry.
 - [x] Local fault injection proves one POST produces one issue.
-- [x] Two independent external systems can each reconcile a lost acknowledgement without duplicate writes.
+- [x] Two independent systems each reconcile a lost acknowledgement without duplicate writes.
+- [x] Persisted acknowledged effects are not re-executed after resume.
+- [x] External inputs are validated before network access.
 
 ### Proof
-- [x] Evidence references are emitted for the resulting GitHub issue.
-- [x] Proof bundle can be canonically hashed with SHA-256.
+- [x] Evidence references are emitted for resulting external state.
+- [x] Proof bundles can be canonically hashed with SHA-256.
 - [x] Tampered proof content fails digest verification.
-- [x] GitHub pack compatibility is declared in a manifest and exercised by tests.
+- [x] Pack compatibility is declared and exercised by fixtures.
 
-### Remaining for milestone closure
-- [ ] Reusable compensation/saga primitives.
-- [ ] Real browser navigation where environment policy permits it.
-- [ ] Worker/process boundary tests.
-- [ ] Final release audit on the merged main branch.
+### Main verification
+- [x] Merged main CI run #34 passed.
+- [x] 28/28 automated tests passed.
+- [x] benchmark passed.
+- [x] demo and CLI proof/mission checks passed.
+- [x] live GitHub read-only smoke passed.
 
-## Release rule
+## Explicit limits
 
-The presence of a successful API receipt alone never closes an external-work item. The final Work Object must have independent verification evidence matching its success criteria.
+- Marker-based GitHub idempotency is reconciliation-based, not an atomic exactly-once guarantee for concurrent independent writers.
+- SHA-256 integrity is not a digital signature.
+- CI does not perform an irreversible live third-party write.
+- Local browser acceptance does not establish external-site browser coverage.
+- General saga/compensation, remote workers, control plane, Studio/API/SDK, and marketplace/registry are not part of this milestone.
+
+## Milestone result
+
+**v0.5-dev integration milestone: verified.**
+
+This is a development milestone, not a claim of full production readiness.

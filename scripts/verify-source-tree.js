@@ -17,6 +17,7 @@ const required = [
   "docs/ECOSYSTEM-ROADMAP-V2.md",
   "docs/EXTENSION-CONTRACT.md",
   "docs/FINAL-AUDIT-V0.4.md",
+  "docs/FINAL-AUDIT-V0.5.md",
   "docs/OPERATING-MODEL.md",
   "docs/PRODUCT-DIRECTION-V10.md",
   "docs/PRODUCT-DIRECTION-V9.md",

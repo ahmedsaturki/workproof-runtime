@@ -2,41 +2,47 @@
 
 Outcome-first digital work runtime: execute real work, reconcile external effects, verify outcomes, and preserve proof.
 
-## Development status
+## Current status
 
-The v0.5-dev integration branch is being hardened on top of the verified v0.4 baseline.
+**v0.5-dev integration milestone is verified on main.**
 
-The stable main baseline remains the verified v0.4 development kernel. The branch feature/v0.5-github-integration adds the first live third-party integration and the controlled external-write path.
+The runtime now has a real third-party read integration plus a controlled external-write path, with approval, reconciliation, independent verification, proof integrity, cross-system fault injection, and persisted-effect resume protection.
 
 ## Core loop
 
 Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify -> Recover/Substitute -> Deliver -> Proof
 
-## Current v0.5 work
+## Verified v0.5 scope
 
-- GitHub REST repository read capability
-- independent GitHub repository verifier
-- GitHub issue creation capability with explicit external_write risk
-- deterministic idempotency markers for issue creation
-- local lost-acknowledgement GitHub-shaped fault injection
-- proof-bundle SHA-256 integrity manifest
-- pack compatibility manifest
-- effect operation context
+- GitHub REST repository read + independent verifier.
+- GitHub issue creation declared as external_write.
+- Human approval enforced before external-write execution.
+- Deterministic idempotency marker with pre-write reconciliation.
+- Lost-acknowledgement test proves one POST produces one issue.
+- Two independent external systems reconcile ambiguous writes without duplicate writes.
+- Persisted acknowledged effects are skipped on resume instead of being re-executed.
+- Proof bundles support canonical SHA-256 integrity verification.
+- GitHub pack compatibility is declared and tested.
+- GitHub inputs are validated before network access.
 
-## Verified baseline
+## CI evidence
 
-The v0.4 baseline previously passed 22/22 automated tests, benchmark and demo checks, CLI proof verification, controlled Chromium/CDP acceptance, HTTP/publication reconciliation, capability substitution, risk/approval enforcement, and persistence/reload.
+Main run #34 passed the complete verification pipeline: source-tree audit, strict TypeScript build, 28/28 tests, benchmark, demo, CLI proof/mission, and live read-only GitHub smoke.
 
-## Safety rule
+## Safety boundary
 
-A capability response is a receipt, not proof of the final outcome. External side effects require independent state verification or reconciliation.
+A capability receipt is not proof of the final outcome. External side effects require independent state verification or reconciliation.
+
+GitHub issue idempotency is deliberately marker/reconciliation-based. It must not be described as an atomic exactly-once guarantee across concurrent workers.
+
+SHA-256 integrity is tamper-evident metadata, not a cryptographic signature.
 
 ## Product boundary
 
-WorkProof Runtime is not a replacement for agents, browsers, workflow engines, MCP registries, memory systems, or observability platforms. Those may be connected through adapters while the Work Object, effect, verification, recovery, and proof semantics remain invariant.
+WorkProof Runtime is not a replacement for agents, browsers, workflow engines, MCP registries, memory systems, or observability platforms. Those systems can be integrated as adapters while the Work Object, effect, verification, recovery, and proof semantics remain invariant.
 
-## Roadmap
+## Next engineering gates
 
-Next engineering gates are two-system fault injection, broader external verifiers, stronger artifact lineage, worker boundaries, and user-facing Studio/API surfaces.
+General compensation/saga primitives, environment-permitted external browser navigation, worker/process boundaries, remote control-plane/API/SDK surfaces, and a user-facing Studio remain separate milestones.
 
 This repository does not make a global novelty claim.
