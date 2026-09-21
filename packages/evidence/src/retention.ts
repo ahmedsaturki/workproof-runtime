@@ -322,10 +322,17 @@ export function executeGarbageCollection(vaultDir: string, options: { namespace?
   const journal = journalPath(vaultDir);
   atomicWrite(journal, JSON.stringify({ version: "0.1", phase: "planned", plan }, null, 2) + "\n");
   const index = loadVaultIndex(vaultDir);
+  const retention = ensureRetentionIndex(vaultDir);
+  const deletedKeys = new Set(plan.candidates.map((item) => item.kind + ":" + item.digest));
   const proofDigests = new Set(plan.candidates.filter((item) => item.kind === "proof").map((item) => item.digest));
   if (proofDigests.size) {
     index.records = index.records.filter((record: any) => !proofDigests.has(record.digest));
     saveVaultIndex(vaultDir, index);
+  }
+  if (deletedKeys.size) {
+    retention.entries = retention.entries.filter((entry) => !deletedKeys.has(entry.kind + ":" + entry.digest));
+    retention.pins = retention.pins.filter((pin) => !deletedKeys.has(pin.kind + ":" + pin.digest));
+    saveRetentionIndex(vaultDir, retention);
   }
   atomicWrite(journal, JSON.stringify({ version: "0.1", phase: "index-updated", plan }, null, 2) + "\n");
   let deleted = 0;
