@@ -48,10 +48,7 @@ test("dry-run reports an expired proof and orphan artifact without deleting data
   const p = writeProof(dir, "expire");
   const vault = path.join(dir, "vault");
   const record = publishProof(p.proofPath, vault);
-  const index = loadVaultIndex(vault);
-  index.records[0].publishedAt = "2025-01-01T00:00:00.000Z";
-  saveVaultIndex(vault, index);
-  const plan = planGarbageCollection(vault);
+  const plan = planGarbageCollection(vault, { asOf: "2026-12-31T00:00:00.000Z" });
   assert.ok(plan.candidates.some((x: any) => x.kind === "proof" && x.digest === record.digest && x.reason === "expired"));
   assert.ok(plan.candidates.some((x: any) => x.kind === "artifact" && x.reason === "orphan"));
   assert.equal(fs.existsSync(record.proofPath), true);
@@ -63,13 +60,11 @@ test("pin and unpin change reachability deterministically", () => {
   const p = writeProof(dir, "pin");
   const vault = path.join(dir, "vault");
   const record = publishProof(p.proofPath, vault);
-  const index = loadVaultIndex(vault);
-  index.records[0].publishedAt = "2025-01-01T00:00:00.000Z";
-  saveVaultIndex(vault, index);
+  setRetentionClass(vault, record.digest, "proof", "ephemeral", "alpha");
   pinRetention(vault, record.digest, "proof", "legal hold", "alpha");
-  assert.equal(planGarbageCollection(vault, { namespace: "alpha" }).candidates.length, 0);
+  assert.equal(planGarbageCollection(vault, { namespace: "alpha", asOf: "2026-12-31T00:00:00.000Z" }).candidates.length, 0);
   assert.equal(unpinRetention(vault, record.digest, "proof"), true);
-  assert.ok(planGarbageCollection(vault, { namespace: "alpha" }).candidates.length >= 1);
+  assert.ok(planGarbageCollection(vault, { namespace: "alpha", asOf: "2026-12-31T00:00:00.000Z" }).candidates.length >= 1);
 });
 
 test("shared artifacts remain reachable while one proof is retained", () => {
@@ -119,10 +114,12 @@ test("execute garbage collection uses an index-first journal and removes expired
   const p = writeProof(dir, "delete");
   const vault = path.join(dir, "vault");
   const record = publishProof(p.proofPath, vault);
-  const index = loadVaultIndex(vault);
-  index.records[0].publishedAt = "2025-01-01T00:00:00.000Z";
-  saveVaultIndex(vault, index);
-  const result = executeGarbageCollection(vault);
+  setRetentionClass(vault, record.digest, "proof", "ephemeral");
+  const retention = require("../packages/evidence/src/retention.js");
+  const retentionIndex = JSON.parse(fs.readFileSync(path.join(vault, "retention.json"), "utf8"));
+  retentionIndex.entries[0].createdAt = "2025-01-01T00:00:00.000Z";
+  fs.writeFileSync(path.join(vault, "retention.json"), JSON.stringify(retentionIndex, null, 2), "utf8");
+  const result = retention.executeGarbageCollection(vault, { asOf: "2026-12-31T00:00:00.000Z" });
   assert.equal(result.executed, true);
   assert.ok(result.deleted >= 1);
   assert.equal(fs.existsSync(record.proofPath), false);
@@ -164,11 +161,8 @@ test("namespace scoped collection is conservative and does not delete unscoped o
   const p = writeProof(dir, "namespace");
   const vault = path.join(dir, "vault");
   const record = publishProof(p.proofPath, vault);
-  const index = loadVaultIndex(vault);
-  index.records[0].publishedAt = "2025-01-01T00:00:00.000Z";
-  saveVaultIndex(vault, index);
   setRetentionClass(vault, record.digest, "proof", "ephemeral");
-  const plan = planGarbageCollection(vault, { namespace: "alpha" });
+  const plan = planGarbageCollection(vault, { namespace: "alpha", asOf: "2026-12-31T00:00:00.000Z" });
   assert.equal(plan.candidates.some((x: any) => x.digest === record.digest), false);
 });
 
