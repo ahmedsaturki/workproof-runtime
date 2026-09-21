@@ -7,7 +7,11 @@ Date: 2026-09-21
 v0.5-dev integration milestone is verified on main.
 
 Verified main commit:
-d9af0d9358e3ceae4468bdf546f1990353feb7bb
+e3010a83513ec25806cd9524481a2cca6dd5bbf2
+
+Latest main CI:
+- run #35: success
+- run #34: success
 
 ## Active next branch
 
@@ -17,6 +21,7 @@ Target:
 - user-facing proof integrity validation in workctl
 - tamper detection with dedicated exit code
 - backward compatibility for proofs without integrity manifests
+- metadata validation for proof integrity manifests
 
 ## Verified v0.5 main gates
 
