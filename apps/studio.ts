@@ -696,6 +696,10 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
 
       if (method === "GET" && url.pathname === "/api/work") {
         const query = (url.searchParams.get("q") ?? "").trim().toLowerCase();
+        if (query.length > 200) {
+          sendJson(res, 400, { error: "query-too-long" });
+          return;
+        }
         const status = (url.searchParams.get("status") ?? "").trim();
         const risk = (url.searchParams.get("risk") ?? "").trim();
         const limitRaw = url.searchParams.get("limit");
@@ -741,7 +745,10 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
             // A corrupt individual Work Object is omitted from the dashboard list.
           }
         }
-        matched.sort((a: any, b: any) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+        matched.sort((a: any, b: any) => {
+          const byUpdated = String(b.updatedAt).localeCompare(String(a.updatedAt));
+          return byUpdated || String(a.id).localeCompare(String(b.id));
+        });
         const byStatus: Record<string, number> = {};
         const byRisk: Record<string, number> = {};
         for (const item of matched) {
