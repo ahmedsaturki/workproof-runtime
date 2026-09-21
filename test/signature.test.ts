@@ -53,6 +53,10 @@ test("CLI keygen, sign, and verify establish self-contained proof identity", () 
   assert.ok(fs.existsSync(publicPath));
   assert.equal(fs.statSync(privatePath).mode & 0o777, 0o600);
 
+  const overwrite = runCli("keygen", privatePath, publicPath);
+  assert.equal(overwrite.status, 1);
+  assert.match(overwrite.stderr, /Refusing to overwrite an existing key file/);
+
   const signing = runCli("sign", proofPath, privatePath);
   assert.equal(signing.status, 0);
   assert.match(signing.stdout, /"status": "signed"/);
