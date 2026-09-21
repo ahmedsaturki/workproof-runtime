@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 const fs = require("fs");
 
-export type RegistryPermission = "read" | "write";
+export type RegistryPermission = "read" | "write" | "trust";
 
 export interface RegistryCredential {
   version: "0.1";
@@ -70,7 +70,7 @@ export function issueCredential(args: {
 }): IssuedCredential {
   if (!validId(args.id)) throw new Error("Invalid registry credential ID");
   const permissions = [...new Set(args.permissions)];
-  if (!permissions.length || permissions.some((p) => p !== "read" && p !== "write")) {
+  if (!permissions.length || permissions.some((p) => p !== "read" && p !== "write" && p !== "trust")) {
     throw new Error("Registry credential requires valid permissions");
   }
   const namespace = args.namespace === undefined ? undefined : validateNamespace(args.namespace);
@@ -101,7 +101,7 @@ export function validateAuthPolicy(policy: RegistryAuthPolicy): RegistryAuthPoli
       !/^[0-9a-f]{64}$/.test(credential.secretHash) ||
       !Array.isArray(credential.permissions) ||
       credential.permissions.length < 1 ||
-      credential.permissions.some((p: unknown) => p !== "read" && p !== "write") ||
+      credential.permissions.some((p: unknown) => p !== "read" && p !== "write" && p !== "trust") ||
       (credential.namespace !== undefined && validateNamespace(credential.namespace) !== credential.namespace) ||
       typeof credential.createdAt !== "string"
     ) {
