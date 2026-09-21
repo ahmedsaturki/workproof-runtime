@@ -10,6 +10,7 @@ const { registerWebDiscoveryPack } = require("../../packs/src/web-discovery-pack
 const { registerPublicationPack } = require("../../packs/src/publication-pack.js");
 const { registerLocalBrowserPack } = require("../../packs/src/browser-local-pack.js");
 const { registerSQLitePack } = require("../../packs/src/sqlite-pack.js");
+const { registerDataTransformPack } = require("../../packs/src/data-transform-pack.js");
 const { buildProofBundle } = require("../../evidence/src/bundle.js");
 const { buildIntegrityManifest, verifyProofIntegrity } = require("../../evidence/src/integrity.js");
 const { generateProofKeyPair, signProof, verifyProofSignature, proofKeyId } = require("../../evidence/src/signature.js");
@@ -258,6 +259,7 @@ async function runMission(file: string): Promise<void> {
   registerPublicationPack(registry, verification);
   registerLocalBrowserPack(registry, verification);
   registerSQLitePack(registry, verification);
+  registerDataTransformPack(registry, verification);
   const work = store.create({
     objective: spec.objective,
     inputs: spec.inputs ?? {},
