@@ -44,5 +44,14 @@ export function buildIntegrityManifest(work: WorkObject): ProofIntegrityManifest
 }
 
 export function verifyProofIntegrity(bundle: Record<string, unknown>, manifest: ProofIntegrityManifest): boolean {
-  return digestProofBundle(bundle) === manifest.digest;
+  const workId = (bundle.work as Record<string, unknown> | undefined)?.id;
+  return (
+    manifest?.version === "0.1" &&
+    manifest?.algorithm === "sha256" &&
+    typeof manifest?.workId === "string" &&
+    typeof manifest?.digest === "string" &&
+    /^[0-9a-f]{64}$/.test(manifest.digest) &&
+    manifest.workId === workId &&
+    digestProofBundle(bundle) === manifest.digest
+  );
 }
