@@ -130,7 +130,7 @@ if (!command) {
     } else if (command === "summarize") {
       process.stdout.write(`${data.work.status}: ${data.work.objective}\nEffects: ${data.effects.length}\nArtifacts: ${data.artifacts.length}\nEvents: ${data.events.length}\n`);
     } else if (command === "verify") {
-      const status = data.verification?.status ?? "unverified";
+      const status = data.work?.status ?? data.verification?.status ?? "unverified";
       let exitCode = 0;
       if (data.integrity) {
         const valid = verifyProofIntegrity(proofBundleFromFile(data), data.integrity);
