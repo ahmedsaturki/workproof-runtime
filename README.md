@@ -40,28 +40,36 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 ## v2.9 operational work filtering
 
 - `GET /api/work` supports bounded free-text search by Work Object ID or objective.
-- `GET /api/work` supports explicit status and risk filters.
+- `GET /api/work` supports exact status and risk filters.
 - `GET /api/work` enforces a maximum result limit.
+- Search input is bounded to 200 characters.
 - Invalid filter inputs fail closed with HTTP 400.
 - The API returns deterministic `total`, `byStatus`, and `byRisk` counts for the matched set.
+- Matching results are deterministically ordered by updated timestamp and Work Object ID.
 - Studio exposes search, status, risk, and limit controls and renders summary cards from the filtered result set.
-- Query length is bounded and result ordering is stabilized by timestamp plus Work Object ID.
 - Filtering never mutates a Work Object and never bypasses authorization, lease, proof, or control-plane semantics.
 
 ## v2.9 verification evidence
 
-- source-tree audit: 142/142
-- dependency security audit: 0 vulnerabilities
-- Chromium/CDP preflight: success
-- strict TypeScript build: success
-- retention lifecycle: success
-- full unit/integration suite: success
-- benchmark: success
-- demo: success
-- CLI proof verification: success
-- CLI mission execution: success
-- live GitHub smoke: success
-- merged-main CI #751: success
+- v2.9 feature/PR CI #750: success.
+- v2.9 merged-main CI #751: success for the merged implementation.
+- CI preflight hardening PR #63 CI #760: success.
+- Final merged-main CI #761: success after the hardening was merged.
+- source-tree audit: 143/143.
+- dependency security audit: 0 vulnerabilities.
+- Chromium/CDP preflight: success.
+- strict TypeScript build: success.
+- retention lifecycle: success.
+- full unit/integration suite: success.
+- benchmark: success.
+- demo: success.
+- CLI proof verification: success.
+- CLI mission execution: success.
+- live GitHub smoke: success.
+
+## CI reliability hardening
+
+The final v2.9 main line runs the Chromium CDP preflight with an explicit headless Linux D-Bus-safe environment instead of relying on runner session state. This was independently exercised by PR #63 and merged-main CI #761.
 
 ## Safety boundary
 
