@@ -2,12 +2,12 @@
 
 ## Required source tree
 
-The v1.3 browser-reliability patch contains **94 required paths** enforced by scripts/verify-source-tree.js.
+The v1.3 browser-reliability patch contains **93 required paths** enforced by scripts/verify-source-tree.js.
 
 V1.2 additions include:
 
 V1.3 additions include:
-- scripts/chromium-cdp-smoke.js
+- scripts/chromium-cdp-smoke.js (operational CI preflight; not part of the required source-path list)
 - docs/RELEASE-GATE-V1.3.md
 - packages/evidence/src/retention.ts
 - test/retention.test.ts
