@@ -6,7 +6,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 **v0.7-dev signed-proof identity is verified on `main`.**
 
-The runtime now carries the user-facing v0.6 proof integrity CLI plus self-contained Ed25519 proof signatures. Proof files can be signed with a generated key pair and independently verified without contacting a remote service.
+The runtime now carries the user-facing v0.6 proof integrity CLI plus self-contained Ed25519 proof signatures. Proof files can be signed with a generated key pair and independently verified without contacting a remote service. The current `main` HEAD adds documentation-only finalization on top of the verified v0.7 runtime.
 
 ## Core loop
 

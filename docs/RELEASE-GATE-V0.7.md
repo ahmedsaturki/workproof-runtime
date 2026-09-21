@@ -35,4 +35,4 @@ The CLI currently emits PKCS#8 PEM private keys with owner-only file permissions
 
 ## Milestone result
 
-The v0.7-dev signed-proof milestone is verified on main. The next trust-policy work is tracked separately in issue #6.
+The v0.7-dev signed-proof milestone is verified on main. The current `main` HEAD contains documentation-only finalization on top of the verified runtime commit. The next trust-policy work is tracked separately in issue #6.

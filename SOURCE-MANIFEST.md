@@ -25,6 +25,7 @@ V0.7 additions:
 - v0.7 feature CI run: #70
 - v0.7 merged-main CI run: #71
 - result: source audit + strict build + 33/33 tests + benchmark + demo + CLI + browser/HTTP/publication/recovery paths + live GitHub read smoke all passed
+- current `main` HEAD is documentation-only finalization on top of the verified runtime commit
 
 ## Verification discipline
 

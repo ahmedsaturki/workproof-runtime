@@ -6,11 +6,10 @@ Date: 2026-09-21
 
 v0.7-dev signed-proof identity is verified on main.
 
-Verified main commit:
+Verified v0.7 runtime commit:
 e4f3711861e31cec3fff923be3fbba045d3487f5
 
-Latest main CI:
-- run #71: success
+Current `main` adds documentation-only finalization on top of that runtime. The final HEAD is accepted only when its own CI passes.
 
 ## Verified v0.7 gates
 
@@ -55,9 +54,9 @@ Open issue #6 covers v0.8 trusted proof identities and key lifecycle policy:
 - final merged-main CI run #55: success
 
 ### v0.7
-- merged main commit: e4f3711861e31cec3fff923be3fbba045d3487f5
+- merged runtime commit: e4f3711861e31cec3fff923be3fbba045d3487f5
 - feature CI run #70: success
-- final merged-main CI run #71: success
+- merged-main CI run #71: success
 - checkpoint branch: checkpoint/v0.7-signed-proof-verified
 
 ## Verification rule
