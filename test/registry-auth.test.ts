@@ -38,8 +38,8 @@ function request(port: number, method: string, requestPath: string, body?: unkno
         ...(payload === undefined ? {} : { "content-type": "application/json", "content-length": Buffer.byteLength(payload) }),
         ...(token ? { authorization: `Bearer ${token}` } : {})
       }
-    }, (res) => {
-      const chunks = [];
+    }, (res: any) => {
+      const chunks: any[] = [];
       res.on("data", (chunk: any) => chunks.push(chunk));
       res.on("end", () => resolve({
         status: res.statusCode,
