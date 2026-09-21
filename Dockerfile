@@ -20,8 +20,7 @@ WORKDIR /app
 ENV NODE_ENV=production     HOST=0.0.0.0     PORT=8788     WORK_DIRECTORY=/data/work-runs
 
 COPY --from=build /app/package.json ./package.json
-COPY --from=build /app/LICENSE ./LICENSE
-COPY --from=build /app/README.md ./README.md
+COPY README.md LICENSE ./
 COPY --from=build /app/dist ./dist
 
 RUN useradd --system --create-home --uid 10001 workproof     && mkdir -p /data/work-runs     && chown -R workproof:workproof /app /data
