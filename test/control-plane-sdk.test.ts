@@ -90,6 +90,11 @@ test("authenticated control plane enforces read/write permissions and audits act
     const resumed = await writer.resume(work.id);
     assert.equal(resumed.status, "verified");
 
+    await assert.rejects(
+      () => writer.cancel(created.id),
+      /work-already-terminal/
+    );
+
     const audit = fs.readFileSync(auditPath, "utf8").trim().split("\n").map((line: string): Record<string, any> => JSON.parse(line));
     assert.ok(audit.some((entry: Record<string, any>) => entry.reason === "permission-denied"));
     assert.ok(audit.some((entry: Record<string, any>) => entry.action === "dispatch"));
