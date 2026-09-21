@@ -28,8 +28,8 @@ function resolveAdminTrust(authPolicy: any, trustPathArg?: string): {
   const namespaces = [...new Set(
     (authPolicy?.credentials ?? [])
       .map((credential: any) => credential.namespace)
-      .filter((namespace: unknown): namespace is string => typeof namespace === "string")
-  )];
+      .filter((namespace: unknown) => typeof namespace === "string")
+  )] as string[];
 
   for (const namespace of namespaces) {
     validateNamespace(namespace);
