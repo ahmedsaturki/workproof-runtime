@@ -4,62 +4,50 @@ Date: 2026-09-21
 
 ## Current main
 
-**v2.1-dev authenticated Studio control is verified on main.**
+**v2.2-dev proof/audit Studio is verified on main.**
 
-Latest v1.9 implementation merge:
-f0173fd9c0603fd1fa58ea6f722486f52a04f932
+Latest v2.2 proof/audit Studio merge:
+5deee742ad0b481ff4e55832b972706e84de3c01
 
-Latest v1.9 documentation closeout:
-a9265bb8ff61db21627bb92a52cbad8aeffe8e50
+Latest v2.2 feature CI:
+- CI #582: success.
 
-Latest v2.0 Studio merge:
-0e29eb04addea53ae399887612314bd49ffa341a
+Latest v2.2 merged-main CI:
+- CI #583: success.
 
-Latest v2.1 Studio control merge:
-afe1e93497b01ce61c767a53f1a75e8e1d37b366
+## Verified v2.2 gates
 
-Latest v2.0 merged-main CI:
-- CI #550: success.
-
-Latest v2.1 feature CI:
-- CI #568: success.
-
-Latest v2.1 merged-main CI:
-- CI #569: success.
-
-v2.1 closeout CI #570: success.
-
-## Verified v2.1 gates
-
-- [x] v2.0 read-only Studio behavior remains intact.
-- [x] authenticated dispatch delegation
-- [x] authenticated cancel delegation
-- [x] authenticated resume delegation
-- [x] read-only credentials cannot mutate
-- [x] missing credentials cannot mutate
-- [x] mutation responses are sanitized
-- [x] control-plane audit remains authoritative
-- [x] feature CI #568
-- [x] merged-main CI #569
+- [x] retained proof summaries from authoritative proof vault
+- [x] proof integrity recomputation
+- [x] independent signature verification
+- [x] optional local trust-policy evaluation
+- [x] vault filesystem path isolation
+- [x] corrupted-proof fail-closed behavior
+- [x] read-only proof/audit endpoints
+- [x] missing-vault 503 behavior
+- [x] v2.1 Studio control remains intact
+- [x] feature CI #582
+- [x] merged-main CI #583
 
 ## Verified broader platform gates
 
 - [x] proof registry and authenticated registry transport
-- [x] trusted signer policy and synchronization
+- [x] signed proof identity and trusted signer policy
 - [x] proof-vault retention, reachability, and GC lifecycle
 - [x] persistent execution/recovery lease authority
 - [x] worker-loss recovery
 - [x] authenticated control plane and SDK
 - [x] explicit saga and durable compensation recovery
 - [x] local Studio foundation
+- [x] authenticated Studio control delegation
+- [x] proof/audit Studio surface
 
 ## Remaining platform work
 
 - [ ] broader distributed worker/control-plane hardening
-- [ ] trusted-key policy surfaces
-- [ ] richer proof/audit viewer
 - [ ] additional capability packs and external integrations
 - [ ] remote/distributed Studio mode
+- [ ] richer visualization beyond proof/audit inspection
 
 ## Verification rule
 
