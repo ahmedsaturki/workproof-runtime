@@ -14,6 +14,7 @@ export interface MessageOutboxInput {
 
 const MAX_PATH = 4096;
 const MAX_RECIPIENTS = 50;
+const MAX_ADDRESS_BYTES = 320;
 const MAX_SUBJECT_BYTES = 8 * 1024;
 const MAX_BODY_BYTES = 1024 * 1024;
 const MAX_MESSAGE_BYTES = 2 * 1024 * 1024;
@@ -28,7 +29,7 @@ function containsHeaderInjection(value: unknown): boolean {
 }
 
 function validAddress(value: unknown): value is string {
-  return typeof value === "string" && value.length <= 320 && ADDRESS.test(value) && !containsHeaderInjection(value);
+  return typeof value === "string" && Buffer.byteLength(value, "utf8") <= MAX_ADDRESS_BYTES && ADDRESS.test(value) && !containsHeaderInjection(value);
 }
 
 function normalizeBody(value: unknown): string {
@@ -77,13 +78,15 @@ function persistMessage(input: MessageOutboxInput, canonical: { message: string;
   const directory = path.resolve(input.outboxPath);
   fs.mkdirSync(directory, { recursive: true });
   const file = outboxFile(input, canonical.digest);
-  if (fs.existsSync(file)) {
+  try {
+    fs.writeFileSync(file, canonical.message, { encoding: "utf8", flag: "wx" });
+    return file;
+  } catch (error) {
+    if (!error || (error as any).code !== "EEXIST") throw error;
     const existing = fs.readFileSync(file, "utf8");
     if (existing !== canonical.message) throw new Error("deterministic outbox collision detected");
     return file;
   }
-  fs.writeFileSync(file, canonical.message, { encoding: "utf8", flag: "wx" });
-  return file;
 }
 
 function evidence(input: MessageOutboxInput, kind: string, filePath: string, metadata: Record<string, string | number | boolean>): EvidenceRef {
@@ -103,6 +106,7 @@ class MessageOutboxCapability implements Capability {
   riskClass = "local_write" as const;
 
   async execute(request: { operation: string; input: unknown }): Promise<CapabilityReceipt> {
+    if (request.operation !== "compose") return { status: "rejected", data: { reason: "unsupported operation" } };
     const input = request.input as MessageOutboxInput;
     try {
       const canonical = canonicalMessage(input);
