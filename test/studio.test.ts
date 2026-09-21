@@ -630,7 +630,7 @@ test("Studio exposes a deterministic operational health projection and attention
     assert.equal(data.effects.byStatus.unknown, 1);
     assert.equal(data.effects.attention, 1);
 
-    assert.equal(data.verification.byStatus.verified, 1);
+    assert.equal(data.verification.byStatus.verified, 2);
     assert.equal(data.verification.byStatus.failed, 1);
     assert.equal(data.verification.byStatus.partial, 1);
     assert.equal(data.verification.notVerified, 3);
