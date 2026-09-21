@@ -1,6 +1,6 @@
 {
   "name": "operational-reality-core",
-  "version": "3.3.0-dev",
+  "version": "3.4.0-dev",
   "private": true,
   "description": "Outcome-first digital work kernel: work objects, capabilities, verification, reconciliation, and evidence.",
   "scripts": {
@@ -11,7 +11,7 @@
     "benchmark": "npm run build && node dist/apps/benchmark.js",
     "check": "npm test && npm run benchmark && npm run demo && node dist/packages/cli/src/index.js verify mission-proof.json && node dist/packages/cli/src/index.js run examples/missions/research-local.json",
     "live-github-smoke": "npm run build && node dist/apps/github-smoke.js",
-    "registry-server": "npm run build && node dist/apps/registry-server.js",
+    "registry-server": "npm run build && node dist/packages/registry-server.js",
     "studio": "npm run build && node dist/apps/studio.js"
   },
   "devDependencies": {
