@@ -4,7 +4,7 @@ Date: 2026-09-21
 
 ## Acceptance gates
 
-The v3.4 source-tree target is 170 required source paths before final closeout.
+The v3.4 source-tree target is 171 required source paths before final closeout.
 
 - [x] M001 research-to-artifact executable.
 - [x] M002 HTTP discovery executable.
@@ -20,7 +20,7 @@ The v3.4 source-tree target is 170 required source paths before final closeout.
 - [x] Git pack regression coverage.
 - [x] Operator benchmark regression coverage.
 - [ ] Feature CI.
-- [ ] PR #72 merge.
+- [ ] PR #73 merge.
 - [ ] Merged-main CI.
 - [ ] Final documentation/source-tree closeout CI.
 
