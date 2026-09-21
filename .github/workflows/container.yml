@@ -27,13 +27,24 @@ jobs:
         shell: bash
         run: echo "tag=${GITHUB_REF_NAME#release/}" >> "$GITHUB_OUTPUT"
 
+      - name: Read package version
+        id: version
+        shell: bash
+        run: echo "version=$(node -p 'require("./package.json").version')" >> "$GITHUB_OUTPUT"
+
+      - name: Verify release branch version
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+        run: test "${IMAGE_TAG}" = "${PACKAGE_VERSION}"
+
       - name: Build image
         env:
           IMAGE_TAG: ${{ steps.image.outputs.tag }}
         run: |
           set -euo pipefail
           IMAGE="${GITHUB_REPOSITORY,,}"
-          docker build --pull -t "ghcr.io/${IMAGE}:${IMAGE_TAG}" -t "ghcr.io/${IMAGE}:${GITHUB_SHA}" .
+          docker build --pull             --build-arg VERSION="${IMAGE_TAG}"             --build-arg VCS_REF="${GITHUB_SHA}"             -t "ghcr.io/${IMAGE}:${IMAGE_TAG}"             -t "ghcr.io/${IMAGE}:${GITHUB_SHA}" .
 
       - name: Login to GHCR
         env:
@@ -77,14 +88,19 @@ jobs:
           echo "container health check failed"
           exit 1
 
-      - name: Record image digest
+      - name: Record image digest and provenance
         env:
           IMAGE_TAG: ${{ steps.image.outputs.tag }}
         run: |
           set -euo pipefail
           IMAGE="${GITHUB_REPOSITORY,,}"
-          IMAGE="${GITHUB_REPOSITORY,,}"
-          VERSION_DIGEST="$(docker image inspect "ghcr.io/${IMAGE}:${IMAGE_TAG}" --format='{{index .RepoDigests 0}}')"
-          COMMIT_DIGEST="$(docker image inspect "ghcr.io/${IMAGE}:${GITHUB_SHA}" --format='{{index .RepoDigests 0}}')"
-          test "${VERSION_DIGEST}" = "${COMMIT_DIGEST}"
-          echo "${VERSION_DIGEST}"
+          VERSION_REFDIGEST="$(docker image inspect "ghcr.io/${IMAGE}:${IMAGE_TAG}" --format='{{index .RepoDigests 0}}')"
+          COMMIT_REFDIGEST="$(docker image inspect "ghcr.io/${IMAGE}:${GITHUB_SHA}" --format='{{index .RepoDigests 0}}')"
+          test "${VERSION_REFDIGEST}" = "${COMMIT_REFDIGEST}"
+
+          VERSION_LABEL="$(docker image inspect "ghcr.io/${IMAGE}:${IMAGE_TAG}" --format='{{index .Config.Labels "org.opencontainers.image.version"}}')"
+          REVISION_LABEL="$(docker image inspect "ghcr.io/${IMAGE}:${IMAGE_TAG}" --format='{{index .Config.Labels "org.opencontainers.image.revision"}}')"
+          test "${VERSION_LABEL}" = "${IMAGE_TAG}"
+          test "${REVISION_LABEL}" = "${GITHUB_SHA}"
+
+          printf 'image=%s\nversion=%s\nrevision=%s\n' "${VERSION_REFDIGEST}" "${VERSION_LABEL}" "${REVISION_LABEL}" >> "${GITHUB_STEP_SUMMARY}"
