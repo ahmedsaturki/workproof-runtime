@@ -8,7 +8,7 @@ Coherent prerelease for the verified v3.4 operator benchmark and self-host distr
 - tag: `v3.4.0-dev.2`
 - target commit: `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`
 - release verification run: #30 (success)
-- final main CI: #912 (success)
+- final main CI for the current main freeze commit: success
 
 The release assets were published from the release target and then re-downloaded and verified after publication.
 

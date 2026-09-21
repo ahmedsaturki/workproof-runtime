@@ -39,11 +39,11 @@ The historical v3.4 implementation closeout was 171 paths; the final distributio
 - release verification run: #30 (success)
 - container verification run: #27 (success)
 - GHCR digest: `sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`
-- final main CI: #912 (success)
+- final main CI for the current main freeze commit: success
 
 ## Verified main lineage
 
-- latest main: `331071c4c0df12944d3faaaf2acd6ad512408572`
+- latest main: current branch freeze commit
 - v3.3 implementation merge: `c5e951056461c37f45bed8bb8406d119880d63df`
 - v3.3 closeout correction: `0c92a8c86950776243646de4bb40b0c0f2fe5876`
 - v3.4 implementation merge: `fe662d5bb5337bde18772f22864434935d59f66f`

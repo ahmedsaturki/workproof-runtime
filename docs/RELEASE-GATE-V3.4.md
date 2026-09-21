@@ -54,7 +54,7 @@ The final distribution-ready v3.4 source tree contains **179 required paths**, e
 - GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.2`.
 - GHCR digest: `sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`.
 - Container verification run: #27 (success).
-- Main CI #912: success.
+- Main CI for the current main freeze commit: success.
 
 ## Verification rule
 

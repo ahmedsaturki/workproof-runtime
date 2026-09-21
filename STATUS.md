@@ -24,7 +24,7 @@ The latest three main commits after the release target changed only distribution
 - [x] CLI proof verification
 - [x] CLI mission execution
 - [x] live GitHub integration smoke
-- [x] final main CI #912
+- [x] final main CI for the current main freeze commit
 
 ## Verified v3.3 gates
 
