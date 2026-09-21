@@ -2,7 +2,8 @@ const assert = require("assert");
 const test = require("node:test");
 const fs = require("fs");
 const path = require("path");
-const { spawnSync } = require("child_process");
+const { spawnSync, spawn } = require("child_process");
+const http = require("http");
 
 function runCli(...args: string[]) {
   const cli = path.resolve("dist/packages/cli/src/index.js");
@@ -60,3 +61,77 @@ test("CLI rejects duplicate registry credential IDs", () => {
 });
 
 export {};
+
+test("registry server entrypoint loads an auth policy file and enforces it end-to-end", async () => {
+  const dir = "/tmp/workproof-registry-server-auth";
+  fs.rmSync(dir, { recursive: true, force: true });
+  fs.mkdirSync(dir, { recursive: true });
+  const policyPath = path.join(dir, "registry-auth.json");
+  const vaultPath = path.join(dir, "vault");
+
+  assert.equal(runCli("registry-auth-init", policyPath).status, 0);
+  const add = runCli("registry-auth-add", policyPath, "server-reader", "read");
+  assert.equal(add.status, 0);
+  const token = JSON.parse(add.stdout).token;
+
+  const child = spawn(require("process").execPath, [
+    path.resolve("dist/apps/registry-server.js"),
+    vaultPath,
+    "0",
+    "127.0.0.1",
+    policyPath
+  ], { stdio: ["ignore", "pipe", "pipe"] });
+
+  const output = [];
+  const start = new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("registry server startup timed out")), 5000);
+    child.stdout.on("data", (chunk) => {
+      output.push(chunk.toString());
+      const joined = output.join("");
+      try {
+        const info = JSON.parse(joined);
+        clearTimeout(timer);
+        resolve(info);
+      } catch {}
+    });
+    child.stderr.on("data", (chunk) => {
+      if (String(chunk).trim()) reject(new Error(String(chunk)));
+    });
+    child.on("error", reject);
+    child.on("exit", (code) => {
+      if (code !== null && code !== 0) reject(new Error(`registry server exited: ${code}`));
+    });
+  });
+
+  try {
+    const info = await start;
+    assert.match(info.registry, /^http:\/\/127\.0\.0\.1:\d+$/);
+    const port = Number(info.registry.split(":").pop());
+
+    const unauthorized = await new Promise((resolve, reject) => {
+      const req = http.get({ host: "127.0.0.1", port, path: "/v1/proofs" }, (res) => {
+        res.resume();
+        res.on("end", () => resolve(res.statusCode));
+      });
+      req.on("error", reject);
+    });
+    assert.equal(unauthorized, 401);
+
+    const authorized = await new Promise((resolve, reject) => {
+      const req = http.get({
+        host: "127.0.0.1",
+        port,
+        path: "/v1/proofs",
+        headers: { authorization: `Bearer ${token}` }
+      }, (res) => {
+        res.resume();
+        res.on("end", () => resolve(res.statusCode));
+      });
+      req.on("error", reject);
+    });
+    assert.equal(authorized, 200);
+  } finally {
+    child.kill("SIGTERM");
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
