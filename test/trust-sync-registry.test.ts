@@ -16,7 +16,9 @@ function tempDir(prefix: string): string {
 }
 
 function addCredential(policy: any, id: string, permissions: ("read" | "write" | "trust")[], namespace = "sync-a") {
-  return addIssuedCredential(policy, issueCredential({ id, permissions, namespace }));
+  const issued = issueCredential({ id, permissions, namespace });
+  addIssuedCredential(policy, issued);
+  return issued;
 }
 
 test("two authenticated registries publish, pull, apply, conflict, reject forged signer, and propagate revocation", async () => {
