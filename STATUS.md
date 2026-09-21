@@ -4,35 +4,35 @@ Date: 2026-09-21
 
 ## Current main
 
-v1.0-dev self-hosted proof registry is verified on main.
+v1.1-dev authenticated multi-user proof registry is verified on main.
 
 Current main commit:
-265a580b1352a610957e88c0954a02e736ad6886
+7eeefa13afa56acb9db5038ec3b5885f0724e46f
 
-Verified main CI run #175:
-- source audit: 75/75
-- automated tests: 55/55
-- benchmark/demo/CLI passed
-- live GitHub smoke passed
+Verification:
+- v1.0 self-hosted registry: verified.
+- v1.1 authentication/authorization: verified.
+- namespace isolation: verified.
+- focused registry security regressions: verified.
+- dependency security audit: verified.
+- full build/test/benchmark/demo/CLI pipeline: verified.
+- live GitHub smoke: verified.
 
-## Active v1.1 gate
+## Active next gate
 
-Branch: feature/v1.1-registry-auth
+Branch: feature/v1.2-trust-sync
 
 Target:
-- local hashed bearer credentials
-- read/write authorization
-- namespace isolation
-- auth audit evidence
-- CLI credential lifecycle
-- bearer-aware registry client
-- end-to-end authorization regressions
-- focused security regression evidence and dependency audit
+- versioned trust-policy snapshots
+- canonical snapshot digesting
+- signed administrative identity
+- explicit signer authorization
+- deterministic accept/noop/conflict/rollback reconciliation
+- later registry-to-registry transport and revocation propagation
 
 ## Remaining platform work
 
-- [ ] v1.1 authenticated multi-user registry
-- [ ] v1.2 distributed trust-policy synchronization
+- [ ] v1.2 registry-to-registry trust synchronization
 - [ ] retention/garbage-collection policy
 - [ ] generalized compensation/saga engine
 - [ ] external browser navigation where permitted
