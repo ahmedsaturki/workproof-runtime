@@ -18,6 +18,7 @@ test("CLI manages registry auth policy and emits a token only at issuance time",
   const init = runCli("registry-auth-init", policyPath);
   assert.equal(init.status, 0);
   assert.match(init.stdout, /initialized/);
+  assert.equal(fs.statSync(policyPath).mode & 0o777, 0o600);
 
   const added = runCli("registry-auth-add", policyPath, "team-reader", "read", "team-a", "reader");
   assert.equal(added.status, 0);
