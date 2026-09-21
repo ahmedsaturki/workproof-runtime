@@ -65,7 +65,7 @@ jobs:
           Benchmark: ${BENCHMARK_FILE}
           EOF
 
-          sha256sum release-dist/* > release-dist/SHA256SUMS.txt
+          (cd release-dist && sha256sum -- * > SHA256SUMS.txt)
           cat release-dist/SHA256SUMS.txt
 
       - name: Create GitHub Release
@@ -74,10 +74,12 @@ jobs:
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
         run: |
           set -euo pipefail
+          PACKAGE_VERSION="$(node -p "require(\'./package.json\').version")"
+          NOTES_FILE="docs/RELEASE-${PACKAGE_VERSION}.md"
           if gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
             echo "Release ${RELEASE_TAG} already exists; continuing idempotently."
           else
-            gh release create "${RELEASE_TAG}"               --repo "${GITHUB_REPOSITORY}"               --target "${GITHUB_SHA}"               --title "WorkProof Runtime ${RELEASE_TAG}"               --prerelease               --notes-file docs/RELEASE-V3.4.0-DEV.md               release-dist/*
+            gh release create "${RELEASE_TAG}"               --repo "${GITHUB_REPOSITORY}"               --target "${GITHUB_SHA}"               --title "WorkProof Runtime ${RELEASE_TAG}"               --prerelease               --notes-file "${NOTES_FILE}"               release-dist/*
           fi
 
       - name: Verify published release
