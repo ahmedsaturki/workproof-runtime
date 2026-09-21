@@ -37,3 +37,6 @@ The release workflow runs `npm run check` before creating the release and publis
 - `RELEASE-MANIFEST.txt` and `SHA256SUMS.txt` — distribution metadata and integrity hashes.
 
 This is a prerelease. No production service deployment or external runtime hosting is implied by this release.
+
+
+Release branch verification trigger: v3.4.0-dev.
