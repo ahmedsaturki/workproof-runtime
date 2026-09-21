@@ -108,7 +108,7 @@ class AmbiguousOrderCreate {
     return await new Promise<any>(resolve => {
       const req = http.request(this.baseUrl + "/orders", {
         method: "POST",
-        headers: { "content-type": "application/json", "content-length": Buffer.byteLength(body) }
+        headers: { "content-type": "application/json", "content-length": body.length }
       }, (res: any) => {
         res.resume();
         res.on("end", () => resolve({ status: "accepted" }));
