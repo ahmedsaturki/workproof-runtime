@@ -149,4 +149,32 @@ test("vault does not silently collapse the same proof under different signer ide
 });
 
 
+test("vault retains artifacts addressed by file URIs", () => {
+  const dir = "/tmp/workproof-vault-file-uri";
+  fs.rmSync(dir, { recursive: true, force: true });
+  fs.mkdirSync(dir, { recursive: true });
+  const artifactPath = path.join(dir, "artifact.txt");
+  fs.writeFileSync(artifactPath, "file uri artifact\n", "utf8");
+
+  const work = {
+    id: "work_vault_file_uri",
+    contract: { objective: "vault file uri", success: [], deliverables: [], riskClass: "read" },
+    status: "verified",
+    effects: [],
+    artifacts: [{ id: "artifact-1", kind: "file", uri: `file://${artifactPath}` }],
+    verification: { status: "verified", checks: [], verifiedAt: "2026-09-21T00:00:00.000Z" },
+    events: [],
+    createdAt: "2026-09-21T00:00:00.000Z",
+    updatedAt: "2026-09-21T00:00:00.000Z"
+  };
+  const proof = buildProofBundle(work);
+  const integrity = buildIntegrityManifest(work);
+  const proofPath = path.join(dir, "proof.json");
+  fs.writeFileSync(proofPath, JSON.stringify({ ...proof, integrity }, null, 2), "utf8");
+
+  const record = publishProof(proofPath, path.join(dir, "vault"));
+  assert.equal(Object.keys(record.artifacts).length, 1);
+});
+
+
 export {};
