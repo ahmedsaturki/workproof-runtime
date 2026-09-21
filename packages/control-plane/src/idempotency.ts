@@ -1,4 +1,6 @@
 const { DatabaseSync } = require("node:sqlite");
+const fs = require("fs");
+const path = require("path");
 const crypto = require("crypto");
 
 function canonical(value: unknown): string {
@@ -58,7 +60,13 @@ export class ControlIdempotencyLedger {
 
   constructor(dbPath: string) {
     if (typeof dbPath !== "string" || !dbPath.trim()) throw new Error("Idempotency database path is required");
+    if (dbPath !== ":memory:") {
+      fs.mkdirSync(path.dirname(path.resolve(dbPath)), { recursive: true });
+    }
     this.db = new DatabaseSync(dbPath, { timeout: 1000 });
+    if (dbPath !== ":memory:") {
+      try { fs.chmodSync(dbPath, 0o600); } catch {}
+    }
     this.db.exec(`
       PRAGMA journal_mode = WAL;
       CREATE TABLE IF NOT EXISTS control_requests (
