@@ -136,9 +136,16 @@ export class WorkStore {
       .filter((effect): effect is EffectRecord => Boolean(effect));
     const verified = compensations.filter(effect => effect.status === "verified" || effect.status === "compensated").length;
     const unresolved = compensations.some(effect => ["unknown", "dispatched", "unresolved"].includes(effect.status));
+    const verifiedSourceIds = new Set(
+      compensations
+        .filter(effect => effect.status === "verified" || effect.status === "compensated")
+        .map(effect => effect.sourceEffectId)
+        .filter((value): value is string => typeof value === "string")
+    );
+    const allForwardEffectsCompensated = saga.forwardEffectIds.every(effectId => verifiedSourceIds.has(effectId));
     let next: SagaStatus;
     if (compensations.length === 0) next = saga.forwardEffectIds.length ? "running" : "planned";
-    else if (verified === compensations.length) next = "compensated";
+    else if (allForwardEffectsCompensated) next = "compensated";
     else if (verified > 0) next = "partial";
     else if (unresolved) next = "unresolved";
     else next = "running";
