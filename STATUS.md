@@ -4,22 +4,14 @@ Date: 2026-09-21
 
 ## Current main
 
-**v2.8-dev diagnostic lease/fence visibility is verified on main.**
+**v2.9-dev operational work filtering is verified on main.**
 
 Current main commit:
-aed65c8ecf770efa7ae1d2c2aa2500133a5dbf81
+b8be593242d19e3251914855801fc505aa19a566
 
-Initial v2.8 implementation merge:
-44ed49dac589389bdad9bbcb6e177a74f43767f9
-
-Finalization PR:
-#60
-
-Final verification:
-- finalization feature CI #726: success
-- finalization PR CI #727: success
-- merged-main CI #728: success
-- source-tree audit: 141/141
+Verification:
+- merged-main CI #751: success
+- source-tree audit: 142/142
 - dependency security audit: success
 - Chromium/CDP preflight: success
 - strict TypeScript build: success
@@ -31,26 +23,23 @@ Final verification:
 - CLI mission execution: success
 - live GitHub smoke: success
 
-## Verified v2.8 gates
+## Verified v2.9 gates
 
-- [x] Sanitized LeaseStatus projection.
-- [x] Read-only control-plane lease listing.
-- [x] Read-only Studio lease listing.
-- [x] Authenticated remote Studio lease visibility.
-- [x] Fail-closed 401/503 behavior.
-- [x] No fencing-token leakage.
-- [x] No lease mutation through visibility routes.
-- [x] PersistentLeaseStore projection parity.
-- [x] Existing worker, proof/audit, control, vault, and security suites preserved.
-- [x] Final feature CI.
-- [x] Final PR CI.
-- [x] Final merged-main CI.
-- [x] Final audit and release-gate documentation.
+- [x] bounded Work Object search by ID/objective
+- [x] exact status filtering
+- [x] exact risk-class filtering
+- [x] bounded result limit
+- [x] invalid filter inputs fail closed with 400
+- [x] deterministic total/status/risk summaries
+- [x] Studio filter controls
+- [x] Studio operational summary cards
+- [x] v2.8 security, control, lease, proof, retention, and worker behavior preserved
+- [x] final feature/PR/merged-main CI
+- [x] final audit and release-gate documentation
 
 ## Remaining platform work
 
-- [ ] v2.9 operational filtering feature merge and final CI.
-- [ ] additional capability packs and external integrations beyond the current foundations
+- [ ] additional capability packs and external integrations beyond current foundations
 - [ ] richer operational visualization beyond filtering and summary cards
 
 ## Verification rule
