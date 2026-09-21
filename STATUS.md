@@ -4,13 +4,22 @@ Date: 2026-09-21
 
 ## Current main
 
-**v1.9 durable saga recovery is verified on main.**
+**v2.0-dev local Studio foundation is verified on main.**
 
 Latest v1.9 implementation merge:
 f0173fd9c0603fd1fa58ea6f722486f52a04f932
 
 Latest v1.9 documentation closeout:
 a9265bb8ff61db21627bb92a52cbad8aeffe8e50
+
+Latest v2.0 Studio merge:
+0e29eb04addea53ae399887612314bd49ffa341a
+
+Latest v2.0 feature CI:
+- CI #547: success.
+
+Latest v2.0 merged-main CI:
+- CI #548: success.
 
 Final v1.9 closeout CI:
 - CI #532 attempt 2: success.
@@ -26,19 +35,18 @@ Final v1.9 closeout CI:
 - CLI mission execution: success.
 - live GitHub integration smoke: success.
 
-## Active next branch
+## v2.0 Studio result
 
-feature/v2.0-studio-foundation
-
-Target:
-- dependency-free local Studio
-- persisted Work Object listing and detail view
-- sanitized read-only operational API
-- automated Studio acceptance tests
+- [x] dependency-free local Studio
+- [x] persisted Work Object listing and detail view
+- [x] sanitized read-only operational API
+- [x] automated Studio acceptance tests
+- [x] feature CI #547
+- [x] merged-main CI #548
 
 ## Remaining platform work
 
-- [ ] v2.0 Studio feature merge and final CI.
+- [ ] Authenticated Studio control actions via the control plane.
 - [ ] Authenticated Studio control actions via the control plane.
 - [ ] Broader distributed worker/control-plane hardening.
 - [ ] Additional capability packs and external integrations.

@@ -4,9 +4,9 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v2.0-dev Studio foundation is in progress.**
+**v2.0-dev local Studio foundation is verified on main.**
 
-The active v2.0 branch adds a dependency-free, read-only local Studio over persisted Work Objects. The UI is backed by the same JSON Work Object repository used by the runtime and keeps control actions behind the authenticated control plane.
+The v2.0 milestone adds a dependency-free, read-only local Studio over persisted Work Objects. It is verified on main by feature CI #547 and merged-main CI #548. The UI is backed by the same JSON Work Object repository used by the runtime and keeps control actions behind the authenticated control plane.
 
 ## Core loop
 
