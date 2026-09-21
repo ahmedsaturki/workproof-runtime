@@ -67,7 +67,9 @@ WorkProof Runtime is not a replacement for agents, browsers, workflow engines, M
 - PR #73 merged as `fe662d5bb5337bde18772f22864434935d59f66f`.
 - Feature CI #864: success.
 - Merged-main CI #866: success.
-- Benchmark artifact retained from the merged-main run and independently downloaded/inspected.
+- Documentation/source-tree closeout CI #872: success.
+- Final closeout record verification CI #875: success.
+- Benchmark artifact retained from the merged-main run and final closeout run, independently downloaded/inspected.
 
 The next engineering line is an executable five-mission benchmark with controlled failure injection. It exercises research, discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution while reporting evidence-backed outcome metrics.
 

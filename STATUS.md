@@ -12,11 +12,11 @@ c5e951056461c37f45bed8bb8406d119880d63df
 v3.4 implementation merge:
 fe662d5bb5337bde18772f22864434935d59f66f
 
-Documentation closeout baseline:
-5e26ab0bb78ebb986513c08abe0809c0d75a1145
+v3.4 documentation closeout baseline:
+b32913e033c178d15f170e004ef79dff9834911a
 
-Latest verified closeout record:
-0c92a8c86950776243646de4bb40b0c0f2fe5876
+Latest verified v3.4 closeout record:
+db96cf137bc744a523cb175dd4e0ba95c0646e60
 
 Verified implementation gates:
 - feature CI #808: success

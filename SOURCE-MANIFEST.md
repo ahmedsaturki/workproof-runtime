@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The v3.4 benchmark implementation tree contains 171 required paths enforced by scripts/verify-source-tree.js before final v3.4 audit closeout.
+The v3.4 benchmark implementation tree contains 171 required paths enforced by scripts/verify-source-tree.js and verified by the final v3.4 audit closeout.
 
 V3.4 additions include:
 - docs/BENCHMARK-V3.md
@@ -51,6 +51,8 @@ V3.1 additions include:
 - feature CI: #864
 - merged-main CI: #866
 - final documentation/source-tree closeout CI: #872 (success)
+- final closeout record correction commit: db96cf137bc744a523cb175dd4e0ba95c0646e60
+- final closeout record verification CI: #875 (success)
 
 ## v3.4 verified benchmark evidence
 
