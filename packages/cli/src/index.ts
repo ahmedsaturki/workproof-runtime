@@ -31,7 +31,7 @@ function usage(): void {
   vault-list <vault-dir>
   vault-inspect <digest> <vault-dir>
   registry-auth-init <policy.json>
-  registry-auth-add <policy.json> <credential-id> <read|write|readwrite> [namespace] [label]
+  registry-auth-add <policy.json> <credential-id> <read|write|trust|readwrite> [namespace] [label]
   registry-auth-revoke <credential-id> <policy.json> [reason]
   registry-auth-list <policy.json>
 `);
@@ -86,10 +86,17 @@ function registryAuthInit(policyPath: string): void {
 }
 
 function registryAuthAdd(policyPath: string, credentialId: string, permissionSpec: string, namespace?: string, label?: string): void {
-  const permissions =
-    permissionSpec === "readwrite" ? ["read", "write"] :
-    permissionSpec === "read" || permissionSpec === "write" ? [permissionSpec] : null;
-  if (!permissions) throw new Error("Permission must be read, write, or readwrite");
+  const permissionMap: Record<string, string[]> = {
+    read: ["read"],
+    write: ["write"],
+    trust: ["trust"],
+    readwrite: ["read", "write"],
+    readtrust: ["read", "trust"],
+    writetrust: ["write", "trust"],
+    readwritetrust: ["read", "write", "trust"]
+  };
+  const permissions = permissionMap[permissionSpec] ?? null;
+  if (!permissions) throw new Error("Permission must be read, write, trust, readwrite, readtrust, writetrust, or readwritetrust");
   const policy = loadAuthPolicy(policyPath);
   const issued = issueCredential({ id: credentialId, permissions, ...(namespace ? { namespace } : {}), ...(label ? { label } : {}) });
   const next = addIssuedCredential(policy, issued);
