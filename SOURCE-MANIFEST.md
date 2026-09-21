@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The active v3.0 branch contains **144 required paths** enforced by scripts/verify-source-tree.js.
+The verified v3.0 main tree contains **145 required paths** enforced by scripts/verify-source-tree.js.
 
 V3.0 additions include:
 - docs/RELEASE-GATE-V3.0.md
