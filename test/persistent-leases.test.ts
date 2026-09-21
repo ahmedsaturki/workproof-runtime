@@ -4,52 +4,98 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { fork } = require("child_process");
-const { PersistentLeaseStore } = require("../packages/coordination/src/persistent.js");
 
-class FakeClock {
-  constructor(value = 1_700_000_000_000) {
+import type { LeaseAcquireResult, LeaseClock, LeaseRecord, WorkerRecord } from "../packages/coordination/src/leases";
+import type { PersistentLeaseStore as PersistentLeaseStoreType } from "../packages/coordination/src/persistent";
+
+const PersistentLeaseStore = require("../packages/coordination/src/persistent.js")
+  .PersistentLeaseStore as new (dbPath: string, options?: { clock?: LeaseClock; timeoutMs?: number }) => PersistentLeaseStoreType;
+
+interface WorkerReadyMessage {
+  type: "ready";
+  workerId: string;
+}
+
+interface WorkerResultMessage {
+  type: "result";
+  workerId: string;
+  result: LeaseAcquireResult;
+}
+
+interface WorkerErrorMessage {
+  type: "error";
+  workerId: string;
+  error: string;
+}
+
+type WorkerMessage = WorkerReadyMessage | WorkerResultMessage | WorkerErrorMessage;
+
+interface WorkerChild {
+  connected: boolean;
+  on(event: "message", listener: (message: WorkerMessage) => void): WorkerChild;
+  off(event: "message", listener: (message: WorkerMessage) => void): WorkerChild;
+  once(event: "error", listener: (error: Error) => void): WorkerChild;
+  send(message: string): void;
+  kill(): boolean;
+  disconnect(): void;
+}
+
+interface WorkerHandle {
+  child: WorkerChild;
+  ready: Promise<void>;
+}
+
+class FakeClock implements LeaseClock {
+  value: number;
+
+  constructor(value: number = 1_700_000_000_000) {
     this.value = value;
   }
-  nowMs() {
+
+  nowMs(): number {
     return this.value;
   }
-  advance(ms) {
+
+  advance(ms: number): void {
     this.value += ms;
   }
 }
 
-function tempDb(prefix) {
+function tempDb(prefix: string): { dir: string; db: string } {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
   return { dir, db: path.join(dir, "leases.db") };
 }
 
-function startWorker(db, workerId, resourceId, ttlMs) {
+function startWorker(db: string, workerId: string, resourceId: string, ttlMs: number): WorkerHandle {
   const script = path.resolve("dist/apps/lease-worker.js");
   const child = fork(script, [db, workerId, resourceId, String(ttlMs)], {
     stdio: ["ignore", "pipe", "pipe", "ipc"]
-  });
-  const ready = new Promise((resolve, reject) => {
-    const onMessage = (message) => {
-      if (message?.type === "ready") {
+  }) as unknown as WorkerChild;
+
+  const ready = new Promise<void>((resolve, reject) => {
+    const onMessage = (message: WorkerMessage): void => {
+      if (message.type === "ready") {
         child.off("message", onMessage);
         resolve();
+      } else if (message.type === "error") {
+        reject(new Error(message.error));
       }
-      if (message?.type === "error") reject(new Error(String(message.error)));
     };
     child.on("message", onMessage);
     child.once("error", reject);
   });
+
   return { child, ready };
 }
 
-function awaitResult(handle) {
-  return new Promise((resolve, reject) => {
-    const onMessage = (message) => {
-      if (message?.type === "result") {
+function awaitResult(handle: WorkerHandle): Promise<WorkerResultMessage> {
+  return new Promise<WorkerResultMessage>((resolve, reject) => {
+    const onMessage = (message: WorkerMessage): void => {
+      if (message.type === "result") {
         handle.child.off("message", onMessage);
         resolve(message);
-      } else if (message?.type === "error") {
-        reject(new Error(String(message.error)));
+      } else if (message.type === "error") {
+        reject(new Error(message.error));
       }
     };
     handle.child.on("message", onMessage);
@@ -63,18 +109,24 @@ test("persistent lease state survives reopening and preserves owner identity", (
   const first = new PersistentLeaseStore(db, { clock });
   const acquired = first.acquire("work-1", "worker-a", 1000);
   assert.equal(acquired.status, "acquired");
+  assert.equal(acquired.lease.ownerId, "worker-a");
   first.registerWorker({ workerId: "worker-a", capabilities: ["github.read", "github.read"] });
   first.close();
 
   const reopened = new PersistentLeaseStore(db, { clock });
   const restored = reopened.get("work-1");
-  assert.equal(restored.leaseId, acquired.lease.leaseId);
-  assert.equal(restored.ownerId, "worker-a");
+  assert.ok(restored);
+  assert.equal((restored as LeaseRecord).leaseId, acquired.lease.leaseId);
+  assert.equal((restored as LeaseRecord).ownerId, "worker-a");
+
   const renewed = reopened.acquire("work-1", "worker-a", 2000);
   assert.equal(renewed.status, "renewed");
-  assert.equal(renewed.result.lease.leaseId, acquired.lease.leaseId);
-  assert.equal(renewed.result.lease.revision, 2);
-  assert.deepEqual(reopened.getWorker("worker-a").capabilities, ["github.read"]);
+  assert.equal(renewed.lease.leaseId, acquired.lease.leaseId);
+  assert.equal(renewed.lease.revision, 2);
+
+  const worker = reopened.getWorker("worker-a");
+  assert.ok(worker);
+  assert.deepEqual((worker as WorkerRecord).capabilities, ["github.read"]);
   reopened.close();
 
   const check = new PersistentLeaseStore(db, { clock });
@@ -92,14 +144,16 @@ test("two independent Node processes cannot both acquire the same persistent lea
 
   try {
     await Promise.all([workerA.ready, workerB.ready]);
+
     const resultA = awaitResult(workerA);
     const resultB = awaitResult(workerB);
     workerA.child.send("go");
     workerB.child.send("go");
-    const results = await Promise.all([resultA, resultB]);
 
-    const acquired = results.filter((item) => item.result.status === "acquired");
-    const busy = results.filter((item) => item.result.status === "busy");
+    const results: WorkerResultMessage[] = await Promise.all([resultA, resultB]);
+    const acquired = results.filter((item: WorkerResultMessage) => item.result.status === "acquired");
+    const busy = results.filter((item: WorkerResultMessage) => item.result.status === "busy");
+
     assert.equal(acquired.length, 1);
     assert.equal(busy.length, 1);
     assert.notEqual(acquired[0].workerId, busy[0].workerId);
@@ -107,16 +161,16 @@ test("two independent Node processes cannot both acquire the same persistent lea
     const store = new PersistentLeaseStore(db);
     const persisted = store.get("shared-work");
     assert.ok(persisted);
-    assert.equal(persisted.ownerId, acquired[0].workerId);
+    assert.equal((persisted as LeaseRecord).ownerId, acquired[0].workerId);
 
     const winner = startWorker(db, acquired[0].workerId, "shared-work", 60_000);
     try {
       await winner.ready;
-      const renewal = awaitResult(winner);
+      const renewalPromise = awaitResult(winner);
       winner.child.send("go");
-      const renewed = await renewal;
+      const renewed: WorkerResultMessage = await renewalPromise;
       assert.equal(renewed.result.status, "renewed");
-      assert.equal(renewed.result.lease.leaseId, persisted.leaseId);
+      assert.equal(renewed.result.lease.leaseId, (persisted as LeaseRecord).leaseId);
       assert.equal(renewed.result.lease.revision, 2);
     } finally {
       if (winner.child.connected) winner.child.kill();
@@ -133,13 +187,27 @@ test("persistent workers preserve metadata, heartbeat state, and deterministic l
   const { dir, db } = tempDb("workproof-persistent-worker-");
   const clock = new FakeClock();
   const store = new PersistentLeaseStore(db, { clock });
-  store.registerWorker({ workerId: "worker-b", capabilities: ["browser", "browser"], metadata: { zone: "b" } });
-  store.registerWorker({ workerId: "worker-a", capabilities: ["github.read"], metadata: { zone: "a" } });
+
+  store.registerWorker({
+    workerId: "worker-b",
+    capabilities: ["browser", "browser"],
+    metadata: { zone: "b" }
+  });
+  store.registerWorker({
+    workerId: "worker-a",
+    capabilities: ["github.read"],
+    metadata: { zone: "a" }
+  });
+
   clock.advance(500);
   assert.equal(store.markWorkerOffline("worker-a").state, "offline");
   assert.equal(store.heartbeat("worker-a").state, "active");
-  assert.deepEqual(store.listWorkers().map((worker) => worker.workerId), ["worker-a", "worker-b"]);
-  assert.equal(store.getWorker("worker-a").metadata.zone, "a");
+  assert.deepEqual(store.listWorkers().map((worker: WorkerRecord) => worker.workerId), ["worker-a", "worker-b"]);
+
+  const worker = store.getWorker("worker-a");
+  assert.ok(worker);
+  assert.equal((worker as WorkerRecord).metadata?.zone, "a");
+
   store.close();
   fs.rmSync(dir, { recursive: true, force: true });
 });
