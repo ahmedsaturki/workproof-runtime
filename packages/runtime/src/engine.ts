@@ -88,9 +88,20 @@ export class WorkEngine {
           }
         }
 
-        const effect = this.store.addEffect(work, capability.name, capability.riskClass, step.idempotencyKey);
-        this.store.event(work, "step.started", `Step ${step.id} started`, { stepId: step.id, capability: capability.name, attempt });
+        const effect = this.store.addEffect(work, capability.name, capability.riskClass, step.idempotencyKey, step.operation);
+        this.store.event(work, "step.started", `Step ${step.id} started`, { stepId: step.id, capability: capability.name, attempt, operation: step.operation });
         this.persist(work);
+
+        if (["acknowledged", "observed", "verified", "reconciled"].includes(effect.status)) {
+          completed = true;
+          this.store.event(work, "step.resumed", `Skipping already-completed effect during resume: ${effect.effectId}`, {
+            stepId: step.id,
+            effectId: effect.effectId,
+            effectStatus: effect.status
+          });
+          this.persist(work);
+          break;
+        }
 
         const receipt = await executeWithSafety({
           work,

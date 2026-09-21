@@ -24,3 +24,8 @@ jobs:
       - run: npm install
       - run: node scripts/verify-source-tree.js
       - run: npm run check
+      - name: Live GitHub integration smoke
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: npm run live-github-smoke

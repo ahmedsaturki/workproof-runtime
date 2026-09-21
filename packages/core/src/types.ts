@@ -68,6 +68,7 @@ export interface EffectAttempt {
 export interface EffectRecord {
   effectId: string;
   idempotencyKey: string;
+  operation?: string;
   capability: string;
   status: EffectStatus;
   riskClass: RiskClass;

@@ -15,6 +15,7 @@ export class WorkStore {
       events: [],
       effects: [],
       artifacts: [],
+      verification: undefined,
       createdAt: t,
       updatedAt: t
     };
@@ -51,16 +52,27 @@ export class WorkStore {
     this.event(work, "artifact.added", `Artifact added: ${evidence.id}`, { kind: evidence.kind });
   }
 
-  addEffect(work: WorkObject, capability: string, riskClass: EffectRecord["riskClass"], idempotencyKey: string): EffectRecord {
+  addEffect(work: WorkObject, capability: string, riskClass: EffectRecord["riskClass"], idempotencyKey: string, operation?: string): EffectRecord {
     const existing = work.effects.find(e => e.idempotencyKey === idempotencyKey);
-    if (existing) return existing;
+    if (existing) {
+      if (!existing.operation && operation) existing.operation = operation;
+      return existing;
+    }
     const t = now();
     const effect: EffectRecord = {
-      effectId: id("effect"), idempotencyKey, capability, riskClass,
-      status: "planned", attempts: 0, attemptLog: [], createdAt: t, updatedAt: t
+      effectId: id("effect"),
+      idempotencyKey,
+      operation,
+      capability,
+      riskClass,
+      status: "planned",
+      attempts: 0,
+      attemptLog: [],
+      createdAt: t,
+      updatedAt: t
     };
     work.effects.push(effect);
-    this.event(work, "effect.planned", `Effect planned: ${capability}`, { effectId: effect.effectId });
+    this.event(work, "effect.planned", `Effect planned: ${capability}`, { effectId: effect.effectId, operation: operation ?? null });
     return effect;
   }
 

@@ -1,33 +1,89 @@
-# Architecture
+# WorkProof Runtime Architecture
 
-```text
-           adapters
-    web/http/cli/otel/event
-               │
-               ▼
-        Observation Layer
-               │
-               ▼
-         Evidence Layer
-               │
-               ▼
-      Operational Model Core
-               │
-        ┌──────┴──────┐
-        ▼             ▼
-     Model           Diff
-        │             │
-        └──────┬──────┘
-               ▼
-       CLI / Studio / CI
-```
+## Product boundary
 
-## Boundaries
+WorkProof Runtime is an outcome-first digital-work kernel. It does not define an agent, browser automation engine, workflow product, memory system, or observability backend as its primary abstraction.
 
-`packages/core` is domain logic only. It does not know about Playwright, databases, UIs, or LLMs.
+The invariant object is the durable Work Object.
 
-`packages/diff` compares already-normalized models and does not capture data.
+GOAL -> CONTRACT -> ROUTE -> ACT -> OBSERVE -> VERIFY -> RECONCILE/RECOVER -> DELIVER -> PROVE
 
-`packages/cli` is a thin interface over core packages.
+## Layers
 
-Future adapters should translate their native events into the `Observation` contract rather than bypassing the core.
+    User outcome
+         |
+         v
+    Work Contract
+    goal / success / risk / approval
+         |
+         v
+    Orchestration
+    Work Object / state / steps
+         |
+         v
+    Capability Fabric
+    local / HTTP / browser / GitHub
+         |
+         v
+    Effect Ledger
+    attempts / idempotency / receipts
+         |
+         v
+    Verification
+    independent checks + evidence
+         |
+         v
+    Recovery
+    reconcile / retry / substitute / stop
+         |
+         v
+    Proof / Artifact
+    durable evidence
+
+## Core packages
+
+### packages/core
+Domain objects and lifecycle:
+- Work Object
+- Work Contract
+- Effect Record / Attempt
+- Evidence Reference
+- Verification Result
+- Work events
+
+### packages/capabilities
+Capability registration and operation routing.
+
+A capability declares its supported operations and risk class. It is an adapter, not the invariant.
+
+### packages/runtime
+Runs ordered work steps, enforces Work Contract risk ceilings, applies policy gates, records effects, and invokes verification.
+
+### packages/recovery
+Handles ambiguous outcomes through bounded reconciliation, retry, substitution, or stop decisions. Ambiguous effects must be reconciled before a blind retry.
+
+### packages/verification
+Runs independent verifiers against success criteria and records evidence-bearing checks. A successful capability receipt is not proof by itself.
+
+### packages/evidence
+Builds portable proof bundles and deterministic SHA-256 integrity manifests.
+
+### packages/storage
+Persists Work Objects so execution state can survive process boundaries.
+
+### packages/packs
+Domain adapters. The GitHub pack covers repository read, issue creation behind external-write policy, deterministic idempotency markers, and independent verification.
+
+## Safety invariants
+
+1. A work step cannot exceed its Work Contract risk ceiling.
+2. A capability cannot exceed the requested step risk ceiling.
+3. External writes can be blocked by policy and human approval.
+4. The GitHub issue write path requires a deterministic idempotency marker.
+5. Ambiguous outcomes attempt external-state reconciliation before another write.
+6. Verification is independent of the capability execution path.
+7. Proof integrity is represented by a digest over canonicalized proof content.
+
+## Extension boundary
+
+MCP, A2A, workers, Studio, REST, SDKs, and remote control planes are adapters/surfaces around the Work Object model. They must not replace the kernel's outcome, effect, verification, recovery, and proof semantics.

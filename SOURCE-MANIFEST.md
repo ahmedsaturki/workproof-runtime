@@ -2,26 +2,28 @@
 
 ## Required source tree
 
-The verified development source tree contains 53 required paths. The remote CI enforces their presence through scripts/verify-source-tree.js.
+The v0.5 development branch contains 58 required paths enforced by scripts/verify-source-tree.js.
 
-## Local exact history
+The additional v0.5 paths include:
+- docs/packs/github-pack.json
+- docs/RELEASE-GATE-V0.5.md
+- packages/evidence/src/integrity.ts
+- test/github.test.ts
+- test/two-system.test.ts
 
-- commit: 8cd9b7d841191b8a030bb462ac8dbd271f8259ca
+## v0.4 local exact history
+
+- local commit: 8cd9b7d841191b8a030bb462ac8dbd271f8259ca
 - tag: v0.4.0-dev
-- exact Git bundle: workproof-runtime-v0.4.0-dev.bundle
+- exact development bundle: workproof-runtime-v0.4.0-dev.bundle
 
-## Remote state
+## Remote branches
 
-All 53 required paths are present on the current main branch. The remote history is a reconstructed sequence of verified commits, not a byte-identical copy of the local Git object database.
+- main: v0.4 verified baseline at e28aed00dd75e4633ec63429cde590dd49a44892
+- feature/v0.5-github-integration: v0.5 integration work
 
-## Verification
+Remote history was reconstructed from verified source content through GitHub commits; it is not byte-identical to the local Git object database.
 
-GitHub Actions run 12 passed:
-- source-tree audit
-- TypeScript build
-- 22/22 tests
-- benchmark
-- demo
-- CLI proof verification and mission execution
+## Verification discipline
 
-This manifest distinguishes path completeness from Git-object byte parity intentionally.
+Path completeness, compilation, tests, benchmark, live smoke, and acceptance behavior are separate gates. Passing one does not imply the others passed.

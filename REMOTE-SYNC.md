@@ -1,33 +1,28 @@
-# Remote Sync Status
+# Remote Sync and Development Status
 
 Date: 2026-09-21
 
-## Verified source
+## main
 
-The remote repository now contains all 53 required source paths from the verified v0.4 development tree.
+main is the verified v0.4 development checkpoint.
 
-Local verified source snapshot:
-- 53 tracked files
-- local commit: 8cd9b7d841191b8a030bb462ac8dbd271f8259ca
-- local tag: v0.4.0-dev
+## v0.5 feature branch
 
-Remote verification:
-- required source-tree audit: passed
-- GitHub Actions run 12: passed
-- 22/22 tests passed
-- benchmark passed
-- demo verified
-- CLI mission verified
-- Chromium/CDP acceptance passed
-- local HTTP reconciliation and publication cases passed
-- capability substitution passed
-- approval/risk enforcement passed
-- persistence/reload passed
+feature/v0.5-github-integration is intentionally separate while real integration behavior is being validated.
 
-## Important history note
+Current branch capabilities:
+- GitHub repository read + independent verification
+- GitHub issue external-write capability
+- approval gate
+- deterministic idempotency marker
+- local lost-acknowledgement reconciliation
+- proof integrity
+- pack manifest
 
-The remote history was reconstructed as verified commits through the GitHub API rather than as a byte-identical push of the local Git object database. The local bundle remains the exact source-history snapshot.
+## History note
+
+Remote history was reconstructed as verified commits through the GitHub API rather than as a byte-identical push of the original Git object database.
 
 ## Rule
 
-Do not call this a production release. The next gates are real third-party integrations, multi-system fault injection, stronger artifact integrity, and broader workers.
+Do not call v0.5 production-ready until cross-system fault injection, browser boundary verification, worker/control-plane boundaries, and release evidence are complete.

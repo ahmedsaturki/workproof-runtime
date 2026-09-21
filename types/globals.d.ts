@@ -1,4 +1,5 @@
 declare const process: {
+  env: Record<string, string | undefined>;
   argv: string[];
   exitCode?: number;
   stdout: { write(s: string): void };
