@@ -1,8 +1,8 @@
-# WorkProof Runtime Specification - v2.0-dev
+# WorkProof Runtime Specification - v2.1-dev
 
 ## 1. Purpose
 
-Represent a bounded digital outcome as durable work, execute it through explicit capabilities and worker ownership, safely handle external effects, independently verify outcomes, preserve portable proof, manage proof lifecycle, recover persisted execution after worker loss, and expose a user-facing local operational view.
+Represent a bounded digital outcome as durable work, execute it through explicit capabilities and worker ownership, safely handle external effects, independently verify outcomes, preserve portable proof, manage proof lifecycle, recover persisted execution after worker loss, and expose a user-facing operational Studio with authenticated control delegation.
 
 ## 2. Core loop
 
@@ -45,22 +45,31 @@ The proof vault is content-addressed and uses conservative reachability-aware re
 
 Authenticated control-plane operations provide read, dispatch, cancel, and resume semantics. Authorization and audit remain separate from the Studio presentation layer.
 
-## 8. Studio Foundation
+The Studio control surface must delegate mutation to this control plane rather than reproducing authorization or state-transition logic.
 
-The v2.0 Studio is a local, read-only operational surface over persisted Work Objects.
+## 8. Studio
 
-It provides:
+The v2.1 Studio is a local operational surface over persisted Work Objects with optional authenticated control delegation.
+
+Read surface:
 - `GET /` HTML dashboard
 - `GET /health` service health
 - `GET /api/work` bounded Work Object summary listing
 - `GET /api/work/:id` sanitized Work Object detail
 
-Studio security rules:
-- Work IDs are validated before repository access.
-- Individual corrupt Work Objects do not break the summary list.
-- Inputs, constraints, and raw effect receipts are omitted from the detail API.
-- Browser hardening headers are emitted.
-- No state-changing Studio endpoint exists in v2.0.
+Optional control surface:
+- `POST /api/control/dispatch` -> authenticated control-plane dispatch
+- `POST /api/control/work/:id/cancel` -> authenticated control-plane cancel
+- `POST /api/control/work/:id/resume` -> authenticated control-plane resume
+
+Studio control security rules:
+- Work IDs are validated before constructing control-plane routes.
+- The Studio requires a valid bearer header before forwarding.
+- No bearer token is logged or returned.
+- Control-plane authorization is authoritative.
+- Successful control responses are sanitized through the same Studio Work Object projection.
+- No local mutation occurs when the control plane is absent.
+- State-changing Studio operations preserve the control-plane request ID and audit semantics.
 
 ## 9. CLI Lifecycle Surface
 
@@ -70,14 +79,17 @@ The CLI exposes work execution, proof inspection/verification, signer identity, 
 
 WorkProof is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, or distributed-consensus system.
 
-## 11. v2.0 Acceptance Target
+## 11. v2.1 Acceptance Target
 
-- local Studio launch
-- persisted Work Object listing
-- sanitized Work Object detail
-- HTML and API smoke verification
-- no secrets/raw receipts exposed by Studio API
-- source audit
+- v2.0 Studio behavior remains passing.
+- Authenticated dispatch delegation works.
+- Authenticated cancel delegation works.
+- Authenticated resume delegation works.
+- Missing credentials are rejected.
+- Read-only credentials cannot perform Studio mutations.
+- Control responses do not leak sensitive Work Object fields.
+- Control-plane audit entries remain authoritative.
+- Source audit
 - dependency audit
 - full integration suite
 - benchmark/demo/CLI verification
