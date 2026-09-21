@@ -1,4 +1,4 @@
-name: Container
+name: Release
 
 on:
   push:
@@ -6,101 +6,129 @@ on:
       - "release/**"
 
 permissions:
-  contents: read
-  packages: write
+  contents: write
 
 concurrency:
-  group: workproof-runtime-container-${{ github.ref_name }}
+  group: workproof-runtime-release-${{ github.ref_name }}
   cancel-in-progress: false
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
-      - name: Determine image tag
-        id: image
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Determine release tag
+        id: release
         shell: bash
-        run: echo "tag=${GITHUB_REF_NAME#release/}" >> "$GITHUB_OUTPUT"
+        run: echo "tag=v${GITHUB_REF_NAME#release/}" >> "$GITHUB_OUTPUT"
 
-      - name: Read package version
-        id: version
-        shell: bash
-        run: echo "version=$(node -p 'require("./package.json").version')" >> "$GITHUB_OUTPUT"
+      - name: Install dependencies
+        run: npm install
 
-      - name: Verify release branch version
+      - name: Full release verification
+        run: npm run check
+
+      - name: Build distribution files
         env:
-          IMAGE_TAG: ${{ steps.image.outputs.tag }}
-          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
-        run: test "${IMAGE_TAG}" = "${PACKAGE_VERSION}"
-
-      - name: Build image
-        env:
-          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
         run: |
           set -euo pipefail
-          IMAGE="${GITHUB_REPOSITORY,,}"
-          docker build --pull             --build-arg VERSION="${IMAGE_TAG}"             --build-arg VCS_REF="${GITHUB_SHA}"             -t "ghcr.io/${IMAGE}:${IMAGE_TAG}"             -t "ghcr.io/${IMAGE}:${GITHUB_SHA}" .
+          rm -rf release-dist
+          mkdir -p release-dist
 
-      - name: Login to GHCR
+          PACKAGE_NAME="$(node -p "require('./package.json').name")"
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          if [ "${RELEASE_TAG#v}" != "${PACKAGE_VERSION}" ]; then
+            echo "Release tag ${RELEASE_TAG} does not match package version ${PACKAGE_VERSION}"
+            exit 1
+          fi
+          PACKAGE_FILE="$(npm pack --pack-destination release-dist | tail -n 1)"
+          SOURCE_FILE="workproof-runtime-${RELEASE_TAG}.tar.gz"
+          BENCHMARK_FILE="workproof-benchmark-${RELEASE_TAG}.json"
+
+          RELEASE_COMMIT="${GITHUB_SHA}"
+          if git rev-parse -q --verify "refs/tags/${RELEASE_TAG}^{commit}" >/dev/null 2>&1; then
+            RELEASE_COMMIT="$(git rev-list -n 1 "${RELEASE_TAG}")"
+          fi
+
+          git archive --format=tar.gz --output="release-dist/${SOURCE_FILE}" "${RELEASE_COMMIT}"
+          cp benchmark-result.json "release-dist/${BENCHMARK_FILE}"
+
+          cat > release-dist/RELEASE-MANIFEST.txt <<EOF
+          WorkProof Runtime ${RELEASE_TAG}
+          Commit: ${RELEASE_COMMIT}
+          Repository: ${GITHUB_REPOSITORY}
+          Verification: npm run check
+          Package: ${PACKAGE_FILE}
+          Package version: ${PACKAGE_VERSION}
+          Source bundle: ${SOURCE_FILE}
+          Benchmark: ${BENCHMARK_FILE}
+          EOF
+
+          (cd release-dist && sha256sum -- * > SHA256SUMS.txt)
+          cat release-dist/SHA256SUMS.txt
+
+      - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: echo "${GH_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
-
-      - name: Push image
-        env:
-          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
         run: |
           set -euo pipefail
-          IMAGE="${GITHUB_REPOSITORY,,}"
-          docker push "ghcr.io/${IMAGE}:${IMAGE_TAG}"
-          docker push "ghcr.io/${IMAGE}:${GITHUB_SHA}"
+          PACKAGE_VERSION="$(node -p 'require("./package.json").version')"
+          NOTES_FILE="docs/RELEASE-${PACKAGE_VERSION}.md"
+          if gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            echo "Release ${RELEASE_TAG} already exists; continuing idempotently."
+          else
+            gh release create "${RELEASE_TAG}"               --repo "${GITHUB_REPOSITORY}"               --target "${GITHUB_SHA}"               --title "WorkProof Runtime ${RELEASE_TAG}"               --prerelease               --notes-file "${NOTES_FILE}"               release-dist/*
+          fi
 
-      - name: Runtime container smoke
+      - name: Verify published release
         env:
-          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
         run: |
           set -euo pipefail
-          IMAGE="${GITHUB_REPOSITORY,,}"
-          NAME="workproof-runtime-smoke"
-          DATA_DIR="${RUNNER_TEMP}/workproof-runtime-data"
-          mkdir -p "${DATA_DIR}"
-          docker run -d --rm --name "${NAME}" -p 8788:8788 -v "${DATA_DIR}:/data/work-runs" "ghcr.io/${IMAGE}:${IMAGE_TAG}"
-
-          cleanup() {
-            docker logs "${NAME}" || true
-            docker stop "${NAME}" >/dev/null 2>&1 || true
-          }
-          trap cleanup EXIT
-
-          for attempt in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:8788/health | grep -q '"status":"ok"'; then
-              echo "container health verified"
-              exit 0
-            fi
-            sleep 2
+          TAG_COMMIT="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" --jq '.object.sha')"
+          TARGET_COMMIT="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json targetCommitish --jq '.targetCommitish')"
+          test "${TARGET_COMMIT}" = "${TAG_COMMIT}"
+          ASSET_COUNT="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets | length')"
+          test "${ASSET_COUNT}" = "5"
+          ASSET_NAMES="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets[].name')"
+          for required in \
+            "RELEASE-MANIFEST.txt" \
+            "SHA256SUMS.txt" \
+            "operational-reality-core-${RELEASE_TAG#v}.tgz" \
+            "workproof-benchmark-${RELEASE_TAG}.json" \
+            "workproof-runtime-${RELEASE_TAG}.tar.gz"; do
+            echo "${ASSET_NAMES}" | grep -Fx "${required}" >/dev/null
           done
 
-          echo "container health check failed"
-          exit 1
+          rm -rf release-verify
+          mkdir -p release-verify
+          gh release download "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --dir release-verify
+          (cd release-verify && sha256sum -c SHA256SUMS.txt)
 
-      - name: Record image digest and provenance
-        env:
-          IMAGE_TAG: ${{ steps.image.outputs.tag }}
-        run: |
-          set -euo pipefail
-          IMAGE="${GITHUB_REPOSITORY,,}"
-          VERSION_REFDIGEST="$(docker image inspect "ghcr.io/${IMAGE}:${IMAGE_TAG}" --format='{{index .RepoDigests 0}}')"
-          COMMIT_REFDIGEST="$(docker image inspect "ghcr.io/${IMAGE}:${GITHUB_SHA}" --format='{{index .RepoDigests 0}}')"
-          test "${VERSION_REFDIGEST}" = "${COMMIT_REFDIGEST}"
-
-          VERSION_LABEL="$(docker image inspect "ghcr.io/${IMAGE}:${IMAGE_TAG}" --format='{{index .Config.Labels "org.opencontainers.image.version"}}')"
-          REVISION_LABEL="$(docker image inspect "ghcr.io/${IMAGE}:${IMAGE_TAG}" --format='{{index .Config.Labels "org.opencontainers.image.revision"}}')"
-          test "${VERSION_LABEL}" = "${IMAGE_TAG}"
-          test "${REVISION_LABEL}" = "${GITHUB_SHA}"
-
-          printf 'image=%s\nversion=%s\nrevision=%s\n' "${VERSION_REFDIGEST}" "${VERSION_LABEL}" "${REVISION_LABEL}" >> "${GITHUB_STEP_SUMMARY}"
+          node <<'NODE'
+          const fs = require("fs");
+          const tag = process.env.RELEASE_TAG;
+          const result = JSON.parse(fs.readFileSync("release-verify/workproof-benchmark-" + tag + ".json", "utf8"));
+          const metrics = result.metrics ?? {};
+          if (!result.passed || !Array.isArray(result.results) || result.results.length !== 5) process.exit(1);
+          if (!result.results.every((entry) => entry.status === "verified")) process.exit(1);
+          if (metrics.verifiedCompletionRate !== 1 ||
+              metrics.falseDoneCount !== 0 ||
+              metrics.duplicateExternalEffectCount !== 0 ||
+              metrics.ambiguousOutcomeResolvedCount !== 1 ||
+              metrics.capabilitySubstitutionCount !== 1 ||
+              metrics.evidenceCompleteRate !== 1 ||
+              metrics.humanInterventionCount !== 0) process.exit(1);
+          NODE
