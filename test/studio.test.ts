@@ -497,4 +497,87 @@ test("Studio reports an unavailable remote control plane as 503", async () => {
   }
 });
 
+
+test("Studio work API supports safe search, status/risk filters, limits, and operational summaries", async () => {
+  const root = tempDir("workproof-studio-filters-");
+  const repository = new JsonWorkRepository(root);
+  const verified = workFixture();
+  verified.id = "verified-external";
+  verified.contract.objective = "External integration verified";
+  verified.contract.riskClass = "external_write";
+  verified.status = "verified";
+
+  const running = { ...workFixture(), id: "running-local", status: "running" };
+  running.contract.objective = "Local running task";
+  running.contract.riskClass = "local_write";
+
+  const failed = { ...workFixture(), id: "failed-read", status: "failed" };
+  failed.contract.objective = "Read task failed";
+  failed.contract.riskClass = "read";
+
+  const hidden = { ...workFixture(), id: "financial-hidden", status: "partial" };
+  hidden.contract.objective = "Financial review";
+  hidden.contract.riskClass = "financial";
+
+  for (const work of [verified, running, failed, hidden]) repository.save(work);
+
+  const studio = await startStudio({ workDirectory: root, port: 0 });
+  try {
+    const base = `http://127.0.0.1:${studio.port}`;
+
+    const search = await fetch(`${base}/api/work?q=external`);
+    assert.equal(search.status, 200);
+    const searchData = await search.json();
+    assert.equal(searchData.version, "2.9");
+    assert.equal(searchData.total, 1);
+    assert.deepEqual(searchData.filters, { q: "external", status: null, risk: null, limit: 100 });
+    assert.equal(searchData.work[0].id, "verified-external");
+
+    const filtered = await fetch(`${base}/api/work?status=verified&risk=external_write`);
+    assert.equal(filtered.status, 200);
+    const filteredData = await filtered.json();
+    assert.equal(filteredData.total, 1);
+    assert.equal(filteredData.byStatus.verified, 1);
+    assert.equal(filteredData.byRisk.external_write, 1);
+    assert.equal(filteredData.work[0].riskClass, "external_write");
+
+    const limited = await fetch(`${base}/api/work?limit=2`);
+    assert.equal(limited.status, 200);
+    const limitedData = await limited.json();
+    assert.equal(limitedData.total, 4);
+    assert.equal(limitedData.work.length, 2);
+
+    const summary = await fetch(`${base}/api/work?q=task`);
+    assert.equal(summary.status, 200);
+    const summaryData = await summary.json();
+    assert.equal(summaryData.total, 2);
+    assert.equal(summaryData.byStatus.running, 1);
+    assert.equal(summaryData.byStatus.failed, 1);
+    assert.equal(summaryData.byRisk.local_write, 1);
+    assert.equal(summaryData.byRisk.read, 1);
+
+    const invalidStatus = await fetch(`${base}/api/work?status=made_up`);
+    assert.equal(invalidStatus.status, 400);
+    assert.equal((await invalidStatus.json()).error, "invalid-status");
+
+    const invalidRisk = await fetch(`${base}/api/work?risk=made_up`);
+    assert.equal(invalidRisk.status, 400);
+    assert.equal((await invalidRisk.json()).error, "invalid-risk");
+
+    const invalidLimit = await fetch(`${base}/api/work?limit=0`);
+    assert.equal(invalidLimit.status, 400);
+    assert.equal((await invalidLimit.json()).error, "invalid-limit");
+
+    const page = await fetch(base);
+    const html = await page.text();
+    assert.match(html, /Work filters/);
+    assert.match(html, /workQuery/);
+    assert.match(html, /workStatus/);
+    assert.match(html, /workRisk/);
+  } finally {
+    await studio.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 export {};
