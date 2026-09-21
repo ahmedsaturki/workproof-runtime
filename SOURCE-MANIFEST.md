@@ -2,15 +2,17 @@
 
 ## Required source tree
 
-The active main v1.5 branch contains **101 required paths** enforced by scripts/verify-source-tree.js.
+The active main v1.6 branch contains 102 required paths enforced by scripts/verify-source-tree.js.
 
 The current tree includes:
+- proof registry and authenticated transport
+- signed proof identity and trusted signer policy
+- proof-vault retention, reachability, and GC
 - persistent cross-process lease authority
 - WorkEngine execution-lease binding
-- worker registration/heartbeat/offline state
-- proof registry, trust policy, signed proofs, and retention lifecycle
+- durable worker-loss recovery
 - browser acceptance reliability preflight
-- live GitHub read/write safety regression coverage
+- live GitHub integration and external-write safety regression coverage
 
 ## Exact v0.4 local history
 
@@ -26,11 +28,12 @@ The current tree includes:
 - browser reliability merge commit: 6c01f201f6cec32ab6fa34a01fe878d3f47c5b0b
 - v1.4 worker-ownership merge commit: 8dfbce5609e2eba967971cc2dd4ea464b0604504
 - v1.5 execution-lease merge commit: b09fbf40489944b09dbcb33dda73ba0fcb57fb04
+- v1.6 worker-loss recovery merge commit: b7a1bacd0d47baab7d759bb572351434ac5fdb60
 
 ## Current verification evidence
 
-- merged-main CI run #410: success
-- source audit: 101/101
+- merged-main CI #422: success
+- source audit: 102/102
 - dependency security audit: success
 - retention lifecycle suite: passed
 - full unit/integration suite: passed

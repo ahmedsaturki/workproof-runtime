@@ -1,12 +1,12 @@
 # WorkProof Runtime
 
-Outcome-first digital work runtime: execute real work, reconcile external effects, verify outcomes, preserve proof, manage proof lifecycle, and bind execution to worker ownership.
+Outcome-first digital work runtime: execute real work, reconcile external effects, verify outcomes, preserve proof, manage proof lifecycle, and recover execution after worker loss.
 
 ## Current status
 
-**v1.5 WorkEngine execution-lease integration is verified on main.**
+**v1.6 worker-loss recovery is verified on main.**
 
-The main line now combines durable Work Objects, signed proof identity, trusted signer policy, authenticated proof registry transport, proof-vault lifecycle management, persistent cross-process lease authority, worker registration/heartbeat/offline state, and WorkEngine-bound execution leases.
+The main line combines durable Work Objects, signed proof identity, trusted signer policy, authenticated proof registry transport, proof-vault lifecycle management, persistent cross-process lease authority, worker registration/heartbeat/offline state, WorkEngine-bound execution leases, and durable recovery after worker loss.
 
 ## Core loop
 
@@ -22,38 +22,37 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - v1.4 deterministic worker ownership.
 - v1.4.1 persistent cross-process lease authority.
 - v1.5 WorkEngine execution-lease binding.
+- v1.6 worker-loss recovery.
 
-## v1.5 execution ownership
+## v1.6 worker-loss recovery
 
-- WorkEngine acquires a lease before executing a step.
-- Busy ownership becomes an explicit `waiting_lease` work state without invoking the capability.
-- Long-running capability execution renews ownership through a heartbeat.
-- Ownership loss prevents false verified success and records an unresolved outcome.
-- Graceful completion releases the lease.
-- Persisted effect semantics remain authoritative; leases do not replace external idempotency or reconciliation.
+- Recoverable persisted Work Objects can be discovered from durable storage.
+- Recovery reloads work into a fresh WorkStore and re-enters WorkEngine execution under a replacement owner.
+- Expired leases are reaped before recovery; live owners remain authoritative and block execution with waiting_lease.
+- Existing ambiguous effects remain governed by idempotency and reconciliation, so recovery does not blindly duplicate an external write.
+- Stale owners cannot renew or release after ownership has moved.
 
 ## Verification evidence
 
-- Main commit: `b09fbf40489944b09dbcb33dda73ba0fcb57fb04`
-- Merged-main CI #410: success.
-- Source audit: 101/101 required paths.
+- Main commit: b7a1bacd0d47baab7d759bb572351434ac5fdb60
+- Merged-main CI #422: success.
+- Source audit: 102/102 required paths.
 - Dependency security audit: success.
 - Retention lifecycle suite: passed.
 - Full sequential unit/integration suite: passed.
 - Benchmark: passed.
-- Demo: verified.
-- CLI proof and mission: verified.
+- Demo and CLI mission: verified.
 - Live GitHub smoke: verified.
 
 ## Safety boundary
 
-Leases prevent overlapping ownership within their configured authority. They are not proof of outcome, an exactly-once guarantee for arbitrary external systems, or a distributed-consensus protocol.
+Leases provide ownership coordination within their authority; they do not provide exactly-once semantics for arbitrary external systems or distributed consensus.
 
 A capability receipt is not proof of the final outcome. External side effects require independent verification or reconciliation.
 
-SHA-256 integrity is tamper-evident metadata, not a cryptographic signature.
+SHA-256 is tamper-evident integrity metadata, not a cryptographic signature.
 
-Ed25519 signatures provide cryptographic authenticity under the embedded public key; trusted-key acceptance, revocation, rotation, and distribution remain separate policy concerns.
+Ed25519 signatures authenticate a proof under the embedded public key; trusted-key acceptance, rotation, revocation, and distribution remain separate policy concerns.
 
 Garbage collection never treats age alone as sufficient evidence for deletion. Protected roots, explicit retention, reachability, namespace scope, and content integrity are evaluated before deletion.
 
@@ -63,8 +62,8 @@ WorkProof Runtime is not itself a generic agent framework, browser automation en
 
 ## Next engineering gate
 
-**v1.6 — worker-loss recovery and authenticated control-plane foundation**
+**v1.7 — authenticated control-plane and SDK foundation**
 
-The next gate extends ownership from single-step lease binding into recoverable multi-process execution: persisted Work Object reload after worker loss, deterministic lease-expiry reconciliation, authenticated dispatch/status/cancel/resume primitives, SDK round-trip preservation, and explicit saga/compensation semantics.
+Expose status, dispatch, cancel, and resume through the existing authentication model, keep every transition durable/auditable, and provide SDK types that round-trip without changing Work Object or proof semantics.
 
 This repository does not make a global novelty claim.

@@ -1,8 +1,8 @@
-# WorkProof Runtime Specification - v1.5-dev
+# WorkProof Runtime Specification - v1.6-dev
 
 ## 1. Purpose
 
-Represent a bounded digital outcome as a durable Work Object, execute it through explicit capabilities and worker ownership, safely handle external effects, independently verify outcomes, preserve portable proof, and manage proof lifecycle without deleting reachable evidence.
+Represent a bounded digital outcome as a durable Work Object, execute it through explicit capabilities and worker ownership, safely handle external effects, independently verify outcomes, preserve portable proof, manage proof lifecycle, and recover persisted execution after worker loss.
 
 ## 2. Core loop
 
@@ -35,25 +35,37 @@ An execution lease binds a WorkEngine step to an owner within a configured lease
 
 Lease behavior:
 - acquisition occurs before capability execution.
-- busy ownership yields `waiting_lease` without executing the capability.
+- busy ownership yields waiting_lease without executing the capability.
 - long-running work renews ownership through a heartbeat.
 - lease loss produces an unresolved outcome rather than false completion.
 - graceful completion releases ownership.
 - lease ownership does not replace external idempotency, reconciliation, or independent verification.
 
-Lease authority implementations may be in-memory or persistent. Persistent cross-process authority uses transactional storage and durable lease identity/revision semantics.
+Persistent cross-process authority uses transactional storage and durable lease identity/revision semantics.
 
-## 6. Verification and Evidence
+## 6. Worker-Loss Recovery
+
+Recoverable persisted work may be reloaded by a replacement worker through a recovery coordinator.
+
+Recovery rules:
+- only persisted work in running, waiting_lease, or unresolved states is eligible.
+- expired execution leases may be reaped before a replacement owner attempts execution.
+- a live lease remains authoritative and causes the replacement engine to return waiting_lease without invoking the capability.
+- existing effect records and idempotency keys remain authoritative during resume.
+- ambiguous external effects must reconcile against external state before a blind retry.
+- ownership loss or stale-owner operations never establish verified success.
+
+## 7. Verification and Evidence
 
 A verifier receives the Work Object, success criterion, and known evidence and returns criterion-specific status, details, and evidence references.
 
 Proof bundles identify the durable work, effects, artifacts, verification, and events. Canonical SHA-256 provides tamper-evident integrity. Ed25519 signatures can provide cryptographic authenticity under an embedded public key. Trust policy determines whether a signing identity is accepted.
 
-## 7. Persistence
+## 8. Persistence
 
 Work state, lease state, worker registration, vault indexes, trust snapshots, and lifecycle metadata use authoritative persistence where recovery or ownership depends on durable state.
 
-## 8. Proof Vault Lifecycle
+## 9. Proof Vault Lifecycle
 
 The proof vault stores content-addressed proof files and artifacts.
 
@@ -65,28 +77,28 @@ Retention classes:
 
 Explicit retention entries override the default class. Explicit pins create protected roots and may have an expiration. Namespace-scoped lifecycle operations are conservative: unscoped content is not deleted under a namespace filter.
 
-## 9. Reachability and Garbage Collection
+## 10. Reachability and Garbage Collection
 
 A retained proof is a root for every artifact reference stored in its vault index record. Explicitly retained or pinned artifacts are independently rooted.
 
 Collection uses a plan phase and a journaled execute phase. Age alone is never sufficient for deletion. Corrupt or unverified proof/artifact content is not automatically deleted.
 
-## 10. CLI Lifecycle Surface
+## 11. CLI Lifecycle Surface
 
 The CLI exposes work execution, proof inspection/verification, signer identity, registry operations, and proof-vault lifecycle operations.
 
-## 11. Non-goals
+## 12. Non-goals
 
-WorkProof is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, distributed-consensus system, or hosted identity provider.
+WorkProof is not itself a generic agent framework, browser automation engine, workflow/queue product, memory database, observability backend, OSINT graph, or distributed-consensus system.
 
-## 12. v1.5 Acceptance Target
+## 13. v1.6 Acceptance Target
 
-- persistent cross-process lease authority
-- WorkEngine execution-lease binding
-- busy ownership isolation
-- heartbeat renewal
-- lease-loss safety
-- preservation of effect/recovery/verification semantics
+- persisted recoverable Work Object discovery
+- replacement-owner WorkEngine resume
+- deterministic expired-lease recovery
+- live-owner waiting_lease isolation
+- ambiguous-effect reconciliation before blind replay
+- stale-owner protection
 - source audit
 - dependency audit
 - full integration suite
