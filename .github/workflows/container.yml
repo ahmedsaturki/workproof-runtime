@@ -15,6 +15,7 @@ concurrency:
 
 jobs:
   publish:
+    if: startsWith(github.ref, 'refs/heads/release/')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -83,7 +84,7 @@ jobs:
           NAME="workproof-runtime-smoke"
           DATA_DIR="${RUNNER_TEMP}/workproof-runtime-data"
           mkdir -p "${DATA_DIR}"
-          docker run -d --rm --name "${NAME}" -p 8788:8788 -v "${DATA_DIR}:/data/work-runs" "ghcr.io/${IMAGE}:${IMAGE_TAG}"
+          docker run -d --rm --name "${NAME}"             -p 127.0.0.1:8788:8788             -v "${DATA_DIR}:/data/work-runs"             "ghcr.io/${IMAGE}:${IMAGE_TAG}"
 
           cleanup() {
             docker logs "${NAME}" || true
@@ -108,15 +109,14 @@ jobs:
         run: |
           set -euo pipefail
           IMAGE="${GITHUB_REPOSITORY,,}"
-          VERSION_REFDIGEST="$(docker image inspect "ghcr.io/${IMAGE}:${IMAGE_TAG}" --format='{{index .RepoDigests 0}}')"
           RELEASE_COMMIT="${{ steps.source.outputs.commit }}"
+          VERSION_REFDIGEST="$(docker image inspect "ghcr.io/${IMAGE}:${IMAGE_TAG}" --format='{{index .RepoDigests 0}}')"
           COMMIT_REFDIGEST="$(docker image inspect "ghcr.io/${IMAGE}:${RELEASE_COMMIT}" --format='{{index .RepoDigests 0}}')"
           test "${VERSION_REFDIGEST}" = "${COMMIT_REFDIGEST}"
 
           VERSION_LABEL="$(docker image inspect "ghcr.io/${IMAGE}:${IMAGE_TAG}" --format='{{index .Config.Labels "org.opencontainers.image.version"}}')"
           REVISION_LABEL="$(docker image inspect "ghcr.io/${IMAGE}:${IMAGE_TAG}" --format='{{index .Config.Labels "org.opencontainers.image.revision"}}')"
           test "${VERSION_LABEL}" = "${IMAGE_TAG}"
-          RELEASE_COMMIT="${{ steps.source.outputs.commit }}"
           test "${REVISION_LABEL}" = "${RELEASE_COMMIT}"
 
           printf 'image=%s\nversion=%s\nrevision=%s\n' "${VERSION_REFDIGEST}" "${VERSION_LABEL}" "${REVISION_LABEL}" >> "${GITHUB_STEP_SUMMARY}"
