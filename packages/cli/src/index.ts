@@ -15,6 +15,7 @@ const { generateProofKeyPair, signProof, verifyProofSignature, proofKeyId } = re
 const { loadTrustPolicy, saveTrustPolicy, trustKey, revokeKey, evaluateProofTrust } = require("../../evidence/src/trust.js");
 const { publishProof, restoreProof, listProofs, inspectProof } = require("../../evidence/src/vault.js");
 const { createAuthPolicy, loadAuthPolicy, saveAuthPolicy, issueCredential, addIssuedCredential, revokeCredential } = require("../../registry/src/auth.js");
+const { publishTrustSnapshotToRegistry, getTrustSnapshotFromRegistry, listTrustSnapshotsFromRegistry, getCurrentTrustSnapshotFromRegistry, applyTrustSnapshotToRegistry } = require("../../registry/src/client.js");
 
 function usage(): void {
   process.stdout.write(`workctl
@@ -31,9 +32,14 @@ function usage(): void {
   vault-list <vault-dir>
   vault-inspect <digest> <vault-dir>
   registry-auth-init <policy.json>
-  registry-auth-add <policy.json> <credential-id> <read|write|readwrite> [namespace] [label]
+  registry-auth-add <policy.json> <credential-id> <read|write|trust|readwrite> [namespace] [label]
   registry-auth-revoke <credential-id> <policy.json> [reason]
   registry-auth-list <policy.json>
+  registry-trust-publish <snapshot.json> <registry-url> <token>
+  registry-trust-pull <digest> <registry-url> <output.json> <token>
+  registry-trust-list <registry-url> [token]
+  registry-trust-current <registry-url> [token]
+  registry-trust-apply <digest> <registry-url> <token> [--allow-rollback]
 `);
 }
 
@@ -86,10 +92,17 @@ function registryAuthInit(policyPath: string): void {
 }
 
 function registryAuthAdd(policyPath: string, credentialId: string, permissionSpec: string, namespace?: string, label?: string): void {
-  const permissions =
-    permissionSpec === "readwrite" ? ["read", "write"] :
-    permissionSpec === "read" || permissionSpec === "write" ? [permissionSpec] : null;
-  if (!permissions) throw new Error("Permission must be read, write, or readwrite");
+  const permissionMap: Record<string, string[]> = {
+    read: ["read"],
+    write: ["write"],
+    trust: ["trust"],
+    readwrite: ["read", "write"],
+    readtrust: ["read", "trust"],
+    writetrust: ["write", "trust"],
+    readwritetrust: ["read", "write", "trust"]
+  };
+  const permissions = permissionMap[permissionSpec] ?? null;
+  if (!permissions) throw new Error("Permission must be read, write, trust, readwrite, readtrust, writetrust, or readwritetrust");
   const policy = loadAuthPolicy(policyPath);
   const issued = issueCredential({ id: credentialId, permissions, ...(namespace ? { namespace } : {}), ...(label ? { label } : {}) });
   const next = addIssuedCredential(policy, issued);
@@ -102,6 +115,33 @@ function registryAuthAdd(policyPath: string, credentialId: string, permissionSpe
     namespace: issued.credential.namespace ?? null,
     token: issued.token
   }, null, 2) + "\n");
+}
+
+async function registryTrustPublish(snapshotPath: string, registryUrl: string, token: string): Promise<void> {
+  const snapshot = JSON.parse(fs.readFileSync(snapshotPath, "utf8"));
+  const result = await publishTrustSnapshotToRegistry(registryUrl, snapshot, token);
+  process.stdout.write(JSON.stringify(result, null, 2) + "\n");
+}
+
+async function registryTrustPull(digest: string, registryUrl: string, outputPath: string, token: string): Promise<void> {
+  const snapshot = await getTrustSnapshotFromRegistry(registryUrl, digest, token);
+  fs.writeFileSync(outputPath, JSON.stringify(snapshot, null, 2) + "\n", "utf8");
+  process.stdout.write(JSON.stringify({ status: "pulled", digest, outputPath, epoch: snapshot.epoch }, null, 2) + "\n");
+}
+
+async function registryTrustList(registryUrl: string, token?: string): Promise<void> {
+  const records = await listTrustSnapshotsFromRegistry(registryUrl, token);
+  process.stdout.write(JSON.stringify(records, null, 2) + "\n");
+}
+
+async function registryTrustCurrent(registryUrl: string, token?: string): Promise<void> {
+  const snapshot = await getCurrentTrustSnapshotFromRegistry(registryUrl, token);
+  process.stdout.write(JSON.stringify(snapshot, null, 2) + "\n");
+}
+
+async function registryTrustApply(digest: string, registryUrl: string, token: string, allowRollback: boolean): Promise<void> {
+  const result = await applyTrustSnapshotToRegistry(registryUrl, digest, token, allowRollback);
+  process.stdout.write(JSON.stringify(result, null, 2) + "\n");
 }
 
 function registryAuthRevoke(credentialId: string, policyPath: string, reason?: string): void {
@@ -236,6 +276,21 @@ if (!command) {
     try { registryAuthRevoke(firstArg, secondArg, thirdArg); }
     catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
   }
+} else if (command === "registry-trust-publish") {
+  if (!firstArg || !secondArg || !thirdArg) { usage(); process.exitCode = 1; }
+  else registryTrustPublish(firstArg, secondArg, thirdArg).catch(error => { process.stderr.write(String(error) + "\n"); process.exitCode = 1; });
+} else if (command === "registry-trust-pull") {
+  if (!firstArg || !secondArg || !thirdArg || !fourthArg) { usage(); process.exitCode = 1; }
+  else registryTrustPull(firstArg, secondArg, thirdArg, fourthArg).catch(error => { process.stderr.write(String(error) + "\n"); process.exitCode = 1; });
+} else if (command === "registry-trust-list") {
+  if (!firstArg) { usage(); process.exitCode = 1; }
+  else registryTrustList(firstArg, secondArg).catch(error => { process.stderr.write(String(error) + "\n"); process.exitCode = 1; });
+} else if (command === "registry-trust-current") {
+  if (!firstArg) { usage(); process.exitCode = 1; }
+  else registryTrustCurrent(firstArg, secondArg).catch(error => { process.stderr.write(String(error) + "\n"); process.exitCode = 1; });
+} else if (command === "registry-trust-apply") {
+  if (!firstArg || !secondArg || !thirdArg) { usage(); process.exitCode = 1; }
+  else registryTrustApply(firstArg, secondArg, thirdArg, fourthArg === "--allow-rollback").catch(error => { process.stderr.write(String(error) + "\n"); process.exitCode = 1; });
 } else if (command === "registry-auth-list") {
   if (!firstArg) { usage(); process.exitCode = 1; }
   else {

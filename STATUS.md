@@ -7,20 +7,10 @@ Date: 2026-09-21
 v1.1-dev authenticated multi-user proof registry is verified on main.
 
 Current main commit:
-cdaf5926a9ef6c388d476b1fd3c39ca396b8bf39
+ce08fd74a7c86e8b37b59f925ceb605b34679ddf
 
 Verified v1.1 implementation commit:
 7eeefa13afa56acb9db5038ec3b5885f0724e46f
-
-Verification:
-- v1.0 self-hosted registry: verified.
-- v1.1 authentication/authorization: verified.
-- namespace isolation: verified.
-- focused registry security regressions: verified.
-- dependency security audit: verified.
-- full build/test/benchmark/demo/CLI pipeline: verified.
-- live GitHub smoke: verified.
-- current documentation head (cdaf5926...) passed its own CI.
 
 ## Active next gate
 
@@ -32,6 +22,7 @@ Target:
 - signed administrative identity
 - explicit signer authorization
 - deterministic accept/noop/conflict/rollback reconciliation
+- namespace-scoped administrative signer trust
 - registry-to-registry trust transport
 - signed snapshot replication and revocation propagation
 

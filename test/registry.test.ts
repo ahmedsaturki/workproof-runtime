@@ -68,7 +68,7 @@ test("self-hosted registry publishes, retrieves, lists, and idempotently republi
 
     const health = await request(registry.port, "GET", "/health");
     assert.equal(health.status, 200);
-    assert.deepEqual(JSON.parse(health.body), { status: "ok", version: "1.1" });
+    assert.deepEqual(JSON.parse(health.body), { status: "ok", version: "1.2" });
 
     const first = await request(registry.port, "POST", "/v1/proofs", payload);
     assert.equal(first.status, 200);
