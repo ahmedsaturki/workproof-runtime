@@ -4,9 +4,9 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v2.0-dev local Studio foundation is verified on main.**
+**v2.1-dev authenticated Studio control is in progress.**
 
-The v2.0 milestone adds a dependency-free, read-only local Studio over persisted Work Objects. It is verified on main by feature CI #547 and merged-main CI #548. The UI is backed by the same JSON Work Object repository used by the runtime and keeps control actions behind the authenticated control plane.
+v2.0 established a dependency-free, read-only local Studio over persisted Work Objects. v2.1 adds a thin same-origin control proxy that delegates dispatch, cancel, and resume to the authenticated control plane without introducing a second authorization system.
 
 ## Core loop
 
@@ -26,6 +26,7 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - v1.7 authenticated control-plane and SDK foundation.
 - v1.8 explicit saga/compensation semantics.
 - v1.9 durable saga recovery.
+- v2.0 local read-only Studio.
 
 ## v2.0 Studio foundation
 
@@ -33,20 +34,30 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - Persisted Work Objects are listed from the authoritative JSON repository.
 - A detail view exposes status, effects, artifacts, verification checks, and recent events.
 - Sensitive execution inputs, constraints, and raw effect receipts are not exposed by the Studio API.
-- The Studio API is read-only in this milestone.
 - HTTP responses include no-store and browser hardening headers.
 - CLI entrypoint: `npm run studio`.
+
+## v2.1 authenticated Studio control
+
+- Studio control routes are same-origin and proxy to the authenticated control plane.
+- Browser control uses a bearer token supplied by the operator and kept only in page memory.
+- Dispatch, cancel, and resume are delegated to the control plane; Studio does not authorize them independently.
+- Missing or malformed bearer credentials are rejected before forwarding.
+- Successful control responses are sanitized before leaving the Studio boundary.
+- Control-plane request IDs and audit behavior remain authoritative.
+- Control routes return `503` when no control plane is configured, rather than mutating local state.
+- The Studio has no direct Work Object mutation path.
 
 ## Safety boundary
 
 Compensation is not guaranteed rollback. The runtime records what was attempted, what was independently verified, and what remains unresolved.
 
-The Studio foundation is intentionally read-only. Dispatch, resume, and cancellation remain behind the authenticated control-plane contract.
+Studio control is not a new control plane: authorization, state transitions, and mutation audits remain owned by the authenticated control-plane implementation.
 
 Proof integrity and signatures establish integrity/authenticity properties under their defined trust boundaries; they do not create an organization-wide trust or revocation policy by themselves.
 
 ## Next engineering gates
 
-Authenticated Studio controls through the control plane, broader distributed worker/control-plane hardening, additional capability packs/integrations, and richer proof/audit views remain separate milestones.
+Broader distributed worker/control-plane hardening, trusted-key policy surfaces, additional capability packs/integrations, remote Studio mode, and richer proof/audit views remain separate milestones.
 
 This repository does not make a global novelty claim.
