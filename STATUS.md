@@ -7,10 +7,10 @@ Date: 2026-09-21
 **v1.8 explicit saga and compensation semantics are verified on main.**
 
 Main merge commit:
-545dffda29c04249677f9605e5709f8e8c9d2ffb
+7ece472d4701adbc8aaaddd3671579de0ecf8eda
 
-Merged-main verification:
-- CI #476: success.
+Latest merged-main verification:
+- CI #478: success.
 - source audit: 111/111 required paths.
 - dependency security audit: success.
 - retention lifecycle suite: 9/9 passed.
@@ -20,26 +20,34 @@ Merged-main verification:
 - CLI proof and mission: verified.
 - live GitHub smoke: verified.
 
-## Verified v1.8 gates
+## Active milestone
 
-- [x] First-class compensating effects with explicit identity.
-- [x] Forward-effect to compensation linkage.
-- [x] Compensation risk ceilings and approval policy.
-- [x] Lost-acknowledgement reconciliation without duplicate write.
-- [x] Partial and unresolved saga states remain explicit.
-- [x] Persisted verified compensation is not replayed.
-- [x] Proof, retention, vault, registry, and CLI preserve saga lineage.
-- [x] Legacy work objects remain schema-compatible.
-- [x] Feature CI and merged-main CI both pass.
+**v1.9 — durable saga recovery after worker loss**
 
-## Remaining saga hardening
+Active branch:
+feature/v1.9-saga-worker-loss-recovery
 
-- [ ] Recover partially completed sagas after worker/process loss as an explicit end-to-end acceptance path.
-- [ ] Multi-user proof trust policy for signed identities.
-- [ ] Broader remote proof/artifact lifecycle surfaces.
-- [ ] External browser navigation where permitted.
-- [ ] Further worker/control-plane hardening.
-- [ ] Studio / wider product surfaces.
+Acceptance targets:
+- partial saga survives worker/process loss as a durable Work Object.
+- replacement worker can acquire saga recovery lease after expiry.
+- verified compensation is never replayed.
+- pending compensation executes through the existing policy/idempotency/reconciliation path.
+- ambiguous compensation acknowledgement is reconciled before retry.
+- stale recovery ownership cannot continue after lease handoff.
+
+## Closed milestones
+
+- [x] v1.0 self-hosted proof registry.
+- [x] v1.1 authenticated registry.
+- [x] v1.2 signed trust-policy synchronization.
+- [x] v1.3 retention/reachability/GC lifecycle.
+- [x] Browser acceptance reliability correction.
+- [x] v1.4 deterministic worker ownership.
+- [x] v1.4.1 persistent cross-process lease authority.
+- [x] v1.5 WorkEngine execution-lease binding.
+- [x] v1.6 durable worker-loss recovery.
+- [x] v1.7 authenticated control-plane and SDK foundation.
+- [x] v1.8 explicit saga/compensation semantics.
 
 ## Verification rule
 

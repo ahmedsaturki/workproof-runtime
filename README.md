@@ -4,13 +4,13 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v1.8 explicit saga/compensation semantics are verified on main.**
+**v1.9 durable saga recovery after worker loss is in development.**
 
-Compensation is modeled as explicit auditable work linked to originating forward effects. The runtime does not treat arbitrary external effects as automatically reversible.
+The runtime now has explicit saga and compensation semantics. This milestone extends those semantics across worker/process loss so a replacement owner can resume pending compensation work without replaying verified compensation.
 
 ## Core loop
 
-Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify -> Recover/Substitute -> Deliver -> Proof -> Retain -> Control -> Compensate
+Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify -> Recover/Substitute -> Deliver -> Proof -> Retain -> Control -> Compensate -> Recover
 
 ## Verified platform gates
 
@@ -26,28 +26,22 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - v1.7 authenticated control-plane and SDK foundation.
 - v1.8 explicit saga/compensation semantics.
 
-## v1.8 saga/compensation
+## v1.9 saga recovery
 
-- Compensation has its own effect kind and effect identity.
-- Each compensation links to its originating forward effect.
-- Saga state tracks forward and compensation lineage explicitly.
-- Compensation obeys work risk ceilings and approval policy.
-- Ambiguous/lost acknowledgements reconcile external state before duplicate writes.
-- Partial, unresolved, and fully compensated states remain explicit.
-- Verified compensation is not replayed after persistence/resume.
-- Proof bundles and proof-retention paths preserve saga lineage.
-- Legacy work objects remain readable without a saga field.
+- Saga recovery acquires a dedicated, lease-bound ownership resource.
+- A replacement worker can recover a persisted partial saga after the previous lease expires.
+- Already verified compensations are skipped.
+- Pending compensations reuse existing policy, idempotency, reconciliation, and independent verification rules.
+- Lost acknowledgements are reconciled before another compensation write.
+- Stale recovery owners are rejected by the same lease authority.
+- Recovery remains explicit and auditable; it is not automatic rollback.
 
 ## Safety boundary
 
-Compensation is not guaranteed rollback. The runtime records what was attempted, what was independently verified, and what remains unresolved.
-
-GitHub marker-based idempotency is reconciliation-based, not an atomic exactly-once primitive across independent writers.
-
-Proof integrity and signatures establish integrity/authenticity properties under their defined trust boundaries; they do not create an organization-wide trust or revocation policy by themselves.
+Saga recovery is ownership recovery plus bounded compensation execution. It does not establish arbitrary external rollback or atomic exactly-once semantics.
 
 ## Next engineering gates
 
-Explicit saga recovery after worker/process loss, multi-user signer trust policy, further worker/control-plane hardening, broader capabilities, and product-facing Studio surfaces remain separate milestones.
+Multi-user signer trust policy, broader remote proof/artifact lifecycle, further worker/control-plane hardening, external browser navigation where permitted, and product-facing Studio surfaces remain separate milestones.
 
 This repository does not make a global novelty claim.

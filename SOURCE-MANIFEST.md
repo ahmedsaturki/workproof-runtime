@@ -40,6 +40,20 @@ The current tree includes:
 - test/compensation.test.ts
 - saga lineage preserved across proof/retention/registry/CLI integrity reconstruction
 
+## v1.9 additions
+
+- docs/RELEASE-GATE-V1.9.md
+- packages/compensation/src/recovery.ts
+- test/saga-recovery.test.ts
+
+## v1.9 verification target
+
+- Persisted partial saga recovery after worker loss.
+- Replacement-worker saga lease acquisition.
+- Verified compensation skip-on-resume.
+- Ambiguous compensation reconciliation before retry.
+- Stale-worker ownership rejection.
+
 ## Current verification evidence
 
 - merged-main CI #476: success
