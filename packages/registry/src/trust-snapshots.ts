@@ -24,6 +24,7 @@ export interface TrustSnapshotIndex {
 
 function now(): string { return new Date().toISOString(); }
 function snapshotRoot(registryDir: string): string { return path.join(registryDir, "trust-snapshots"); }
+function snapshotFilePath(registryDir: string, digest: string): string { return path.join(snapshotRoot(registryDir), `${digest}.json`); }
 function snapshotIndexPath(registryDir: string): string { return path.join(snapshotRoot(registryDir), "index.json"); }
 function currentPath(registryDir: string): string { return path.join(snapshotRoot(registryDir), "current.json"); }
 function auditPath(registryDir: string): string { return path.join(snapshotRoot(registryDir), "events.jsonl"); }
@@ -54,7 +55,7 @@ function loadIndex(registryDir: string): TrustSnapshotIndex {
   if (!value || value.version !== "0.1" || !Array.isArray(value.records)) throw new Error("Invalid trust snapshot index");
   const seen = new Set<string>();
   for (const record of value.records) {
-    if (!record || record.version !== "0.1" || !isDigest(record.digest) || !Number.isSafeInteger(record.epoch) || record.epoch < 0 || typeof record.signerKeyId !== "string" || typeof record.path !== "string" || !record.path.endsWith(`${record.digest}.json`)) {
+    if (!record || record.version !== "0.1" || !isDigest(record.digest) || !Number.isSafeInteger(record.epoch) || record.epoch < 0 || typeof record.signerKeyId !== "string" || record.path !== `${record.digest}.json`) {
       throw new Error("Invalid trust snapshot record");
     }
     if (seen.has(record.digest)) throw new Error(`Duplicate trust snapshot digest: ${record.digest}`);
@@ -76,7 +77,7 @@ function recordAudit(registryDir: string, entry: Record<string, unknown>): void 
 export function publishTrustSnapshot(registryDir: string, snapshot: TrustPolicySnapshot, trustedAdminKeyIds: Set<string>): TrustSnapshotRecord {
   ensureRoot(registryDir);
   validateSnapshot(snapshot, trustedAdminKeyIds);
-  const destination = path.join(snapshotRoot(registryDir), `${snapshot.digest}.json`);
+  const destination = snapshotFilePath(registryDir, snapshot.digest);
   if (!fs.existsSync(destination)) fs.writeFileSync(destination, canonicalSnapshot(snapshot), { encoding: "utf8", mode: 0o600 });
   else {
     const existing = JSON.parse(fs.readFileSync(destination, "utf8")) as TrustPolicySnapshot;
@@ -86,7 +87,7 @@ export function publishTrustSnapshot(registryDir: string, snapshot: TrustPolicyS
   const index = loadIndex(registryDir);
   const existing = index.records.find((item) => item.digest === snapshot.digest);
   if (existing) return existing;
-  const record: TrustSnapshotRecord = { version: "0.1", digest: snapshot.digest, epoch: snapshot.epoch, signerKeyId: snapshot.signature!.keyId, path: destination, publishedAt: now() };
+  const record: TrustSnapshotRecord = { version: "0.1", digest: snapshot.digest, epoch: snapshot.epoch, signerKeyId: snapshot.signature!.keyId, path: `${snapshot.digest}.json`, publishedAt: now() };
   index.records.push(record);
   index.records.sort((x, y) => y.publishedAt.localeCompare(x.publishedAt));
   saveIndex(registryDir, index);
@@ -97,8 +98,9 @@ export function publishTrustSnapshot(registryDir: string, snapshot: TrustPolicyS
 export function getTrustSnapshot(registryDir: string, digest: string, trustedAdminKeyIds: Set<string>): TrustPolicySnapshot {
   if (!isDigest(digest)) throw new Error("Trust snapshot digest must be a lowercase SHA-256 value");
   const record = loadIndex(registryDir).records.find((item) => item.digest === digest);
-  if (!record || !fs.existsSync(record.path)) throw new Error(`Unknown trust snapshot digest: ${digest}`);
-  const snapshot = JSON.parse(fs.readFileSync(record.path, "utf8")) as TrustPolicySnapshot;
+  const snapshotPath = snapshotFilePath(registryDir, digest);
+  if (!record || !fs.existsSync(snapshotPath)) throw new Error(`Unknown trust snapshot digest: ${digest}`);
+  const snapshot = JSON.parse(fs.readFileSync(snapshotPath, "utf8")) as TrustPolicySnapshot;
   validateSnapshot(snapshot, trustedAdminKeyIds);
   if (snapshot.digest !== digest) throw new Error("Trust snapshot digest mismatch");
   return snapshot;
