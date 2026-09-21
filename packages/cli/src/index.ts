@@ -13,6 +13,7 @@ const { buildProofBundle } = require("../../evidence/src/bundle.js");
 const { buildIntegrityManifest, verifyProofIntegrity } = require("../../evidence/src/integrity.js");
 const { generateProofKeyPair, signProof, verifyProofSignature, proofKeyId } = require("../../evidence/src/signature.js");
 const { loadTrustPolicy, saveTrustPolicy, trustKey, revokeKey, evaluateProofTrust } = require("../../evidence/src/trust.js");
+const { publishProof, restoreProof, listProofs, inspectProof } = require("../../evidence/src/vault.js");
 
 function usage(): void {
   process.stdout.write(`workctl
@@ -24,6 +25,10 @@ function usage(): void {
   sign <proof.json> <private.pem>
   trust-add <public.pem> <trust-policy.json> [label]
   trust-revoke <key-id> <trust-policy.json> [reason]
+  vault-publish <proof.json> <vault-dir>
+  vault-restore <digest> <vault-dir> <output.json>
+  vault-list <vault-dir>
+  vault-inspect <digest> <vault-dir>
 `);
 }
 
@@ -49,6 +54,24 @@ function trustAdd(publicPath: string, policyPath: string, label?: string): void 
   const record = trustKey(policy, publicKey, label);
   saveTrustPolicy(policyPath, policy);
   process.stdout.write(JSON.stringify({ policy: policyPath, keyId: record.keyId, state: record.state, label: record.label ?? null }, null, 2) + "\n");
+}
+
+function vaultPublish(proofPath: string, vaultDir: string): void {
+  const record = publishProof(proofPath, vaultDir);
+  process.stdout.write(JSON.stringify({ status: "published", digest: record.digest, workId: record.workId, proofPath: record.proofPath, artifactCount: Object.keys(record.artifacts).length }, null, 2) + "\n");
+}
+
+function vaultRestore(digest: string, vaultDir: string, outputPath: string): void {
+  const record = restoreProof(vaultDir, digest, outputPath);
+  process.stdout.write(JSON.stringify({ status: "restored", digest: record.digest, workId: record.workId, outputPath }, null, 2) + "\n");
+}
+
+function vaultList(vaultDir: string): void {
+  process.stdout.write(JSON.stringify(listProofs(vaultDir), null, 2) + "\n");
+}
+
+function vaultInspect(digest: string, vaultDir: string): void {
+  process.stdout.write(JSON.stringify(inspectProof(vaultDir, digest), null, 2) + "\n");
 }
 
 function trustRevoke(keyId: string, policyPath: string, reason?: string): void {
@@ -138,6 +161,30 @@ if (!command) {
   if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
   else {
     try { trustRevoke(firstArg, secondArg, thirdArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+} else if (command === "vault-publish") {
+  if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
+  else {
+    try { vaultPublish(firstArg, secondArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+} else if (command === "vault-restore") {
+  if (!firstArg || !secondArg || !thirdArg) { usage(); process.exitCode = 1; }
+  else {
+    try { vaultRestore(firstArg, secondArg, thirdArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+} else if (command === "vault-list") {
+  if (!firstArg) { usage(); process.exitCode = 1; }
+  else {
+    try { vaultList(firstArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+} else if (command === "vault-inspect") {
+  if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
+  else {
+    try { vaultInspect(firstArg, secondArg); }
     catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "sign") {
