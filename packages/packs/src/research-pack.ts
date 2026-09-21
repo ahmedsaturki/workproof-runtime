@@ -15,7 +15,7 @@ class LocalResearchCapability implements Capability {
     const unique = [...new Map(records.map(r => [r.website.toLowerCase(), r])).values()].filter(r => r.website && r.name);
     if (unique.length < input.minRecords) return { status: "rejected" as const, data: { count: unique.length } };
     fs.writeFileSync(input.outputPath, JSON.stringify(unique, null, 2), "utf8");
-    return { status: "accepted" as const, data: { count: unique.length }, externalEffectId: `artifact:${input.outputPath` };
+    return { status: "accepted" as const, data: { count: unique.length }, externalEffectId: `artifact:${input.outputPath}` };
   }
 }
 
@@ -30,7 +30,7 @@ class ResearchArtifactVerifier implements Verifier {
     const fieldsOk = records.every(r => r.name && r.website && r.source);
     const unique = new Set(records.map(r => r.website.toLowerCase())).size === records.length;
     const passed = records.length >= minRecords && fieldsOk && unique;
-    return { id: ctx.criterion.id, criterion: ctx.criterion.description, passed, details: `${records.length} records; fieldsOk=${fieldsOk}; unique=${unique}`, evidence };
+    return { id: ctx.criterion.id, criterion: ctx.criterion.description, passed, details: `${records.length} records; fields=${fieldsOk}; unique=${unique}`, evidence };
   }
 }
 
