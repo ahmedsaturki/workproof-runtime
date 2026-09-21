@@ -2,7 +2,7 @@ const assert = require("assert");
 const test = require("node:test");
 const { generateProofKeyPair, proofKeyId } = require("../packages/evidence/src/signature.js");
 const { createTrustPolicy, trustKey, revokeKey } = require("../packages/evidence/src/trust.js");
-const { buildTrustPolicySnapshot, signTrustPolicySnapshot, verifyTrustPolicySnapshot, reconcileTrustPolicySnapshot, applyTrustPolicySnapshot } = require("../packages/evidence/src/trust-sync.js");
+const { buildTrustPolicySnapshot, signTrustPolicySnapshot, verifyTrustPolicySnapshot, verifyTrustPolicySnapshotSignature, reconcileTrustPolicySnapshot, applyTrustPolicySnapshot } = require("../packages/evidence/src/trust-sync.js");
 
 function signedSnapshot(epoch = 1) {
   const pair = generateProofKeyPair();
@@ -14,6 +14,7 @@ function signedSnapshot(epoch = 1) {
 
 test("signed trust snapshot verifies only for an explicitly trusted administrative key", () => {
   const { snapshot, key } = signedSnapshot();
+  assert.equal(verifyTrustPolicySnapshotSignature(snapshot), true);
   assert.equal(verifyTrustPolicySnapshot(snapshot, new Set([key.keyId])), "accept");
   assert.equal(verifyTrustPolicySnapshot(snapshot, new Set()), "untrusted-signer");
 });
