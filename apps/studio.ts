@@ -366,6 +366,7 @@ async function fetchRemoteWorkers(controlPlaneUrl: string | undefined, req: any)
 }
 
 const MAX_ATTENTION = 100;
+const MAX_OVERVIEW_WORKS = 10000;
 
 function attentionReasons(work: any): { code: string; detail: string }[] {
   const reasons: { code: string; detail: string }[] = [];
@@ -406,7 +407,12 @@ function buildOperationalOverview(repository: any, options: StudioOptions): Reco
   let totalEffects = 0;
   let verifiedWork = 0;
 
-  const files = repository.list().filter((file: string) => file.endsWith(".json"));
+  const files = repository.list()
+    .filter((file: string) => file.endsWith(".json"))
+    .sort()
+    .slice(0, MAX_OVERVIEW_WORKS);
+  const totalWorkFiles = repository.list().filter((file: string) => file.endsWith(".json")).length;
+  const overviewTruncated = totalWorkFiles > files.length;
   for (const file of files) {
     const id = file.slice(0, -".json".length);
     if (!isWorkId(id)) continue;
@@ -453,38 +459,48 @@ function buildOperationalOverview(repository: any, options: StudioOptions): Reco
 
   const workerHealth: Record<string, unknown> = options.workerStatusSource
     ? (() => {
-        const workers = options.workerStatusSource!.listWorkerStatuses(options.workerStaleAfterMs ?? 30_000);
-        const byLiveness: Record<string, number> = {};
-        let reassignmentEligible = 0;
-        for (const worker of workers) {
-          const liveness = String(worker.liveness);
-          byLiveness[liveness] = (byLiveness[liveness] ?? 0) + 1;
-          if (worker.reassignmentEligible) reassignmentEligible += 1;
+        try {
+          const workers = options.workerStatusSource!.listWorkerStatuses(options.workerStaleAfterMs ?? 30_000);
+          const byLiveness: Record<string, number> = {};
+          let reassignmentEligible = 0;
+          for (const worker of workers) {
+            const liveness = String(worker.liveness);
+            byLiveness[liveness] = (byLiveness[liveness] ?? 0) + 1;
+            if (worker.reassignmentEligible) reassignmentEligible += 1;
+          }
+          return {
+            configured: true,
+            available: true,
+            total: workers.length,
+            byLiveness,
+            reassignmentEligible
+          };
+        } catch {
+          return { configured: true, available: false, error: "worker-health-unavailable" };
         }
-        return {
-          configured: true,
-          total: workers.length,
-          byLiveness,
-          reassignmentEligible
-        };
       })()
     : { configured: false };
 
   const leaseHealth: Record<string, unknown> = options.leaseStatusSource
     ? (() => {
-        const leases = options.leaseStatusSource!.listLeaseStatuses();
-        let active = 0;
-        let expired = 0;
-        for (const lease of leases) {
-          if (lease.active) active += 1;
-          else expired += 1;
+        try {
+          const leases = options.leaseStatusSource!.listLeaseStatuses();
+          let active = 0;
+          let expired = 0;
+          for (const lease of leases) {
+            if (lease.active) active += 1;
+            else expired += 1;
+          }
+          return {
+            configured: true,
+            available: true,
+            total: leases.length,
+            active,
+            expired
+          };
+        } catch {
+          return { configured: true, available: false, error: "lease-health-unavailable" };
         }
-        return {
-          configured: true,
-          total: leases.length,
-          active,
-          expired
-        };
       })()
     : { configured: false };
 
@@ -501,7 +517,10 @@ function buildOperationalOverview(repository: any, options: StudioOptions): Reco
       total: totalWork,
       verified: verifiedWork,
       byStatus,
-      byRisk
+      byRisk,
+      sourceFiles: totalWorkFiles,
+      scannedFiles: files.length,
+      truncated: overviewTruncated
     },
     effects: {
       total: totalEffects,
