@@ -66,6 +66,8 @@ const required = [
   "test/github.test.ts",
   "test/kernel.test.ts",
   "test/publication.test.ts",
+  "test/registry-auth-cli.test.ts",
+  "test/registry-auth.test.ts",
   "test/registry-client.test.ts",
   "test/registry.test.ts",
   "test/runtime.test.ts",
