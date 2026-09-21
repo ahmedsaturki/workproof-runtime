@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The v1.0 self-hosted registry branch contains **76 required paths** enforced by scripts/verify-source-tree.js.
+The v1.0 self-hosted registry branch contains **77 required paths** enforced by scripts/verify-source-tree.js.
 
 V0.6 additions:
 - docs/RELEASE-GATE-V0.6.md
@@ -29,6 +29,7 @@ V1.0 additions:
 - docs/RELEASE-GATE-V1.0.md
 - packages/registry/src/client.ts
 - packages/registry/src/http.ts
+- test/registry-client.test.ts
 - test/registry.test.ts
 
 ## v0.4 local exact history
