@@ -92,8 +92,9 @@ jobs:
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
         run: |
           set -euo pipefail
+          TAG_COMMIT="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" --jq '.object.sha')"
           TARGET_COMMIT="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json targetCommitish --jq '.targetCommitish')"
-          test "${TARGET_COMMIT}" = "${GITHUB_SHA}"
+          test "${TARGET_COMMIT}" = "${TAG_COMMIT}"
           ASSET_COUNT="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets | length')"
           test "${ASSET_COUNT}" = "5"
           ASSET_NAMES="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets[].name')"
@@ -115,7 +116,14 @@ jobs:
           const fs = require("fs");
           const tag = process.env.RELEASE_TAG;
           const result = JSON.parse(fs.readFileSync("release-verify/workproof-benchmark-" + tag + ".json", "utf8"));
-          const metrics = result.summary?.metrics ?? {};
+          const metrics = result.metrics ?? {};
           if (!result.passed || !Array.isArray(result.results) || result.results.length !== 5) process.exit(1);
-          if (metrics.verifiedCompletionRate !== 1 || metrics.falseDoneCount !== 0 || metrics.duplicateExternalEffectCount !== 0) process.exit(1);
+          if (!result.results.every((entry) => entry.status === "verified")) process.exit(1);
+          if (metrics.verifiedCompletionRate !== 1 ||
+              metrics.falseDoneCount !== 0 ||
+              metrics.duplicateExternalEffectCount !== 0 ||
+              metrics.ambiguousOutcomeResolvedCount !== 1 ||
+              metrics.capabilitySubstitutionCount !== 1 ||
+              metrics.evidenceCompleteRate !== 1 ||
+              metrics.humanInterventionCount !== 0) process.exit(1);
           NODE
