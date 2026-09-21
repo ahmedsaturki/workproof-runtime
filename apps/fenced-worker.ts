@@ -1,6 +1,13 @@
 const runtimeProcess = require("process");
 const { PersistentLeaseStore } = require("../packages/coordination/src/persistent.js");
 
+interface HeldLease {
+  leaseId: string;
+  revision: number;
+}
+
+type WorkerMessage = "acquire" | "fence" | "close";
+
 const [, , dbPath, workerId, resourceId, ttlText] = runtimeProcess.argv;
 if (!dbPath || !workerId || !resourceId || !ttlText) {
   runtimeProcess.stderr.write("Usage: fenced-worker <dbPath> <workerId> <resourceId> <ttlMs>\n");
@@ -8,10 +15,11 @@ if (!dbPath || !workerId || !resourceId || !ttlText) {
 } else {
   const ttlMs = Number(ttlText);
   const store = new PersistentLeaseStore(dbPath);
-  let heldLease = null;
+  let heldLease: HeldLease | null = null;
 
-  const send = (message) => runtimeProcess.send?.(message);
-  const finish = (code) => {
+  const send = (message: Record<string, unknown>): void => runtimeProcess.send?.(message);
+
+  const finish = (code: number): void => {
     try { store.close(); } catch {}
     try { runtimeProcess.disconnect?.(); } catch {}
     runtimeProcess.exit(code);
@@ -19,11 +27,13 @@ if (!dbPath || !workerId || !resourceId || !ttlText) {
 
   send({ type: "ready", workerId });
 
-  runtimeProcess.on("message", (message) => {
+  runtimeProcess.on("message", (message: WorkerMessage) => {
     if (message === "acquire") {
       try {
         const result = store.acquire(resourceId, workerId, ttlMs);
-        if (result.status === "acquired" || result.status === "renewed") heldLease = result.lease;
+        if (result.status === "acquired" || result.status === "renewed") {
+          heldLease = { leaseId: result.lease.leaseId, revision: result.lease.revision };
+        }
         send({ type: "acquire", workerId, result });
       } catch (error) {
         send({ type: "error", workerId, error: String(error) });
@@ -55,3 +65,5 @@ if (!dbPath || !workerId || !resourceId || !ttlText) {
     if (message === "close") finish(0);
   });
 }
+
+export {};
