@@ -11,24 +11,25 @@ if (!Number.isInteger(port) || port < 0 || port > 65535) {
   process.stderr.write("Invalid registry port\n");
   process.exitCode = 1;
 } else {
-  let authPolicy;
+  let authPolicy: any;
   try {
     authPolicy = authPolicyArg ? loadAuthPolicy(path.resolve(authPolicyArg)) : undefined;
   } catch (error) {
     process.stderr.write(String(error) + "\n");
     process.exitCode = 1;
   }
-  if (process.exitCode) {
-  } else startRegistryServer({ vaultDir, host, port, authPolicy }).then((running: any) => {
-    process.stdout.write(JSON.stringify({
-      registry: `http://${running.host}:${running.port}`,
-      vaultDir,
-      version: "1.0"
-    }, null, 2) + "\n");
+  if (!process.exitCode) {
+    startRegistryServer({ vaultDir, host, port, authPolicy }).then((running: any) => {
+      process.stdout.write(JSON.stringify({
+        registry: `http://${running.host}:${running.port}`,
+        vaultDir,
+        version: "1.1"
+      }, null, 2) + "\n");
     }).catch((error: unknown) => {
       process.stderr.write(String(error) + "\n");
       process.exitCode = 1;
     });
   }
 }
+
 export {};
