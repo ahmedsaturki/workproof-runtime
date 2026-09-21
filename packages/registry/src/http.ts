@@ -208,7 +208,7 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
       sendJson(res, 404, { error: "not-found" });
     } catch (error) {
       const message = String(error);
-      const status = /integrity|digest|Invalid proof|Proof integrity/i.test(message) ? 422 : 500;
+      const status = /Unknown proof digest/i.test(message) ? 404 : (/integrity|digest|Invalid proof|Proof integrity/i.test(message) ? 422 : 500);
       sendJson(res, status, { error: message });
     }
   });
