@@ -33,3 +33,5 @@ if (!dbPath || !workerId || !resourceId || !ttlText) {
     }
   });
 }
+
+export {};
