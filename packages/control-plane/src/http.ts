@@ -207,7 +207,7 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
     } catch (error) {
       const message = String(error);
       audit({ version: "0.1", requestId: id, action: "error", error: message, at: new Date().toISOString() });
-      const status = /Unknown work/i.test(message) ? 404 : (/Invalid work id|Invalid JSON/i.test(message) ? 400 : 500);
+      const status = /Unknown work/i.test(message) ? 404 : (/Invalid work id|Invalid JSON|Idempotency-Key/i.test(message) ? 400 : 500);
       sendJson(res, status, { error: message, requestId: id });
     }
   });
