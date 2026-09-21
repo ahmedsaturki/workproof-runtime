@@ -5,7 +5,7 @@ const { LeaseStore } = require("../packages/coordination/src/leases.js");
 class FakeClock {
   value = 1_700_000_000_000;
   nowMs() { return this.value; }
-  advance(ms) { this.value += ms; }
+  advance(ms: number) { this.value += ms; }
 }
 
 test("lease acquisition grants a single owner and a second owner sees busy", () => {
