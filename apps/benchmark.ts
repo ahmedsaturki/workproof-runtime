@@ -61,7 +61,7 @@ function benchmarkGit(cwd: string, args: string[]): string {
   return execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
 }
 
-async function runGitChange() {
+async function runGitChange(): Promise<CaseResult> {
   const root = benchmarkTempDir("workproof-m003-");
   const remote = path.join(root, "remote.git");
   const repoPath = path.join(root, "repo");
