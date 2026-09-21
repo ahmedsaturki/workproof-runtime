@@ -153,6 +153,10 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
         const work = options.repository.get(workId);
 
         if (action === "cancel") {
+          if (work.status === "verified" || work.status === "failed") {
+            sendJson(res, 409, { error: `work-already-terminal:${work.status}`, requestId: id });
+            return;
+          }
           if (work.status !== "cancelled") {
             work.status = "cancelled";
             work.events.push({
