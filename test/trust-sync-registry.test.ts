@@ -9,7 +9,7 @@ const { startRegistryServer } = require("../packages/registry/src/http.js");
 const { publishTrustSnapshotToRegistry, getTrustSnapshotFromRegistry, listTrustSnapshotsFromRegistry, getCurrentTrustSnapshotFromRegistry, applyTrustSnapshotToRegistry } = require("../packages/registry/src/client.js");
 const { createTrustPolicy, trustKey } = require("../packages/evidence/src/trust.js");
 const { generateProofKeyPair } = require("../packages/evidence/src/signature.js");
-const { buildTrustPolicySnapshot, signTrustPolicySnapshot } = require("../packages/evidence/src/trust-sync.js");
+const { buildTrustPolicySnapshot, signTrustPolicySnapshot, verifyTrustPolicySnapshotSignature } = require("../packages/evidence/src/trust-sync.js");
 
 function tempDir(prefix: string): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
@@ -85,7 +85,9 @@ test("two authenticated registries publish, pull, apply, conflict, reject forged
     const forgedSnapshot = signTrustPolicySnapshot(buildTrustPolicySnapshot(createTrustPolicy(), 3), forged.privateKey);
     await assert.rejects(() => publishTrustSnapshotToRegistry(urlA, forgedSnapshot, credA.token), /untrusted-signer/);
 
-    const malformed = { ...snapshot2, signature: { ...snapshot2.signature, signature: "A" + snapshot2.signature.signature.slice(1) } };
+    const malformed = { ...snapshot2, signature: { ...snapshot2.signature, signature: "!" } };
+    assert.notEqual(malformed.signature.signature, snapshot2.signature.signature);
+    assert.equal(verifyTrustPolicySnapshotSignature(malformed), false);
     await assert.rejects(() => publishTrustSnapshotToRegistry(urlA, malformed, credA.token), /invalid/);
 
     const rolledBack = await applyTrustSnapshotToRegistry(urlB, snapshot1.digest, credB.token, true);
