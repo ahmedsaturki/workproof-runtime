@@ -14,7 +14,8 @@ Final audit commit:
 
 Latest merged-main verification:
 - run #780: success on the v3.0 implementation merge
-- final documentation CI follows the audit commit
+- run #785: success on the final source-manifest/documentation state
+- final verified main state is the commit carrying the v3.0 audit and final documentation
 
 ## Verified v3.0 gates
 
@@ -32,6 +33,7 @@ Latest merged-main verification:
 - [x] v2.9 filtering and earlier security/control/lease/proof/retention/worker/fencing behavior preserved
 - [x] feature CI #779
 - [x] merged-main CI #780
+- [x] final documentation/source-tree CI #785
 
 ## Remaining platform work
 
