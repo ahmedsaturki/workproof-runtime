@@ -13,6 +13,17 @@ const os = require("os");
 const path = require("path");
 const { execFileSync } = require("child_process");
 
+type CaseResult = {
+  id: string;
+  status: string;
+  effects: number;
+  artifacts: number;
+  events: number;
+  details: Record<string, unknown>;
+};
+
+
+
 async function runResearch(): Promise<CaseResult> {
   const store = new WorkStore(); const registry = new CapabilityRegistry(); const verification = new VerificationEngine();
   registerResearchPack(registry, verification);
