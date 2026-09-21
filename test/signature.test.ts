@@ -33,7 +33,7 @@ function fixture() {
   return { ...proof, integrity };
 }
 
-function runCli(...args) {
+function runCli(...args: string[]) {
   const cli = path.resolve("dist/packages/cli/src/index.js");
   return spawnSync(require("process").execPath, [cli, ...args], { encoding: "utf8" });
 }
