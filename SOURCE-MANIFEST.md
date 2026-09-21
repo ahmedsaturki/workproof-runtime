@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The current v2.4 fencing branch contains **131 required paths** enforced by scripts/verify-source-tree.js.
+The current v2.4 verified main tree contains **131 required paths** enforced by scripts/verify-source-tree.js.
 
 The tree includes:
 - proof registry and authenticated transport
@@ -22,6 +22,15 @@ The tree includes:
 - durable control-plane idempotency
 - execution fencing token and stale-worker execution boundary
 
+## V2.5 additions
+
+- docs/RELEASE-GATE-V2.5.md
+- docs/FINAL-AUDIT-V2.5.md
+- packages/coordination/src/leases.ts worker liveness/reassignment semantics
+- packages/coordination/src/persistent.ts worker liveness/reassignment helpers
+- packages/control-plane/src/http.ts read-only worker status endpoint
+- test/worker-lifecycle.test.ts
+
 ## v2.3 additions
 
 - packages/control-plane/src/idempotency.ts
@@ -38,6 +47,17 @@ The tree includes:
 - packages/runtime/src/engine.ts fencing boundary
 - packages/recovery/src/engine.ts fence propagation
 - test/fencing.test.ts
+
+## v2.4 merged-main verification
+
+- feature head: `8f11968bb06dfc6b3958aac5435afd0fe5f60569`
+- feature CI #652: success
+- merged commit: `77603553fff569b230a71de0b92aa3e4a6ae1342`
+- merged-main CI #653: success
+- source-tree audit: 131/131
+- dependency security audit: success
+- full sequential suite: success
+- benchmark/demo/CLI/live GitHub smoke: success
 
 ## Verified main milestone evidence
 

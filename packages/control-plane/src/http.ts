@@ -1,3 +1,5 @@
+import { WorkerStatus } from "../../coordination/src/leases";
+
 const http = require("http");
 const fs = require("fs");
 const crypto = require("crypto");
@@ -23,6 +25,8 @@ export interface ControlPlaneOptions {
   dispatch?: (input: Record<string, unknown>) => Promise<import("../../core/src/types").WorkObject>;
   resume?: (work: import("../../core/src/types").WorkObject) => Promise<import("../../core/src/types").WorkObject>;
   idempotencyDbPath?: string;
+  workerStatusSource?: { listWorkerStatuses(staleAfterMs: number): WorkerStatus[] };
+  workerStaleAfterMs?: number;
 }
 
 export interface RunningControlPlane {
@@ -97,6 +101,10 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
   const host = options.host ?? "127.0.0.1";
   const port = options.port ?? 0;
   const auditPath = options.auditPath;
+  const workerStaleAfterMs = options.workerStaleAfterMs ?? 30_000;
+  if (!Number.isSafeInteger(workerStaleAfterMs) || workerStaleAfterMs <= 0) {
+    throw new Error("Worker stale threshold must be a positive safe integer");
+  }
 
   if (auditPath) {
     fs.mkdirSync(require("path").dirname(require("path").resolve(auditPath)), { recursive: true });
@@ -191,6 +199,20 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
         sendJson(res, decision.statusCode, {
           error: decision.statusCode === 401 ? "unauthorized" : "forbidden",
           requestId: id
+        });
+        return;
+      }
+
+      if (method === "GET" && url.pathname === "/v1/workers") {
+        if (!options.workerStatusSource) {
+          sendJson(res, 503, { error: "worker-status-not-configured", requestId: id });
+          return;
+        }
+        sendJson(res, 200, {
+          version: "1.1",
+          requestId: id,
+          staleAfterMs: workerStaleAfterMs,
+          workers: options.workerStatusSource.listWorkerStatuses(workerStaleAfterMs)
         });
         return;
       }

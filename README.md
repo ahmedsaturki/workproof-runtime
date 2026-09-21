@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v2.4-dev distributed execution fencing hardening is in progress.**
+**v2.5-dev worker lifecycle hardening is in progress.**
 
 v2.1 established authenticated Studio control delegation through the control plane. v2.2 added read-only proof/audit views backed by the content-addressed proof vault and optional local trust policy. v2.3 adds durable idempotency and replay/concurrency protection for authenticated control mutations.
 
@@ -103,8 +103,15 @@ Control-plane idempotency protects the authenticated mutation boundary but does 
 - A dedicated two-process regression proves an old worker cannot assert ownership after lease takeover.
 - External systems may enforce the token at their own conditional-write boundary; WorkProof does not claim universal remote fencing.
 
+## v2.4 verification evidence
+
+- Feature CI #652: success.
+- Merged-main CI #653: success.
+- Final merged-main commit: `77603553fff569b230a71de0b92aa3e4a6ae1342`.
+- Source-tree, security, build, retention, full suite, benchmark, demo, CLI, and live GitHub smoke gates all passed.
+
 ## Next engineering gates
 
-Broader distributed worker/control-plane hardening, richer visualization beyond the proof/audit surface, additional capability packs/integrations, and remote/distributed Studio mode remain separate milestones.
+v2.5 broader distributed worker/control-plane hardening, additional capability packs/integrations, remote/distributed Studio mode, and richer visualization beyond proof/audit inspection remain separate milestones.
 
 This repository does not make a global novelty claim.
