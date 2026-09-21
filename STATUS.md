@@ -7,11 +7,11 @@ Date: 2026-09-21
 **v1.9 durable saga recovery is verified on main.**
 
 Main merge commit:
-f0173fd9c0603fd1fa58ea6f722486f52a04f932
+a9265bb8ff61db21627bb92a52cbad8aeffe8e50
 
-Latest v1.9 merged-main CI:
-- CI #530: success.
-- source audit before final audit-doc addition: 114/114.
+Latest v1.9 closeout CI:
+- CI #532 (attempt 2): success.
+- source audit: 115/115.
 - dependency security audit: success.
 - Chromium verification and CDP preflight: success.
 - TypeScript build: success.
@@ -34,7 +34,8 @@ Latest v1.9 merged-main CI:
 - [x] Corrupt compensation lineage fails closed as unresolved.
 - [x] Recovery state and lineage are persisted and auditable.
 - [x] Feature CI #528 passed on the v1.9 candidate head.
-- [x] Merged-main CI #530 passed on main.
+- [x] Merged-main CI #530 passed on the implementation merge.
+- [x] Closeout CI #532 attempt 2 passed on the documentation-complete main state.
 
 ## Current release posture
 
