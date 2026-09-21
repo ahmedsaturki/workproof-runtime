@@ -145,6 +145,19 @@ test("repair removes stale index references and recovers a stale GC journal", ()
   assert.equal(fs.existsSync(path.join(vault, "gc-journal.json")), false);
 });
 
+test("retention inventory does not follow symlinks outside the vault", () => {
+  const dir = "/tmp/workproof-retention-symlink";
+  fs.rmSync(dir, { recursive: true, force: true });
+  const vault = path.join(dir, "vault");
+  const outside = path.join(dir, "outside.txt");
+  fs.mkdirSync(path.join(vault, "artifacts"), { recursive: true });
+  fs.writeFileSync(outside, "outside\n", "utf8");
+  const fakeDigest = sha256File(outside);
+  fs.symlinkSync(outside, path.join(vault, "artifacts", fakeDigest));
+  const inventory = inventoryVault(vault);
+  assert.equal(inventory.some((x) => x.digest === fakeDigest), false);
+});
+
 test("namespace scoped collection is conservative and does not delete unscoped objects", () => {
   const dir = "/tmp/workproof-retention-namespace";
   fs.rmSync(dir, { recursive: true, force: true });
