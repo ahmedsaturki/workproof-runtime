@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The v0.8 trusted-proof-policy branch contains **67 required paths** enforced by scripts/verify-source-tree.js.
+The v0.9 proof-vault branch contains **71 required paths** enforced by scripts/verify-source-tree.js.
 
 V0.6 additions:
 - docs/RELEASE-GATE-V0.6.md
@@ -19,6 +19,11 @@ V0.8 additions:
 - test/trust.test.ts
 - test/trust-cli.test.ts
 
+V0.9 additions:
+- packages/evidence/src/vault.ts
+- test/vault.test.ts
+- test/vault-cli.test.ts
+
 ## v0.4 local exact history
 
 - local commit: 8cd9b7d841191b8a030bb462ac8dbd271f8259ca
@@ -28,9 +33,9 @@ V0.8 additions:
 ## Verified main
 
 - commit: 5ea9aab16e7333621b639f7f96c0e5a4ad9852c8
-- v0.7 merged-main repair CI is the current final gate
-- v0.7 runtime gates previously passed on feature run #70 and merged-main run #71
-- current main includes the deterministic signature-tamper regression fix; the new final CI run must pass before this state is treated as closed
+- v0.7 merged-main CI run #82: success
+- result: source audit + build + 33 tests + benchmark/demo/CLI + browser/HTTP/publication/recovery paths + live GitHub read smoke passed
+- active branch extends the verified v0.7 state with local trust and proof-vault work
 
 ## Verification discipline
 
