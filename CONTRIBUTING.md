@@ -2,7 +2,7 @@
 
 ## Development baseline
 
-The verified development target is v0.4.0-dev.
+The verified development target is v3.4.0-dev.2.
 
 ## Before submitting changes
 
