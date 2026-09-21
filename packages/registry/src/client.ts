@@ -68,14 +68,13 @@ export async function listProofsFromRegistry(registryUrl: string, token?: string
 }
 
 
-const { digestTrustPolicySnapshot, verifyTrustPolicySnapshot } = require("../../evidence/src/trust-sync.js");
+const { digestTrustPolicySnapshot, verifyTrustPolicySnapshotSignature } = require("../../evidence/src/trust-sync.js");
 import type { TrustPolicySnapshot, TrustSnapshotDecision } from "../../evidence/src/trust-sync";
 
 function assertValidTrustSnapshot(snapshot: TrustPolicySnapshot): void {
   if (!snapshot?.signature) throw new Error("Trust snapshot signature is required");
   if (digestTrustPolicySnapshot(snapshot) !== snapshot.digest) throw new Error("Trust snapshot digest is invalid");
-  const decision = verifyTrustPolicySnapshot(snapshot, new Set([snapshot.signature.keyId]));
-  if (decision !== "accept") throw new Error(`Trust snapshot signature is invalid: ${decision}`);
+  if (!verifyTrustPolicySnapshotSignature(snapshot)) throw new Error("Trust snapshot signature is invalid");
 }
 
 export async function publishTrustSnapshotToRegistry(registryUrl: string, snapshot: TrustPolicySnapshot, token?: string): Promise<Record<string, unknown>> {
