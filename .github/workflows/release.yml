@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - "release/**"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: workproof-runtime-release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Full release verification
+        run: npm run check
+
+      - name: Build distribution files
+        env:
+          RELEASE_TAG: v3.4.0-dev
+        run: |
+          set -euo pipefail
+          rm -rf release-dist
+          mkdir -p release-dist
+          npm pack --pack-destination release-dist
+          git archive --format=tar.gz --output="release-dist/workproof-runtime-${RELEASE_TAG}.tar.gz" "${GITHUB_SHA}"
+          cp benchmark-result.json "release-dist/workproof-benchmark-${RELEASE_TAG}.json"
+          cat > release-dist/RELEASE-MANIFEST.txt <<EOF
+          WorkProof Runtime v3.4.0-dev
+          Commit: ${GITHUB_SHA}
+          Repository: ${GITHUB_REPOSITORY}
+          Verification: npm run check
+          Package: operational-reality-core-3.4.0-dev.tgz
+          Source bundle: workproof-runtime-v3.4.0-dev.tar.gz
+          Benchmark: workproof-benchmark-v3.4.0-dev.json
+          EOF
+          sha256sum release-dist/* > release-dist/SHA256SUMS.txt
+          cat release-dist/SHA256SUMS.txt
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: v3.4.0-dev
+        run: |
+          set -euo pipefail
+          if gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            echo "Release ${RELEASE_TAG} already exists; aborting to preserve immutable release semantics."
+            exit 1
+          fi
+          gh release create "${RELEASE_TAG}"             --repo "${GITHUB_REPOSITORY}"             --target "${GITHUB_SHA}"             --title "WorkProof Runtime v3.4.0-dev"             --prerelease             --notes-file docs/RELEASE-V3.4.0-DEV.md             release-dist/*
+
+      - name: Verify published release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: v3.4.0-dev
+        run: |
+          set -euo pipefail
+          gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}"
