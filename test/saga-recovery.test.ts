@@ -128,7 +128,7 @@ test("ambiguous compensation acknowledgement reconciles before retry and perform
   const state = new Set(["A"]);
   let calls = 0;
   registry.register({
-    name: "flaky.undo",
+    name: "undo",
     version: "1.0.0",
     operations: ["undo"],
     riskClass: "external_write",
@@ -168,7 +168,7 @@ test("stale saga worker stops after ownership moves and replacement worker resum
   let calls = 0;
   const resource = "saga:" + work.id + ":recovery:" + saga.sagaId;
   registry.register({
-    name: "handoff.undo",
+    name: "undo",
     version: "1.0.0",
     operations: ["undo"],
     riskClass: "external_write",
