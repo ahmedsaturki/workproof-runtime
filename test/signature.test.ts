@@ -87,14 +87,12 @@ test("CLI verify separates signature tampering from proof-integrity tampering", 
   assert.match(signatureTampered.stdout, /integrity=verified/);
   assert.match(signatureTampered.stdout, /signature=invalid/);
 
-  signed.signature = fixture().signature;
-  delete signed.signature;
   signed.work.status = "failed";
-  const integrityTampered = { ...signed };
-  fs.writeFileSync(proofPath, JSON.stringify(integrityTampered, null, 2), "utf8");
+  fs.writeFileSync(proofPath, JSON.stringify(signed, null, 2), "utf8");
   const proofTampered = runCli("verify", proofPath);
   assert.equal(proofTampered.status, 3);
-  assert.match(proofTampered.stdout, /integrity=not-present/);
+  assert.match(proofTampered.stdout, /integrity=invalid/);
+  assert.match(proofTampered.stdout, /signature=invalid/);
   assert.match(proofTampered.stdout, /status=failed/);
 });
 
