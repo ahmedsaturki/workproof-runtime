@@ -45,7 +45,7 @@ test("CLI verify accepts an intact proof and rejects a tampered proof bundle", (
 
   const tampered = { ...proof, work: { ...proof.work, status: "failed" }, integrity };
   fs.writeFileSync(proofPath, JSON.stringify(tampered, null, 2), "utf8");
-  const invalid = spawnSync(process.execPath, [cli, "verify", proofPath], { encoding: "utf8" });
+  const invalid = spawnSync(nodeExecutable, [cli, "verify", proofPath], { encoding: "utf8" });
   assert.equal(invalid.status, 3);
   assert.match(invalid.stdout, /invalid-integrity/);
 });
