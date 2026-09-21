@@ -4,9 +4,11 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v1.9 durable saga recovery hardening is in progress on the feature branch.**
+**v1.9 durable saga recovery is verified on main.**
 
-Compensation is modeled as explicit auditable work linked to originating forward effects. The runtime does not treat arbitrary external effects as automatically reversible.
+Main merged commit: `f0173fd9c0603fd1fa58ea6f722486f52a04f932`
+
+The v1.9 milestone adds durable compensation recovery after worker/process loss while preserving explicit ownership, reconciliation, verification, and proof semantics.
 
 ## Core loop
 
@@ -25,18 +27,7 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - v1.6 worker-loss recovery.
 - v1.7 authenticated control-plane and SDK foundation.
 - v1.8 explicit saga/compensation semantics.
-
-## v1.8 saga/compensation
-
-- Compensation has its own effect kind and effect identity.
-- Each compensation links to its originating forward effect.
-- Saga state tracks forward and compensation lineage explicitly.
-- Compensation obeys work risk ceilings and approval policy.
-- Ambiguous/lost acknowledgements reconcile external state before duplicate writes.
-- Partial, unresolved, and fully compensated states remain explicit.
-- Verified compensation is not replayed after persistence/resume.
-- Proof bundles and proof-retention paths preserve saga lineage.
-- Legacy work objects remain readable without a saga field.
+- v1.9 durable saga recovery.
 
 ## v1.9 durable saga recovery
 
@@ -47,6 +38,12 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - Pending compensation input and lineage are reconstructed from durable effect state.
 - Ambiguous acknowledgements reconcile before any retry.
 - A stale owner stops when a replacement worker takes over.
+- Corrupt persisted compensation lineage fails closed as unresolved.
+- Recovery events and saga state are persisted for audit.
+
+## Verification evidence
+
+The v1.9 candidate passed feature CI #528. The merged-main CI #530 also passed source audit, security audit, build, retention, full sequential integration verification, benchmark, demo, CLI proof/mission, and live GitHub smoke.
 
 ## Safety boundary
 
@@ -56,8 +53,10 @@ GitHub marker-based idempotency is reconciliation-based, not an atomic exactly-o
 
 Proof integrity and signatures establish integrity/authenticity properties under their defined trust boundaries; they do not create an organization-wide trust or revocation policy by themselves.
 
+Saga recovery is ownership recovery plus bounded compensation execution. It is not an automatic rollback guarantee and does not create global exactly-once semantics across arbitrary independent writers.
+
 ## Next engineering gates
 
-Explicit saga recovery after worker/process loss, multi-user signer trust policy, further worker/control-plane hardening, broader capabilities, and product-facing Studio surfaces remain separate milestones.
+Multi-user signer trust policy, broader distributed worker/control-plane hardening, additional capabilities/integrations, and product-facing Studio surfaces remain separate milestones.
 
 This repository does not make a global novelty claim.
