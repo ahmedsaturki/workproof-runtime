@@ -4,20 +4,19 @@ Date: 2026-09-21
 
 ## Current main
 
-v0.8-dev trusted proof policy is verified on main.
+v0.9-dev content-addressed proof vault is verified on main.
 
 Current main commit:
-df6365d0fb7793bcdeb049f97c4a9f5ab6ec7403
+1b025eb8da677fb6e4ac84875103f5f76dc1a137
 
 Latest main CI:
-- run #103: success
-- v0.8 trusted-proof policy is verified on main
-
-## Active next branch
-
-feature/v0.9-proof-vault
-
-The branch carries the verified v0.8 trust-policy work plus content-addressed proof-vault retention.
+- run #140: success
+- source audit: 71/71 required paths verified
+- automated tests: 49/49 passed
+- benchmark: passed
+- demo: verified
+- CLI proof verification + mission execution: verified
+- live GitHub repository smoke: passed
 
 ## Verified v0.7 gates
 
@@ -30,41 +29,56 @@ The branch carries the verified v0.8 trust-policy work plus content-addressed pr
 - [x] Proof-integrity tamper detection.
 - [x] Unsigned/legacy compatibility.
 - [x] Key overwrite protection.
-- [x] Feature branch CI run #70.
-- [x] Merged-main CI run #71.
-- [x] Final deterministic regression repair verified by main CI run #82.
-- [x] v0.8 trusted-proof policy verified by merged-main CI run #103.
+- [x] Feature branch CI.
+- [x] Merged-main CI.
+- [x] Final deterministic regression repair verified by main CI.
 
-## v0.8 trust-policy branch
+## Verified v0.8 trust policy
 
 - [x] Local JSON trust policy.
-- [x] Trusted and revoked states.
+- [x] Trusted and revoked identity states.
 - [x] Unknown/mismatched identity handling.
 - [x] Ed25519-only trust enrollment.
 - [x] CLI trust-add / trust-revoke.
 - [x] Optional --require-trusted verification.
-- [x] Feature CI final gate (v0.8 PR run #96).
-- [x] Merged-main CI final gate (main run #103).
+- [x] Feature CI final gate.
+- [x] Merged-main CI final gate.
 
-## v0.9 proof vault branch
+## Verified v0.9 proof vault
 
 - [x] Content-addressed proof storage by SHA-256 digest.
 - [x] Atomic proof/index writes.
-- [x] Local artifact retention with SHA-256 content names.
+- [x] Local artifact retention by SHA-256 content digest.
 - [x] Idempotent duplicate publication.
-- [x] Integrity validation before publication/restore.
+- [x] Integrity validation before publication and restore.
+- [x] Corrupt retained proof/artifact rejection.
+- [x] Vault path confinement.
+- [x] Artifact reference binding validation.
 - [x] CLI publish/list/inspect/restore lifecycle.
-- [ ] Feature CI final gate.
-- [ ] Merged-main CI final gate.
+- [x] Feature-vault implementation merged to main.
+- [x] Merged-main CI run #140: 49/49 tests and all integration gates passed.
+
+## Active next gate
+
+v1.0 self-hosted proof registry / replication.
+
+Target:
+- HTTP registry protocol over the existing content-addressed vault.
+- Proof publication and retrieval by digest.
+- Idempotent remote publication.
+- Integrity enforcement at registry ingress and egress.
+- Local/self-hosted operation with no managed service dependency.
+- CLI/server entry point and end-to-end local HTTP tests.
 
 ## Remaining platform work
 
-- [ ] Remote proof registry and artifact retention.
+- [ ] v1.0 registry/replication.
 - [ ] Distributed/multi-user trust policy.
 - [ ] Generalized compensation/saga engine.
 - [ ] External browser navigation where permitted.
 - [ ] Distributed/remote workers and control plane.
 - [ ] Studio / REST / SDK surfaces.
+- [ ] Retention garbage collection / policy automation.
 
 ## Verification rule
 
