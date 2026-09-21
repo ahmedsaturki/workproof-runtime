@@ -4,56 +4,46 @@ Date: 2026-09-21
 
 ## Release identity
 
+- Final main merge: `aed65c8ecf770efa7ae1d2c2aa2500133a5dbf81`
+- Initial v2.8 implementation merge: `44ed49dac589389bdad9bbcb6e177a74f43767f9`
+- Finalization PR: #60
 - Finalization branch: `feature/v2.8.1-persistent-lease-visibility`
-- v2.8 implementation merge: `44ed49dac589389bdad9bbcb6e177a74f43767f9`
-- Scope: diagnostic lease/fence visibility with persistence parity and complete release traceability
 
-## Required verification
+## Final verification evidence
 
-- source-tree completeness
-- dependency security audit
-- Chromium/CDP preflight
-- strict TypeScript build
-- retention lifecycle suite
-- full sequential unit/integration suite
-- lease visibility regression
-- persistent lease visibility regression
-- benchmark
-- demo
-- CLI proof verification
-- CLI mission execution
-- live GitHub smoke
-- feature CI
-- pull-request CI
-- merged-main CI
+- Feature CI #726: success
+- PR CI #727: success
+- Merged-main CI #728: success
+- Required source paths: 141/141
+- Dependency security audit: 0 vulnerabilities
+- Chromium/CDP preflight: success
+- Strict TypeScript build: success
+- Retention lifecycle suite: success
+- Full unit/integration suite: success
+- Benchmark: success
+- Demo: success
+- CLI proof verification: success
+- CLI mission execution: success
+- Live GitHub smoke: success
 
-## Functional evidence
+## Correctness audit
 
-- Control plane exposes read-only `GET /v1/leases`.
-- Studio exposes local and authenticated remote `GET /api/leases`.
-- Remote access requires a valid bearer credential.
-- Missing configuration fails closed with HTTP 503.
-- Remote control-plane outage fails with HTTP 503.
-- Lease projections are sanitized and contain no execution fencing token.
-- Lease visibility never acquires, renews, releases, or reassigns leases.
-- PersistentLeaseStore implements the same read-only projection as LeaseStore.
-- Existing worker, proof/audit, control, vault, and security behavior remains covered.
+- Control plane provides read-only `GET /v1/leases`.
+- Studio provides local and authenticated remote `GET /api/leases`.
+- Remote access requires bearer authentication.
+- Missing configuration and unavailable control planes fail closed.
+- Lease visibility re-sanitizes remote data.
+- No execution fencing token crosses the read-only visibility boundary.
+- Read-only visibility routes do not mutate lease ownership.
+- PersistentLeaseStore and LeaseStore provide the same sanitized LeaseStatus projection.
+- Existing worker lifecycle, fencing, control idempotency, proof/audit, vault, recovery, and security behavior remain covered.
 
-## Initial v2.8 evidence
+## Release-traceability audit
 
-- Feature CI #708: success
-- PR CI #709: success
-- Merged-main CI #710: success
-- v2.8 merge commit: `44ed49dac589389bdad9bbcb6e177a74f43767f9`
+The initial v2.8 merge passed runtime CI but left release-document/source-manifest traceability incomplete and had not yet added PersistentLeaseStore visibility parity. PR #60 corrected both and reran the full verification pipeline before merge.
 
-## Finalization purpose
+## Result
 
-The post-merge audit found two traceability/correctness gaps:
-1. v2.8 release/audit documentation and the lease regression were not enforced by the old source-manifest list.
-2. PersistentLeaseStore lacked the new LeaseStatus projection.
+**v2.8-dev is verified on main.**
 
-The finalization branch closes both gaps before v2.8 is treated as fully closed.
-
-## Status
-
-**Pending finalization CI and merged-main verification.**
+The repository remains an actively developed platform; richer visualization and additional external integrations are separate future milestones.
