@@ -56,7 +56,7 @@ test("local git capability commits, pushes, and independently verifies remote st
     }]);
     assert.equal(work.status, "verified");
     assert.equal(fs.readFileSync(path.join(f.repo, "verified.txt"), "utf8"), "verified\n");
-    assert.equal(git(f.remote, ["show", "main:verified.txt"]), "verified\n");
+    assert.equal(git(f.remote, ["show", "main:verified.txt"]), "verified");
     assert.equal(work.effects[0].status, "acknowledged");
     assert.ok(work.artifacts.some(a => a.kind === "git-remote-verification"));
   } finally {
