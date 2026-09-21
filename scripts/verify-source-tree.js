@@ -43,6 +43,7 @@ const required = [
   "docs/RELEASE-GATE-V1.8.md",
   "docs/RELEASE-GATE-V1.9.md",
   "docs/RELEASE-GATE-V2.0.md",
+  "docs/RELEASE-GATE-V2.1.md",
   "docs/SECURITY-V1.2.md",
   "docs/SECURITY-V1.1.md",
   "docs/REPO-BOOTSTRAP.md",
