@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v2.1-dev authenticated Studio control is in progress.**
+**v2.1-dev authenticated Studio control is verified on main.**
 
 v2.0 established a dependency-free, read-only local Studio over persisted Work Objects. v2.1 adds a thin same-origin control proxy that delegates dispatch, cancel, and resume to the authenticated control plane without introducing a second authorization system.
 
@@ -27,15 +27,7 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - v1.8 explicit saga/compensation semantics.
 - v1.9 durable saga recovery.
 - v2.0 local read-only Studio.
-
-## v2.0 Studio foundation
-
-- Local Studio is served directly by Node.js with no frontend framework dependency.
-- Persisted Work Objects are listed from the authoritative JSON repository.
-- A detail view exposes status, effects, artifacts, verification checks, and recent events.
-- Sensitive execution inputs, constraints, and raw effect receipts are not exposed by the Studio API.
-- HTTP responses include no-store and browser hardening headers.
-- CLI entrypoint: `npm run studio`.
+- v2.1 authenticated Studio control delegation.
 
 ## v2.1 authenticated Studio control
 
@@ -47,6 +39,7 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - Control-plane request IDs and audit behavior remain authoritative.
 - Control routes return `503` when no control plane is configured, rather than mutating local state.
 - The Studio has no direct Work Object mutation path.
+- v2.0 read endpoints and hardening headers remain intact.
 
 ## Safety boundary
 
@@ -58,6 +51,6 @@ Proof integrity and signatures establish integrity/authenticity properties under
 
 ## Next engineering gates
 
-Broader distributed worker/control-plane hardening, trusted-key policy surfaces, additional capability packs/integrations, remote Studio mode, and richer proof/audit views remain separate milestones.
+Broader distributed worker/control-plane hardening, trusted-key policy surfaces, richer proof/audit views, additional capability packs/integrations, and remote/distributed Studio mode remain separate milestones.
 
 This repository does not make a global novelty claim.

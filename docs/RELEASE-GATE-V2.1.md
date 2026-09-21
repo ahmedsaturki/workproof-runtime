@@ -17,8 +17,8 @@ Add authenticated Studio control delegation without creating a second authorizat
 - [x] Control responses are sanitized before crossing the Studio API boundary.
 - [x] No local Work Object mutation path is introduced.
 - [x] Control-plane request IDs and audit events remain authoritative.
-- [ ] Feature CI green on final head.
-- [ ] Merged-main CI green on merge commit.
+- [x] Feature CI #568 passes on the final implementation head.
+- [x] Merged-main CI #569 passes on the merge commit.
 
 ## Safety boundary
 
@@ -26,4 +26,6 @@ Studio control is a presentation-layer proxy. Authorization, state transitions, 
 
 ## Milestone result
 
-The v2.1-dev authenticated Studio control milestone is complete only after feature CI and merged-main CI pass on the final implementation state.
+**v2.1-dev authenticated Studio control is verified on main.**
+
+The feature branch and merged-main CI gates both passed on the final implementation state.

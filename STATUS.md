@@ -4,7 +4,7 @@ Date: 2026-09-21
 
 ## Current main
 
-**v2.0-dev local Studio foundation is verified on main.**
+**v2.1-dev authenticated Studio control is verified on main.**
 
 Latest v1.9 implementation merge:
 f0173fd9c0603fd1fa58ea6f722486f52a04f932
@@ -15,54 +15,49 @@ a9265bb8ff61db21627bb92a52cbad8aeffe8e50
 Latest v2.0 Studio merge:
 0e29eb04addea53ae399887612314bd49ffa341a
 
-Latest v2.0 feature CI:
-- CI #547: success.
+Latest v2.1 Studio control merge:
+afe1e93497b01ce61c767a53f1a75e8e1d37b366
 
 Latest v2.0 merged-main CI:
-- CI #548: success.
-
-Latest main CI:
 - CI #550: success.
 
-## Active next branch
+Latest v2.1 feature CI:
+- CI #568: success.
 
-feature/v2.1-authenticated-studio
+Latest v2.1 merged-main CI:
+- CI #569: success.
 
-Target:
-- authenticated Studio dispatch/cancel/resume delegation
-- control-plane-owned authorization and audit
-- sanitized mutation responses
-- preserve v2.0 read-only behavior when no control plane is configured
+## Verified v2.1 gates
 
-## Verified v2.0 gates
+- [x] v2.0 read-only Studio behavior remains intact.
+- [x] authenticated dispatch delegation
+- [x] authenticated cancel delegation
+- [x] authenticated resume delegation
+- [x] read-only credentials cannot mutate
+- [x] missing credentials cannot mutate
+- [x] mutation responses are sanitized
+- [x] control-plane audit remains authoritative
+- [x] feature CI #568
+- [x] merged-main CI #569
 
-- [x] dependency-free local Studio
-- [x] persisted Work Object listing and detail view
-- [x] sanitized read-only operational API
-- [x] automated Studio acceptance tests
-- [x] feature CI #547
-- [x] merged-main CI #548
-- [x] latest main CI #550
+## Verified broader platform gates
 
-## v2.1 gates
-
-- [ ] authenticated dispatch delegation
-- [ ] authenticated cancel delegation
-- [ ] authenticated resume delegation
-- [ ] read-only credentials cannot mutate
-- [ ] missing credentials cannot mutate
-- [ ] mutation responses are sanitized
-- [ ] control-plane audit remains authoritative
-- [ ] feature CI
-- [ ] merged-main CI
+- [x] proof registry and authenticated registry transport
+- [x] trusted signer policy and synchronization
+- [x] proof-vault retention, reachability, and GC lifecycle
+- [x] persistent execution/recovery lease authority
+- [x] worker-loss recovery
+- [x] authenticated control plane and SDK
+- [x] explicit saga and durable compensation recovery
+- [x] local Studio foundation
 
 ## Remaining platform work
 
 - [ ] broader distributed worker/control-plane hardening
 - [ ] trusted-key policy surfaces
+- [ ] richer proof/audit viewer
 - [ ] additional capability packs and external integrations
 - [ ] remote/distributed Studio mode
-- [ ] richer proof/audit views
 
 ## Verification rule
 

@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The current v2.1 branch contains **120 required paths** enforced by scripts/verify-source-tree.js.
+The current v2.1 closeout contains **121 required paths** enforced by scripts/verify-source-tree.js.
 
 The tree includes:
 - proof registry and authenticated transport
@@ -30,10 +30,10 @@ The tree includes:
 - v1.9 implementation merge: f0173fd9c0603fd1fa58ea6f722486f52a04f932
 - v1.9 documentation closeout: a9265bb8ff61db21627bb92a52cbad8aeffe8e50
 - v2.0 Studio merge: 0e29eb04addea53ae399887612314bd49ffa341a
-- latest main CI #550: success
-- v2.0 Studio acceptance: passed
-- v2.0 source audit: passed
+- v2.1 Studio control merge: afe1e93497b01ce61c767a53f1a75e8e1d37b366
+- v2.1 feature CI #568: success
+- v2.1 merged-main CI #569: success
 
 ## Verification discipline
 
-Source-tree completeness, compilation, dependency audit, retention lifecycle, full integration suite, benchmark, demo, CLI, live smoke, and Studio acceptance are separate gates. Passing one does not imply the others passed.
+Source-tree completeness, compilation, dependency audit, retention lifecycle, full integration suite, benchmark, demo, CLI, live smoke, and Studio acceptance/control delegation are separate gates. Passing one does not imply the others passed.
