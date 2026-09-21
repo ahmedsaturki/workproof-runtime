@@ -9,7 +9,6 @@ import { CapabilityRegistry } from "../packages/capabilities/src/registry";
 import { PersistentLeaseStore } from "../packages/coordination/src/persistent";
 import { JsonWorkRepository } from "../packages/storage/src/json";
 import { SagaRecoveryCoordinator } from "../packages/runtime/src/saga-recovery";
-import type { Capability, CapabilityRequest, EffectRecord, LeaseAcquireResult, LeaseClock, SagaRecord, WorkEvent, WorkObject } from "../packages/core/src/types";
 
 import type { Capability, CapabilityRequest, EffectRecord, SagaRecord, WorkEvent, WorkObject } from "../packages/core/src/types";
 import type { LeaseAcquireResult, LeaseClock } from "../packages/coordination/src/leases";
@@ -67,9 +66,9 @@ test("durable saga recovery skips verified compensation, acquires after worker l
 
   repo.save(work);
   const persisted = repo.load(work.id);
-  assert.equal(persisted.sagas[0].status, "partial");
-  assert.equal(persisted.effects.find((effect: EffectRecord) => effect.effectId === compA.effectId).status, "verified");
-  assert.equal(persisted.effects.find((effect: EffectRecord) => effect.effectId === compB.effectId).status, "planned");
+  assert.equal(persisted.sagas?.[0]?.status, "partial");
+  assert.equal(persisted.effects.find((effect: EffectRecord) => effect.effectId === compA.effectId)?.status, "verified");
+  assert.equal(persisted.effects.find((effect: EffectRecord) => effect.effectId === compB.effectId)?.status, "planned");
 
   const state = new Set(["B"]);
   let calls = 0;
@@ -106,11 +105,11 @@ test("durable saga recovery skips verified compensation, acquires after worker l
   const after = repo.load(work.id);
   assert.equal(after.effects.find(effect => effect.effectId === compA.effectId).status, "verified");
   assert.equal(after.effects.find(effect => effect.effectId === compB.effectId).status, "verified");
-  assert.equal(after.sagas[0].status, "compensated");
+  assert.equal(after.sagas?.[0]?.status, "compensated");
   assert.ok(after.events.some((event: WorkEvent) => event.type === "saga.recovery.started"));
   assert.ok(after.events.some((event: WorkEvent) => event.type === "saga.recovery.finished"));
   const recoveryStart = after.events.find(event => event.type === "saga.recovery.started");
-  assert.deepEqual(recoveryStart.data.recoveredFromLeaseIds, [oldLease.lease.leaseId]);
+  assert.deepEqual(recoveryStart?.data?.recoveredFromLeaseIds, [oldLease.lease.leaseId]);
 
   leaseStore.close();
   fs.rmSync(dir, { recursive: true, force: true });
