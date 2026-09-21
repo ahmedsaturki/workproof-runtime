@@ -21,21 +21,20 @@ Latest v2.0 feature CI:
 Latest v2.0 merged-main CI:
 - CI #548: success.
 
-Final v1.9 closeout CI:
-- CI #532 attempt 2: success.
-- source audit: 115/115.
-- dependency security audit: success.
-- Chromium verification and CDP preflight: success.
-- TypeScript build: success.
-- retention lifecycle suite: success.
-- full sequential unit/integration verification: 30/30 test files passed.
-- benchmark: success.
-- demo: success.
-- CLI proof verification: success.
-- CLI mission execution: success.
-- live GitHub integration smoke: success.
+Latest main CI:
+- CI #550: success.
 
-## v2.0 Studio result
+## Active next branch
+
+feature/v2.1-authenticated-studio
+
+Target:
+- authenticated Studio dispatch/cancel/resume delegation
+- control-plane-owned authorization and audit
+- sanitized mutation responses
+- preserve v2.0 read-only behavior when no control plane is configured
+
+## Verified v2.0 gates
 
 - [x] dependency-free local Studio
 - [x] persisted Work Object listing and detail view
@@ -43,14 +42,27 @@ Final v1.9 closeout CI:
 - [x] automated Studio acceptance tests
 - [x] feature CI #547
 - [x] merged-main CI #548
+- [x] latest main CI #550
+
+## v2.1 gates
+
+- [ ] authenticated dispatch delegation
+- [ ] authenticated cancel delegation
+- [ ] authenticated resume delegation
+- [ ] read-only credentials cannot mutate
+- [ ] missing credentials cannot mutate
+- [ ] mutation responses are sanitized
+- [ ] control-plane audit remains authoritative
+- [ ] feature CI
+- [ ] merged-main CI
 
 ## Remaining platform work
 
-- [ ] Authenticated Studio control actions via the control plane.
-- [ ] Authenticated Studio control actions via the control plane.
-- [ ] Broader distributed worker/control-plane hardening.
-- [ ] Additional capability packs and external integrations.
-- [ ] Richer proof/audit viewer surfaces.
+- [ ] broader distributed worker/control-plane hardening
+- [ ] trusted-key policy surfaces
+- [ ] additional capability packs and external integrations
+- [ ] remote/distributed Studio mode
+- [ ] richer proof/audit views
 
 ## Verification rule
 
