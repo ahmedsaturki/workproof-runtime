@@ -29,3 +29,6 @@ curl http://127.0.0.1:8788/health
 ```
 
 The container image is an operator distribution target. It is not a claim that WorkProof has a public production deployment or managed hosting.
+
+
+Release verification includes a real container start and `/health` smoke test before the image is considered distributed.
