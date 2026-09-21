@@ -195,7 +195,14 @@ export function restoreProof(vaultDir: string, digest: string, outputPath: strin
     throw new Error("Vault proof failed integrity verification");
   }
   if (data.integrity.digest !== digest) throw new Error("Vault proof digest mismatch");
-  for (const artifactPath of Object.values(record.artifacts)) {
+
+  const proofArtifactUris = new Set(
+    Array.isArray(data.artifacts)
+      ? data.artifacts.map((artifact: any) => artifact?.uri).filter((uri: unknown): uri is string => typeof uri === "string")
+      : []
+  );
+  for (const [uri, artifactPath] of Object.entries(record.artifacts)) {
+    if (!proofArtifactUris.has(uri)) throw new Error("Vault artifact reference is absent from proof");
     if (!fs.existsSync(artifactPath)) throw new Error("Vault artifact file is missing");
     const expectedDigest = path.basename(artifactPath);
     if (!/^[0-9a-f]{64}$/.test(expectedDigest) || sha256File(artifactPath) !== expectedDigest) {
