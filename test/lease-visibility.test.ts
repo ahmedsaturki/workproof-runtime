@@ -59,7 +59,7 @@ test("control plane exposes sanitized read-only lease visibility", async () => {
       method: "POST",
       headers: { authorization: "Bearer " + reader.token }
     });
-    assert.equal(mutation.status, 404);
+    assert.equal(mutation.status, 403);
   } finally {
     await control.close();
     fs.rmSync(root, { recursive: true, force: true });
