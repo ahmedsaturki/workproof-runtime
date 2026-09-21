@@ -4,7 +4,7 @@ Date: 2026-09-21
 
 ## Current main
 
-**v2.3-dev control-plane hardening is verified on main.**
+**v2.4-dev distributed execution fencing hardening is in progress.**
 
 Merged v2.3 commit:
 47e09002f135c0d2f999b2465e5bfbd291db4c22
@@ -42,6 +42,19 @@ Merged-main CI:
 - [x] local Studio foundation
 - [x] authenticated Studio control delegation
 - [x] proof/audit Studio surface
+
+## Verified v2.3 gates
+
+- [x] v2.3 merged-main CI #629 success
+
+## Active v2.4 target
+
+`feature/v2.4-lease-fencing`
+
+- execution fencing token in CapabilityContext
+- pre-execution ownership assertion
+- post-execution ownership assertion
+- multi-process stale-worker regression
 
 ## Remaining platform work
 
