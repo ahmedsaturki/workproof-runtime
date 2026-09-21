@@ -4,9 +4,14 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v0.7-dev signed-proof identity is verified on `main`.**
+**v0.8-dev trusted-proof policy is in progress.**
 
-The runtime now carries the user-facing v0.6 proof integrity CLI plus self-contained Ed25519 proof signatures. Proof files can be signed with a generated key pair and independently verified without contacting a remote service. The current `main` HEAD adds documentation-only finalization on top of the verified v0.7 runtime.
+WorkProof now has a three-layer proof boundary:
+1. deterministic SHA-256 integrity,
+2. Ed25519 cryptographic signature,
+3. explicit local trust policy for the signing identity.
+
+The active v0.8 branch adds trusted/revoked/unknown key state, local policy persistence, and optional policy-enforced CLI verification.
 
 ## Core loop
 
@@ -41,16 +46,16 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - Signature identity is bound to a SHA-256-derived key identifier.
 - The signed payload is canonicalized and excludes only the signature field itself.
 - Signature failure is distinct from proof-integrity failure.
-- Private keys are written with owner-only permissions by the CLI on supported filesystems.
 - Key generation refuses accidental overwrite of existing key files.
 
-## Verification evidence
+## v0.8 trusted proof policy
 
-- Feature branch CI run #70: success.
-- Merged-main CI run #71: success.
-- Source-tree audit: 64 required paths, none missing.
-- `npm run check`: success, including 33 automated tests and the live GitHub smoke.
-- Browser, HTTP ambiguity/reconciliation, publication, persisted-effect, approval, substitution, and two-system regression paths remain covered.
+- `workctl trust-add <public.pem> <trust-policy.json> [label]` adds or refreshes a trusted identity.
+- `workctl trust-revoke <key-id> <trust-policy.json> [reason]` revokes a known identity.
+- `workctl verify <proof.json> <trust-policy.json> --require-trusted` requires the signing identity to be trusted.
+- Cryptographic validity remains separate from trust state.
+- Unknown identities are not promoted to trusted automatically.
+- Revoked identities remain cryptographically valid but fail the required-trust policy.
 
 ## Safety boundary
 
@@ -60,9 +65,9 @@ GitHub issue idempotency is marker/reconciliation-based and is not an atomic exa
 
 SHA-256 integrity is tamper-evident metadata, not a cryptographic signature.
 
-Ed25519 signatures provide cryptographic authenticity for a proof when the public key is trusted; they do not by themselves establish a trust policy or key revocation/distribution system.
+Ed25519 authenticates the proof under its embedded public key; a local trust policy decides whether that identity is accepted in a given environment.
 
-Private proof-signing keys are currently emitted as PKCS#8 PEM with owner-only file permissions; they are not encrypted at rest by the CLI.
+The local trust policy is an explicit policy artifact, not a global identity or revocation service.
 
 ## Product boundary
 
@@ -70,8 +75,6 @@ WorkProof Runtime is not a replacement for agents, browsers, workflow engines, M
 
 ## Next engineering gate
 
-v0.8 is tracked in issue #6: local trusted-key policy, explicit trusted/revoked/unknown states, optional required-signature policy, and key lifecycle semantics.
-
-Remote proof/artifact retention, generalized compensation/saga semantics, external browser navigation where permitted, worker/process boundaries, remote control-plane/API/SDK surfaces, and user-facing Studio remain separate milestones.
+Remote proof/artifact retention and distributed trust synchronization come after the local trust-policy milestone.
 
 This repository does not make a global novelty claim.
