@@ -227,10 +227,11 @@ export function unpinRetention(vaultDir: string, digest: string, kind: "proof" |
   return index.pins.length !== before;
 }
 
-export function inventoryVault(vaultDir: string, registryDirs: string[] = []): InventoryObject[] {
+export function inventoryVault(vaultDir: string, registryDirs: string[] = [], asOf?: string): InventoryObject[] {
   const index = loadVaultIndex(vaultDir);
   const retention = ensureRetentionIndex(vaultDir);
-  const at = Date.now();
+  const parsedAsOf = asOf ? Date.parse(asOf) : Date.now();
+  const at = Number.isFinite(parsedAsOf) ? parsedAsOf : Date.now();
   const objects: InventoryObject[] = [];
   for (const filePath of walkFiles(path.join(vaultDir, "proofs")).filter((file) => file.endsWith(".json"))) {
     const digest = path.basename(filePath, ".json");
@@ -264,12 +265,13 @@ export function inventoryVault(vaultDir: string, registryDirs: string[] = []): I
   return objects;
 }
 
-export function planGarbageCollection(vaultDir: string, options: { namespace?: string; registryDirs?: string[] } = {}): GarbageCollectionPlan {
-  const at = Date.now();
+export function planGarbageCollection(vaultDir: string, options: { namespace?: string; registryDirs?: string[]; asOf?: string } = {}): GarbageCollectionPlan {
+  const parsedAsOf = options.asOf ? Date.parse(options.asOf) : Date.now();
+  const at = Number.isFinite(parsedAsOf) ? parsedAsOf : Date.now();
   const generatedAt = now();
   const retention = ensureRetentionIndex(vaultDir);
   const index = loadVaultIndex(vaultDir);
-  const inventory = inventoryVault(vaultDir, options.registryDirs ?? []);
+  const inventory = inventoryVault(vaultDir, options.registryDirs ?? [], options.asOf);
   const protectedRoots: string[] = [];
   const reachable = new Set<string>();
   const warnings: string[] = [];
