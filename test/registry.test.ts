@@ -68,7 +68,7 @@ test("self-hosted registry publishes, retrieves, lists, and idempotently republi
 
     const health = await request(registry.port, "GET", "/health");
     assert.equal(health.status, 200);
-    assert.deepEqual(JSON.parse(health.body), { status: "ok", version: "1.0" });
+    assert.deepEqual(JSON.parse(health.body), { status: "ok", version: "1.1" });
 
     const first = await request(registry.port, "POST", "/v1/proofs", payload);
     assert.equal(first.status, 200);
@@ -144,3 +144,16 @@ test("registry rejects corrupted retained proof on egress", async () => {
 });
 
 export {};
+
+test("registry returns 404 for a syntactically valid but unknown proof digest", async () => {
+  const vaultDir = tempVault();
+  const registry = await startRegistryServer({ vaultDir, port: 0 });
+  try {
+    const missing = await request(registry.port, "GET", `/v1/proofs/${"a".repeat(64)}`);
+    assert.equal(missing.status, 404);
+    assert.match(missing.body, /Unknown proof digest|not-found/i);
+  } finally {
+    await registry.close();
+    fs.rmSync(vaultDir, { recursive: true, force: true });
+  }
+});

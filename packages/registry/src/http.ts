@@ -1,12 +1,14 @@
 const http = require("http");
+const crypto = require("crypto");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const { authorize, namespaceVault } = require("./auth");
 const { URL } = require("url");
 const { publishProof, listProofs, inspectProof } = require("../../evidence/src/vault.js");
 const { digestProofBundle, verifyProofIntegrity } = require("../../evidence/src/integrity.js");
 
-export const REGISTRY_VERSION = "1.0";
+export const REGISTRY_VERSION = "1.1";
 const MAX_BODY_BYTES = 5 * 1024 * 1024;
 
 function sendJson(res: any, statusCode: number, body: Record<string, unknown>): void {
@@ -82,6 +84,7 @@ export interface RegistryServerOptions {
   vaultDir: string;
   host?: string;
   port?: number;
+  authPolicy?: import("./auth").RegistryAuthPolicy;
 }
 
 export interface RunningRegistryServer {
@@ -110,6 +113,13 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
   const port = options.port ?? 0;
   fs.mkdirSync(options.vaultDir, { recursive: true });
 
+  const auditPath = path.join(options.vaultDir, "auth-events.jsonl");
+  if (!fs.existsSync(auditPath)) fs.writeFileSync(auditPath, "", { encoding: "utf8", mode: 0o600 });
+  fs.chmodSync(auditPath, 0o600);
+  const audit = (entry: Record<string, unknown>): void => {
+    fs.appendFileSync(auditPath, JSON.stringify(entry) + "\n", "utf8");
+  };
+
   const server = http.createServer(async (req: any, res: any) => {
     try {
       const method = String(req.method ?? "GET").toUpperCase();
@@ -120,18 +130,43 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
         return;
       }
 
+      const requiredPermission = method === "POST" && url.pathname === "/v1/proofs" ? "write" : "read";
+      const decision = authorize(options.authPolicy, req.headers, requiredPermission);
+      const requestId = crypto.randomBytes(8).toString("hex");
+      audit({
+        version: "0.1",
+        requestId,
+        at: new Date().toISOString(),
+        method,
+        path: url.pathname,
+        permission: requiredPermission,
+        allowed: decision.allowed,
+        reason: decision.reason,
+        ...(decision.credentialId ? { credentialId: decision.credentialId } : {}),
+        ...(decision.namespace ? { namespace: decision.namespace } : {})
+      });
+      if (!decision.allowed) {
+        sendJson(res, decision.statusCode, {
+          error: decision.statusCode === 401 ? "unauthorized" : "forbidden",
+          requestId
+        });
+        return;
+      }
+
+      const effectiveVault = namespaceVault(options.vaultDir, decision.namespace);
+
       if (method === "GET" && url.pathname === "/v1/proofs") {
-        sendJson(res, 200, { version: REGISTRY_VERSION, records: listProofs(options.vaultDir) });
+        sendJson(res, 200, { version: REGISTRY_VERSION, records: listProofs(effectiveVault) });
         return;
       }
 
       const routed = routeDigest(url.pathname);
       if (method === "GET" && routed) {
-        const data = proofFromRecord(options.vaultDir, routed.digest);
+        const data = proofFromRecord(effectiveVault, routed.digest);
         if (routed.content) {
           sendText(res, 200, "application/json; charset=utf-8", JSON.stringify(data, null, 2) + "\n");
         } else {
-          sendJson(res, 200, { version: REGISTRY_VERSION, record: inspectProof(options.vaultDir, routed.digest), proof: data });
+          sendJson(res, 200, { version: REGISTRY_VERSION, record: inspectProof(effectiveVault, routed.digest), proof: data });
         }
         return;
       }
@@ -150,9 +185,9 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
         const bodyPath = path.join(bodyDir, "proof.json");
         try {
           fs.writeFileSync(bodyPath, JSON.stringify(data));
-          const record = publishProof(bodyPath, options.vaultDir);
-          const proof = proofFromRecord(options.vaultDir, record.digest);
-          const idempotent = listProofs(options.vaultDir).filter((item: any) => item.digest === record.digest).length === 1;
+          const record = publishProof(bodyPath, effectiveVault);
+          const proof = proofFromRecord(effectiveVault, record.digest);
+          const idempotent = listProofs(effectiveVault).filter((item: any) => item.digest === record.digest).length === 1;
           sendJson(res, 200, {
             version: REGISTRY_VERSION,
             digest: record.digest,
@@ -175,7 +210,7 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
       sendJson(res, 404, { error: "not-found" });
     } catch (error) {
       const message = String(error);
-      const status = /integrity|digest|Invalid proof|Proof integrity/i.test(message) ? 422 : 500;
+      const status = /Unknown proof digest/i.test(message) ? 404 : (/integrity|digest|Invalid proof|Proof integrity/i.test(message) ? 422 : 500);
       sendJson(res, status, { error: message });
     }
   });

@@ -2,6 +2,8 @@ name: CI
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 concurrency:
@@ -22,6 +24,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y chromium
       - run: npm install
+      - name: Dependency security audit
+        run: npm audit --audit-level=high
       - run: node scripts/verify-source-tree.js
       - run: npm run check
       - name: Live GitHub integration smoke
