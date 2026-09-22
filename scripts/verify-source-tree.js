@@ -91,6 +91,7 @@ const required = [
   "docs/schemas/pack.schema.json",
   "docs/schemas/work-object.schema.json",
   "examples/missions/research-local.json",
+  "examples/missions/research-transform-chain.json",
   "lab/data/suppliers.json",
   "lab/fixtures/research-pack.json",
   "lab/fixtures/database-pack.json",
