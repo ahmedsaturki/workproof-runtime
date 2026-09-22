@@ -181,6 +181,8 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
 
   const server = http.createServer(async (req: any, res: any) => {
     const id = requestId();
+    let activeIdempotencyKey: string | undefined;
+    let activeIdempotencyOperation: string | undefined;
 
     try {
       const method = String(req.method ?? "GET").toUpperCase();
@@ -393,6 +395,8 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
 
         const mutation = beginIdempotentMutation(req, res, "dispatch", input, id);
         if (mutation.handled) return;
+        activeIdempotencyKey = mutation.key;
+        activeIdempotencyOperation = mutation.key ? "dispatch" : undefined;
 
         const work = await options.dispatch(input);
         const response = { version: "1.0", requestId: id, work };
@@ -422,6 +426,8 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
 
         const mutation = beginIdempotentMutation(req, res, action, { workId }, id);
         if (mutation.handled) return;
+        activeIdempotencyKey = mutation.key;
+        activeIdempotencyOperation = mutation.key ? action : undefined;
 
         if (action === "cancel") {
           if (work.status === "verified" || work.status === "failed") {
@@ -494,18 +500,32 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
       sendJson(res, 404, { error: "not-found", requestId: id });
     } catch (error) {
       const message = String(error);
-      audit({
-        version: "0.1",
-        requestId: id,
-        action: "error",
-        error: message,
-        at: new Date().toISOString()
-      });
-
       const status =
         /Unknown work|ENOENT|no such file/i.test(message)
           ? 404
           : (/Invalid work id|Invalid JSON|Idempotency-Key/i.test(message) ? 400 : 500);
+
+      audit({
+        version: "0.1",
+        requestId: id,
+        action: "error",
+        operation: activeIdempotencyOperation,
+        error: message,
+        ...(activeIdempotencyKey ? { idempotencyKey: activeIdempotencyKey } : {}),
+        at: new Date().toISOString()
+      });
+
+      if (activeIdempotencyKey && idempotency && status >= 500) {
+        const safeFailure = {
+          error: "mutation-execution-failed",
+          requestId: id
+        };
+        try {
+          idempotency.fail(activeIdempotencyKey, status, safeFailure);
+        } catch {}
+        sendJson(res, status, safeFailure);
+        return;
+      }
 
       sendJson(res, status, { error: message, requestId: id });
     }
