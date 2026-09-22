@@ -59,7 +59,7 @@ test("packaged control-plane process serves health, executes work, persists proo
     assert.equal(capabilities.status, 200);
     const capabilityBody = await capabilities.json();
     assert.ok(Array.isArray(capabilityBody.capabilities));
-    assert.ok(capabilityBody.capabilities.some((item: any) => item.name === "pack.local"));
+    assert.ok(capabilityBody.capabilities.some((item: any) => item.name === "pack.local.file.read"));
 
     const dispatch = {
       objective: "control-plane app smoke",
