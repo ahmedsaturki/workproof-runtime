@@ -981,6 +981,7 @@ async function load() {
 }
 
 async function show(id) {
+  selectedId = id;
   const response = await fetch("/api/work/" + encodeURIComponent(id), {cache:"no-store"});
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || "Failed to load work");
