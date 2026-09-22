@@ -40,7 +40,7 @@ function pushFileCheck(checks: DoctorCheck[], id: string, target: string): void 
     if (stat.isDirectory()) checks.push({ id, state: "ok", detail: "directory exists" });
     else checks.push({ id, state: "ok", detail: "file exists" });
   } catch (error) {
-    checks.push({ id, state: "failed", detail: String(error?.message ?? error) });
+    checks.push({ id, state: "failed", detail: String((error as any)?.message ?? error) });
   }
 }
 
@@ -68,7 +68,7 @@ async function probe(checks: DoctorCheck[], id: string, baseUrl: string, pathNam
     }
     checks.push({ id, state: "ok", detail: "HTTP " + response.status, latencyMs: Date.now() - started });
   } catch (error) {
-    checks.push({ id, state: "failed", detail: String(error?.message ?? error), latencyMs: Date.now() - started });
+    checks.push({ id, state: "failed", detail: String((error as any)?.message ?? error), latencyMs: Date.now() - started });
   }
 }
 
