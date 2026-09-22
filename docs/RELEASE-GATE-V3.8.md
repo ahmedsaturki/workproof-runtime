@@ -24,7 +24,7 @@ Add a local-first operational diagnostics surface without changing WorkProof aut
 - [x] release artifact publication
 - [x] GHCR image publication
 - [x] production Compose digest pin
-- [ ] post-merge main CI
+- [x] post-merge main CI
 
 ## Stop conditions
 
@@ -69,3 +69,16 @@ Release publication, GHCR digest capture, and production Compose pinning are ver
 
 ## Main promotion
 - [ ] post-merge main CI
+
+
+## Final closeout evidence
+
+- Feature CI #1234: success.
+- Release workflow #180: success.
+- Container workflow #177: success.
+- GitHub Release `v3.8.0-dev.1` / ID `393551082`: published and verified.
+- Release commit: `bba39f385ab042344f4fc2ebe04aeef7ef3c98b9`.
+- GHCR digest: `sha256:acafde09bd74d535fb706acde68f7e6279283ac49f6d1863585d672fb691ac02`.
+- Production Compose pinned to the published digest.
+- Main merge commit: `0e7e8050a98a4c4863fe81f49a69ab4bc8a646b8`.
+- Main CI #1236: success.
