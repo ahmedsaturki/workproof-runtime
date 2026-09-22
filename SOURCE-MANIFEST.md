@@ -48,12 +48,12 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 - GHCR digest: `sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`
 - product readiness PR #74: local-first product gate and restart smoke
 
-## Current v3.8.4 distribution state
+## Prepared v3.8.4 distribution state
 
 - release reconciliation baseline: `27bdec369b3e0664224054471656b3f736e763db`
 - release workflow #210: success
 - container workflow #207: success
-- current package version: `3.8.4`
+- prepared package version: `3.8.4`
 - stable release: `v3.8.3`
 - stable release commit: `27bdec369b3e0664224054471656b3f736e763db`
 - GitHub Release: `393869578`
@@ -70,7 +70,7 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 ## Verified main lineage
 
 - current verified release lineage: v3.8.3
-- container base pin hardening is pending the v3.8.4 release cycle
+- container base pin hardening is included in the prepared v3.8.4 release cycle
 - stable release commit: `27bdec369b3e0664224054471656b3f736e763db`
 - release workflow #210: success
 - container workflow #207: success
