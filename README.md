@@ -119,7 +119,7 @@ Verified digest:
 
 `sha256:ec6f891f8e3fc427937f904eb039d95d58387b1d06261cd91c8c9a886bc7cf67`
 
-The same digest is exposed by the immutable release commit tag `772a5a16b34e94b62bbc6564474736ef2e4da11b`. Container verification run #207 proved:
+The same digest is exposed by the immutable release commit tag `27bdec369b3e0664224054471656b3f736e763db` Container verification run #207 proved:
 
 - package version matches release tag;
 - OCI version matches `3.8.3`;
