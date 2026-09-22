@@ -8,7 +8,7 @@ Keep the Studio localhost-bound unless an authenticated reverse proxy is configu
 
 ## Current verified release
 
-- tag: `3.4.0-dev.12`
+- tag: `3.5.0-dev.1`
 - immutable digest: `sha256:491261f71ff3b010bb7a967b74b348ca40042d3150e2f6c8a36c1a4dcf7012bb`
 - immutable commit tag: `1b174b33da8e519e5a23e7565944aba6266d8e97`
 - anonymous GHCR pull: verified
