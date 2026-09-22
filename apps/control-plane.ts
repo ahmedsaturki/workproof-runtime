@@ -159,31 +159,38 @@ async function resumeMission(work: WorkObject): Promise<WorkObject> {
   return work;
 }
 
-const controlPlane = await startControlPlane({
-  repository,
-  authPolicy,
-  host,
-  port,
-  auditPath,
-  idempotencyDbPath,
-  dispatch: executeMission,
-  resume: resumeMission
+async function main(): Promise<void> {
+  const controlPlane = await startControlPlane({
+    repository,
+    authPolicy,
+    host,
+    port,
+    auditPath,
+    idempotencyDbPath,
+    dispatch: executeMission,
+    resume: resumeMission
+  });
+
+  process.stdout.write(JSON.stringify({
+    status: "ready",
+    version: "3.4.0-dev.11",
+    host: controlPlane.host,
+    port: controlPlane.port,
+    workDirectory,
+    proofDirectory,
+    auth: Boolean(authPolicy)
+  }, null, 2) + "\n");
+
+  const shutdown = async (signal: string): Promise<void> => {
+    process.stdout.write(`control-plane ${signal}\n`);
+    await controlPlane.close();
+    process.exit(0);
+  };
+  process.once("SIGINT", () => { void shutdown("SIGINT"); });
+  process.once("SIGTERM", () => { void shutdown("SIGTERM"); });
+}
+
+main().catch((error) => {
+  process.stderr.write(String(error) + "\n");
+  process.exitCode = 1;
 });
-
-process.stdout.write(JSON.stringify({
-  status: "ready",
-  version: "3.4.0-dev.11",
-  host: controlPlane.host,
-  port: controlPlane.port,
-  workDirectory,
-  proofDirectory,
-  auth: Boolean(authPolicy)
-}, null, 2) + "\n");
-
-const shutdown = async (signal: string): Promise<void> => {
-  process.stdout.write(`control-plane ${signal}\n`);
-  await controlPlane.close();
-  process.exit(0);
-};
-process.once("SIGINT", () => { void shutdown("SIGINT"); });
-process.once("SIGTERM", () => { void shutdown("SIGTERM"); });
