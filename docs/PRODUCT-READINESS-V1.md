@@ -85,28 +85,28 @@ A product release must not be called production-ready solely because CI is green
 
 ## Current verified baseline — 2026-09-22
 
-The repository currently records v3.4 benchmark verification and the coherent `v3.4.0-dev.9` distribution path. Main CI, release verification, and container publication are integrity-verified. Localhost-bound production compose and a deployment runbook are pinned to the verified dev.4 image.
+The repository currently records v3.4 benchmark verification and the coherent `v3.4.0-dev.9` distribution path. Main CI, release verification, and container publication are integrity-verified. Localhost-bound production compose and the deployment runbook are pinned to the verified `v3.4.0-dev.9` image.
 
 These facts establish a strong verified foundation, but they do **not** by themselves establish a public production deployment. Public host/DNS/TLS/auth/secrets provisioning remains an external infrastructure gate.
 
 ## Next implementation gates
 
-The next work must prioritize executable product value over additional abstract architecture:
+The next work prioritizes executable product value over additional abstract architecture.
 
-Completed in the dev.4 product-readiness line:
+Completed:
 
 1. Fresh-checkout package install and operator smoke.
 2. Stable product-facing mission format and runnable example mission.
 3. Persistent restart/recovery acceptance test.
 4. Security negative-path coverage for authenticated control and capability policy.
+5. Operator UX for failure, ambiguity, recovery, and proof.
+6. Operational overview and attention summary.
+7. Package distribution of operator docs and representative mission examples.
 
-Remaining product-validation gates:
+Remaining:
 
-Remaining product-validation gates:
-
-5. Operator UX for failure, ambiguity, recovery, and proof—not only success paths.
-6. Operator UX for failure, ambiguity, recovery, and proof—not only success paths.
-7. External deployment profile and runbook validation in a disposable environment when infrastructure is available.
+8. Disposable external-topology validation with TLS, authentication, secret non-leakage, backup/restore, and rollback to a previous immutable release.
+9. Broader multi-capability mission UX and workflow visualization.
 
 ## Stop conditions
 
@@ -158,6 +158,6 @@ The local-first P0 foundations are complete and executable:
 Remaining gates are external deployment validation, broader multi-capability UX, and richer operational visualization.
 
 
-## Dev.8 release target
+## Dev.9 release state
 
-The current release target is `v3.4.0-dev.9`, carrying the completed local-first P0/P1 gates: operator guidance, production Compose restart/persistence validation, portable proof, proof compatibility, resume safety, and packaged docs/examples.
+The current shipped prerelease is `v3.4.0-dev.9`. Its Release and Container workflows both completed their required verification gates. The current main branch is the post-release closeout line.
