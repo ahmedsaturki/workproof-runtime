@@ -153,6 +153,6 @@ WorkProof Runtime is not a replacement for agents, browsers, workflow engines, m
 
 ## Historical release provenance
 
-v3.8.4 was the preceding verified stable distribution. v3.8.2 is retained as superseded history and is not a rollback target. v3.8.1 remains the verified rollback release.
+v3.8.5 was the preceding verified stable distribution. v3.8.2 is retained as superseded history and is not a rollback target. v3.8.1 remains the verified rollback release.
 
 See `STATUS.md`, `SOURCE-MANIFEST.md`, `docs/release-lineage.json`, and `docs/PRODUCT-READINESS-V1.md` for the current verification and product-readiness records.
