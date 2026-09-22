@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.4 benchmark foundations remain verified; v3.7.0-dev.1 is the current CI-verified release candidate. The published shipped prerelease remains v3.6.0-dev.1 until the v3.7 publication gate closes.**
+**v3.4 benchmark foundations remain verified; v3.7.0-dev.1 is the current published prerelease.**
 
 The v3.4 line is the first executable operator benchmark with controlled failure injection across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution.
 
@@ -83,7 +83,7 @@ M005 retried the primary capability under bounded ambiguity, selected a compatib
 
 ## v3.7 release
 
-The v3.7 candidate adds:
+The v3.7 release adds:
 - A2A 1.0 JSON-RPC interoperability over the authenticated WorkProof Control Plane.
 - A2A Agent Card discovery, task listing/filtering/paging, and deterministic mutation idempotency.
 - Work Object listing and paging in the Control Plane and SDK.
@@ -97,13 +97,13 @@ Feature CI #1179 and post-merge main CI #1185 passed the complete repository gat
 
 ### GitHub Release
 
-`v3.6.0-dev.1` is the current shipped prerelease. Release and container workflows publish from the same release-branch lineage.
+`v3.7.0-dev.1` is the current shipped prerelease. Release and container workflows publish from the same release-branch lineage.
 
 Published assets:
 
-- `operational-reality-core-3.6.0-dev.1.tgz`
-- `workproof-runtime-v3.6.0-dev.1.tar.gz`
-- `workproof-benchmark-v3.6.0-dev.1.json`
+- `operational-reality-core-3.7.0-dev.1.tgz`
+- `workproof-runtime-v3.7.0-dev.1.tar.gz`
+- `workproof-benchmark-v3.7.0-dev.1.json`
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
@@ -113,11 +113,11 @@ The release pipeline re-downloads published assets, verifies SHA256 sums, verifi
 
 Published image:
 
-`ghcr.io/ahmedsaturki/workproof-runtime:3.6.0-dev.1`
+`ghcr.io/ahmedsaturki/workproof-runtime:3.7.0-dev.1`
 
 Verified digest:
 
-`sha256:2c5ba1b58697ec545cf7098d93e8750394b9b1e2ccd9e8f45b647cec689bd247`
+`sha256:28e8d9af0ab71442b33df8b72308089f520b5ba23128401c0a05675809ba1748`
 
 The same digest is exposed by the immutable release commit tag `de3ad9fcc10b9db7487c78620607f669249adaa9`. Container verification run #158 proved:
 
