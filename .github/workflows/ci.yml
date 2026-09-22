@@ -78,6 +78,8 @@ jobs:
           test -s "${SMOKE_DIR}/research.json"
           node scripts/packed-control-plane-smoke.js "${SMOKE_DIR}/node_modules/operational-reality-core"
           echo "packed CLI and control-plane product smoke passed"
+          node scripts/packed-mcp-smoke.js "${SMOKE_DIR}/node_modules/operational-reality-core"
+          echo "packed MCP product smoke passed"
       - name: Disposable external topology smoke
         shell: bash
         run: |
