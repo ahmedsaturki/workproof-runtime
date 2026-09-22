@@ -2,7 +2,7 @@
 
 ## Development baseline
 
-The current stable development baseline is **v3.8.0**.
+The current release development baseline is **v3.8.1**.
 
 ## Before submitting changes
 
