@@ -10,7 +10,7 @@ const { WorkEngine } = require("../packages/runtime/src/engine.js");
 const { registerDataTransformPack } = require("../packages/packs/src/data-transform-pack.js");
 
 function fixture() {
-  const dir = fs.mkdtempSync(path.join("/tmp", "workproof-transform-"));
+  const dir = fs.mkdtempSync(path.join(require("os").tmpdir(), "workproof-transform-"));
   const inputPath = path.join(dir, "input.json");
   const outputPath = path.join(dir, "output.json");
   fs.writeFileSync(inputPath, JSON.stringify([
