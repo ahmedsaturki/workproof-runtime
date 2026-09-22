@@ -72,7 +72,7 @@ function rpcError(id: unknown, code: number, message: string, data?: unknown): R
 function send(res: any, status: number, body: Record<string, unknown>, headers: Record<string, string> = {}): void {
   const payload = JSON.stringify(body);
   res.writeHead(status, {
-    "content-type": "application/json; charset=utf-8",
+    "content-type": "application/a2a+json; charset=utf-8",
     "content-length": Buffer.byteLength(payload),
     "cache-control": "no-store",
     "x-content-type-options": "nosniff",
@@ -258,7 +258,42 @@ export async function startA2AServer(options: A2AOptions): Promise<RunningA2A> {
       }
 
       if (body.method === "ListTasks") {
-        throw Object.assign(new Error("ListTasks is deferred to the WorkProof REST/SDK surface in this adapter release"), { rpcCode: -32004 });
+        const params = body.params && typeof body.params === "object" && !Array.isArray(body.params) ? body.params : {};
+        if (params.contextId !== undefined) {
+          throw Object.assign(new Error("ListTasks contextId filtering is not yet persisted by the WorkProof task mapping"), { rpcCode: -32004 });
+        }
+        if (params.pageToken !== undefined && String(params.pageToken) !== "") {
+          throw Object.assign(new Error("ListTasks pagination tokens are not supported by this adapter"), { rpcCode: -32004 });
+        }
+        const rawPageSize = params.pageSize === undefined ? 50 : Number(params.pageSize);
+        if (!Number.isSafeInteger(rawPageSize) || rawPageSize < 1 || rawPageSize > 100) {
+          throw Object.assign(new Error("ListTasks pageSize must be an integer from 1 to 100"), { rpcCode: -32602 });
+        }
+        let statusFilter: string | undefined;
+        if (params.status !== undefined) {
+          const map: Record<string, string> = {
+            TASK_STATE_SUBMITTED: "planned",
+            TASK_STATE_WORKING: "running",
+            TASK_STATE_COMPLETED: "verified",
+            TASK_STATE_FAILED: "failed",
+            TASK_STATE_CANCELED: "cancelled"
+          };
+          statusFilter = map[String(params.status)];
+          if (!statusFilter) throw Object.assign(new Error("Unsupported ListTasks status filter"), { rpcCode: -32602 });
+        }
+        const works = await control.listWork({ limit: 100, status: statusFilter });
+        const tasks = works.slice(0, rawPageSize).map(item => workTask(item, "a2a-" + item.id));
+        send(res, 200, {
+          jsonrpc: "2.0",
+          id: body.id,
+          result: {
+            tasks,
+            nextPageToken: "",
+            pageSize: rawPageSize,
+            totalSize: works.length
+          }
+        });
+        return;
       }
 
       throw Object.assign(new Error("Method not found"), { rpcCode: -32601 });
