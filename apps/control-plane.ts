@@ -6,6 +6,7 @@ import { CapabilityRegistry } from "../packages/capabilities/src/registry";
 import { VerificationEngine } from "../packages/verification/src/engine";
 import { WorkEngine, WorkStep } from "../packages/runtime/src/engine";
 import { JsonWorkRepository } from "../packages/storage/src/json";
+import { hardenPrivateFile } from "../packages/storage/src/private-file";
 import { startControlPlane } from "../packages/control-plane/src/http";
 import { loadAuthPolicy } from "../packages/registry/src/auth";
 import { registerLocalPack } from "../packages/packs/src/local-pack";
@@ -164,7 +165,9 @@ function proofPath(work: WorkObject, config: RuntimeConfig): string {
 function persistProof(work: WorkObject, config: RuntimeConfig): void {
   const proof = buildProofBundle(work);
   const integrity = buildIntegrityManifest(work);
-  fs.writeFileSync(proofPath(work, config), JSON.stringify({ ...proof, integrity }, null, 2) + "\n", { encoding: "utf8", mode: 0o600 });
+  const target = proofPath(work, config);
+  fs.writeFileSync(target, JSON.stringify({ ...proof, integrity }, null, 2) + "\n", { encoding: "utf8", mode: 0o600 });
+  hardenPrivateFile(target);
 }
 
 function missionPath(workId: string, config: RuntimeConfig): string {
@@ -172,7 +175,8 @@ function missionPath(workId: string, config: RuntimeConfig): string {
 }
 
 function saveMission(work: WorkObject, steps: WorkStep[], config: RuntimeConfig): void {
-  fs.writeFileSync(missionPath(work.id, config), JSON.stringify({
+  const target = missionPath(work.id, config);
+  fs.writeFileSync(target, JSON.stringify({
     objective: work.contract.objective,
     inputs: work.contract.inputs ?? {},
     constraints: work.contract.constraints ?? {},
@@ -182,6 +186,7 @@ function saveMission(work: WorkObject, steps: WorkStep[], config: RuntimeConfig)
     approvalRequired: Boolean(work.contract.approvalRequired),
     steps
   }, null, 2) + "\n", { encoding: "utf8", mode: 0o600 });
+  hardenPrivateFile(target);
 }
 
 function loadMission(work: WorkObject, config: RuntimeConfig): WorkStep[] {
