@@ -8,10 +8,10 @@ Keep the Studio localhost-bound unless an authenticated reverse proxy is configu
 
 ## Current verified release
 
-- tag: `3.4.0-dev.12`
-- immutable digest: `sha256:491261f71ff3b010bb7a967b74b348ca40042d3150e2f6c8a36c1a4dcf7012bb`
-- immutable commit tag: `1b174b33da8e519e5a23e7565944aba6266d8e97`
+- tag: `3.5.0-dev.1`
+- immutable digest: `sha256:ab5b90eb3722b96d714f105536f5c4d6cdc18cebe22992c4fe758fbc88f547d7`
+- immutable commit tag: `cb48780451ed2eddf9211bc5f267b026e2243ca1`
 - anonymous GHCR pull: verified
 - production Compose image: pinned by tag@digest to the same published image
 
-The production compose file pins the release by digest so tag drift cannot silently change the deployed image. Release/container CI also verifies restart/persistence, TLS/auth topology behavior, backup/restore, rollback, and published digest lineage.
+The production compose file pins the release by digest so tag drift cannot silently change the deployed image. Release/container CI also verifies restart/persistence, TLS/auth topology behavior, backup/restore, and published digest lineage.

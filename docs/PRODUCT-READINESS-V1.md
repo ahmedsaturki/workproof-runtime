@@ -85,7 +85,7 @@ A product release must not be called production-ready solely because CI is green
 
 ## Current verified baseline — 2026-09-22
 
-The repository now records the coherent `v3.4.0-dev.12` distribution path. Main CI, release verification, container publication, secret scanning, and the disposable external-topology gate are integrity-verified. Localhost-bound production compose and the deployment runbook are pinned to the verified `v3.4.0-dev.12` image.
+The repository now records the coherent `v3.5.0-dev.1` distribution path. Main CI, release verification, container publication, secret scanning, and the disposable external-topology gate are integrity-verified. Localhost-bound production compose and the deployment runbook are pinned to the verified `v3.5.0-dev.1` image.
 
 These facts establish a strong verified foundation, but they do **not** by themselves establish a public production deployment. Public host/DNS/TLS/auth/secrets provisioning remains an external infrastructure gate.
 
@@ -126,7 +126,7 @@ WorkProof Runtime is not required to become a generic agent framework, browser a
 
 ## Implemented local-first product baseline
 
-The following gates are executable and CI-verified on the current v3.4.0-dev.12 lineage and its published distribution:
+The following gates are executable and CI-verified on the current v3.5.0-dev.1 lineage and its published distribution:
 
 - [x] Runtime version is sourced from package metadata instead of stale hard-coded product versions.
 - [x] Studio process startup honors control-plane, proof-vault, and trust-policy configuration from arguments/environment.
@@ -159,13 +159,29 @@ The local-first P0 foundations are complete and executable:
 Remaining product-validation work is expansion beyond the current prerelease scope: broader mission composition, additional adapters, and wider operational visualization. The required local-first/external-topology acceptance gates for this prerelease are complete.
 
 
-## Dev.12 release state
+## v3.5.0-dev.1 release state
 
-The current shipped prerelease is `v3.4.0-dev.12`. Release verification run #124 and Container verification run #127 both completed their required gates, including the disposable external-topology validation and published digest lineage.
+The current shipped prerelease is `v3.5.0-dev.1`. Release verification run #144 and Container verification run #141 both completed their required gates, including the disposable external-topology validation and published digest lineage.
 
 
-## Dev.12 control-plane product surface
+## v3.5.0-dev.1 control-plane product surface
 
 The dev.12 product surface adds a runnable authenticated control-plane process and SDK dispatch support for executable Work Steps. The control-plane persists Work Objects, mission definitions, proof bundles, audit records, and its durable idempotency ledger. Non-loopback binding is refused unless an explicit auth policy is configured.
 
 The packaged end-to-end acceptance test covers health, dispatch, execution, persistence, proof generation, Work Object retrieval, and idempotent replay. These control-plane capabilities remain subject to the same risk ceilings, independent verification, reconciliation, recovery, and proof rules as the kernel.
+
+
+## v3.5.0-dev.1 product delta
+
+Completed and verified on the current release lineage:
+
+- Authenticated capability inventory at `GET /v1/capabilities`.
+- Runtime/API identity returned from control-plane health.
+- SDK capability discovery.
+- Studio capability-registry visualization.
+- Packed control-plane artifact smoke.
+- Package-root runtime version resolution.
+- Authorization negative-path coverage for capability discovery.
+- Hardened Chromium/CDP startup preflight.
+
+These are additive product surfaces; they do not replace the Work Contract, risk/policy, effect, verification, reconciliation, recovery, or proof invariants.

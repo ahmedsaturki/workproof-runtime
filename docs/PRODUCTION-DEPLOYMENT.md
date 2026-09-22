@@ -2,8 +2,8 @@
 
 Supported distribution target: the Node 24 GHCR container.
 
-- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.12`
-- pinned digest: `sha256:491261f71ff3b010bb7a967b74b348ca40042d3150e2f6c8a36c1a4dcf7012bb`
+- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.5.0-dev.1`
+- pinned digest: `sha256:ab5b90eb3722b96d714f105536f5c4d6cdc18cebe22992c4fe758fbc88f547d7`
 - bind: `127.0.0.1:8788`
 - persistent data: `./work-runs -> /data/work-runs`
 
@@ -36,7 +36,7 @@ The repository provides the deployable container, local compose, and runbook. Th
 
 ## Public container distribution
 
-The published Container Registry manifest for `3.4.0-dev.12` was verified through the anonymous pull gate; the canonical digest is `sha256:491261f71ff3b010bb7a967b74b348ca40042d3150e2f6c8a36c1a4dcf7012bb`.
+The published Container Registry manifest for `3.5.0-dev.1` was verified through the anonymous pull gate; the canonical digest is `sha256:ab5b90eb3722b96d714f105536f5c4d6cdc18cebe22992c4fe758fbc88f547d7`.
 
 
 ## Release verification additions
@@ -44,12 +44,13 @@ The published Container Registry manifest for `3.4.0-dev.12` was verified throug
 Container CI executes the production Compose profile, checks runtime health and version, reads a persisted Work Object, restarts Compose, and reads the same Work Object again.
 
 
-## Dev.12 release integrity
+## v3.5.0-dev.1 verified release
 
-- release tag: `v3.4.0-dev.12`
-- release commit: `1b174b33da8e519e5a23e7565944aba6266d8e97`
-- GitHub Release: `393489868`
-- GHCR immutable image tag: `1b174b33da8e519e5a23e7565944aba6266d8e97`
-- GHCR digest: `sha256:491261f71ff3b010bb7a967b74b348ca40042d3150e2f6c8a36c1a4dcf7012bb`
-- rollback image: dev.11 immutable tag `aeaaac3d9224b7eac297ac8f63207bf97b532e4d`
-- rollback digest: `sha256:d0c4a8134e0b73d68dc6a0489bbc058b90e633a01171df980aebd1e7b47affff`
+- release tag: `v3.5.0-dev.1`
+- release commit: `cb48780451ed2eddf9211bc5f267b026e2243ca1`
+- GitHub Release: `393498803`
+- GHCR immutable image tag: `cb48780451ed2eddf9211bc5f267b026e2243ca1`
+- GHCR digest: `sha256:ab5b90eb3722b96d714f105536f5c4d6cdc18cebe22992c4fe758fbc88f547d7`
+- rollback release: `v3.4.0-dev.12`
+- rollback immutable tag: `1b174b33da8e519e5a23e7565944aba6266d8e97`
+- rollback digest: `sha256:491261f71ff3b010bb7a967b74b348ca40042d3150e2f6c8a36c1a4dcf7012bb`

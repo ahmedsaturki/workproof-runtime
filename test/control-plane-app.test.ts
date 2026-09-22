@@ -48,11 +48,12 @@ test("packaged control-plane process serves health, executes work, persists proo
   try {
     const port = await waitForPort(child);
     const baseUrl = `http://127.0.0.1:${port}`;
+    const packageJson = JSON.parse(fs.readFileSync(path.resolve("package.json"), "utf8"));
     const health = await fetch(`${baseUrl}/health`);
     assert.equal(health.status, 200);
     const healthBody = await health.json();
     assert.equal(healthBody.status, "ok");
-    assert.equal(healthBody.version, "3.4.0-dev.12");
+    assert.equal(healthBody.version, packageJson.version);
     assert.equal(healthBody.apiVersion, "1.0");
 
     const capabilities = await fetch(`${baseUrl}/v1/capabilities`);
