@@ -16,15 +16,15 @@ Add a local-first operational diagnostics surface without changing WorkProof aut
 - [x] doctor failure reporting
 - [x] source-tree gate coverage
 - [x] full unit/integration suite
-- [x] benchmark
-- [x] demo
-- [x] CLI proof
-- [x] representative missions
-- [x] live GitHub integration smoke
-- [x] release artifact publication
-- [x] GHCR image publication
-- [x] production Compose digest pin
-- [x] post-merge main CI
+- [ ] benchmark
+- [ ] demo
+- [ ] CLI proof
+- [ ] representative missions
+- [ ] live GitHub integration smoke
+- [ ] release artifact publication
+- [ ] GHCR image publication
+- [ ] production Compose digest pin
+- [ ] post-merge main CI
 
 ## Stop conditions
 
@@ -38,9 +38,9 @@ Do not call v3.8 verified if:
 
 ## Feature verification
 
-- Feature CI verifies TypeScript build, source-tree completeness, packed CLI smoke, and full unit/integration suite.
+- Feature CI verifies TypeScript build, source-tree completeness, packed CLI smoke, doctor smoke, and the full unit/integration suite.
 - Control Plane `/ready` is tested from the packaged application.
 - `workctl doctor` healthy/failure paths are tested.
 - Module import safety is tested without starting a server or creating runtime state.
 
-Release publication and main promotion remain separate gates until the exact v3.8 release artifact is generated.
+Release publication, GHCR digest capture, production Compose pinning, and main promotion remain open until the exact v3.8 release artifact is generated and reverified.
