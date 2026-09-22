@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const { loadVaultIndex, saveVaultIndex } = require("./vault");
+import { hardenPrivateFile } from "../../storage/src/private-file";
 
 export type RetentionClass = "ephemeral" | "standard" | "long" | "permanent";
 
@@ -89,6 +90,7 @@ function now(): string { return new Date().toISOString(); }
 function atomicWrite(filePath: string, content: string): void {
   const temp = filePath + ".tmp-" + crypto.randomBytes(8).toString("hex");
   fs.writeFileSync(temp, content, "utf8");
+  hardenPrivateFile(temp);
   fs.renameSync(temp, filePath);
 }
 
@@ -127,7 +129,9 @@ function saveRetentionIndex(vaultDir: string, index: RetentionIndex): void {
 }
 
 function audit(vaultDir: string, event: Record<string, unknown>): void {
-  fs.appendFileSync(auditPath(vaultDir), JSON.stringify(event) + "\n", "utf8");
+  const filePath = auditPath(vaultDir);
+  fs.appendFileSync(filePath, JSON.stringify(event) + "\n", "utf8");
+  hardenPrivateFile(filePath);
 }
 
 function namespaceAllowed(objectNamespace: string | undefined, targetNamespace: string | undefined): boolean {
