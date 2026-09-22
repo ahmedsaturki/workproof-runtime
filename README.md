@@ -4,13 +4,13 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.4 executable operator benchmark remains verified; v3.5.0-dev.1 is the current shipped prerelease.**
+**v3.4 benchmark foundations remain verified; v3.6.0-dev.1 is the current shipped prerelease.**
 
 The v3.4 line is the first executable operator benchmark with controlled failure injection across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution.
 
 The v3.4.0-dev.10 product baseline adds a representative multi-capability Research → Transform mission, Studio capability-chain visibility, and a disposable external-topology gate covering TLS, authentication, persistence, backup/restore, and rollback.
 
-The v3.5.0-dev.1 release extends the verified v3.4 foundation with authenticated control-plane runtime identity, deterministic capability discovery, SDK capability inventory, Studio registry visibility, a packed control-plane smoke, and hardened CI preflight while preserving the existing outcome verification and safety semantics.
+The v3.6.0-dev.1 release extends the verified v3.5 foundation with an optional MCP v2 stdio interoperability adapter, authenticated Control Plane forwarding, explicit mutation idempotency, protocol acceptance, and packed MCP artifact verification.
 
 ## Core loop
 
@@ -85,13 +85,13 @@ M005 retried the primary capability under bounded ambiguity, selected a compatib
 
 ### GitHub Release
 
-`v3.5.0-dev.1` is the current shipped prerelease. Release and container workflows publish from the same release-branch lineage.
+`v3.6.0-dev.1` is the current shipped prerelease. Release and container workflows publish from the same release-branch lineage.
 
 Published assets:
 
-- `operational-reality-core-3.5.0-dev.1.tgz`
-- `workproof-runtime-v3.5.0-dev.1.tar.gz`
-- `workproof-benchmark-v3.5.0-dev.1.json`
+- `operational-reality-core-3.6.0-dev.1.tgz`
+- `workproof-runtime-v3.6.0-dev.1.tar.gz`
+- `workproof-benchmark-v3.6.0-dev.1.json`
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
@@ -101,16 +101,16 @@ The release pipeline re-downloads published assets, verifies SHA256 sums, verifi
 
 Published image:
 
-`ghcr.io/ahmedsaturki/workproof-runtime:3.5.0-dev.1`
+`ghcr.io/ahmedsaturki/workproof-runtime:3.6.0-dev.1`
 
 Verified digest:
 
-`sha256:ab5b90eb3722b96d714f105536f5c4d6cdc18cebe22992c4fe758fbc88f547d7`
+`sha256:2c5ba1b58697ec545cf7098d93e8750394b9b1e2ccd9e8f45b647cec689bd247`
 
-The same digest is exposed by the immutable release commit tag `cb48780451ed2eddf9211bc5f267b026e2243ca1`. Container verification run #141 proved:
+The same digest is exposed by the immutable release commit tag `de3ad9fcc10b9db7487c78620607f669249adaa9`. Container verification run #158 proved:
 
 - package version matches release tag;
-- OCI version matches `3.5.0-dev.1`;
+- OCI version matches `3.6.0-dev.1`;
 - OCI revision matches the release tag commit;
 - version and immutable commit tags resolve to the same digest;
 - the published image starts successfully;

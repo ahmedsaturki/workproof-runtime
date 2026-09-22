@@ -85,7 +85,7 @@ A product release must not be called production-ready solely because CI is green
 
 ## Current verified baseline — 2026-09-22
 
-The repository now records the coherent `v3.5.0-dev.1` distribution path. Main CI, release verification, container publication, secret scanning, and the disposable external-topology gate are integrity-verified. Localhost-bound production compose and the deployment runbook are pinned to the verified `v3.5.0-dev.1` image.
+The repository now records the coherent `v3.6.0-dev.1` distribution path. Main CI, release verification, container publication, secret scanning, and the disposable external-topology gate are integrity-verified. Localhost-bound production compose and the deployment runbook are pinned to the verified `v3.6.0-dev.1` image.
 
 These facts establish a strong verified foundation, but they do **not** by themselves establish a public production deployment. Public host/DNS/TLS/auth/secrets provisioning remains an external infrastructure gate.
 
@@ -126,7 +126,7 @@ WorkProof Runtime is not required to become a generic agent framework, browser a
 
 ## Implemented local-first product baseline
 
-The following gates are executable and CI-verified on the current v3.5.0-dev.1 lineage and its published distribution:
+The following gates are executable and CI-verified on the current v3.6.0-dev.1 lineage and its published distribution:
 
 - [x] Runtime version is sourced from package metadata instead of stale hard-coded product versions.
 - [x] Studio process startup honors control-plane, proof-vault, and trust-policy configuration from arguments/environment.
@@ -155,23 +155,25 @@ The local-first P0 foundations are complete and executable:
 - [x] operational overview and attention summary
 - [x] production Compose restart/persistence smoke
 - [x] package distribution includes operator docs and representative mission examples
+- [x] MCP v2 stdio interoperability adapter with explicit mutation idempotency
+- [x] official MCP client protocol acceptance and packed-package smoke
 
 Remaining product-validation work is expansion beyond the current prerelease scope: broader mission composition, additional adapters, and wider operational visualization. The required local-first/external-topology acceptance gates for this prerelease are complete.
 
 
-## v3.5.0-dev.1 release state
+## v3.6.0-dev.1 release state
 
-The current shipped prerelease is `v3.5.0-dev.1`. Release verification run #144 and Container verification run #141 both completed their required gates, including the disposable external-topology validation and published digest lineage.
+The current shipped prerelease is `v3.6.0-dev.1`. Release verification run #161 and Container verification run #158 both completed their required gates, including the disposable external-topology validation and published digest lineage.
 
 
-## v3.5.0-dev.1 control-plane product surface
+## v3.6.0-dev.1 control-plane product surface
 
 The dev.12 product surface adds a runnable authenticated control-plane process and SDK dispatch support for executable Work Steps. The control-plane persists Work Objects, mission definitions, proof bundles, audit records, and its durable idempotency ledger. Non-loopback binding is refused unless an explicit auth policy is configured.
 
 The packaged end-to-end acceptance test covers health, dispatch, execution, persistence, proof generation, Work Object retrieval, and idempotent replay. These control-plane capabilities remain subject to the same risk ceilings, independent verification, reconciliation, recovery, and proof rules as the kernel.
 
 
-## v3.5.0-dev.1 product delta
+## v3.6.0-dev.1 product delta
 
 Completed and verified on the current release lineage:
 
@@ -189,6 +191,8 @@ These are additive product surfaces; they do not replace the Work Contract, risk
 
 ## v3.6 MCP adapter readiness
 
-The MCP interoperability layer is executable and testable. It uses the official MCP TypeScript SDK v2, which targets the current `2026-07-28` specification revision. The adapter is intentionally thin: authentication and authorization stay at the WorkProof Control Plane, and tool mutations carry explicit idempotency keys.
+The MCP interoperability layer is executable, authenticated through the WorkProof Control Plane, and independently tested through the official MCP TypeScript SDK v2. It exposes capability discovery plus Work Object read/dispatch/resume/cancel tools without creating a parallel execution authority.
 
-Acceptance evidence includes modern protocol discovery through the SDK, capability listing, Work Object reads, dispatch replay/conflict handling, packed artifact startup from a separate working directory, and the same security/release gates as the runtime.
+Mutation tools require explicit idempotency keys. Capability metadata never grants execution permission. The Control Plane remains authoritative for authentication, authorization, risk ceilings, execution, effect tracking, independent verification, reconciliation, recovery, and proof.
+
+The adapter is distributed through the same source/package/container release path as the runtime and has a packed-package acceptance test from an installed artifact.

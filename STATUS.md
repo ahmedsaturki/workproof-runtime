@@ -8,21 +8,22 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 
 ## Current main
 
-- package version: `3.5.0-dev.1`
-- release target commit: `cb48780451ed2eddf9211bc5f267b026e2243ca1`
+- package version: `3.6.0-dev.1`
+- release source tag commit: `de3ad9fcc10b9db7487c78620607f669249adaa9`
+- main closeout commit: tracked separately after release promotion
 
 ## Current verified release
 
-- version: `3.5.0-dev.1`
-- tag: `v3.5.0-dev.1`
-- release commit: `cb48780451ed2eddf9211bc5f267b026e2243ca1`
-- GitHub Release id: 393498803
-- release verification run #144: success
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.5.0-dev.1`
-- GHCR digest: `sha256:ab5b90eb3722b96d714f105536f5c4d6cdc18cebe22992c4fe758fbc88f547d7`
-- immutable image tag: `cb48780451ed2eddf9211bc5f267b026e2243ca1`
-- Container verification run #141: success
-- five release assets present, re-downloaded, and SHA256-verified
+- version: `3.6.0-dev.1`
+- tag: `v3.6.0-dev.1`
+- release commit: `de3ad9fcc10b9db7487c78620607f669249adaa9`
+- GitHub Release id: 393506625
+- release verification run #161: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.6.0-dev.1`
+- GHCR digest: `sha256:2c5ba1b58697ec545cf7098d93e8750394b9b1e2ccd9e8f45b647cec689bd247`
+- immutable image tag: `de3ad9fcc10b9db7487c78620607f669249adaa9`
+- Container verification run #158: success
+- five release assets published and post-publication integrity verified
 
 ## Product gates
 
