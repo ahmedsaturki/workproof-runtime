@@ -6,6 +6,7 @@ const { spawnSync } = require("child_process");
 const nodeExecutable = require("process").execPath;
 
 const { buildProofBundle } = require("../packages/evidence/src/bundle.js");
+const { digestProofBundle } = require("../packages/evidence/src/integrity.js");
 const { buildIntegrityManifest } = require("../packages/evidence/src/integrity.js");
 
 function fixture() {
@@ -83,6 +84,40 @@ test("CLI verify keeps legacy proofs readable without an integrity manifest", ()
   assert.equal(result.status, 0);
   assert.match(result.stdout, /integrity=not-present/);
   assert.match(result.stdout, /status=verified/);
+});
+
+test("CLI compatibility accepts supported and legacy proof formats, but rejects unsupported versions", () => {
+  const { proof, integrity } = fixture();
+  const dir = "/tmp/workproof-cli-compatibility";
+  fs.rmSync(dir, { recursive: true, force: true });
+  fs.mkdirSync(dir, { recursive: true });
+
+  const cli = path.resolve("dist/packages/cli/src/index.js");
+  const supportedPath = path.join(dir, "supported.json");
+  fs.writeFileSync(supportedPath, JSON.stringify({ ...proof, integrity }, null, 2), "utf8");
+  const supported = spawnSync(nodeExecutable, [cli, "compatibility", supportedPath], { encoding: "utf8" });
+  assert.equal(supported.status, 0);
+  assert.match(supported.stdout, /"status": "compatible"/);
+
+  const legacyPath = path.join(dir, "legacy.json");
+  fs.writeFileSync(legacyPath, JSON.stringify(proof, null, 2), "utf8");
+  const legacy = spawnSync(nodeExecutable, [cli, "compatibility", legacyPath], { encoding: "utf8" });
+  assert.equal(legacy.status, 0);
+  assert.match(legacy.stdout, /"status": "compatible"/);
+  assert.match(legacy.stdout, /legacy 0\.1 proof/);
+
+  const unsupported = {
+    ...proof,
+    version: "0.2",
+    integrity: { ...integrity, digest: digestProofBundle({ ...proof, version: "0.2", artifacts: proof.artifacts, effects: proof.effects, sagas: proof.sagas ?? [], verification: proof.verification, events: proof.events }) }
+  };
+  const unsupportedPath = path.join(dir, "unsupported.json");
+  fs.writeFileSync(unsupportedPath, JSON.stringify(unsupported, null, 2), "utf8");
+  const result = spawnSync(nodeExecutable, [cli, "verify", unsupportedPath], { encoding: "utf8" });
+  assert.equal(result.status, 6);
+  assert.match(result.stdout, /compatibility=unsupported/);
+
+  fs.rmSync(dir, { recursive: true, force: true });
 });
 
 export {};
