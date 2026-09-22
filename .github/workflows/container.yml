@@ -75,7 +75,11 @@ jobs:
               docker push "${COMMIT_IMAGE}"
             else
               echo "Existing version tag points to revision ${VERSION_LABEL}; rebuilding the canonical release image for ${RELEASE_COMMIT}."
-              docker build --pull               --build-arg VERSION="${IMAGE_TAG}"               --build-arg VCS_REF="${RELEASE_COMMIT}"               -t "${VERSION_IMAGE}"               -t "${COMMIT_IMAGE}" .
+              BUILD_CONTEXT="${RUNNER_TEMP}/workproof-image-context"
+              rm -rf "${BUILD_CONTEXT}"
+              mkdir -p "${BUILD_CONTEXT}"
+              git archive "${RELEASE_COMMIT}" | tar -x -C "${BUILD_CONTEXT}"
+              docker build --pull               --build-arg VERSION="${IMAGE_TAG}"               --build-arg VCS_REF="${RELEASE_COMMIT}"               -t "${VERSION_IMAGE}"               -t "${COMMIT_IMAGE}" "${BUILD_CONTEXT}"
               docker push "${COMMIT_IMAGE}"
             fi
           else
