@@ -3,12 +3,12 @@
 Date: 2026-09-22
 
 Verification note: this status snapshot is itself CI-gated on the current main commit.
-The recorded latest-main gate above is CI #922; this follow-up documentation commit is also CI-gated.
+The current product-readiness merge is CI-gated by main CI #957; this distribution closeout is also CI-gated.
 Chromium CDP smoke is environment-isolated from D-Bus and uses a bounded startup window.
 
 ## Current main
 
-**v3.4 benchmark and v3.4.0-dev.2 distribution path are verified.**
+**v3.4 benchmark and v3.4.0-dev.3 distribution path are verified.**
 
 Latest main: the current branch head; see the GitHub ref and the latest CI run for the exact commit SHA.
 
@@ -16,7 +16,7 @@ Since the release target `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`, main has ad
 
 ## Verified main gates
 
-- [x] source tree: 179/179
+- [x] source tree: 181/181
 - [x] dependency security audit: 0 vulnerabilities
 - [x] Chromium/CDP preflight
 - [x] strict TypeScript build
@@ -60,23 +60,27 @@ M001-M005 all verify successfully:
 
 ### GitHub Release
 
-- tag: `v3.4.0-dev.2`
-- release id: 393311702
-- target commit: `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`
-- release verification run: #30 (success)
+- tag: `v3.4.0-dev.3`
+- release id: 393376119
+- target commit: `37c01b5f9c8f07e9dc07d6eb9eb1e59529d0a181`
+- release verification run: #35 (success)
 - assets: 5/5 present and re-downloaded
 - SHA256 verification: success
 - published benchmark semantic verification: success
 
+The previous `v3.4.0-dev.2` release remains available as the prior prerelease baseline.
+
 ### GHCR
 
-- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.2`
-- digest: `sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`
-- immutable tag: `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`
-- container verification run: #27 (success)
+- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.3`
+- digest: `sha256:a85a139f37ffcc19f0d6d9ea6223133738437cdc8c8ff0fe32f88dfa055efdf0`
+- immutable commit tag: `3145d21ae5d44b61c3e6f23bea377548d1a79ed4`
+- container verification run: #32 (success)
 - OCI version/revision checks: success
 - published-image `/health`: success
 - anonymous GHCR pull: success
+
+The runtime image uses the verified `v3.4.0-dev.3` runtime and was rebuilt when the pre-existing version tag pointed to an older revision.
 
 ## Operational boundary
 
@@ -88,6 +92,8 @@ M001-M005 all verify successfully:
 - [x] published image smoke
 - [x] localhost-bound production compose
 - [x] production deployment runbook
+- [x] v3.4.0-dev.3 GHCR image publication and smoke
+- [x] v3.4.0-dev.3 GitHub Release publication and re-download verification
 - [ ] public production host/DNS/TLS/auth/secrets provisioning
 
 The unchecked line is deliberately external infrastructure, not a missing repository implementation.
