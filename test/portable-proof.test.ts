@@ -187,4 +187,18 @@ test("portable verifier rejects manifest omissions and sidecar symlinks", () => 
   }
 });
 
+test("portable export rejects a symlinked bundle directory", () => {
+  const root = fs.mkdtempSync("/tmp/workproof-portable-root-");
+  try {
+    const created = createProof(path.join(root, "source"));
+    const outside = path.join(root, "outside");
+    const bundle = path.join(root, "bundle-link");
+    fs.mkdirSync(outside, { recursive: true });
+    fs.symlinkSync(outside, bundle, "dir");
+    assert.throws(() => exportPortableProof(created.proofPath, bundle), /must be a regular directory/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 export {};
