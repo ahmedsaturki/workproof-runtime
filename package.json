@@ -3,6 +3,14 @@
   "version": "3.8.0",
   "private": true,
   "description": "WorkProof Runtime — outcome-first digital work kernel and local-first operator",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ahmedsaturki/workproof-runtime.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ahmedsaturki/workproof-runtime/issues"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "npm run build && node --test dist/test/*.test.js",
