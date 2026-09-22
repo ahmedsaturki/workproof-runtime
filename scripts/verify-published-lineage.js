@@ -62,6 +62,7 @@ async function main() {
 
   const rollbackDigest = await ghcrDigest("ghcr.io/" + repo.toLowerCase() + ":" + lineage.rollback.commit);
   if (!/^sha256:[0-9a-f]{64}$/.test(rollbackDigest)) throw new Error("Rollback immutable image did not expose a valid digest");
+  if (rollbackDigest !== lineage.rollback.digest) throw new Error("Rollback GHCR digest mismatch: " + rollbackDigest + " != " + lineage.rollback.digest);
 
   process.stdout.write(JSON.stringify({
     status: "verified",
