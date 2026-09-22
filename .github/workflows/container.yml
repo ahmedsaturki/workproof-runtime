@@ -28,6 +28,9 @@ jobs:
           node-version: 24
           package-manager-cache: false
 
+      - name: Verify container base image is immutable
+        run: node scripts/verify-container-base.js
+
       - name: Determine image tag
         id: image
         shell: bash
