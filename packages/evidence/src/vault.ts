@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const { digestProofBundle, verifyProofIntegrity } = require("./integrity");
+import { hardenPrivateFile } from "../../storage/src/private-file";
 
 export interface VaultRecord {
   version: "0.1";
@@ -30,6 +31,7 @@ function randomSuffix(): string {
 function atomicWrite(filePath: string, content: string): void {
   const temporary = `${filePath}.tmp-${randomSuffix()}`;
   fs.writeFileSync(temporary, content, "utf8");
+  hardenPrivateFile(temporary);
   fs.renameSync(temporary, filePath);
 }
 
@@ -138,6 +140,7 @@ function localArtifactPath(uri: string): string | null {
 function copyFileAtomic(source: string, destination: string): void {
   const temporary = `${destination}.tmp-${randomSuffix()}`;
   fs.copyFileSync(source, temporary);
+  hardenPrivateFile(temporary);
   fs.renameSync(temporary, destination);
 }
 
