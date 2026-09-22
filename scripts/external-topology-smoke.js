@@ -26,6 +26,17 @@ function curlStatus(url, user, password) {
   return Number(run("curl", ["-ksS", "-o", "/dev/null", "-w", "%{http_code}", "--user", user + ":" + password, url]).stdout.trim());
 }
 
+function waitForStatus(baseUrl, expectedStatus, user, password) {
+  for (let attempt = 1; attempt <= 30; attempt += 1) {
+    try {
+      const status = curlStatus(baseUrl + "/health", user, password);
+      if (status === expectedStatus) return;
+    } catch {}
+    run("sleep", ["1"]);
+  }
+  throw new Error("External topology did not return expected HTTP status " + expectedStatus);
+}
+
 function waitHealthy(baseUrl, version, user, password) {
   for (let attempt = 1; attempt <= 45; attempt += 1) {
     try {
@@ -118,8 +129,7 @@ async function main() {
 
     const baseUrl = "https://127.0.0.1:9443";
     const basic = "Basic " + Buffer.from("smoke:" + password).toString("base64");
-    const unauthorizedStatus = Number(run("curl", ["-ksS", "-o", "/dev/null", "-w", "%{http_code}", baseUrl + "/health"]).stdout.trim());
-    if (unauthorizedStatus !== 401) throw new Error("Expected unauthenticated edge request to return 401, got " + unauthorizedStatus);
+    waitForStatus(baseUrl, 401, "", "");
     waitHealthy(baseUrl, packageJson.version, "smoke", password);
 
     const workValue = curlJson(baseUrl + "/api/work/" + work.id, "smoke", password);
