@@ -103,10 +103,15 @@ async function main() {
   const pulledDigestRef = run("docker", ["image", "inspect", lineage.container.image, "--format={{index .RepoDigests 0}}"]).stdout.trim();
   if (!/^.+@sha256:[0-9a-f]{64}$/.test(pulledDigestRef)) throw new Error("Published release image digest could not be determined");
   const publishedDigest = pulledDigestRef.slice(pulledDigestRef.indexOf("@") + 1);
-  const runtimeImage = lineage.container.image + "@" + publishedDigest;
-  const productionImage = lineage.container.digest.startsWith("sha256:")
-    ? lineage.container.image + "@" + lineage.container.digest
-    : lineage.container.image;
+  if (publishedDigest !== lineage.container.digest) {
+    throw new Error("Published version tag digest does not match release lineage: " + publishedDigest + " != " + lineage.container.digest);
+  }
+  if (!lineage.rollback?.digest || !/^sha256:[0-9a-f]{64}$/.test(lineage.rollback.digest)) {
+    throw new Error("Rollback release lineage is missing a verified digest");
+  }
+  const runtimeImage = lineage.container.image + "@" + lineage.container.digest;
+  const productionImage = runtimeImage;
+  const rollbackImage = "ghcr.io/" + (process.env.GITHUB_REPOSITORY || "ahmedsaturki/workproof-runtime").toLowerCase() + ":" + lineage.rollback.commit + "@" + lineage.rollback.digest;
   if (!productionImage.startsWith(expectedTagImage)) throw new Error("External smoke image does not match release lineage");
   if (!lineage.release.version || !lineage.container.image) throw new Error("Incomplete release lineage");
   fs.mkdirSync(dataDir, { recursive: true });
