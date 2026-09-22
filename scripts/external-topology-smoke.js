@@ -100,8 +100,12 @@ async function main() {
   if (!composeImage.startsWith("ghcr.io/") || !composeImage.includes("@sha256:")) {
     throw new Error("Production compose must contain a pinned GHCR image reference");
   }
-  if (!currentImage.startsWith("ghcr.io/") || !currentImage.includes(":")) {
-    throw new Error("External smoke image must be a valid GHCR tag");
+  if (releaseImageOverride) {
+    if (!currentImage.startsWith("ghcr.io/") || !currentImage.includes(":")) {
+      throw new Error("Release external smoke image must be a valid GHCR tag");
+    }
+  } else if (!currentImage.startsWith("workproof-runtime-external:")) {
+    throw new Error("Non-release external smoke must use its temporary local image tag");
   }
   let publishedDigest = "";
   if (releaseImageOverride) {
