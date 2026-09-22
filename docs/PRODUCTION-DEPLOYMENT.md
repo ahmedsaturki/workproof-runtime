@@ -59,7 +59,7 @@ Back up `work-runs` and any configured proof vault. Roll back by pinning Compose
 - Release workflow: #261
 - Container workflow: #258
 - rollback release: `3.8.1`
-- rollback immutable tag: `f8af30bf69391db22863c432df5c452a73ebaa05`
+- rollback commit-addressed tag: `f8af30bf69391db22863c432df5c452a73ebaa05`
 - rollback digest: `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 
 The disposable external topology gate verifies TLS termination, authentication, secret non-leakage, persistence, backup/restore, rollback, and deny-by-default network exposure. The repository does not claim a public host, public DNS, public certificate, external production secrets, or third-party hosted control plane are provisioned.
