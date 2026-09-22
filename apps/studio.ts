@@ -105,6 +105,17 @@ function sanitizeWork(work: any): Record<string, unknown> {
           mediaType: artifact?.mediaType
         }))
       : [],
+    capabilityChain: Array.isArray(work.effects)
+      ? work.effects.map((effect: any, index: number) => ({
+          sequence: index + 1,
+          effectId: effect.effectId,
+          operation: effect.operation,
+          capability: effect.capability,
+          riskClass: effect.riskClass,
+          status: effect.status,
+          attempts: effect.attempts
+        }))
+      : [],
     operatorGuidance: operatorGuidance(work),
     effectsSummary: (() => {
       const effects = Array.isArray(work.effects) ? work.effects : [];
@@ -664,6 +675,7 @@ button { background: #21262d; color: #e6edf3; border: 1px solid #30363d; padding
 <pre id="payload"></pre>
 <section id="operatorGuidance" class="card" aria-label="Operator guidance"></section>
 <section id="effectsSummary" class="card" aria-label="Effect summary"></section>
+<section id="capabilityChain" class="card" aria-label="Capability chain"></section>
 <section id="proofSection" hidden>
 <h3>Proof & audit</h3>
 <div id="proofs"></div>
@@ -678,6 +690,7 @@ const meta = document.getElementById("meta");
 const payload = document.getElementById("payload");
 const operatorGuidanceBox = document.getElementById("operatorGuidance");
 const effectsSummaryBox = document.getElementById("effectsSummary");
+const capabilityChainBox = document.getElementById("capabilityChain");
 const token = document.getElementById("token");
 const dispatchObjective = document.getElementById("dispatchObjective");
 const actionStatus = document.getElementById("actionStatus");
@@ -895,6 +908,8 @@ async function show(id) {
   operatorGuidanceBox.innerHTML = "<small>Operator guidance</small><h3>" + esc(guidance.title) + "</h3><div>" + esc(guidance.detail) + "</div><p><strong>Next action:</strong> " + esc(guidance.action) + "</p>";
   const effects = data.work.effectsSummary || { total: 0, verified: 0, unknown: 0, unresolved: 0, failed: 0, attempts: 0 };
   effectsSummaryBox.innerHTML = "<small>Effect summary</small><h3>" + Number(effects.total) + " effect(s)</h3><div>verified " + Number(effects.verified) + " · unknown " + Number(effects.unknown) + " · unresolved " + Number(effects.unresolved) + " · failed " + Number(effects.failed) + " · attempts " + Number(effects.attempts) + "</div>";
+  const chain = Array.isArray(data.work.capabilityChain) ? data.work.capabilityChain : [];
+  capabilityChainBox.innerHTML = "<small>Capability chain</small>" + (chain.length ? "<ol>" + chain.map(item => "<li><strong>" + esc(item.operation) + "</strong> → " + esc(item.capability) + " · " + esc(item.status) + " · attempts " + Number(item.attempts) + "</li>").join("") + "</ol>" : "<div>No executed capabilities recorded.</div>");
   const resumeButton = document.getElementById("resume");
   resumeButton.disabled = data.work.status === "verified" || data.work.status === "cancelled";
   resumeButton.title = data.work.status === "verified" ? "Verified work should not be resumed." : data.work.status === "cancelled" ? "Cancelled work requires an approved control path." : "Resume this Work Object through the control plane.";
