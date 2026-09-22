@@ -85,7 +85,7 @@ A product release must not be called production-ready solely because CI is green
 
 ## Current verified baseline — 2026-09-22
 
-The repository now records the coherent published `v3.7.0-dev.1` distribution path. Release workflow #171 and Container workflow #168 verified the release and container artifacts, including published digest lineage, restart/persistence, disposable TLS/auth topology, backup/restore, rollback, and anonymous GHCR pull.
+The repository retains the v3.7.0-dev.1 distribution record as historical baseline. Release workflow #171 and Container workflow #168 verified the release and container artifacts, including published digest lineage, restart/persistence, disposable TLS/auth topology, backup/restore, rollback, and anonymous GHCR pull.
 
 Public host/DNS/TLS/auth/secrets provisioning remains an external deployment-resource boundary; the repository does not claim those external resources are provisioned.
 
@@ -163,15 +163,15 @@ The local-first P0 foundations are complete and executable:
 - [x] expanded Studio operational timeline
 - [x] packed A2A artifact smoke and representative A2A-ready mission
 
-The required local-first and external-topology acceptance gates for v3.7.0-dev.1 are complete. Future expansion may add wider mission composition and interoperability features without changing WorkProof authority semantics.
+The required local-first and external-topology acceptance gates for v3.7.0-dev.1 are complete and remain part of the verified historical baseline.
 
 
-## v3.7.0-dev.1 release state
+## Historical v3.7.0-dev.1 release state
 
-The current shipped prerelease is `v3.8.0-dev.1`. Release verification run #171 and Container verification run #168 both completed their required gates, including the disposable external-topology validation and published digest lineage.
+The v3.8.0-dev.1 release is the current shipped prerelease. Release workflow #180 and Container workflow #177 completed their required gates, including disposable external-topology validation and published digest lineage.
 
 
-## v3.7.0-dev.1 control-plane product surface
+## Historical v3.7.0-dev.1 control-plane product surface
 
 The dev.12 product surface adds a runnable authenticated control-plane process and SDK dispatch support for executable Work Steps. The control-plane persists Work Objects, mission definitions, proof bundles, audit records, and its durable idempotency ledger. Non-loopback binding is refused unless an explicit auth policy is configured.
 
@@ -214,3 +214,17 @@ Release artifacts and the GHCR container are integrity-verified and tied to rele
 The v3.8.0-dev.1 release adds explicit Control Plane readiness, import-safe Control Plane initialization, and a machine-readable `workctl doctor` diagnostic contract for local runtime, Control Plane, Studio, and A2A services.
 
 Feature CI #1234, Release #180, and Container #177 completed successfully before main promotion. Public external host/DNS/TLS/auth/secrets provisioning remains an external deployment resource, not a hidden runtime prerequisite.
+
+
+## Main-verified v3.8 state
+
+The current published prerelease is `v3.8.0-dev.1`. It adds explicit Control Plane readiness, import-safe initialization, and `workctl doctor` diagnostics for package/runtime state, Control Plane, Studio, and A2A services.
+
+The feature, release, container, promotion, and final main verification gates are complete:
+- Feature CI #1234: success.
+- Release #180: success.
+- Container #177: success.
+- Main CI #1236: success.
+- Main closeout CI #1238: success.
+
+The v3.8 release remains bounded by the same WorkProof authority, verification, reconciliation, recovery, idempotency, and proof semantics established by earlier releases.
