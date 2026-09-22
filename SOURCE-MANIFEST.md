@@ -55,11 +55,11 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 - container workflow #236: success
 - package version: `3.8.8`
 - stable release: `v3.8.8`
-- stable release commit: `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`
-- GitHub Release ID: `393990944`
+- stable release commit: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
+- GitHub Release ID: `394017508`
 - GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.8`
 - GHCR digest: `sha256:0c31c571480d45d5f46f5ae6f8b8a4b1328094a7561f76aee7016c99e586eb10`
-- immutable image tag: `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`
+- immutable image tag: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
 - reproducible-install hardening PR #97: merged
 - release-metadata/source-manifest PR #98: merged
 - Control Plane safety PR #102: merged
@@ -73,8 +73,8 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 
 - current verified release lineage: v3.8.8
 - current stable release commit: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
-- release workflow #218: success
-- container workflow #215: success
+- release workflow #239: success
+- container workflow #236: success
 - GHCR digest: `sha256:0c31c571480d45d5f46f5ae6f8b8a4b1328094a7561f76aee7016c99e586eb10`
 - v3.3 implementation merge: `c5e951056461c37f45bed8bb8406d119880d63df`
 - v3.3 closeout correction: `0c92a8c86950776243646de4bb40b0c0f2fe5876`
