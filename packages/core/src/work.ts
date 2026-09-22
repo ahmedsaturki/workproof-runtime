@@ -1,6 +1,15 @@
 import { EffectRecord, SagaRecord, SagaStatus, SuccessCriterion, WorkContract, WorkEvent, WorkObject, WorkStatus } from "./types";
 
 function now(): string { return new Date().toISOString(); }
+function canonicalValue(value: unknown): string {
+  if (Array.isArray(value)) return "[" + value.map(canonicalValue).join(",") + "]";
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return "{" + Object.keys(record).sort().map(key => JSON.stringify(key) + ":" + canonicalValue(record[key])).join(",") + "}";
+  }
+  const serialized = JSON.stringify(value);
+  return serialized === undefined ? "undefined" : serialized;
+}
 function id(prefix: string): string { return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`; }
 
 export class WorkStore {
@@ -56,6 +65,12 @@ export class WorkStore {
   addEffect(work: WorkObject, capability: string, riskClass: EffectRecord["riskClass"], idempotencyKey: string, operation?: string, input?: unknown): EffectRecord {
     const existing = work.effects.find(e => e.idempotencyKey === idempotencyKey);
     if (existing) {
+      if (existing.operation && operation && existing.operation !== operation) {
+        throw new Error(`Idempotency key already belongs to operation ${existing.operation}, not ${operation}`);
+      }
+      if (existing.input !== undefined && input !== undefined && canonicalValue(existing.input) !== canonicalValue(input)) {
+        throw new Error("Idempotency key input does not match persisted effect input");
+      }
       if (!existing.operation && operation) existing.operation = operation;
       if (existing.input === undefined && input !== undefined) existing.input = input;
       return existing;
