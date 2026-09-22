@@ -58,6 +58,15 @@ The repository's disposable external-topology gate now verifies the technical to
 
 A **public production host is not claimed as provisioned**. Public host/DNS/certificate/secret/control-plane infrastructure remains an external deployment-resource boundary and must be supplied by the operator of the target environment.
 
+## Release candidate — v3.8.10
+
+The corrective v3.8.10 candidate is built from the fully reconciled main lineage. The previous published stable release remains v3.8.9 until the release and container gates complete.
+
+- package version: `3.8.10`
+- release branch: `release/3.8.10`
+- previous stable: `v3.8.9`
+- no new runtime semantics are introduced by this correction
+
 ## Current verified baseline — v3.8.9
 
 The current stable product baseline is **v3.8.9**.
