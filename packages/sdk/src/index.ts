@@ -137,7 +137,8 @@ export class ControlPlaneClient {
       ...(item?.riskClass === undefined ? {} : { riskClass: String(item.riskClass) }),
       approvalRequired: Boolean(item?.approvalRequired),
       createdAt: String(item?.createdAt ?? ""),
-      updatedAt: String(item?.updatedAt ?? "")
+      updatedAt: String(item?.updatedAt ?? ""),
+      ...(typeof item?.a2aContextId === "string" ? { a2aContextId: item.a2aContextId } : {})
     }));
   }
 
