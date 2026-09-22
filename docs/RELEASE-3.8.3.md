@@ -20,3 +20,21 @@ v3.8.2 was published before independent Container verification completed and exp
 ## Safety boundary
 
 Public DNS, TLS, production secrets, and a hosted Control Plane remain deployment-time external resources. Direct host-process Studio binding remains loopback-only unless an explicit operator-controlled opt-in is provided.
+
+
+## Publication evidence
+
+- GitHub Release: `v3.8.3` / ID `393862783`
+- release workflow #210: success
+- release commit: `772a5a16b34e94b62bbc6564474736ef2e4da11b`
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.3`
+- GHCR digest: `sha256:ec6f891f8e3fc427937f904eb039d95d58387b1d06261cd91c8c9a886bc7cf67`
+- immutable image tag: `772a5a16b34e94b62bbc6564474736ef2e4da11b`
+- Container workflow #207: success
+- runtime container smoke: success
+- production Compose restart/persistence: success
+- disposable external topology: success
+- anonymous GHCR pull: success
+- rollback verification target: v3.8.1
+
+Release publication was gated on successful Container workflow verification for the exact release commit.
