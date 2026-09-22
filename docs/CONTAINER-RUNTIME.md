@@ -19,6 +19,8 @@ WorkProof Studio is distributed as a Node 24 container with persistent `/data/wo
 
 Production Compose pins the image by tag@digest so tag drift cannot silently change the deployed artifact.
 
+The container sets `WORKPROOF_ALLOW_NON_LOOPBACK=1` so Studio can listen on the container interface while the host publication remains loopback-bound. The direct Studio process remains loopback-only by default.
+
 ## Rollback
 
 - release: `3.8.0`
