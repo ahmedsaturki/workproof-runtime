@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The current distribution-ready tree contains **225 required paths** enforced by `scripts/verify-source-tree.js`. The count is kept synchronized with the executable source-tree gate; every required path is present on the current main lineage.
+The current distribution-ready tree contains **226 required paths** enforced by `scripts/verify-source-tree.js`. The count is kept synchronized with the executable source-tree gate; every required path is present on the current main lineage.
 
 The historical v3.4 implementation closeout was 171 paths. The current stable distribution additionally covers the release/container, interoperability, diagnostics, current release metadata, network-boundary hardening, and reproducible-install surfaces.
 
@@ -65,7 +65,7 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 - v3.8.2 superseded after Container runtime smoke failure; rollback remains v3.8.1
 - `npm ci` is enforced by CI, release, and Docker build paths
 - package metadata declares `Apache-2.0`; the repository license file contains the complete Apache License 2.0 text
-- executable source-tree gate currently verifies 225 required paths
+- executable source-tree gate currently verifies 226 required paths
 
 ## Verified main lineage
 
