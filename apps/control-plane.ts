@@ -42,10 +42,21 @@ const authPolicy = authPolicyPath ? loadAuthPolicy(authPolicyPath) : undefined;
 const repository = new JsonWorkRepository(workDirectory);
 
 function runtimeVersion(): string {
-  const packagePath = path.resolve(process.env.PWD ?? ".", "package.json");
-  const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
-  if (typeof packageJson.version !== "string" || !packageJson.version.trim()) throw new Error("Unable to determine WorkProof Runtime version");
-  return packageJson.version.trim();
+  const candidates = [
+    path.resolve(path.dirname(__filename), "../../package.json"),
+    path.resolve(require("process").cwd(), "package.json")
+  ];
+  for (const candidate of candidates) {
+    try {
+      const packageJson = JSON.parse(fs.readFileSync(candidate, "utf8"));
+      if (typeof packageJson.version === "string" && packageJson.version.trim()) return packageJson.version.trim();
+    } catch {
+      // Try the next known package location.
+    }
+  }
+  const environmentVersion = process.env.npm_package_version;
+  if (environmentVersion && environmentVersion.trim()) return environmentVersion.trim();
+  throw new Error("Unable to determine WorkProof Runtime version");
 }
 
 function registerRuntimePacks(registry: CapabilityRegistry, verification: VerificationEngine): void {
@@ -199,6 +210,7 @@ async function main(): Promise<void> {
   process.stdout.write(JSON.stringify({
     status: "ready",
     version: runtimeVersion(),
+    apiVersion: "1.0",
     host: controlPlane.host,
     port: controlPlane.port,
     workDirectory,
