@@ -4,11 +4,11 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.4 executable operator benchmark is fully verified, and v3.4.0-dev.3 is published as a verified prerelease distribution.**
+**v3.4 executable operator benchmark is fully verified, and v3.4.0-dev.4 is the current coherent prerelease distribution.**
 
 The v3.4 line is the first executable operator benchmark with controlled failure injection across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution.
 
-The v3.4.0-dev.3 product-readiness release adds the local-first operator gate, packaged CLI installation/execution smoke, restart/resume acceptance, effective Studio configuration wiring, safer local atomic persistence, and least-privilege CI verification.
+The v3.4.0-dev.4 release is built from the current main lineage and carries the local-first product-readiness, packaged CLI, restart/resume, Studio configuration, persistence hardening, and distribution verification work.
 
 ## Core loop
 
@@ -83,13 +83,13 @@ M005 retried the primary capability under bounded ambiguity, selected a compatib
 
 ### GitHub Release
 
-`v3.4.0-dev.3` is published as GitHub Release **393376119**, targeting commit `37c01b5f9c8f07e9dc07d6eb9eb1e59529d0a181`. The release pipeline completed full release verification and re-downloaded/checked the five published assets.
+`v3.4.0-dev.4` is the current release target. Its release and container workflows are required to publish from the same release branch lineage.
 
 Published assets:
 
-- `operational-reality-core-3.4.0-dev.3.tgz`
-- `workproof-runtime-v3.4.0-dev.3.tar.gz`
-- `workproof-benchmark-v3.4.0-dev.3.json`
+- `operational-reality-core-3.4.0-dev.4.tgz`
+- `workproof-runtime-v3.4.0-dev.4.tar.gz`
+- `workproof-benchmark-v3.4.0-dev.4.json`
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
@@ -99,11 +99,11 @@ The release pipeline re-downloads the published assets, verifies their SHA256 su
 
 Published image:
 
-`ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.3`
+`ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.4`
 
 Verified digest:
 
-`sha256:a85a139f37ffcc19f0d6d9ea6223133738437cdc8c8ff0fe32f88dfa055efdf0`
+`<published-by-release-workflow>`
 
 The same digest is exposed by the immutable commit tag `3145d21ae5d44b61c3e6f23bea377548d1a79ed4`. Container verification run #32 verified:
 
