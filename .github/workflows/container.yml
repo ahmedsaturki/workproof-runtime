@@ -132,7 +132,7 @@ jobs:
           NAME="workproof-runtime-smoke"
           DATA_DIR="${RUNNER_TEMP}/workproof-runtime-data"
           mkdir -p "${DATA_DIR}"
-          docker run -d --rm --name "${NAME}"             -p 127.0.0.1:8788:8788             -v "${DATA_DIR}:/data/work-runs"             "ghcr.io/${IMAGE}:${IMAGE_TAG}"
+          docker run -d --rm --name "${NAME}"             -e WORKPROOF_ALLOW_NON_LOOPBACK=1             -p 127.0.0.1:8788:8788             -v "${DATA_DIR}:/data/work-runs"             "ghcr.io/${IMAGE}:${IMAGE_TAG}"
 
           cleanup() {
             docker logs "${NAME}" || true
