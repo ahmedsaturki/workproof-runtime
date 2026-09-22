@@ -1175,8 +1175,8 @@ if (runtimeProcess.argv[1] && path.resolve(runtimeProcess.argv[1]) === path.reso
           studio: `http://${running.host}:${running.port}`,
           workDirectory: path.resolve(workDirectory),
           version: RUNTIME_VERSION,
-          mode: controlPlaneUrlArg ? "authenticated-control" : "read-only",
-          proofVault: Boolean(vaultDirectoryArg)
+          mode: controlPlaneUrl ? "authenticated-control" : "read-only",
+          proofVault: Boolean(vaultDirectory)
         }, null, 2) + "\n");
       })
       .catch((error) => {
