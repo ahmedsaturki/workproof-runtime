@@ -15,7 +15,7 @@ export interface McpRuntimeOptions {
 function runtimeVersion(): string {
   const candidates = [
     path.resolve(path.dirname(__filename), "../../package.json"),
-    path.resolve(process.cwd(), "package.json")
+    path.resolve(require("process").cwd(), "package.json")
   ];
   for (const candidate of candidates) {
     try {
