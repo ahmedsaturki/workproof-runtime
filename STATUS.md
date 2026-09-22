@@ -57,6 +57,7 @@ The v3.8.0 release remains historical provenance. v3.8.1 is the verified rollbac
 - v3.8.3 corrective stable release: published and fully Container-verified
 - v3.8.2: superseded after Container runtime smoke failure
 - v3.8.3 lineage reconciliation: corrected to the exact published tag target, release ID, and immutable GHCR tag
+- post-merge verifier mismatch correction: release metadata now matches the published v3.8.3 tag exactly
 - PR #104: merged; network-boundary and status hardening
 - post-release reconciliation is subject to its own main CI verification
 - the v3.8.3 stable release is the current distribution artifact; v3.8.1 remains the verified rollback target
