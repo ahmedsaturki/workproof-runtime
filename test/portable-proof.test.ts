@@ -1,4 +1,5 @@
 const assert = require("assert");
+const test = require("node:test");
 const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
