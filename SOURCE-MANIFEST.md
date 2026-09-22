@@ -2,9 +2,9 @@
 
 ## Required source tree
 
-The current distribution-ready tree contains **181 required paths** enforced by `scripts/verify-source-tree.js`.
+The current distribution-ready tree contains **220 required paths** enforced by `scripts/verify-source-tree.js`. The count is kept synchronized with the executable source-tree gate; every required path is present on the current main lineage.
 
-The historical v3.4 implementation closeout was 171 paths; the final distribution layer adds 8 operational paths, and the product-readiness gate adds 2 required paths:
+The historical v3.4 implementation closeout was 171 paths. The current stable distribution additionally covers the release/container, interoperability, diagnostics, current release metadata, and reproducible-install surfaces.
 
 - `Dockerfile`
 - `.dockerignore`
@@ -16,6 +16,8 @@ The historical v3.4 implementation closeout was 171 paths; the final distributio
 - `docs/RELEASE-3.4.0-dev.2.md`
 - `docs/PRODUCT-READINESS-V1.md`
 - `test/product-smoke.test.ts`
+- `test/release-metadata.test.ts`
+- `package-lock.json`
 
 ## V3.4 benchmark
 
@@ -43,6 +45,19 @@ The historical v3.4 implementation closeout was 171 paths; the final distributio
 - GHCR digest: `sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`
 - latest main CI: success
 - product readiness PR #74: local-first product gate and restart smoke
+
+## Current v3.8.0 distribution state
+
+- current main: `98da515cc4f571530186359d5f208d31d4662260`
+- current package version: `3.8.0`
+- stable release: `v3.8.0`
+- stable release commit: `2b02d22e897d5fe736f93267c72036d951f74082`
+- GitHub Release: `393558255`
+- GHCR digest: `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
+- current main CI #1252: success after reproducible-install hardening
+- `npm ci` is enforced by CI, release, and Docker build paths
+- package metadata declares `Apache-2.0`; the repository license file contains the complete Apache License 2.0 text
+- executable source-tree gate currently verifies 220 required paths
 
 ## Verified main lineage
 
