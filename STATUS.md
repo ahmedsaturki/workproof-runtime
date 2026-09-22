@@ -8,11 +8,11 @@ Chromium CDP smoke is environment-isolated from D-Bus and uses a bounded startup
 
 ## Current main
 
-**v3.4 benchmark is verified; v3.4.0-dev.4 is the current coherent distribution target.**
+**v3.4 benchmark is verified; v3.4.0-dev.5 is the current coherent distribution target.**
 
 Latest main: the current branch head; see the GitHub ref and the latest CI run for the exact commit SHA.
 
-Since the release target `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`, main has added distribution hardening, documentation corrections, and deterministic persistent-lease test hardening. The v3.4.0-dev.4 source release is pinned to the release tag commit.
+Since the release target `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`, main has added distribution hardening, documentation corrections, and deterministic persistent-lease test hardening. The v3.4.0-dev.5 source release is pinned to the release tag commit.
 
 ## Verified main gates
 
@@ -92,8 +92,8 @@ The runtime image is built from the exact release-tag source commit.
 - [x] published image smoke
 - [x] localhost-bound production compose
 - [x] production deployment runbook
-- [x] v3.4.0-dev.4 GHCR image publication and smoke
-- [x] v3.4.0-dev.4 GitHub Release publication and re-download verification
+- [x] v3.4.0-dev.5 GHCR image publication and smoke
+- [x] v3.4.0-dev.5 GitHub Release publication and re-download verification
 - [ ] public production host/DNS/TLS/auth/secrets provisioning
 
 The unchecked line is deliberately external infrastructure, not a missing repository implementation.
