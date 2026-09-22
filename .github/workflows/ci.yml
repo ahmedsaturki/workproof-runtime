@@ -80,6 +80,22 @@ jobs:
           echo "packed CLI and control-plane product smoke passed"
           node scripts/packed-mcp-smoke.js "${SMOKE_DIR}/node_modules/operational-reality-core"
           echo "packed MCP product smoke passed"
+      - name: Operator doctor smoke
+        run: |
+          set -euo pipefail
+          REPORT="$(node dist/packages/cli/src/index.js doctor)"
+          printf '%s\n' "$REPORT"
+          node - <<'NODE' "$REPORT"
+          const report = JSON.parse(process.argv[2]);
+          if (!report || !["ready", "degraded"].includes(report.status)) {
+            process.exit(1);
+          }
+          const required = ["cli-entrypoint", "control-plane-entrypoint", "studio-entrypoint", "a2a-entrypoint"];
+          for (const id of required) {
+            const check = report.checks.find(item => item.id === id);
+            if (!check || check.state !== "ok") process.exit(1);
+          }
+          NODE
       - name: Disposable external topology smoke
         if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/') }}
         shell: bash
