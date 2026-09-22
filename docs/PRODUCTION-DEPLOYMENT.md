@@ -26,7 +26,7 @@ For authenticated mutation/control APIs, run the separate Control Plane and poin
 WORKPROOF_CONTROL_PLANE_PORT=8789 node dist/apps/control-plane.js
 ```
 
-The default bind is loopback. Non-loopback binding is refused unless an explicit auth policy is configured. Mutations use durable idempotency keys when the control-plane ledger is enabled.
+The default bind is loopback. Non-loopback binding is refused unless an explicit auth policy is configured. Studio is also loopback-bound by default. The packaged container sets `WORKPROOF_ALLOW_NON_LOOPBACK=1` inside the container only so Studio can listen on the container interface while the host publication remains `127.0.0.1:8788`. Do not use this opt-in for a direct host process unless the process is intentionally placed behind an authenticated TLS edge. Mutations use durable idempotency keys when the control-plane ledger is enabled.
 
 ## MCP adapter
 
