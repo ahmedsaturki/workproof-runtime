@@ -4,7 +4,8 @@ const http = require("http");
 const fs = require("fs");
 const crypto = require("crypto");
 const { URL } = require("url");
-const { authorize, validateAuthPolicy, hardenPrivateFile } = require("../../registry/src/auth.js");
+const { authorize, validateAuthPolicy } = require("../../registry/src/auth.js");
+const { hardenPrivateFile } = require("../../storage/src/private-file.js");
 const {
   ControlIdempotencyLedger,
   fingerprintControlRequest,
