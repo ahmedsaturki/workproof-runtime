@@ -33,7 +33,9 @@ test("control-plane mission executor enforces approval and risk policy before ca
 
     assert.equal(work.status, "failed");
     assert.equal(fs.existsSync(path.join(root, "should-not-exist.txt")), false);
-    assert.match(work.events.at(-1).message, /Policy blocked step .*Work contract requires approval/);
+    const lastEvent = work.events.at(-1);
+    assert.ok(lastEvent);
+    assert.match(lastEvent.message, /Policy blocked step .*Work contract requires approval/);
   } finally {
     if (previousWorkDirectory === undefined) delete process.env.WORKPROOF_WORK_DIRECTORY;
     else process.env.WORKPROOF_WORK_DIRECTORY = previousWorkDirectory;
@@ -77,7 +79,9 @@ test("control-plane resume path keeps the same execution policy", async () => {
     const resumed = await resumeMission(resumedInput);
 
     assert.equal(resumed.status, "failed");
-    assert.match(resumed.events.at(-1).message, /Policy blocked step .*Work contract requires approval/);
+    const lastEvent = resumed.events.at(-1);
+    assert.ok(lastEvent);
+    assert.match(lastEvent.message, /Policy blocked step .*Work contract requires approval/);
   } finally {
     if (previousWorkDirectory === undefined) delete process.env.WORKPROOF_WORK_DIRECTORY;
     else process.env.WORKPROOF_WORK_DIRECTORY = previousWorkDirectory;
