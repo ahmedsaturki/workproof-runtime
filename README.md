@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.8.9 is the current stable release.**
+**v3.8.10 is the release candidate; v3.8.10 is the latest published stable release until this candidate completes.**
 
 v3.8.9 preserves the verified v3.8.8 runtime contract and promotes the current specification and GitHub governance baseline.
 
@@ -14,9 +14,9 @@ The v3.4 line established the executable operator benchmark across research, HTT
 
 Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify -> Recover/Substitute -> Deliver -> Proof -> Retain -> Control -> Compensate
 
-## v3.8.9 release evidence
+## v3.8.10 release candidate
 
-- GitHub Release: `v3.8.9` (ID `394031450`)
+- GitHub Release: `v3.8.10` (ID `394031450`)
 - release commit: `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`
 - Release workflow #245: success
 - Container workflow #242: success
@@ -157,6 +157,6 @@ WorkProof Runtime is not a replacement for agents, browsers, workflow engines, m
 
 ## Historical release provenance
 
-v3.8.7 was the preceding verified stable distribution. v3.8.2 is retained as superseded history and is not a rollback target. v3.8.1 remains the verified rollback release.
+v3.8.9 is the immediately preceding published stable distribution; v3.8.1 remains the verified rollback release. v3.8.2 is retained as superseded history and is not a rollback target. v3.8.1 remains the verified rollback release.
 
 See `STATUS.md`, `SOURCE-MANIFEST.md`, `docs/release-lineage.json`, and `docs/PRODUCT-READINESS-V1.md` for the current verification and product-readiness records.
