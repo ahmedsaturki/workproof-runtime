@@ -18,6 +18,7 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 - `test/product-smoke.test.ts`
 - `test/release-metadata.test.ts`
 - `package-lock.json`
+- `.github/CODEOWNERS`
 
 ## V3.4 benchmark
 
@@ -48,13 +49,15 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 
 ## Current v3.8.0 distribution state
 
-- current main: `98da515cc4f571530186359d5f208d31d4662260`
+- verified main hardening baseline: `f391ae4ce60f0fd102c731c78551d258fbde1f12`
+- main CI #1260: success on that baseline
 - current package version: `3.8.0`
 - stable release: `v3.8.0`
 - stable release commit: `2b02d22e897d5fe736f93267c72036d951f74082`
 - GitHub Release: `393558255`
 - GHCR digest: `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
-- current main CI #1252: success after reproducible-install hardening
+- reproducible-install hardening PR #97: merged
+- release-metadata/source-manifest PR #98: merged
 - `npm ci` is enforced by CI, release, and Docker build paths
 - package metadata declares `Apache-2.0`; the repository license file contains the complete Apache License 2.0 text
 - executable source-tree gate currently verifies 221 required paths
