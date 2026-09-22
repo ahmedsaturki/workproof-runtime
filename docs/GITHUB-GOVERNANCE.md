@@ -2,7 +2,7 @@
 
 ## Verified repository state
 
-As of the v3.8.9 closeout review, the repository is public, the default branch is `main`, and GitHub reports `main` as unprotected with no repository rulesets.
+As of the v3.8.10 closeout review, the repository is public, the default branch is `main`, and GitHub reports `main` as unprotected with no repository rulesets.
 
 This document is intentionally factual: the source tree cannot create GitHub-side branch protection by itself.
 

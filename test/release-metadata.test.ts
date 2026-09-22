@@ -23,6 +23,14 @@ test("release metadata is explicit and reproducible", () => {
   assert.ok(licenseText.includes("WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND"));
 });
 
+test("main release-state guard enforces current stable documentation coherence", () => {
+  assert.match(releaseStateScript, /README current stable release does not match package version/);
+  assert.match(releaseStateScript, /STATUS current stable release line does not match package version/);
+  assert.match(releaseStateScript, /SOURCE-MANIFEST current verified release lineage does not match package version/);
+  assert.match(releaseStateScript, /PRODUCT-READINESS current stable baseline does not match package version/);
+  assert.match(releaseStateScript, /PRODUCT-READINESS immutable image tag does not match release lineage/);
+});
+
 test("published-lineage verifier exit code is propagated without truthiness coercion", () => {
   assert.match(releaseStateScript, /if \(child\.error\) throw child\.error;/);
   assert.match(releaseStateScript, /process\.exit\(child\.status === null \? 1 : child\.status\);/);
