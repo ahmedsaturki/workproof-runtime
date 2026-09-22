@@ -8,7 +8,7 @@ The A2A adapter exposes WorkProof as an A2A-compatible HTTP agent boundary while
 - JSON-RPC endpoint: `/rpc`
 - `A2A-Version: 1.0` is required on JSON-RPC requests.
 - Authentication: Bearer token at the adapter and the same credential is forwarded to the WorkProof Control Plane.
-- Supported methods: `SendMessage`, `GetTask`, `CancelTask`.
+- Supported methods: `SendMessage`, `GetTask`, `ListTasks`, `CancelTask`.
 - MCP/A2A adapters never become a parallel WorkProof execution authority.
 - Streaming, push notifications, and multi-turn `message.taskId` flows are intentionally unsupported in this release.
 
