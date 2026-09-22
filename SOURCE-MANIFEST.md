@@ -48,17 +48,17 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 - GHCR digest: `sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`
 - product readiness PR #74: local-first product gate and restart smoke
 
-## v3.8.7 distribution evidence
+## v3.8.8 distribution evidence
 
-- release reconciliation baseline: `7a7a9ec7da0947d04440c5f953d71237558fb6de`
-- release workflow #230: success
-- container workflow #227: success
-- package version: `3.8.7`
-- stable release: `v3.8.7`
+- release reconciliation baseline: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
+- release workflow #239: success
+- container workflow #236: success
+- package version: `3.8.8`
+- stable release: `v3.8.8`
 - stable release commit: `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`
 - GitHub Release ID: `393990944`
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.7`
-- GHCR digest: `sha256:696514815980f4ea01b115c8b8fbd77ff18715cabb9e22b361bbd631db95fb76`
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.8`
+- GHCR digest: `sha256:0c31c571480d45d5f46f5ae6f8b8a4b1328094a7561f76aee7016c99e586eb10`
 - immutable image tag: `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`
 - reproducible-install hardening PR #97: merged
 - release-metadata/source-manifest PR #98: merged
@@ -71,11 +71,11 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 
 ## Verified main lineage
 
-- current verified release lineage: v3.8.7
-- current stable release commit: `7a7a9ec7da0947d04440c5f953d71237558fb6de`
+- current verified release lineage: v3.8.8
+- current stable release commit: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
 - release workflow #218: success
 - container workflow #215: success
-- GHCR digest: `sha256:696514815980f4ea01b115c8b8fbd77ff18715cabb9e22b361bbd631db95fb76`
+- GHCR digest: `sha256:0c31c571480d45d5f46f5ae6f8b8a4b1328094a7561f76aee7016c99e586eb10`
 - v3.3 implementation merge: `c5e951056461c37f45bed8bb8406d119880d63df`
 - v3.3 closeout correction: `0c92a8c86950776243646de4bb40b0c0f2fe5876`
 - v3.4 implementation merge: `fe662d5bb5337bde18772f22864434935d59f66f`
