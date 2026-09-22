@@ -96,7 +96,7 @@ M001-M005: 5/5 verified.
 - [x] bounded production resource/log envelope
 - [external] public host/DNS/TLS/auth/secrets provisioning and GitHub Release/tag immutability controls are intentionally outside the repository's current provisioned resources
 
-The disposable topology gate verifies TLS, authentication, secret non-leakage, persistent state, backup/restore, rollback to a previous immutable release, and deny-by-default network exposure. Public infrastructure remains a separate external resource; the public-host portion is deployment provisioning, not a hidden runtime dependency.
+The disposable topology gate verifies TLS, authentication, secret non-leakage, persistent state, backup/restore, rollback to a previous verified digest-pinned release, and deny-by-default network exposure. Public infrastructure remains a separate external resource; the public-host portion is deployment provisioning, not a hidden runtime dependency.
 
 ## Verification rule
 
