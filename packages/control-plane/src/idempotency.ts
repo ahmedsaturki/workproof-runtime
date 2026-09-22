@@ -1,4 +1,5 @@
 const { DatabaseSync } = require("node:sqlite");
+const { hardenPrivateFile } = require("../../registry/src/auth.js");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
@@ -65,7 +66,12 @@ export class ControlIdempotencyLedger {
     }
     this.db = new DatabaseSync(dbPath, { timeout: 1000 });
     if (dbPath !== ":memory:") {
-      try { fs.chmodSync(dbPath, 0o600); } catch {}
+      try {
+        hardenPrivateFile(dbPath);
+      } catch (error) {
+        this.db.close();
+        throw error;
+      }
     }
     this.db.exec(`
       PRAGMA journal_mode = WAL;
