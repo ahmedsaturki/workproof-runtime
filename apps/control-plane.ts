@@ -204,7 +204,7 @@ export async function resumeMission(work: WorkObject): Promise<WorkObject> {
   const registry = createRuntimeRegistry();
   const verification = new VerificationEngine();
   const repository = new JsonWorkRepository(config.workDirectory);
-  const engine = new WorkEngine(store, registry, verification, async () => false, undefined, repository);
+  const engine = new WorkEngine(store, registry, verification, async () => false, CONTROL_PLANE_EXECUTION_POLICY, repository);
   await engine.run(work, steps);
   persistProof(work, config);
   return work;
