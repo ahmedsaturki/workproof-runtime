@@ -85,7 +85,7 @@ A product release must not be called production-ready solely because CI is green
 
 ## Current verified baseline — 2026-09-22
 
-The repository retains the v3.7.0-dev.1 distribution record as historical baseline. Release workflow #171 and Container workflow #168 verified the release and container artifacts, including published digest lineage, restart/persistence, disposable TLS/auth topology, backup/restore, rollback, and anonymous GHCR pull.
+The current stable product baseline is v3.8.3. Release workflow #210 and Container workflow #207 verified the published GitHub Release and GHCR container, including exact commit lineage, restart/persistence, disposable TLS/auth topology, backup/restore, rollback, anonymous GHCR pull, and the network-boundary corrective release behavior.
 
 Public host/DNS/TLS/auth/secrets provisioning remains an external deployment-resource boundary; the repository does not claim those external resources are provisioned.
 
@@ -126,7 +126,7 @@ WorkProof Runtime is not required to become a generic agent framework, browser a
 
 ## Implemented local-first product baseline
 
-The following gates are executable and CI-verified on the current v3.6.0-dev.1 lineage and its published distribution:
+The following gates are executable and CI-verified on the current stable lineage and its published distribution. The historical v3.6.0-dev.1 wording is retained only as provenance:
 
 - [x] Runtime version is sourced from package metadata instead of stale hard-coded product versions.
 - [x] Studio process startup honors control-plane, proof-vault, and trust-policy configuration from arguments/environment.
@@ -163,12 +163,12 @@ The local-first P0 foundations are complete and executable:
 - [x] expanded Studio operational timeline
 - [x] packed A2A artifact smoke and representative A2A-ready mission
 
-The required local-first and external-topology acceptance gates for v3.7.0-dev.1 are complete and remain part of the verified historical baseline.
+The required local-first and external-topology acceptance gates are complete and remain part of the verified stable baseline.
 
 
 ## Historical v3.7.0-dev.1 release state
 
-The v3.8.0 release is the current stable release. Release workflow #180 and Container workflow #177 completed their required gates, including disposable external-topology validation and published digest lineage.
+At that historical point, v3.8.0 was the then-current stable release. Release workflow #180 and Container workflow #177 completed their required gates, including disposable external-topology validation and published digest lineage.
 
 
 ## Historical v3.7.0-dev.1 control-plane product surface
