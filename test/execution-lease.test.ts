@@ -7,10 +7,6 @@ import { VerificationEngine } from "../packages/verification/src/engine";
 const assert = require("assert");
 const test = require("node:test");
 
-function delay(ms: number): Promise<void> {
-  return new Promise<void>((resolve) => setTimeout(resolve, ms));
-}
-
 class FakeClock implements LeaseClock {
   constructor(public value: number = 1_700_000_000_000) {}
   nowMs(): number { return this.value; }
@@ -21,7 +17,7 @@ class ManualTimerScheduler implements ExecutionLeaseTimers {
   private callbacks = new Set<() => void>();
   setInterval(handler: () => void): ReturnType<typeof setInterval> {
     this.callbacks.add(handler);
-    return handler as ReturnType<typeof setInterval>;
+    return handler as unknown as ReturnType<typeof setInterval>;
   }
   clearInterval(handle: ReturnType<typeof setInterval>): void {
     this.callbacks.delete(handle as unknown as () => void);
@@ -148,10 +144,13 @@ test("WorkEngine heartbeat renews a lease without wall-clock timing", async () =
   const step = makeStep("heartbeat");
 
   let executions = 0;
+  let markStarted!: () => void;
+  const started = new Promise<void>((resolve) => { markStarted = resolve; });
   let releaseCapability!: () => void;
   const capabilityGate = new Promise<void>((resolve) => { releaseCapability = resolve; });
   registerTestOperation(registry, verification, async () => {
     executions += 1;
+    markStarted();
     timers.tick();
     await capabilityGate;
   });
@@ -165,7 +164,7 @@ test("WorkEngine heartbeat renews a lease without wall-clock timing", async () =
   });
 
   const running = engine.run(work, [step]);
-  await Promise.resolve();
+  await started;
   assert.equal(executions, 1);
   releaseCapability();
 
@@ -216,10 +215,13 @@ test("WorkEngine does not declare success after a deterministic heartbeat lease 
   };
 
   let executions = 0;
+  let markStarted!: () => void;
+  const started = new Promise<void>((resolve) => { markStarted = resolve; });
   let releaseCapability!: () => void;
   const capabilityGate = new Promise<void>((resolve) => { releaseCapability = resolve; });
   registerTestOperation(registry, verification, async () => {
     executions += 1;
+    markStarted();
     await capabilityGate;
   });
 
@@ -232,7 +234,7 @@ test("WorkEngine does not declare success after a deterministic heartbeat lease 
   });
 
   const running = engine.run(work, [step]);
-  await Promise.resolve();
+  await started;
   assert.equal(executions, 1);
   timers.tick();
   releaseCapability();
