@@ -18,9 +18,9 @@ Promote the already verified v3.8.0-dev.1 code path to stable version 3.8.0 and 
 - [x] stable external TLS/auth/backup/restore/rollback topology
 - [x] stable anonymous GHCR pull
 - [x] stable digest/provenance reconciliation
-- [ ] stable main promotion PR
-- [ ] stable post-merge main CI
-- [ ] final documentation closeout CI
+- [x] stable main promotion PR #96 merged
+- [x] stable post-merge main CI #1244 success
+- [x] final documentation/source-tree reconciliation included in main closeout; CI gates the exact resulting commit
 
 ## Stop conditions
 
@@ -46,3 +46,9 @@ Do not call 3.8.0 stable if any release artifact differs from the tested source 
 - GHCR digest: `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
 - immutable image tag: `2b02d22e897d5fe736f93267c72036d951f74082`
 - rollback: `v3.8.0-dev.1` / `sha256:acafde09bd74d535fb706acde68f7e6279283ac49f6d1863585d672fb691ac02`
+
+## Main promotion evidence
+
+- Pull Request #96: merged by squash into `main`.
+- Merge commit: `5b74c2f98f5f46ce75371bcf8301857da75a0947`.
+- Main CI #1244: success.

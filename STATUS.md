@@ -88,58 +88,25 @@ A capability receipt is not independent proof. Work is verified only when indepe
 - [x] post-merge main CI closeout (CI #1189)
 
 
-## v3.8 release branch
-
-- branch: `release/3.8.0-dev.1`
-- source feature evidence: CI #1232 success
-- release branch verification: in progress
-- publication: not yet closed
-- GHCR/Compose/main promotion: verified
-
-
-## v3.8 promotion
-
-- branch: `promote/v3.8.0-dev.1-main`
-- published release: `v3.8.0-dev.1`
-- release commit: `bba39f385ab042344f4fc2ebe04aeef7ef3c98b9`
-- GHCR digest: `sha256:acafde09bd74d535fb706acde68f7e6279283ac49f6d1863585d672fb691ac02`
-- rollback: `v3.7.0-dev.1` / `sha256:28e8d9af0ab71442b33df8b72308089f520b5ba23128401c0a05675809ba1748`
-- [x] feature CI #1234
-- [x] release workflow #180
-- [x] container workflow #177
-- [x] release assets verified
-- [x] container runtime/Compose/external topology verified
-- [x] post-merge main CI closeout (CI #1238)
-
-
-## v3.8 verified closeout
-
-- main merge commit: `0e7e8050a98a4c4863fe81f49a69ab4bc8a646b8`
-- main CI #1236: success
-- published release: `v3.8.0-dev.1`
-- release commit: `bba39f385ab042344f4fc2ebe04aeef7ef3c98b9`
-- published GHCR digest: `sha256:acafde09bd74d535fb706acde68f7e6279283ac49f6d1863585d672fb691ac02`
-- rollback release: `v3.7.0-dev.1`
-
-
-## Stable 3.8.0 release
+## v3.8 stable release
 
 - release branch: `release/3.8.0`
 - stable package version: `3.8.0`
-- dev.1 baseline: verified
-- stable release verification: in progress
-- stable publication: in progress
-- stable main promotion: pending
+- stable release tag: `v3.8.0`
+- release commit: `2b02d22e897d5fe736f93267c72036d951f74082`
+- GitHub Release ID: `393558255`
+- release verification run #189: success
+- Container verification run #186: success
+- GHCR digest: `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
+- immutable image tag: `2b02d22e897d5fe736f93267c72036d951f74082`
+- rollback: `v3.8.0-dev.1` / `sha256:acafde09bd74d535fb706acde68f7e6279283ac49f6d1863585d672fb691ac02`
 
+## v3.8 stable main closeout
 
-## Stable 3.8.0 publication
+- stable promotion PR #96: merged
+- main promotion merge commit: `5b74c2f98f5f46ce75371bcf8301857da75a0947`
+- main CI #1244 on the promotion merge commit: success
+- current main release line: `3.8.0`
+- final documentation/source-tree reconciliation is included in the current closeout commit; CI gates this exact main state.
+- public production host/DNS/TLS/auth/secrets provisioning remains an external deployment-resource boundary, not a repository prerequisite.
 
-- [x] package version 3.8.0
-- [x] release verification #189
-- [x] GitHub Release v3.8.0
-- [x] Container verification #186
-- [x] GHCR digest reconciliation
-- [x] production Compose stable digest pin
-- [x] rollback lineage to v3.8.0-dev.1
-- [ ] promotion to main
-- [ ] final main CI closeout

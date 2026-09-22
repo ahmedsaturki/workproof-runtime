@@ -117,12 +117,12 @@ Published image:
 
 Verified digest:
 
-`stable digest is recorded after publication`
+`sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
 
-The same digest is exposed by the immutable release commit tag `2b02d22e897d5fe736f93267c72036d951f74082`. Container verification run #158 proved:
+The same digest is exposed by the immutable release commit tag `2b02d22e897d5fe736f93267c72036d951f74082`. Container verification run #186 proved:
 
 - package version matches release tag;
-- OCI version matches `3.7.0-dev.1`;
+- OCI version matches `3.8.0`;
 - OCI revision matches the release tag commit;
 - version and immutable commit tags resolve to the same digest;
 - the published image starts successfully;
@@ -137,7 +137,7 @@ The repository includes:
 - `docs/CONTAINER-RUNTIME.md`
 - `docs/PRODUCTION-DEPLOYMENT.md`
 
-The production compose targets the verified v3.8.0-dev.1 image digest, binds Studio to localhost, and persists `./work-runs`. The separate control-plane process is the authenticated mutation boundary and can be connected to Studio with `WORKPROOF_CONTROL_PLANE_URL` plus a matching auth policy. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
+The production compose targets the verified v3.8.0 image digest, binds Studio to localhost, and persists `./work-runs`. The separate control-plane process is the authenticated mutation boundary and can be connected to Studio with `WORKPROOF_CONTROL_PLANE_URL` plus a matching auth policy. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
 
 `package.json` remains `private: true`; no npm registry publication is claimed.
 
@@ -151,7 +151,7 @@ WorkProof Runtime is not a replacement for agents, browsers, workflow engines, M
 
 ## v3.8 operator diagnostics
 
-The v3.8.0-dev.1 release adds a local operator diagnostics layer:
+The v3.8.0 stable release adds a local operator diagnostics layer:
 - `GET /ready` for explicit Control Plane readiness.
 - import-safe Control Plane module behavior with no runtime-state creation during import.
 - `workctl doctor` with machine-readable checks for local state, packaged entrypoints, Control Plane, Studio, and A2A.
@@ -176,7 +176,7 @@ See `docs/A2A-ADAPTER.md` and `docs/OPENTELEMETRY.md`.
 
 ## Current product-validation state
 
-The local-first P0/P1 product gate is executable and verified. The repository now demonstrates multi-capability mission execution, capability-chain visibility, restart/resume safety, and disposable external-topology behavior. Broader adapter ecosystems and wider mission coverage remain future expansion rather than hidden prerequisites of the current prerelease.
+The local-first P0/P1 product gate is executable and verified. The repository now demonstrates multi-capability mission execution, capability-chain visibility, restart/resume safety, and disposable external-topology behavior. Broader adapter ecosystems and wider mission coverage remain future expansion rather than hidden prerequisites of the current stable release.
 
 
 ## Local-first operator quick start
@@ -272,6 +272,6 @@ Configure `WORKPROOF_MCP_CONTROL_PLANE_URL` and, when the Control Plane requires
 See `docs/MCP-ADAPTER.md`. The adapter targets the MCP `2026-07-28` revision through the official TypeScript SDK v2.
 
 
-The current prerelease also exposes `GET /v1/capabilities` for authenticated runtime discovery. The SDK exposes `listCapabilities()`, and Studio renders the connected capability registry. See `docs/CONTROL-PLANE-API.md` for the API contract.
+The current stable release also exposes `GET /v1/capabilities` for authenticated runtime discovery. The SDK exposes `listCapabilities()`, and Studio renders the connected capability registry. See `docs/CONTROL-PLANE-API.md` for the API contract.
 
 Capability discovery is metadata only; it never authorizes execution. Risk ceilings, policy, idempotency, effects, verification, reconciliation, recovery, and portable proof remain authoritative.
