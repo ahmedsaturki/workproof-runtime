@@ -2,6 +2,14 @@
 
 Date: 2026-09-22
 
+## Release candidate v3.8.10
+
+- package version: `3.8.10`
+- release branch: `release/3.8.10`
+- previous published stable: `v3.8.9`
+- purpose: corrective distribution release built from the reconciled main lineage
+- final GitHub Release, container digest, and stable lineage are populated only after the release/container verification gates complete
+
 ## Main verified baseline
 
 The current stable release line is **v3.8.9**. Main CI is required to verify every post-release reconciliation.
