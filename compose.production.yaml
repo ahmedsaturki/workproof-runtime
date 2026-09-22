@@ -1,6 +1,6 @@
 services:
   workproof-studio:
-    image: ghcr.io/ahmedsaturki/workproof-runtime:3.5.0-dev.1@sha256:ab5b90eb3722b96d714f105536f5c4d6cdc18cebe22992c4fe758fbc88f547d7
+    image: ghcr.io/ahmedsaturki/workproof-runtime:3.6.0-dev.1@sha256:2c5ba1b58697ec545cf7098d93e8750394b9b1e2ccd9e8f45b647cec689bd247
     container_name: workproof-runtime
     restart: unless-stopped
     ports:
