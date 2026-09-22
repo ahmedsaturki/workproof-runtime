@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.4 benchmark foundations remain verified; v3.8.1 is the current stable release.**
+**v3.4 benchmark foundations remain verified; v3.8.3 is the current stable release.**
 
 The v3.4 line is the first executable operator benchmark with controlled failure injection across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution.
 
@@ -97,13 +97,13 @@ Feature CI #1179 and post-merge main CI #1189 passed the complete v3.7 repositor
 
 ### GitHub Release
 
-`v3.8.1` is the current stable release. Release and container workflows publish from the same release-branch lineage.
+`v3.8.3` is the current stable release. Release publication is gated on the matching Container workflow succeeding for the exact release commit.
 
 Published assets:
 
-- `operational-reality-core-3.8.1.tgz`
-- `workproof-runtime-v3.8.1.tar.gz`
-- `workproof-benchmark-v3.8.1.json`
+- `operational-reality-core-3.8.3.tgz`
+- `workproof-runtime-v3.8.3.tar.gz`
+- `workproof-benchmark-v3.8.3.json`
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
@@ -113,13 +113,13 @@ The release pipeline re-downloads published assets, verifies SHA256 sums, verifi
 
 Published image:
 
-`ghcr.io/ahmedsaturki/workproof-runtime:3.8.1`
+`ghcr.io/ahmedsaturki/workproof-runtime:3.8.3`
 
 Verified digest:
 
-`sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
+`sha256:ec6f891f8e3fc427937f904eb039d95d58387b1d06261cd91c8c9a886bc7cf67`
 
-The same digest is exposed by the immutable release commit tag `f8af30bf69391db22863c432df5c452a73ebaa05`. Container verification run #189 proved:
+The same digest is exposed by the immutable release commit tag `772a5a16b34e94b62bbc6564474736ef2e4da11b`. Container verification run #207 proved:
 
 - package version matches release tag;
 - OCI version matches `3.8.1`;
@@ -137,7 +137,7 @@ The repository includes:
 - `docs/CONTAINER-RUNTIME.md`
 - `docs/PRODUCTION-DEPLOYMENT.md`
 
-The production compose targets the verified v3.8.1 image digest, binds Studio to localhost, and persists `./work-runs`. The separate control-plane process is the authenticated mutation boundary and can be connected to Studio with `WORKPROOF_CONTROL_PLANE_URL` plus a matching auth policy. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
+The production compose targets the verified v3.8.3 image digest, binds Studio to localhost, and persists `./work-runs`. The separate control-plane process is the authenticated mutation boundary and can be connected to Studio with `WORKPROOF_CONTROL_PLANE_URL` plus a matching auth policy. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
 
 `package.json` remains `private: true`; no npm registry publication is claimed.
 
@@ -275,3 +275,8 @@ See `docs/MCP-ADAPTER.md`. The adapter targets the MCP `2026-07-28` revision thr
 The current stable release also exposes `GET /v1/capabilities` for authenticated runtime discovery. The SDK exposes `listCapabilities()`, and Studio renders the connected capability registry. See `docs/CONTROL-PLANE-API.md` for the API contract.
 
 Capability discovery is metadata only; it never authorizes execution. Risk ceilings, policy, idempotency, effects, verification, reconciliation, recovery, and portable proof remain authoritative.
+
+
+## v3.8.2 supersession
+
+v3.8.2 is retained for release-history provenance but is superseded because its Container runtime smoke exposed the conflict between the process-level Studio loopback guard and Docker's internal interface binding. v3.8.3 contains the corrective explicit container opt-in and is the verified rollback successor.
