@@ -298,7 +298,7 @@ export function verifyPortableProof(bundleDir: string): PortableProofManifest {
     throw new Error("Portable proof digest or work ID mismatch");
   }
 
-  const proofUris = new Set(
+  const proofUris: Set<string> = new Set<string>(
     Array.isArray(proofData.artifacts)
       ? proofData.artifacts
         .map((artifact: any) => artifact?.uri)
