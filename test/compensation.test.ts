@@ -77,7 +77,7 @@ test("compensation policy blocks before execution", async () => {
 
 test("persisted verified compensation is not replayed", async () => {
   const { store, registry, work, one, saga } = fixture();
-  const repo = new JsonWorkRepository("/tmp/workproof-saga-repo"); let calls = 0;
+  const repo = new JsonWorkRepository(require("path").join(require("os").tmpdir(), "workproof-saga-repo")); let calls = 0;
   const cap = { name: "persist.undo", version: "1", operations: ["undo"], riskClass: "external_write",
     execute: async () => { calls++; return { status: "accepted" }; } };
   registry.register(cap);
