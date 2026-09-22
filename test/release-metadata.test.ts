@@ -23,6 +23,12 @@ test("release metadata is explicit and reproducible", () => {
   assert.ok(licenseText.includes("WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND"));
 });
 
+test("main release-state guard keeps release-control allowlist explicit", () => {
+  assert.match(releaseStateScript, /\.github\/workflows\/release\.yml/);
+  assert.match(releaseStateScript, /scripts\/verify-main-release-state\.js/);
+  assert.match(releaseStateScript, /test\/release-metadata\.test\.ts/);
+});
+
 test("main release-state guard enforces current stable documentation coherence", () => {
   assert.match(releaseStateScript, /README current stable release does not match package version/);
   assert.match(releaseStateScript, /STATUS current stable release line does not match package version/);
