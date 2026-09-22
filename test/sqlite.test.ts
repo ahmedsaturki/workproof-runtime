@@ -11,7 +11,7 @@ const { WorkEngine } = require("../packages/runtime/src/engine.js");
 const { registerSQLitePack } = require("../packages/packs/src/sqlite-pack.js");
 
 function makeDatabase() {
-  const dir = fs.mkdtempSync(path.join("/tmp", "workproof-sqlite-"));
+  const dir = fs.mkdtempSync(path.join(require("os").tmpdir(), "workproof-sqlite-"));
   const databasePath = path.join(dir, "fixture.db");
   const db = new DatabaseSync(databasePath);
   db.exec("CREATE TABLE items (id INTEGER PRIMARY KEY, name TEXT NOT NULL, state TEXT NOT NULL)");
@@ -156,7 +156,7 @@ test("SQLite upsert rejects unsafe identifiers and oversized inputs before openi
 
   const unsafe = await capability.execute({
     operation: "upsert",
-    input: { databasePath: "/tmp/not-used.db", table: "items;DROP", keyColumn: "id", row: { id: 1 } }
+    input: { databasePath: require("path").join(require("os").tmpdir(), "not-used.db"), table: "items;DROP", keyColumn: "id", row: { id: 1 } }
   }, context);
   assert.equal(unsafe.status, "rejected");
 
@@ -164,7 +164,7 @@ test("SQLite upsert rejects unsafe identifiers and oversized inputs before openi
   const row = Object.fromEntries(tooMany);
   const oversized = await capability.execute({
     operation: "upsert",
-    input: { databasePath: "/tmp/not-used.db", table: "items", keyColumn: "k0", row }
+    input: { databasePath: require("path").join(require("os").tmpdir(), "not-used.db"), table: "items", keyColumn: "k0", row }
   }, context);
   assert.equal(oversized.status, "rejected");
 });
