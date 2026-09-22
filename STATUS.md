@@ -3,16 +3,16 @@
 Date: 2026-09-22
 
 Verification note: this status snapshot is itself CI-gated on the current main commit.
-The current product-readiness merge is CI-gated by main CI #957; this distribution closeout is also CI-gated.
+The current product-readiness merge and distribution closeout are CI-gated on main.
 Chromium CDP smoke is environment-isolated from D-Bus and uses a bounded startup window.
 
 ## Current main
 
-**v3.4 benchmark and v3.4.0-dev.3 distribution path are verified.**
+**v3.4 benchmark is verified; v3.4.0-dev.4 is the current coherent distribution target.**
 
 Latest main: the current branch head; see the GitHub ref and the latest CI run for the exact commit SHA.
 
-Since the release target `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`, main has added distribution hardening, documentation corrections, and deterministic persistent-lease test hardening. The published v3.4.0-dev.2 runtime source remains pinned to the release target.
+Since the release target `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`, main has added distribution hardening, documentation corrections, and deterministic persistent-lease test hardening. The v3.4.0-dev.4 source release is pinned to the release tag commit.
 
 ## Verified main gates
 
@@ -60,27 +60,27 @@ M001-M005 all verify successfully:
 
 ### GitHub Release
 
-- tag: `v3.4.0-dev.3`
-- release id: 393376119
-- target commit: `37c01b5f9c8f07e9dc07d6eb9eb1e59529d0a181`
-- release verification run: #35 (success)
+- tag: `v3.4.0-dev.4`
+- release id: 393378852
+- target commit: `fcff799b77404f99ee0c17929f44cd2e4e8d47bf`
+- release verification run: #42 (success)
 - assets: 5/5 present and re-downloaded
 - SHA256 verification: success
 - published benchmark semantic verification: success
 
-The previous `v3.4.0-dev.2` release remains available as the prior prerelease baseline.
+The previous `v3.4.0-dev.3` release remains available as the prior prerelease baseline.
 
 ### GHCR
 
-- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.3`
-- digest: `sha256:a85a139f37ffcc19f0d6d9ea6223133738437cdc8c8ff0fe32f88dfa055efdf0`
-- immutable commit tag: `3145d21ae5d44b61c3e6f23bea377548d1a79ed4`
-- container verification run: #32 (success)
+- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.4`
+- digest: `sha256:1500730c2c2c9dc0d6da24ca2dd1de4948699e4f2956768d39107b91d753efba`
+- immutable release commit tag: `fcff799b77404f99ee0c17929f44cd2e4e8d47bf`
+- container verification run: #42 (success)
 - OCI version/revision checks: success
 - published-image `/health`: success
 - anonymous GHCR pull: success
 
-The runtime image uses the verified `v3.4.0-dev.3` runtime and was rebuilt when the pre-existing version tag pointed to an older revision.
+The runtime image is built from the exact release-tag source commit.
 
 ## Operational boundary
 
@@ -92,8 +92,8 @@ The runtime image uses the verified `v3.4.0-dev.3` runtime and was rebuilt when 
 - [x] published image smoke
 - [x] localhost-bound production compose
 - [x] production deployment runbook
-- [x] v3.4.0-dev.3 GHCR image publication and smoke
-- [x] v3.4.0-dev.3 GitHub Release publication and re-download verification
+- [x] v3.4.0-dev.4 GHCR image publication and smoke
+- [x] v3.4.0-dev.4 GitHub Release publication and re-download verification
 - [ ] public production host/DNS/TLS/auth/secrets provisioning
 
 The unchecked line is deliberately external infrastructure, not a missing repository implementation.

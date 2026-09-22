@@ -4,7 +4,7 @@ Date: 2026-09-22
 
 ## Acceptance gates
 
-The final distribution-ready v3.4 source tree contains **179 required paths**, enforced by `scripts/verify-source-tree.js`.
+The current dev.4 source tree contains **181 required paths**, enforced by `scripts/verify-source-tree.js`. The older dev.2 closeout recorded 179 paths.
 
 ### Benchmark and runtime
 
@@ -35,7 +35,7 @@ The final distribution-ready v3.4 source tree contains **179 required paths**, e
 - [x] Machine-readable benchmark asset.
 - [x] RELEASE-MANIFEST asset.
 - [x] SHA256SUMS asset.
-- [x] Published GitHub Release `v3.4.0-dev.2`.
+- [x] Published GitHub Release `v3.4.0-dev.4`.
 - [x] Release target matches tag commit.
 - [x] Published assets re-downloaded and SHA256-verified.
 - [x] Published benchmark re-validated semantically.
@@ -63,3 +63,22 @@ A mission counts as complete only when its required outcome is independently ver
 ## Deployment boundary
 
 The repository provides the deployable runtime and self-hosting instructions. A public Internet deployment still requires an externally provisioned host, DNS, TLS, authentication/authorization, and production secrets.
+
+## Historical v3.4.0-dev.2 evidence
+
+The preceding prerelease remains recorded for reproducibility:
+
+- GitHub Release id: 393311702.
+- Release target: `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`.
+- GHCR digest: `sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`.
+
+## Current v3.4.0-dev.4 distribution evidence
+
+- GitHub Release id: 393378852.
+- Release target: `fcff799b77404f99ee0c17929f44cd2e4e8d47bf`.
+- Release verification: success.
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.4`.
+- GHCR digest: `sha256:1500730c2c2c9dc0d6da24ca2dd1de4948699e4f2956768d39107b91d753efba`.
+- Immutable commit image tag: `fcff799b77404f99ee0c17929f44cd2e4e8d47bf`.
+- Container verification: success.
+- Published image health and anonymous pull: success.
