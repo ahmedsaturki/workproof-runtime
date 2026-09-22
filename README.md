@@ -4,11 +4,11 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.4 executable operator benchmark is fully verified, and v3.4.0-dev.5 is the current coherent prerelease distribution.**
+**v3.4 executable operator benchmark is fully verified, and v3.4.0-dev.6 is the current coherent prerelease distribution.**
 
 The v3.4 line is the first executable operator benchmark with controlled failure injection across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution.
 
-The v3.4.0-dev.5 release is built from the current main lineage and carries the local-first product-readiness, packaged CLI, restart/resume, Studio configuration, persistence hardening, and idempotent-resume safety hardening.
+The v3.4.0-dev.6 release is built from the current main lineage and carries the local-first product-readiness, packaged CLI, restart/resume, Studio configuration, persistence hardening, idempotent-resume safety, portable proof, and proof compatibility hardening.
 
 ## Core loop
 
@@ -83,7 +83,7 @@ M005 retried the primary capability under bounded ambiguity, selected a compatib
 
 ### GitHub Release
 
-`v3.4.0-dev.5` is the current release target. Its release and container workflows are required to publish from the same release branch lineage.
+`v3.4.0-dev.6` is the current release target. Its release and container workflows are required to publish from the same release branch lineage.
 
 Published assets:
 
@@ -99,7 +99,7 @@ The release pipeline re-downloads published assets, verifies SHA256 sums, verifi
 
 Published image:
 
-`ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.5`
+`ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.6`
 
 Verified digest:
 
