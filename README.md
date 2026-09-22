@@ -119,7 +119,7 @@ Verified digest:
 
 `stable digest is recorded after publication`
 
-The same digest is exposed by the immutable release commit tag `bba39f385ab042344f4fc2ebe04aeef7ef3c98b9`. Container verification run #158 proved:
+The same digest is exposed by the immutable release commit tag `2b02d22e897d5fe736f93267c72036d951f74082`. Container verification run #158 proved:
 
 - package version matches release tag;
 - OCI version matches `3.7.0-dev.1`;
