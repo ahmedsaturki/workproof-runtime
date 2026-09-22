@@ -103,14 +103,20 @@ function textFromMessage(message: any): string {
   return text;
 }
 
-function workTask(work: any, contextId: string): Record<string, unknown> {
+function workContextId(work: any, fallback: string): string {
+  const value = work?.contract?.metadata?.a2aContextId;
+  return typeof value === "string" && value.trim() ? value : fallback;
+}
+
+function workTask(work: any, contextId?: string): Record<string, unknown> {
+  const resolvedContextId = workContextId(work, contextId ?? "a2a-" + String(work?.id ?? "unknown"));
   const status = taskState(String(work.status));
   const statusMessage = {
     messageId: crypto.createHash("sha256").update(work.id + ":" + work.updatedAt, "utf8").digest("hex").slice(0, 32),
     role: "ROLE_AGENT",
     parts: [{ text: "WorkProof status: " + String(work.status) }],
     taskId: work.id,
-    contextId
+    resolvedContextId
   };
   const artifacts = Array.isArray(work.artifacts)
     ? work.artifacts.filter((artifact: any) => typeof artifact?.uri === "string").map((artifact: any) => ({
@@ -120,7 +126,7 @@ function workTask(work: any, contextId: string): Record<string, unknown> {
     : [];
   return {
     id: work.id,
-    contextId,
+    contextId: resolvedContextId,
     status: { state: status, timestamp: work.updatedAt, message: statusMessage },
     ...(artifacts.length ? { artifacts } : {}),
     metadata: {
@@ -236,7 +242,12 @@ export async function startA2AServer(options: A2AOptions): Promise<RunningA2A> {
         const contextId = typeof message.contextId === "string" && message.contextId.trim()
           ? message.contextId.trim()
           : "a2a-" + crypto.createHash("sha256").update(message.messageId, "utf8").digest("hex").slice(0, 32);
-        const work = await control.dispatch(dispatchRequest(message, objective), { idempotencyKey: idempotencyFor("message", message.messageId) });
+        const request = dispatchRequest(message, objective);
+        request.metadata = {
+          ...(request.metadata ?? {}),
+          a2aContextId: contextId
+        };
+        const work = await control.dispatch(request, { idempotencyKey: idempotencyFor("message", message.messageId) });
         send(res, 200, { jsonrpc: "2.0", id: body.id, result: { task: workTask(work, contextId) } });
         return;
       }
@@ -259,8 +270,8 @@ export async function startA2AServer(options: A2AOptions): Promise<RunningA2A> {
 
       if (body.method === "ListTasks") {
         const params = body.params && typeof body.params === "object" && !Array.isArray(body.params) ? body.params : {};
-        if (params.contextId !== undefined) {
-          throw Object.assign(new Error("ListTasks contextId filtering is not yet persisted by the WorkProof task mapping"), { rpcCode: -32004 });
+        if (params.contextId !== undefined && typeof params.contextId !== "string") {
+          throw Object.assign(new Error("ListTasks contextId must be a string"), { rpcCode: -32602 });
         }
         if (params.pageToken !== undefined && String(params.pageToken) !== "") {
           throw Object.assign(new Error("ListTasks pagination tokens are not supported by this adapter"), { rpcCode: -32004 });
@@ -281,8 +292,12 @@ export async function startA2AServer(options: A2AOptions): Promise<RunningA2A> {
           statusFilter = map[String(params.status)];
           if (!statusFilter) throw Object.assign(new Error("Unsupported ListTasks status filter"), { rpcCode: -32602 });
         }
-        const works = await control.listWork({ limit: 100, status: statusFilter });
-        const tasks = works.slice(0, rawPageSize).map(item => workTask(item, "a2a-" + item.id));
+        let works = await control.listWork({ limit: 100, status: statusFilter });
+        if (params.contextId !== undefined) {
+          const contextId = String(params.contextId);
+          works = works.filter(item => item.a2aContextId === contextId);
+        }
+        const tasks = works.slice(0, rawPageSize).map(item => workTask(item));
         send(res, 200, {
           jsonrpc: "2.0",
           id: body.id,
