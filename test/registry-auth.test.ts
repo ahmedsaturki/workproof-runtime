@@ -85,7 +85,7 @@ test("private file hardening uses platform-appropriate permissions", () => {
     const verify = childProcess.spawnSync(icacls, [file, "/verify"], { encoding: "utf8", windowsHide: true });
     assert.equal(verify.status, 0, verify.stderr || verify.stdout);
 
-    const userMatch = childProcess.spawnSync(icacls, [file, "/findsid", `*\${sid}`], { encoding: "utf8", windowsHide: true });
+    const userMatch = childProcess.spawnSync(icacls, [file, "/findsid", `*${sid}`], { encoding: "utf8", windowsHide: true });
     assert.equal(userMatch.status, 0, userMatch.stderr || userMatch.stdout);
     assert.match(String(userMatch.stdout ?? ""), /secret\.json/i);
 
