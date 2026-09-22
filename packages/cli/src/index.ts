@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const fs = require("fs");
 const { WorkStore } = require("../../core/src/work.js");
 const { CapabilityRegistry } = require("../../capabilities/src/registry.js");
