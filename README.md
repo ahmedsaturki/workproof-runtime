@@ -136,3 +136,49 @@ WorkProof Runtime is not a replacement for agents, browsers, workflow engines, M
 ## Next engineering gates
 
 The next product-validation line is broader real digital work: multi-capability missions, richer induced failure modes, and operational visualization. The existing benchmark establishes verified behavior for the current scope; it does not establish a universal production guarantee or a global novelty claim.
+
+
+## Local-first operator quick start
+
+Requirements: Node.js 24.15+.
+
+### From source
+
+```bash
+npm install
+npm run build
+node dist/packages/cli/src/index.js run examples/missions/research-local.json
+```
+
+The run creates a durable Work Object under `./work-runs` and emits a portable proof file. A persisted Work Object can be resumed after a process or worker interruption:
+
+```bash
+node dist/packages/cli/src/index.js resume <work-id> examples/missions/research-local.json
+```
+
+### Local Studio
+
+```bash
+node dist/apps/studio.js ./work-runs 8788 127.0.0.1
+```
+
+Studio is localhost-bound by default. Optional runtime configuration is read from the command line or environment:
+
+- `WORKPROOF_CONTROL_PLANE_URL`
+- `WORKPROOF_VAULT_DIRECTORY`
+- `WORKPROOF_TRUST_POLICY_PATH`
+
+Do not expose port 8788 directly to the public Internet. Put an authenticated, TLS-terminating reverse proxy in front of WorkProof before external deployment.
+
+### Packaged CLI
+
+The package exposes the `workctl` executable. For a local package smoke test:
+
+```bash
+npm pack
+mkdir -p /tmp/workproof-cli-smoke
+npm install --prefix /tmp/workproof-cli-smoke ./operational-reality-core-*.tgz
+/tmp/workproof-cli-smoke/node_modules/.bin/workctl --help
+```
+
+The npm package remains intentionally private; source and container distributions are the supported release artifacts.
