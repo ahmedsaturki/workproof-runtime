@@ -3,6 +3,7 @@ const test = require("node:test");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const childProcess = require("child_process");
 
 const { JsonWorkRepository } = require("../packages/storage/src/json.js");
 const { startStudio } = require("../apps/studio.js");
@@ -112,6 +113,86 @@ test("local product smoke boots Studio, reports release version, serves work, an
     assert.equal(body.work.constraints, undefined);
   } finally {
     await second.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+
+test("workctl can resume a persisted Work Object after an interrupted run", () => {
+  const root = tempDir("workproof-cli-resume-");
+  try {
+    const dataPath = path.join(root, "suppliers.json");
+    const outputPath = path.join(root, "research.json");
+    const proofPath = path.join(root, "proof.json");
+    const missionPath = path.join(root, "mission.json");
+    const cliPath = path.resolve(path.dirname(__filename), "../packages/cli/src/index.js");
+
+    fs.writeFileSync(dataPath, JSON.stringify([
+      { name: "Alpha", website: "https://alpha.example", phone: "0100000001", source: "fixture" },
+      { name: "Beta", website: "https://beta.example", phone: "0100000002", source: "fixture" },
+      { name: "Gamma", website: "https://gamma.example", phone: "0100000003", source: "fixture" },
+      { name: "Delta", website: "https://delta.example", phone: "0100000004", source: "fixture" }
+    ], null, 2));
+
+    fs.writeFileSync(missionPath, JSON.stringify({
+      objective: "Resume a persisted research outcome",
+      inputs: { dataPath, outputPath, minRecords: 4 },
+      success: [{
+        id: "artifact",
+        description: "At least four unique supplier records with required fields",
+        verifier: "pack.research.artifact",
+        required: true
+      }],
+      deliverables: [outputPath],
+      riskClass: "read",
+      steps: [{
+        id: "research",
+        operation: "research_suppliers",
+        capability: "pack.research.local",
+        input: { dataPath, outputPath, minRecords: 4 },
+        idempotencyKey: "resume-smoke:research",
+        riskClass: "read"
+      }],
+      proofPath,
+      workDirectory: root
+    }, null, 2));
+
+    const run = childProcess.spawnSync(
+      process.execPath,
+      [cliPath, "run", missionPath],
+      { cwd: require("process").cwd(), encoding: "utf8" }
+    );
+    assert.equal(run.status, 0, run.stderr || run.stdout);
+    const firstResult = JSON.parse(run.stdout);
+    assert.equal(firstResult.status, "verified");
+    assert.equal(fs.existsSync(path.join(root, firstResult.id + ".json")), true);
+
+    const persistedPath = path.join(root, firstResult.id + ".json");
+    const persisted = JSON.parse(fs.readFileSync(persistedPath, "utf8"));
+    persisted.status = "running";
+    delete persisted.verification;
+    persisted.events = Array.isArray(persisted.events)
+      ? persisted.events.filter((event: any) => event.type !== "verification.completed")
+      : [];
+    fs.writeFileSync(persistedPath, JSON.stringify(persisted, null, 2), "utf8");
+
+    const resume = childProcess.spawnSync(
+      process.execPath,
+      [cliPath, "resume", firstResult.id, missionPath],
+      { cwd: require("process").cwd(), encoding: "utf8" }
+    );
+    assert.equal(resume.status, 0, resume.stderr || resume.stdout);
+    const resumedResult = JSON.parse(resume.stdout);
+    assert.equal(resumedResult.id, firstResult.id);
+    assert.equal(resumedResult.status, "verified");
+    assert.equal(fs.existsSync(proofPath), true);
+
+    const after = JSON.parse(fs.readFileSync(persistedPath, "utf8"));
+    assert.equal(after.status, "verified");
+    assert.ok(after.verification);
+    assert.equal(after.verification.status, "verified");
+    assert.equal(after.effects.length, 1);
+  } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
