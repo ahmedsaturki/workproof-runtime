@@ -4,20 +4,20 @@ Date: 2026-09-22
 
 ## Main verified baseline
 
-The current stable release line is **v3.8.8**. Main CI is required to verify every post-release reconciliation.
+The current stable release line is **v3.8.9**. Main CI is required to verify every post-release reconciliation.
 
 Main contains the v3.4 executable benchmark, restart/resume safety, portable proof, explicit proof compatibility, operator guidance, packaged operator docs/examples, multi-capability execution, external-topology validation, distribution hardening, Control Plane policy/idempotency safety, network-boundary hardening, immutable container-base provenance, and bounded production resource/log controls.
 
-## Current stable v3.8.8
+## Current stable v3.8.9
 
 - package version: `3.8.8`
-- stable release tag: `v3.8.8`
-- stable release commit: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
-- GitHub Release ID: `394017508`
-- Release workflow #239: success
-- Container workflow #236: success
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.8`
-- GHCR digest: `sha256:0c31c571480d45d5f46f5ae6f8b8a4b1328094a7561f76aee7016c99e586eb10`
+- stable release tag: `v3.8.9`
+- stable release commit: `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`
+- GitHub Release ID: `394031450`
+- Release workflow #245: success
+- Container workflow #242: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.9`
+- GHCR digest: `sha256:ccde8ada2227b016968328f9eec1849e7424d12c2acc89081c30ca191bb6df66`
 - immutable image tag: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
 - prior stable rollback: `v3.8.1` / `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 
@@ -28,15 +28,15 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - release workflow #239: success
 - container workflow #236: success
 - release assets: five published and independently rechecked
-- v3.8.8 container: exact commit revision, immutable digest, runtime health, Compose restart/persistence/resource/log envelope, disposable external topology, anonymous pull, backup/restore, rollback, and deny-by-default edge all verified
+- v3.8.9 container: exact commit revision, immutable digest, runtime health, Compose restart/persistence/resource/log envelope, disposable external topology, anonymous pull, backup/restore, rollback, and deny-by-default edge all verified
 
 The v3.8.0 release remains historical provenance. v3.8.1 is the verified rollback target. v3.8.2 is retained as superseded release history and is not a rollback target. v3.8.7 remains historical stable provenance immediately preceding v3.8.8.
 
 ## Current main closeout
 
-- v3.8.8 stable release: published and fully Container-verified
-- v3.8.8 published lineage: reconciled to exact GitHub Release target and GHCR digest
-- production Compose: pinned to exact v3.8.8 tag@digest
+- v3.8.9 stable release: published and fully Container-verified
+- v3.8.9 published lineage: reconciled to exact GitHub Release target and GHCR digest
+- production Compose: pinned to exact v3.8.9 tag@digest
 - container base: immutable Node 24.21.0 Trixie slim digest enforced by CI/Release/Container
 - production resource envelope: init, 10s stop grace, 1 CPU, 1 GiB RAM, 512 PIDs, 10 MiB × 3 JSON log rotation
 
