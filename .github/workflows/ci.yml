@@ -36,6 +36,8 @@ jobs:
       - run: npm install
       - name: Dependency security audit
         run: npm audit --audit-level=high
+      - name: Secret scan
+        run: node scripts/secret-scan.js
       - run: node scripts/verify-source-tree.js
       - name: Build TypeScript
         run: npm run build
