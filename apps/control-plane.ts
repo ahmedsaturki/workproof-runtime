@@ -170,6 +170,8 @@ function loadMission(work: WorkObject, config: RuntimeConfig): WorkStep[] {
 
 export async function executeMission(input: Record<string, unknown>): Promise<WorkObject> {
   const config = readRuntimeConfig();
+  fs.mkdirSync(config.missionDirectory, { recursive: true });
+  fs.mkdirSync(config.proofDirectory, { recursive: true });
   if (typeof input.objective !== "string" || !input.objective.trim()) throw new Error("Dispatch objective is required");
   const riskClass = validateRisk(input.riskClass, "read");
   const steps = validateSteps(input.steps, riskClass);
@@ -198,6 +200,8 @@ export async function executeMission(input: Record<string, unknown>): Promise<Wo
 
 export async function resumeMission(work: WorkObject): Promise<WorkObject> {
   const config = readRuntimeConfig();
+  fs.mkdirSync(config.missionDirectory, { recursive: true });
+  fs.mkdirSync(config.proofDirectory, { recursive: true });
   const steps = loadMission(work, config);
   const store = new WorkStore();
   store.register(work);
