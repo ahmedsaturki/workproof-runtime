@@ -52,7 +52,7 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 
 - verified main hardening baseline: `f391ae4ce60f0fd102c731c78551d258fbde1f12`
 - main CI #1260: success on that baseline
-- current package version: `3.8.0`
+- current package version: `3.8.1`
 - stable release: `v3.8.0`
 - stable release commit: `2b02d22e897d5fe736f93267c72036d951f74082`
 - GitHub Release: `393558255`

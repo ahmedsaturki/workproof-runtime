@@ -6,6 +6,14 @@ Date: 2026-09-22
 
 Main contains the v3.4 executable benchmark, restart/resume safety, portable proof, explicit proof compatibility, operator guidance, packaged operator docs/examples, multi-capability execution, external-topology validation, and distribution hardening.
 
+## Release 3.8.1 preparation
+
+- package version: `3.8.1`
+- release branch: `release/3.8.1`
+- source baseline: `e3588fb1b489987a0f656d9e9acb1fad6e410082`
+- purpose: patch release for Control Plane execution-policy enforcement, non-loopback binding defense-in-depth, and terminal idempotency failure replay
+- GitHub Release and GHCR publication are performed by the release/container workflows and must be independently verified before this patch is called released.
+
 ## Main verification basis
 
 - package version: `3.8.0`
@@ -18,7 +26,7 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - post-release hardening PR #98: merged; release metadata/license/source-manifest reconciliation
 - repository hardening PR #101: pins workflow actions to immutable commits, adds CODEOWNERS coverage, reconciles the source manifest, and clarifies security reporting
 
-The stable v3.8.0 release remains bound to its published release commit and container digest. The current `main` adds metadata/distribution hardening after that stable release without changing runtime semantics.
+The prior stable v3.8.0 release remains bound to its published release commit and container digest. The current `main` adds metadata/distribution hardening after that stable release without changing runtime semantics.
 
 ## Current verified release
 

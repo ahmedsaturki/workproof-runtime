@@ -1,6 +1,6 @@
 {
   "name": "operational-reality-core",
-  "version": "3.8.0",
+  "version": "3.8.1",
   "private": true,
   "description": "WorkProof Runtime — outcome-first digital work kernel and local-first operator",
   "license": "Apache-2.0",
