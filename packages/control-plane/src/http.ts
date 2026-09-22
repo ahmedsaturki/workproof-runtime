@@ -292,7 +292,10 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
             riskClass: work.contract?.riskClass,
             approvalRequired: Boolean(work.contract?.approvalRequired),
             createdAt: work.createdAt,
-            updatedAt: work.updatedAt
+            updatedAt: work.updatedAt,
+            ...(typeof work.contract?.metadata?.a2aContextId === "string"
+              ? { a2aContextId: work.contract.metadata.a2aContextId }
+              : {})
           }))
         });
         return;
