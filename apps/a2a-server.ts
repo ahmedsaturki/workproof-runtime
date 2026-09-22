@@ -104,7 +104,7 @@ function textFromMessage(message: any): string {
 }
 
 function workContextId(work: any, fallback: string): string {
-  const value = work?.contract?.metadata?.a2aContextId;
+  const value = work?.contract?.metadata?.a2aContextId ?? work?.a2aContextId;
   return typeof value === "string" && value.trim() ? value : fallback;
 }
 
@@ -116,7 +116,7 @@ function workTask(work: any, contextId?: string): Record<string, unknown> {
     role: "ROLE_AGENT",
     parts: [{ text: "WorkProof status: " + String(work.status) }],
     taskId: work.id,
-    resolvedContextId
+    contextId: resolvedContextId
   };
   const artifacts = Array.isArray(work.artifacts)
     ? work.artifacts.filter((artifact: any) => typeof artifact?.uri === "string").map((artifact: any) => ({
