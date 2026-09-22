@@ -23,15 +23,15 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 
 ## Current stable v3.8.10
 
-- package version: `3.8.9`
-- stable release tag: `v3.8.9`
-- stable release commit: `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`
-- GitHub Release ID: `394031450`
-- Release workflow #245: success
-- Container workflow #242: success
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.9`
-- GHCR digest: `sha256:ccde8ada2227b016968328f9eec1849e7424d12c2acc89081c30ca191bb6df66`
-- immutable image tag: `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`
+- package version: `3.8.10`
+- stable release tag: `v3.8.10`
+- stable release commit: `9daac7a926ce1631ac708a6c234379d622c56c19`
+- GitHub Release ID: `394046514`
+- Release workflow #261: success
+- Container workflow #258: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.10`
+- GHCR digest: `sha256:cad9c467db8fe82abd1b15d30d90dbf7e87ad6683f44a8c7c8763c327af6a1c8`
+- immutable image tag: `9daac7a926ce1631ac708a6c234379d622c56c19`
 - prior stable rollback: `v3.8.1` / `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 
 ## Candidate verification basis
