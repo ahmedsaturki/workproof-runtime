@@ -8,23 +8,23 @@ Add a local-first operational diagnostics surface without changing WorkProof aut
 
 ## Required acceptance
 
-- [ ] Control Plane `/ready` endpoint
-- [ ] safe Control Plane module imports without startup side effects
-- [ ] `workctl doctor`
-- [ ] doctor JSON contract
-- [ ] doctor healthy service probes
-- [ ] doctor failure reporting
-- [ ] source-tree gate coverage
-- [ ] full unit/integration suite
-- [ ] benchmark
-- [ ] demo
-- [ ] CLI proof
-- [ ] representative missions
-- [ ] live GitHub integration smoke
-- [ ] release artifact publication
-- [ ] GHCR image publication
-- [ ] production Compose digest pin
-- [ ] post-merge main CI
+- [x] Control Plane `/ready` endpoint
+- [x] safe Control Plane module imports without startup side effects
+- [x] `workctl doctor`
+- [x] doctor JSON contract
+- [x] doctor healthy service probes
+- [x] doctor failure reporting
+- [x] source-tree gate coverage
+- [x] full unit/integration suite
+- [x] benchmark
+- [x] demo
+- [x] CLI proof
+- [x] representative missions
+- [x] live GitHub integration smoke
+- [x] release artifact publication
+- [x] GHCR image publication
+- [x] production Compose digest pin
+- [x] post-merge main CI
 
 ## Stop conditions
 
@@ -34,3 +34,13 @@ Do not call v3.8 verified if:
 - CLI module import starts a server;
 - packaged doctor paths resolve incorrectly;
 - a failed configured service is silently treated as healthy.
+
+
+## Feature verification
+
+- Feature CI verifies TypeScript build, source-tree completeness, packed CLI smoke, and full unit/integration suite.
+- Control Plane `/ready` is tested from the packaged application.
+- `workctl doctor` healthy/failure paths are tested.
+- Module import safety is tested without starting a server or creating runtime state.
+
+Release publication and main promotion remain separate gates until the exact v3.8 release artifact is generated.
