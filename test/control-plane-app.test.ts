@@ -56,6 +56,13 @@ test("packaged control-plane process serves health, executes work, persists proo
     assert.equal(healthBody.version, packageJson.version);
     assert.equal(healthBody.apiVersion, "1.0");
 
+    const ready = await fetch(`${baseUrl}/ready`);
+    assert.equal(ready.status, 200);
+    const readyBody = await ready.json();
+    assert.equal(readyBody.status, "ready");
+    assert.equal(readyBody.checks.repository.status, "ok");
+    assert.equal(readyBody.checks.idempotency.status, "ok");
+
     const capabilities = await fetch(`${baseUrl}/v1/capabilities`);
     assert.equal(capabilities.status, 200);
     const capabilityBody = await capabilities.json();

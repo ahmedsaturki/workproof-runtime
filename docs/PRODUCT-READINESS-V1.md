@@ -168,7 +168,7 @@ The required local-first and external-topology acceptance gates for v3.7.0-dev.1
 
 ## v3.7.0-dev.1 release state
 
-The current shipped prerelease is `v3.7.0-dev.1`. Release verification run #171 and Container verification run #168 both completed their required gates, including the disposable external-topology validation and published digest lineage.
+The current shipped prerelease is `v3.8.0-dev.1`. Release verification run #171 and Container verification run #168 both completed their required gates, including the disposable external-topology validation and published digest lineage.
 
 
 ## v3.7.0-dev.1 control-plane product surface
@@ -208,3 +208,9 @@ The adapter is distributed through the same source/package/container release pat
 The v3.7.0-dev.1 product surface is published and verified. It includes A2A interoperability, allowlisted OTLP/HTTP JSON audit export, Work Object list/paging, expanded Studio operational timeline, packed A2A verification, and the representative A2A-ready mission.
 
 Release artifacts and the GHCR container are integrity-verified and tied to release commit `f776ed9f5fcbb055f7da41ca69714c19b20f9aad`.
+
+## v3.8.0-dev.1 verified release state
+
+The v3.8.0-dev.1 release adds explicit Control Plane readiness, import-safe Control Plane initialization, and a machine-readable `workctl doctor` diagnostic contract for local runtime, Control Plane, Studio, and A2A services.
+
+Feature CI #1234, Release #180, and Container #177 completed successfully before main promotion. Public external host/DNS/TLS/auth/secrets provisioning remains an external deployment resource, not a hidden runtime prerequisite.

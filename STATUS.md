@@ -11,7 +11,7 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - package version: `3.7.0-dev.1`
 - release source tag commit: `f776ed9f5fcbb055f7da41ca69714c19b20f9aad`
 - promotion branch: `promote/v3.7.0-dev.1-main`
-- main closeout commit: `c744c3d4f3dd6f54e1ce1d656cfb92e820f13f98`
+- main closeout commit: `354cf4d660aec814ba83d0c44d7e3468d6b726ca`
 
 ## Current verified release
 
@@ -86,3 +86,27 @@ A capability receipt is not independent proof. Work is verified only when indepe
 - [x] release publication and GHCR digest verification
 - [x] production Compose digest pin
 - [x] post-merge main CI closeout (CI #1189)
+
+
+## v3.8 release branch
+
+- branch: `release/3.8.0-dev.1`
+- source feature evidence: CI #1232 success
+- release branch verification: in progress
+- publication: not yet closed
+- GHCR/Compose/main promotion: pending release verification
+
+
+## v3.8 promotion
+
+- branch: `promote/v3.8.0-dev.1-main`
+- published release: `v3.8.0-dev.1`
+- release commit: `bba39f385ab042344f4fc2ebe04aeef7ef3c98b9`
+- GHCR digest: `sha256:acafde09bd74d535fb706acde68f7e6279283ac49f6d1863585d672fb691ac02`
+- rollback: `v3.7.0-dev.1` / `sha256:28e8d9af0ab71442b33df8b72308089f520b5ba23128401c0a05675809ba1748`
+- [x] feature CI #1234
+- [x] release workflow #180
+- [x] container workflow #177
+- [x] release assets verified
+- [x] container runtime/Compose/external topology verified
+- [ ] post-merge main CI closeout

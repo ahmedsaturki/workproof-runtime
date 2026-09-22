@@ -25,6 +25,7 @@ const { assessProofCompatibility, compatibilityPolicy } = require("../../evidenc
 const { setRetentionClass, pinRetention, unpinRetention, inventoryVault, planGarbageCollection, executeGarbageCollection, repairVaultIndex } = require("../../evidence/src/retention.js");
 const { createAuthPolicy, loadAuthPolicy, saveAuthPolicy, issueCredential, addIssuedCredential, revokeCredential } = require("../../registry/src/auth.js");
 const { publishTrustSnapshotToRegistry, getTrustSnapshotFromRegistry, listTrustSnapshotsFromRegistry, getCurrentTrustSnapshotFromRegistry, applyTrustSnapshotToRegistry } = require("../../registry/src/client.js");
+const { runDoctor } = require("../../doctor/src/index.js");
 
 function usage(): void {
   process.stdout.write(`workctl
@@ -33,6 +34,7 @@ function usage(): void {
   inspect <proof.json>
   verify <proof.json> [trust-policy.json] [--require-trusted]
   summarize <proof.json>
+  doctor
   proof-export <proof.json> <bundle-dir>
   proof-bundle-verify <bundle-dir>
   proof-import <bundle-dir> <output-dir>
@@ -201,6 +203,15 @@ function vaultGc(vaultDir: string, args: string[]): void {
 
 function vaultRepair(vaultDir: string): void {
   process.stdout.write(JSON.stringify(repairVaultIndex(vaultDir), null, 2) + "\n");
+}
+
+async function doctorCommand(): Promise<void> {
+  const report = await runDoctor({
+    ...process.env,
+    WORKPROOF_PACKAGE_ROOT: path.resolve(path.dirname(__filename), "../../../../")
+  });
+  process.stdout.write(JSON.stringify(report, null, 2) + "\n");
+  if (report.status === "failed") process.exitCode = 1;
 }
 
 function registryAuthInit(policyPath: string): void {
@@ -552,6 +563,11 @@ if (!command || command === "--help" || command === "-h" || command === "help") 
     try { signProofFile(firstArg, secondArg); }
     catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
   }
+} else if (command === "doctor") {
+  doctorCommand().catch(error => {
+    process.stderr.write(String(error) + "\n");
+    process.exitCode = 1;
+  });
 } else if (command === "run") {
   if (!firstArg) { usage(); process.exitCode = 1; }
   else runMission(firstArg).catch(error => { process.stderr.write(String(error) + "\n"); process.exitCode = 1; });
