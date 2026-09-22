@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.4 benchmark foundations remain verified; v3.6.0-dev.1 is the current shipped prerelease.**
+**v3.4 benchmark foundations remain verified; v3.7.0-dev.1 is the current CI-verified release candidate. The published shipped prerelease remains v3.6.0-dev.1 until the v3.7 publication gate closes.**
 
 The v3.4 line is the first executable operator benchmark with controlled failure injection across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution.
 
@@ -80,6 +80,18 @@ v1.0 through v3.2 remain verified foundations for proof registry/trust, retentio
 M004 accepted an external effect whose acknowledgement was lost, reconciled existing state, and avoided a duplicate POST.
 
 M005 retried the primary capability under bounded ambiguity, selected a compatible fallback, and independently verified the stored outcome.
+
+## v3.7 release candidate
+
+The v3.7 candidate adds:
+- A2A 1.0 JSON-RPC interoperability over the authenticated WorkProof Control Plane.
+- A2A Agent Card discovery, task listing/filtering/paging, and deterministic mutation idempotency.
+- Work Object listing and paging in the Control Plane and SDK.
+- Dependency-free OTLP/HTTP JSON audit export with an explicit field allowlist.
+- An expanded Studio operational timeline.
+- A2A-ready representative mission and packed A2A artifact smoke.
+
+Feature CI #1179 passed the complete repository gate on the candidate commit. Release publication, GHCR digest pinning, and main promotion are still separate final release gates.
 
 ## Distribution and operation
 
