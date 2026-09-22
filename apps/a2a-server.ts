@@ -37,7 +37,7 @@ function version(): string {
   return "unknown";
 }
 
-function authMatches(header: unknown): boolean {
+function authMatches(header: unknown, token: string): boolean {
   const value = Array.isArray(header) ? header[0] : header;
   const text = String(value ?? "").trim();
   const match = /^Bearer ([A-Za-z0-9._~-]+)$/.exec(text);
@@ -205,7 +205,7 @@ export async function startA2AServer(options: A2AOptions): Promise<RunningA2A> {
       return;
     }
 
-    if (!authMatches(req.headers?.authorization)) {
+    if (!authMatches(req.headers?.authorization, token)) {
       send(res, 401, rpcError(undefined, -32002, "Authentication required"), { "www-authenticate": 'Bearer realm="workproof-a2a"' });
       return;
     }
