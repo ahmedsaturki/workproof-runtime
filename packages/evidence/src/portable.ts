@@ -68,6 +68,14 @@ function safeRelativePath(rootDir: string, relativePath: string, label: string):
   return absolute;
 }
 
+function assertDirectoryWithin(rootDir: string, directoryPath: string, label: string): void {
+  if (!fs.existsSync(directoryPath)) throw new Error(label + " is missing");
+  const stat = fs.lstatSync(directoryPath);
+  if (!stat.isDirectory() || stat.isSymbolicLink()) throw new Error(label + " must be a regular directory");
+  const realPath = fs.realpathSync(directoryPath);
+  assertInside(rootDir, realPath, label);
+}
+
 function assertRegularFileWithin(rootDir: string, filePath: string, label: string): void {
   if (!fs.existsSync(filePath)) throw new Error(label + " is missing");
   const stat = fs.lstatSync(filePath);
@@ -136,6 +144,10 @@ function requireIntegrityProof(data: any): { bundle: Record<string, unknown>; di
 
 function ensureNewBundleDirectory(bundleDir: string): void {
   if (fs.existsSync(bundleDir)) {
+    const stat = fs.lstatSync(bundleDir);
+    if (!stat.isDirectory() || stat.isSymbolicLink()) {
+      throw new Error("Portable proof bundle directory must be a regular directory: " + bundleDir);
+    }
     const entries = fs.readdirSync(bundleDir);
     if (entries.length) {
       throw new Error("Portable proof bundle directory is not empty: " + bundleDir);
@@ -147,7 +159,7 @@ function ensureNewBundleDirectory(bundleDir: string): void {
 
 function loadManifest(bundleDir: string): PortableProofManifest {
   const manifestPath = path.join(bundleDir, "manifest.json");
-  if (!fs.existsSync(manifestPath)) throw new Error("Portable proof manifest is missing");
+  assertRegularFileWithin(bundleDir, manifestPath, "Portable proof manifest");
   const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 
   if (
@@ -203,6 +215,7 @@ export function exportPortableProof(proofPath: string, bundleDir: string): Porta
   ensureNewBundleDirectory(bundleDir);
   const artifactsDir = path.join(bundleDir, "artifacts");
   fs.mkdirSync(artifactsDir, { recursive: true });
+  assertDirectoryWithin(bundleDir, artifactsDir, "Portable artifacts directory");
 
   const artifactEntries: PortableArtifactEntry[] = [];
 
@@ -333,6 +346,7 @@ export function importPortableProof(
 
   const outputArtifacts = path.join(outputDir, "artifacts");
   fs.mkdirSync(outputArtifacts, { recursive: true });
+  assertDirectoryWithin(outputDir, outputArtifacts, "Imported artifacts directory");
 
   const sourceProof = safeRelativePath(bundleDir, "proof.json", "proof");
   const targetProof = safeRelativePath(outputDir, "proof.json", "imported proof");
