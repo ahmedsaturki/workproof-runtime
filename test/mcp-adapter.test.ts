@@ -9,7 +9,7 @@ const { StdioClientTransport } = require("@modelcontextprotocol/client/stdio");
 const { JsonWorkRepository } = require("../packages/storage/src/json");
 const { startControlPlane } = require("../packages/control-plane/src/http");
 
-function tempDir(prefix) {
+function tempDir(prefix: string): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 }
 
@@ -34,9 +34,9 @@ function sampleWork() {
   };
 }
 
-function textPayload(result) {
+function textPayload(result: any): any {
   assert.ok(Array.isArray(result.content));
-  const textBlock = result.content.find(block => block.type === "text");
+  const textBlock = result.content.find((block: any) => block.type === "text");
   assert.ok(textBlock);
   return JSON.parse(textBlock.text);
 }
@@ -94,7 +94,7 @@ test("MCP stdio adapter exposes modern tool discovery and forwards through the a
       ]
     },
     runtimeVersion: "control-test",
-    dispatch: async (input) => {
+    dispatch: async (input: Record<string, unknown>) => {
       dispatchCount += 1;
       const created = { ...sampleWork(), id: "mcp_created_" + dispatchCount };
       created.contract.objective = String(input.objective);
@@ -122,7 +122,7 @@ test("MCP stdio adapter exposes modern tool discovery and forwards through the a
     await client.connect(transport);
 
     const listed = await client.listTools();
-    const names = listed.tools.map(tool => tool.name);
+    const names = listed.tools.map((tool: any) => tool.name);
     assert.deepEqual(names, [
       "workproof_cancel",
       "workproof_capabilities",
