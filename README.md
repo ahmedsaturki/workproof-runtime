@@ -10,7 +10,7 @@ The v3.4 line is the first executable operator benchmark with controlled failure
 
 The v3.4.0-dev.10 product baseline adds a representative multi-capability Research → Transform mission, Studio capability-chain visibility, and a disposable external-topology gate covering TLS, authentication, persistence, backup/restore, and rollback.
 
-The v3.6.0-dev.1 release extends the verified v3.5 foundation with an optional MCP v2 stdio interoperability adapter, authenticated Control Plane forwarding, explicit mutation idempotency, protocol acceptance, and packed MCP artifact verification.
+The v3.6.0-dev.1 release extended the verified v3.5 foundation with an optional MCP v2 stdio interoperability adapter, authenticated Control Plane forwarding, explicit mutation idempotency, protocol acceptance, and packed MCP artifact verification.
 
 ## Core loop
 
@@ -91,7 +91,7 @@ The v3.7 release adds:
 - An expanded Studio operational timeline.
 - A2A-ready representative mission and packed A2A artifact smoke.
 
-Feature CI #1179 and post-merge main CI #1185 passed the complete v3.7 repository gates. Release publication, GHCR digest pinning, production Compose pinning, and main promotion are complete.
+Feature CI #1179 and post-merge main CI #1189 passed the complete v3.7 repository gates. Release publication, GHCR digest pinning, production Compose pinning, and main promotion are complete.
 
 ## Distribution and operation
 
@@ -122,7 +122,7 @@ Verified digest:
 The same digest is exposed by the immutable release commit tag `de3ad9fcc10b9db7487c78620607f669249adaa9`. Container verification run #158 proved:
 
 - package version matches release tag;
-- OCI version matches `3.6.0-dev.1`;
+- OCI version matches `3.7.0-dev.1`;
 - OCI revision matches the release tag commit;
 - version and immutable commit tags resolve to the same digest;
 - the published image starts successfully;
@@ -137,7 +137,7 @@ The repository includes:
 - `docs/CONTAINER-RUNTIME.md`
 - `docs/PRODUCTION-DEPLOYMENT.md`
 
-The production compose targets the verified v3.6.0-dev.1 image digest, binds Studio to localhost, and persists `./work-runs`. The separate control-plane process is the authenticated mutation boundary and can be connected to Studio with `WORKPROOF_CONTROL_PLANE_URL` plus a matching auth policy. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
+The production compose targets the verified v3.7.0-dev.1 image digest, binds Studio to localhost, and persists `./work-runs`. The separate control-plane process is the authenticated mutation boundary and can be connected to Studio with `WORKPROOF_CONTROL_PLANE_URL` plus a matching auth policy. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
 
 `package.json` remains `private: true`; no npm registry publication is claimed.
 
@@ -151,7 +151,7 @@ WorkProof Runtime is not a replacement for agents, browsers, workflow engines, M
 
 ## v3.8 operator diagnostics
 
-The v3.8 development line adds a local operator diagnostics layer:
+The v3.8.0-dev.1 release adds a local operator diagnostics layer:
 - `GET /ready` for explicit Control Plane readiness.
 - import-safe Control Plane module behavior with no runtime-state creation during import.
 - `workctl doctor` with machine-readable checks for local state, packaged entrypoints, Control Plane, Studio, and A2A.
