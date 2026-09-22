@@ -2,7 +2,7 @@
 
 Date: 2026-09-22
 
-Current target: `v3.4.0-dev.8`.
+Current target: `v3.4.0-dev.9`.
 
 ## Required acceptance
 
@@ -21,7 +21,7 @@ Current target: `v3.4.0-dev.8`.
 
 ## Distribution acceptance
 
-- [ ] GitHub Release v3.4.0-dev.8 published
+- [ ] GitHub Release v3.4.0-dev.9 published
 - [ ] 5 release assets re-downloaded and SHA256-verified
 - [ ] published benchmark semantics re-verified
 - [ ] GHCR image published
