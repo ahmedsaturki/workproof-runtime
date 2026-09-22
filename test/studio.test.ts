@@ -107,6 +107,22 @@ test("Studio serves an operational dashboard and sanitized Work Object APIs", as
   }
 });
 
+test("Studio detail binds selected Work Object for control actions", async () => {
+  const root = tempDir("workproof-studio-selection-");
+  const repository = new JsonWorkRepository(root);
+  repository.save(workFixture());
+  const studio = await startStudio({ workDirectory: root, port: 0 });
+  try {
+    const page = await fetch(`http://127.0.0.1:${studio.port}`);
+    const html = await page.text();
+    assert.match(html, /selectedId = id/);
+    assert.match(html, /id="timeline"/);
+  } finally {
+    await studio.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("Studio rejects unknown work with a 404 and rejects unsupported methods", async () => {
   const root = tempDir("workproof-studio-empty-");
   const studio = await startStudio({ workDirectory: root, port: 0 });
