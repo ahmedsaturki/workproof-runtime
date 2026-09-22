@@ -48,13 +48,13 @@ Do not expose port 8788 directly to the Internet. Use a TLS reverse proxy with a
 
 Back up `work-runs` and any configured proof vault. Roll back by pinning Compose to a previously verified immutable GHCR tag@digest and restarting the stack.
 
-## Verified v3.8.0 stable release
+## Verified v3.8.1 stable release
 
 - GitHub Release: `v3.8.1`
 - release commit: `f8af30bf69391db22863c432df5c452a73ebaa05`
 - GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.1`
 - GHCR digest: `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
-- immutable image tag: `2b02d22e897d5fe736f93267c72036d951f74082`
+- immutable image tag: `f8af30bf69391db22863c432df5c452a73ebaa05`
 - rollback release: `3.8.0`
 - rollback immutable tag: `2b02d22e897d5fe736f93267c72036d951f74082`
 - rollback digest: `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
