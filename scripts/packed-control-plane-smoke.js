@@ -65,7 +65,7 @@ async function main() {
     const capabilities = await fetch(base + "/v1/capabilities");
     if (!capabilities.ok) fail("Packed control-plane capability inventory failed with HTTP " + capabilities.status);
     const capabilityBody = await capabilities.json();
-    if (!Array.isArray(capabilityBody.capabilities) || !capabilityBody.capabilities.some((item) => item.name === "pack.local")) {
+    if (!Array.isArray(capabilityBody.capabilities) || !capabilityBody.capabilities.some((item) => item.name === "pack.local.file.read")) {
       fail("Packed control-plane capability inventory is incomplete");
     }
 
