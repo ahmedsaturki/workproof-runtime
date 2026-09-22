@@ -60,6 +60,29 @@ async function main() {
       "docs/CONTAINER-RUNTIME.md"
     ]);
     const unexpectedDrift = changedFiles.filter((file) => !allowedPostReleaseFiles.has(file) && !file.startsWith("docs/"));
+    const readme = fs.readFileSync(path.resolve("README.md"), "utf8");
+    const status = fs.readFileSync(path.resolve("STATUS.md"), "utf8");
+    const sourceManifest = fs.readFileSync(path.resolve("SOURCE-MANIFEST.md"), "utf8");
+    const productReadiness = fs.readFileSync(path.resolve("docs/PRODUCT-READINESS-V1.md"), "utf8");
+    const expectedVersion = "v" + packageVersion;
+    if (!readme.includes("**" + expectedVersion + " is the current stable release.**")) {
+      throw new Error("README current stable release does not match package version " + expectedVersion);
+    }
+    if (!status.includes("current stable release line is **" + expectedVersion + "**")) {
+      throw new Error("STATUS current stable release line does not match package version " + expectedVersion);
+    }
+    if (!sourceManifest.includes("current verified release lineage: " + expectedVersion)) {
+      throw new Error("SOURCE-MANIFEST current verified release lineage does not match package version " + expectedVersion);
+    }
+    if (!sourceManifest.includes("current stable release commit: `" + lineage.release.commit + "`")) {
+      throw new Error("SOURCE-MANIFEST stable release commit does not match release lineage");
+    }
+    if (!productReadiness.includes("The current stable product baseline is **" + expectedVersion + "**.")) {
+      throw new Error("PRODUCT-READINESS current stable baseline does not match package version " + expectedVersion);
+    }
+    if (!productReadiness.includes("immutable image tag: `" + lineage.container.immutableTag + "`")) {
+      throw new Error("PRODUCT-READINESS immutable image tag does not match release lineage");
+    }
     if (unexpectedDrift.length) {
       throw new Error(
         "Main contains source/distribution drift after the published release without a version bump: " +
