@@ -26,7 +26,7 @@ interface RunningA2A {
 function version(): string {
   const candidates = [
     path.resolve(path.dirname(__filename), "../..", "package.json"),
-    path.resolve(process.cwd(), "package.json")
+    path.resolve(path.dirname(__filename), "../..", "package.json")
   ];
   for (const candidate of candidates) {
     try {
@@ -142,7 +142,7 @@ function dispatchRequest(message: any, text: string): WorkDispatchRequest {
   for (const key of recognized) {
     if (Object.prototype.hasOwnProperty.call(context, key)) request[key] = context[key];
   }
-  return request as WorkDispatchRequest;
+  return request as unknown as WorkDispatchRequest;
 }
 
 function idempotencyFor(prefix: string, value: string): string {
