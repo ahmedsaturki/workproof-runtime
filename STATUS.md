@@ -8,21 +8,20 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 
 ## Current main
 
-- commit: `dfdd92f5a5840f08ceba420b92a2f0a540145df4`
-- main CI #1008: success
-- package version: `3.4.0-dev.9`
+- package version: `3.4.0-dev.10`
+- current main closeout CI is the final gate for this merge
 
 ## Current verified release
 
-- version: `3.4.0-dev.9`
-- tag: `v3.4.0-dev.9`
-- release commit: `3041aeb49241dc50daae56ba70763bc61aeb29bf`
-- GitHub Release id: 393389908
-- release verification run #98: success
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.9`
-- GHCR digest: `sha256:3acde2ee0e82c0d7bf1e9bd8217aa774e1ceb5cdafd64150b87b7581aa0ea04d`
-- immutable image tag: `3041aeb49241dc50daae56ba70763bc61aeb29bf`
-- Container verification run #95: success
+- version: `3.4.0-dev.10`
+- tag: `v3.4.0-dev.10`
+- release commit: `620ae90f396319630ef6913b66a664634d695039`
+- GitHub Release id: 393463668
+- release verification run #113: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.10`
+- GHCR digest: `sha256:3fa81f645ccb0c13e0dbfd5da13c089e982f5ed85a0c79b5ec49e021820315fa`
+- immutable image tag: `620ae90f396319630ef6913b66a664634d695039`
+- Container verification run #110: success
 - five release assets present, re-downloaded, and SHA256-verified
 
 ## Product gates
@@ -38,6 +37,9 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - [x] production Compose restart/persistence smoke
 - [x] exact release-commit Docker build context
 - [x] package includes operator docs and representative mission examples
+- [x] representative multi-capability mission
+- [x] Studio capability-chain visibility
+- [x] disposable external-topology TLS/auth/backup/restore/rollback smoke
 
 ## Benchmark
 
@@ -59,7 +61,7 @@ M001-M005: 5/5 verified.
 - [x] GHCR publication and anonymous pull verification
 - [x] pinned localhost production compose
 - [x] production deployment runbook
-- [ ] disposable external-topology smoke on the new main closeout branch
+- [x] disposable external-topology smoke with TLS/auth/backup/restore/rollback
 - [ ] public production host/DNS/TLS/auth/secrets provisioning
 
 The disposable topology gate verifies TLS, authentication, secret non-leakage, persistent state, backup/restore, rollback to a previous immutable release, and deny-by-default network exposure. Public infrastructure remains a separate external resource.
