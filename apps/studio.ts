@@ -37,6 +37,7 @@ export interface StudioOptions {
   workDirectory: string;
   host?: string;
   port?: number;
+  allowNonLoopback?: boolean;
   controlPlaneUrl?: string;
   vaultDirectory?: string;
   trustPolicyPath?: string;
@@ -1026,7 +1027,7 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
   const host = options.host ?? "127.0.0.1";
   const port = options.port ?? 0;
   const loopbackHosts = new Set(["127.0.0.1", "localhost", "::1"]);
-  if (!loopbackHosts.has(host)) {
+  if (!loopbackHosts.has(host) && !options.allowNonLoopback) {
     throw new Error("Refusing non-loopback Studio binding; expose localhost through an authenticated TLS reverse proxy");
   }
   const workDirectory = path.resolve(options.workDirectory);
@@ -1316,6 +1317,7 @@ if (runtimeProcess.argv[1] && path.resolve(runtimeProcess.argv[1]) === path.reso
   const workDirectory = workDirectoryArg ?? "./work-runs";
   const port = portArg ? Number(portArg) : 8788;
   const host = hostArg ?? "127.0.0.1";
+  const allowNonLoopback = process.env.WORKPROOF_ALLOW_NON_LOOPBACK === "1";
   if (!Number.isInteger(port) || port < 0 || port > 65535) {
     process.stderr.write("Invalid Studio port\n");
     process.exitCode = 1;
@@ -1327,6 +1329,7 @@ if (runtimeProcess.argv[1] && path.resolve(runtimeProcess.argv[1]) === path.reso
       workDirectory,
       port,
       host,
+      allowNonLoopback,
       controlPlaneUrl,
       vaultDirectory,
       trustPolicyPath
