@@ -29,9 +29,10 @@ function compareVersions(a: string, b: string): number {
 
 function runtimeVersion(): string {
   const cwd = require("process").cwd();
+  const here = path.dirname(require.resolve("./index"));
   const candidates = [
-    path.resolve(__dirname, "../../../package.json"),
-    path.resolve(__dirname, "../../package.json"),
+    path.resolve(here, "../../../package.json"),
+    path.resolve(here, "../../package.json"),
     path.resolve(cwd, "package.json")
   ];
   for (const candidate of candidates) {
