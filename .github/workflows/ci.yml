@@ -98,6 +98,9 @@ jobs:
       - name: Execute CLI mission
         run: node dist/packages/cli/src/index.js run examples/missions/research-local.json
         timeout-minutes: 2
+      - name: Execute multi-capability mission
+        run: node dist/packages/cli/src/index.js run examples/missions/research-transform-chain.json
+        timeout-minutes: 3
       - name: Live GitHub integration smoke
         env:
           GITHUB_TOKEN: ${{ github.token }}
