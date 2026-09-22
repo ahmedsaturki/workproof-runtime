@@ -91,7 +91,7 @@ The v3.7 release adds:
 - An expanded Studio operational timeline.
 - A2A-ready representative mission and packed A2A artifact smoke.
 
-Feature CI #1179 and post-merge main CI #1185 passed the complete repository gates. Release publication, GHCR digest pinning, production Compose pinning, and main promotion are complete.
+Feature CI #1179 and post-merge main CI #1185 passed the complete v3.7 repository gates. Release publication, GHCR digest pinning, production Compose pinning, and main promotion are complete.
 
 ## Distribution and operation
 
@@ -148,6 +148,18 @@ The messaging capability is intentionally local-only. A capability receipt is no
 ## Product boundary
 
 WorkProof Runtime is not a replacement for agents, browsers, workflow engines, MCP registries, memory systems, observability backends, or OSINT graphs. Those systems can integrate as capabilities or adapters while Work Object, effect, verification, recovery, and proof semantics remain invariant.
+
+## v3.8 operator diagnostics
+
+The v3.8 development line adds a local operator diagnostics layer:
+- `GET /ready` for explicit Control Plane readiness.
+- import-safe Control Plane module behavior with no runtime-state creation during import.
+- `workctl doctor` with machine-readable checks for local state, packaged entrypoints, Control Plane, Studio, and A2A.
+- CI coverage for diagnostics and readiness.
+
+The diagnostics surface is observational only. It never executes work, mutates authoritative state, marks proof verified, or replaces the Work Contract/verification/proof boundary.
+
+See `docs/OPERATOR-DOCTOR.md`.
 
 ## v3.7 interoperability and observability
 
