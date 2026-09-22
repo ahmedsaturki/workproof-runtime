@@ -66,7 +66,12 @@ export class ControlIdempotencyLedger {
     }
     this.db = new DatabaseSync(dbPath, { timeout: 1000 });
     if (dbPath !== ":memory:") {
-      try { fs.chmodSync(dbPath, 0o600); } catch {}
+      try {
+        hardenPrivateFile(dbPath);
+      } catch (error) {
+        this.db.close();
+        throw error;
+      }
     }
     this.db.exec(`
       PRAGMA journal_mode = WAL;
