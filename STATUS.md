@@ -4,6 +4,8 @@ Date: 2026-09-22
 
 ## Main verified baseline
 
+The current stable release line is v3.8.1; main CI is required to verify every post-release reconciliation.
+
 Main contains the v3.4 executable benchmark, restart/resume safety, portable proof, explicit proof compatibility, operator guidance, packaged operator docs/examples, multi-capability execution, external-topology validation, and distribution hardening.
 
 ## Current stable v3.8.1
@@ -22,17 +24,16 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 
 ## Main verification basis
 
-- package version: `3.8.0`
-- verification basis before this repository-hardening closeout: main state `f391ae4ce60f0fd102c731c78551d258fbde1f12`
-- main CI #1260: success on that verification basis
-- stable release source commit: `2b02d22e897d5fe736f93267c72036d951f74082`
-- promotion branch: `promote/v3.8.0-main`
-- stable main promotion: complete in `5b74c2f98f5f46ce75371bcf8301857da75a0947`
+- package version: `3.8.1`
+- pre-network-hardening main state: `45dab56134d848df61eafb8b8a022e3a0609f617`
+- main CI #1278: success on that state
+- stable release source commit: `f8af30bf69391db22863c432df5c452a73ebaa05`
 - post-release hardening PR #97: merged; reproducible `npm ci` install tree
 - post-release hardening PR #98: merged; release metadata/license/source-manifest reconciliation
 - repository hardening PR #101: pins workflow actions to immutable commits, adds CODEOWNERS coverage, reconciles the source manifest, and clarifies security reporting
+- Control Plane safety PR #102: merged; execution policy, non-loopback auth boundary, terminal idempotency failure replay
 
-The prior stable v3.8.0 release remains retained as rollback provenance to its published release commit and container digest. The current `main` adds metadata/distribution hardening after that stable release without changing runtime semantics.
+The v3.8.0 release remains retained as rollback provenance. The current main line includes the v3.8.1 safety release plus network-boundary hardening.
 
 ## Current verified release
 
@@ -46,6 +47,12 @@ The prior stable v3.8.0 release remains retained as rollback provenance to its p
 - GHCR digest: `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 - immutable image tag: `f8af30bf69391db22863c432df5c452a73ebaa05`
 - five release assets published and verified
+
+## Current main closeout
+
+- PR #103: merged; v3.8.1 stable distribution reconciliation
+- main CI #1278: success on the reconciled v3.8.1 main state
+- subsequent network-boundary hardening is prepared separately and must receive its own CI/release verification before promotion
 
 ## Product gates
 

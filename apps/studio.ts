@@ -1025,6 +1025,10 @@ load().catch(error => { list.innerHTML = "<div class='card'>" + esc(error.messag
 export async function startStudio(options: StudioOptions): Promise<RunningStudio> {
   const host = options.host ?? "127.0.0.1";
   const port = options.port ?? 0;
+  const loopbackHosts = new Set(["127.0.0.1", "localhost", "::1"]);
+  if (!loopbackHosts.has(host)) {
+    throw new Error("Refusing non-loopback Studio binding; expose localhost through an authenticated TLS reverse proxy");
+  }
   const workDirectory = path.resolve(options.workDirectory);
   const repository = new JsonWorkRepository(workDirectory);
   const configuredControlPlane = options.controlPlaneUrl ? controlBaseUrl(options.controlPlaneUrl) : undefined;

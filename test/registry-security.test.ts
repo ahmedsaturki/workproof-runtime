@@ -121,4 +121,17 @@ test("trusted administrative signer identities are namespace-scoped when configu
   }
 });
 
+
+test("registry refuses non-loopback binding without authentication policy", async () => {
+  const fs = require("fs");
+  const os = require("os");
+  const path = require("path");
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "workproof-registry-bind-"));
+  await assert.rejects(
+    () => startRegistryServer({ vaultDir: root, host: "0.0.0.0", port: 0 }),
+    /non-loopback registry binding without auth policy/
+  );
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
 export {};

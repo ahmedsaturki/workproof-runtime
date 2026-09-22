@@ -48,7 +48,7 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 - latest main CI: success
 - product readiness PR #74: local-first product gate and restart smoke
 
-## Current v3.8.0 distribution state
+## Current v3.8.1 distribution state
 
 - release reconciliation baseline: `f8af30bf69391db22863c432df5c452a73ebaa05`
 - release workflow #192: success
@@ -67,7 +67,7 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 
 ## Verified main lineage
 
-- latest main: current branch freeze commit
+- latest verified release lineage: v3.8.1
 - v3.3 implementation merge: `c5e951056461c37f45bed8bb8406d119880d63df`
 - v3.3 closeout correction: `0c92a8c86950776243646de4bb40b0c0f2fe5876`
 - v3.4 implementation merge: `fe662d5bb5337bde18772f22864434935d59f66f`
