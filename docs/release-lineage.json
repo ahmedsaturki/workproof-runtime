@@ -3,15 +3,15 @@
   "release": {
     "version": "3.8.3",
     "tag": "v3.8.3",
-    "commit": "772a5a16b34e94b62bbc6564474736ef2e4da11b",
-    "githubReleaseId": 393862783,
+    "commit": "27bdec369b3e0664224054471656b3f736e763db",
+    "githubReleaseId": 393869578,
     "releaseWorkflowRun": 210,
     "containerWorkflowRun": 207
   },
   "container": {
     "image": "ghcr.io/ahmedsaturki/workproof-runtime:3.8.3",
     "digest": "sha256:ec6f891f8e3fc427937f904eb039d95d58387b1d06261cd91c8c9a886bc7cf67",
-    "immutableTag": "772a5a16b34e94b62bbc6564474736ef2e4da11b"
+    "immutableTag": "27bdec369b3e0664224054471656b3f736e763db"
   },
   "rollback": {
     "version": "3.8.1",
