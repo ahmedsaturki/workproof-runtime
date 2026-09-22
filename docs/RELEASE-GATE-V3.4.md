@@ -2,26 +2,31 @@
 
 Date: 2026-09-22
 
-Current target: `v3.4.0-dev.7`.
+Current target: `v3.4.0-dev.8`.
 
-## Acceptance
+## Required acceptance
 
-- [x] benchmark M001-M005 verified
-- [x] build and dependency audit
+- [x] M001-M005 benchmark verified
+- [x] TypeScript build and dependency audit
 - [x] source-tree gate
 - [x] package install and real mission smoke
-- [x] restart/resume and idempotency safety
+- [x] restart/resume safety
+- [x] idempotency operation/input drift protection
 - [x] portable proof lifecycle
-- [x] explicit proof compatibility
-- [x] Studio operator guidance
+- [x] proof compatibility
+- [x] Studio operator guidance UX
 - [x] production Compose restart/persistence smoke
 - [x] exact release-commit container build context
-- [x] package carries docs/examples
+- [x] package contains docs and mission examples
 
-## Distribution
+## Distribution acceptance
 
-Release CI must re-download and SHA256-verify five assets and re-validate benchmark semantics.
+- [ ] GitHub Release v3.4.0-dev.8 published
+- [ ] 5 release assets re-downloaded and SHA256-verified
+- [ ] published benchmark semantics re-verified
+- [ ] GHCR image published
+- [ ] OCI version/revision verified
+- [ ] runtime health and anonymous pull verified
+- [ ] version tag and immutable commit tag resolve to the same digest
 
-Container CI must verify OCI version/revision, health, anonymous pull, and version/immutable-commit digest equality.
-
-Public host/DNS/TLS/auth/secrets remain an external gate.
+Public DNS/TLS/auth/secrets remain a separate external-infrastructure gate.

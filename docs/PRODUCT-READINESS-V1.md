@@ -156,3 +156,8 @@ The local-first P0 foundations are complete and executable:
 - [x] package distribution includes operator docs and representative mission examples
 
 Remaining gates are external deployment validation, broader multi-capability UX, and richer operational visualization.
+
+
+## Dev.8 release target
+
+The current release target is `v3.4.0-dev.8`, carrying the completed local-first P0/P1 gates: operator guidance, production Compose restart/persistence validation, portable proof, proof compatibility, resume safety, and packaged docs/examples.

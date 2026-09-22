@@ -2,7 +2,7 @@
 
 Supported distribution target: the Node 24 GHCR container.
 
-- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.7`
+- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.8`
 - pinned digest: verified by Container CI; final digest is recorded in the post-publication main closeout
 - bind: `127.0.0.1:8788`
 - persistent data: `./work-runs -> /data/work-runs`
@@ -36,7 +36,7 @@ The repository provides the deployable container and runbook. It does not provis
 
 ## Public container distribution
 
-The published Container Registry manifest for `3.4.0-dev.5` was verified through the anonymous pull gate; the canonical digest is `sha256:88be340ace01e1d6d48f62af41c806048c41d3f6e3a20741fba29cdc70b8bd4f`.
+The published Container Registry manifest for `3.4.0-dev.8` was verified through the anonymous pull gate; the canonical digest is `sha256:88be340ace01e1d6d48f62af41c806048c41d3f6e3a20741fba29cdc70b8bd4f`.
 
 
 ## Release verification additions
