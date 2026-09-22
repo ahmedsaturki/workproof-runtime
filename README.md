@@ -93,7 +93,7 @@ Published assets:
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
-The release pipeline re-downloads the published assets, verifies their SHA256 sums, verifies the release target matches the tag, and validates the published benchmark semantics. Release verification run #30 succeeded.
+The release pipeline re-downloads the published assets, verifies their SHA256 sums, verifies the release target matches the tag, and validates the published benchmark semantics. Release verification run #42 succeeded; follow-up reruns are idempotent.
 
 ### GHCR container
 
@@ -103,12 +103,12 @@ Published image:
 
 Verified digest:
 
-`<published-by-release-workflow>`
+`sha256:1500730c2c2c9dc0d6da24ca2dd1de4948699e4f2956768d39107b91d753efba`
 
-The same digest is exposed by the immutable commit tag `3145d21ae5d44b61c3e6f23bea377548d1a79ed4`. Container verification run #32 verified:
+The same digest is exposed by the immutable release commit tag `fcff799b77404f99ee0c17929f44cd2e4e8d47bf`. Container verification run #42 verified:
 
 - package version matches release tag;
-- OCI version matches `3.4.0-dev.2`;
+- OCI version matches `3.4.0-dev.4`;
 - OCI revision matches the release tag commit;
 - version and immutable commit tags resolve to the same digest;
 - the published image starts successfully;
@@ -123,7 +123,7 @@ The repository includes:
 - `docs/CONTAINER-RUNTIME.md`
 - `docs/PRODUCTION-DEPLOYMENT.md`
 
-The production compose is pinned to the verified v3.4.0-dev.3 image digest, binds Studio to localhost, and persists `./work-runs`. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
+The production compose is pinned to the verified v3.4.0-dev.4 image digest, binds Studio to localhost, and persists `./work-runs`. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
 
 `package.json` remains `private: true`; no npm registry publication is claimed.
 
