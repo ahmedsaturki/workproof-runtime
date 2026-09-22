@@ -57,7 +57,10 @@ async function main() {
       "docs/release-lineage.json",
       "docs/PRODUCT-READINESS-V1.md",
       "docs/PRODUCTION-DEPLOYMENT.md",
-      "docs/CONTAINER-RUNTIME.md"
+      "docs/CONTAINER-RUNTIME.md",
+      ".github/workflows/release.yml",
+      "scripts/verify-main-release-state.js",
+      "test/release-metadata.test.ts"
     ]);
     const unexpectedDrift = changedFiles.filter((file) => !allowedPostReleaseFiles.has(file) && !file.startsWith("docs/"));
     const readme = fs.readFileSync(path.resolve("README.md"), "utf8");
