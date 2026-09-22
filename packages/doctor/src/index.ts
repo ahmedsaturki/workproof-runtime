@@ -27,13 +27,10 @@ function compareVersions(a: string, b: string): number {
   return 0;
 }
 
-function runtimeVersion(): string {
-  const cwd = require("process").cwd();
-  const here = path.dirname(require.resolve("./index"));
+function runtimeVersion(packageRoot: string): string {
   const candidates = [
-    path.resolve(here, "../../../package.json"),
-    path.resolve(here, "../../package.json"),
-    path.resolve(cwd, "package.json")
+    path.join(packageRoot, "package.json"),
+    path.join(packageRoot, "..", "..", "package.json")
   ];
   for (const candidate of candidates) {
     try {
@@ -85,16 +82,17 @@ async function probe(checks: DoctorCheck[], id: string, baseUrl: string, pathNam
 }
 
 export async function runDoctor(env: Record<string, string | undefined> = process.env): Promise<DoctorReport> {
-  const version = runtimeVersion();
+  const packageRoot = path.resolve(env.WORKPROOF_PACKAGE_ROOT ?? require("process").cwd());
+  const version = runtimeVersion(packageRoot);
   const checks: DoctorCheck[] = [];
 
   checks.push({
     id: "node-version",
-    state: compareVersions(process.version, "v24.15.0") >= 0 ? "ok" : "failed",
-    detail: process.version
+    state: compareVersions(String(require("process").version ?? "unknown"), "v24.15.0") >= 0 ? "ok" : "failed",
+    detail: String(require("process").version ?? "unknown")
   });
 
-  const workDirectory = path.resolve(env.WORKPROOF_WORK_DIRECTORY ?? "./work-runs");
+  const workDirectory = path.resolve(packageRoot, env.WORKPROOF_WORK_DIRECTORY ?? "./work-runs");
   try {
     const stat = fs.statSync(workDirectory);
     checks.push({ id: "work-directory", state: stat.isDirectory() ? "ok" : "failed", detail: stat.isDirectory() ? workDirectory : "configured work directory is not a directory" });
@@ -110,11 +108,10 @@ export async function runDoctor(env: Record<string, string | undefined> = proces
     checks.push({ id: "work-directory", state: "warn", detail: workDirectory + " does not exist yet" });
   }
 
-  const here = path.dirname(require.resolve("./index"));
-  pushFileCheck(checks, "cli-entrypoint", path.resolve(here, "../../cli/src/index.js"));
-  pushFileCheck(checks, "control-plane-entrypoint", path.resolve(here, "../../../apps/control-plane.js"));
-  pushFileCheck(checks, "studio-entrypoint", path.resolve(here, "../../../apps/studio.js"));
-  pushFileCheck(checks, "a2a-entrypoint", path.resolve(here, "../../../apps/a2a-server.js"));
+  pushFileCheck(checks, "cli-entrypoint", path.join(packageRoot, "dist/packages/cli/src/index.js"));
+  pushFileCheck(checks, "control-plane-entrypoint", path.join(packageRoot, "dist/apps/control-plane.js"));
+  pushFileCheck(checks, "studio-entrypoint", path.join(packageRoot, "dist/apps/studio.js"));
+  pushFileCheck(checks, "a2a-entrypoint", path.join(packageRoot, "dist/apps/a2a-server.js"));
 
   const controlPlaneUrl = env.WORKPROOF_CONTROL_PLANE_URL;
   if (controlPlaneUrl) {
