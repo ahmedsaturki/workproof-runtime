@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.8.10 is the release candidate; v3.8.9 is the latest published stable release until this candidate completes.**
+**v3.8.10 is the current stable release.**
 
 v3.8.9 preserves the verified v3.8.8 runtime contract and promotes the current specification and GitHub governance baseline.
 
@@ -14,16 +14,19 @@ The v3.4 line established the executable operator benchmark across research, HTT
 
 Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify -> Recover/Substitute -> Deliver -> Proof -> Retain -> Control -> Compensate
 
-## v3.8.10 release candidate
+## v3.8.10 release evidence
 
-- Package version: `3.8.10`
-- Release branch: `release/3.8.10`
-- Previous published stable release: `v3.8.9`
-- This candidate is built from the fully reconciled `main` tree.
-- The release/container workflows are the source of truth for publication, digest, asset, and benchmark verification.
-- Production Compose on the candidate branch intentionally remains pinned to the last published stable image until the v3.8.10 container digest is published and reconciled into `main`.
+- GitHub Release: `v3.8.10` (ID `394046514`)
+- release commit: `9daac7a926ce1631ac708a6c234379d622c56c19`
+- Release workflow #261: success
+- Container workflow #258: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.10`
+- GHCR digest: `sha256:cad9c467db8fe82abd1b15d30d90dbf7e87ad6683f44a8c7c8763c327af6a1c8`
+- immutable image tag: `9daac7a926ce1631ac708a6c234379d622c56c19`
+- rollback: v3.8.1 / `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
+- five release assets published and SHA256-verified
 
-### v3.8.9 closeout hardening
+### v3.8.10 closeout hardening
 
 - Dockerfile OCI metadata is emitted as real Dockerfile `LABEL` instructions rather than embedded escaped-newline text.
 - Container-base validation rejects literal escaped-newline instruction sequences.
@@ -69,11 +72,11 @@ The runtime remains the authority for execution, risk policy, effects, verificat
 
 ### GitHub Release
 
-The v3.8.9 release publishes:
+The v3.8.10 release publishes:
 
-- `operational-reality-core-3.8.9.tgz`
-- `workproof-runtime-v3.8.9.tar.gz`
-- `workproof-benchmark-v3.8.9.json`
+- `operational-reality-core-3.8.10.tgz`
+- `workproof-runtime-v3.8.10.tar.gz`
+- `workproof-benchmark-v3.8.10.json`
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
@@ -81,7 +84,7 @@ The release pipeline re-downloads published assets, verifies SHA256 sums, verifi
 
 ### GHCR container
 
-`ghcr.io/ahmedsaturki/workproof-runtime:3.8.9@sha256:ccde8ada2227b016968328f9eec1849e7424d12c2acc89081c30ca191bb6df66`
+`ghcr.io/ahmedsaturki/workproof-runtime:3.8.10@sha256:cad9c467db8fe82abd1b15d30d90dbf7e87ad6683f44a8c7c8763c327af6a1c8`
 
 The immutable commit tag is `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`.
 
@@ -150,6 +153,6 @@ WorkProof Runtime is not a replacement for agents, browsers, workflow engines, m
 
 ## Historical release provenance
 
-v3.8.9 is the immediately preceding published stable distribution. v3.8.2 is retained as superseded history and is not a rollback target. v3.8.1 remains the verified rollback release.
+v3.8.9 is the immediately preceding published stable distribution; v3.8.10 is the current stable release. v3.8.2 is retained as superseded history and is not a rollback target. v3.8.1 remains the verified rollback release.
 
 See `STATUS.md`, `SOURCE-MANIFEST.md`, `docs/release-lineage.json`, and `docs/PRODUCT-READINESS-V1.md` for the current verification and product-readiness records.
