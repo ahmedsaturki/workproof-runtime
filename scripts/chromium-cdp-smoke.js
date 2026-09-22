@@ -45,7 +45,7 @@ async function main() {
 
   try {
     let port = null;
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 300; i++) {
       const match = /DevTools listening on ws:\/\/127\.0\.0\.1:(\d+)\//.exec(output);
       if (match) {
         port = Number(match[1]);
@@ -55,7 +55,7 @@ async function main() {
       await wait(100);
     }
     if (!port) {
-      throw new Error(output.trim() || "Chromium did not announce a DevTools endpoint");
+      throw new Error(output.trim() || "Chromium did not announce a DevTools endpoint within 30 seconds");
     }
     const version = await fetchJson(port, "/json/version");
     if (!version?.Browser || !version?.webSocketDebuggerUrl) {
