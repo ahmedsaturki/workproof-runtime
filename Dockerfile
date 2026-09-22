@@ -25,7 +25,9 @@ LABEL org.opencontainers.image.title="WorkProof Runtime"
 LABEL org.opencontainers.image.description="Outcome-first digital work runtime"
 LABEL org.opencontainers.image.version="$VERSION"
 LABEL org.opencontainers.image.revision="$VCS_REF"
-LABEL org.opencontainers.image.source="https://github.com/ahmedsaturki/workproof-runtime"\nLABEL org.opencontainers.image.base.name="docker.io/library/node:24.21.0-trixie-slim"\nLABEL org.opencontainers.image.base.digest="sha256:8ec5d7557396cfe32d21c3f9c13072355ceab22b584578ca4bb28af31120cffe"
+LABEL org.opencontainers.image.source="https://github.com/ahmedsaturki/workproof-runtime"
+LABEL org.opencontainers.image.base.name="docker.io/library/node:24.21.0-trixie-slim"
+LABEL org.opencontainers.image.base.digest="sha256:8ec5d7557396cfe32d21c3f9c13072355ceab22b584578ca4bb28af31120cffe"
 
 WORKDIR /app
 
