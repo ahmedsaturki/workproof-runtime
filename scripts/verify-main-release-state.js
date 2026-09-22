@@ -34,6 +34,13 @@ async function main() {
   const expectedImage = lineage.container.image + "@" + lineage.container.digest;
   if (!compose.includes(expectedImage)) throw new Error("Production Compose does not contain the last verified stable image/digest");
   if (packageVersion === stableVersion) {
+    const releaseObject = spawnSync("git", ["cat-file", "-e", lineage.release.commit + "^{commit}"], { encoding: "utf8", cwd: process.cwd(), stdio: ["ignore", "pipe", "pipe"] });
+    if (releaseObject.error) throw releaseObject.error;
+    if (releaseObject.status !== 0) {
+      const fetched = spawnSync("git", ["fetch", "--no-tags", "--depth=1", "origin", lineage.release.commit], { encoding: "utf8", cwd: process.cwd(), stdio: ["ignore", "pipe", "pipe"] });
+      if (fetched.error) throw fetched.error;
+      if (fetched.status !== 0) throw new Error("Unable to fetch published release commit for lineage comparison: " + String(fetched.stderr || "").trim());
+    }
     const diff = spawnSync("git", ["diff", "--name-only", lineage.release.commit + "..HEAD"], { encoding: "utf8", cwd: process.cwd(), stdio: ["ignore", "pipe", "pipe"] });
     if (diff.error) throw diff.error;
     if (diff.status !== 0) throw new Error("Unable to inspect main-vs-release source drift: " + String(diff.stderr || "").trim());
