@@ -35,7 +35,8 @@ async function main() {
   if (!compose.includes(expectedImage)) throw new Error("Production Compose does not contain the last verified stable image/digest");
   if (packageVersion === stableVersion) {
     const child = spawnSync(process.execPath, [path.resolve("scripts/verify-published-lineage.js")], { stdio: "inherit", cwd: process.cwd() });
-    process.exit(child.status || 1);
+    if (child.error) throw child.error;
+    process.exit(child.status === null ? 1 : child.status);
   }
   if (compareVersions(packageVersion, stableVersion) < 0) throw new Error("Main package version is behind published release lineage: " + packageVersion + " < " + stableVersion);
   const releaseNotesPath = path.resolve("docs", "RELEASE-" + packageVersion + ".md");
