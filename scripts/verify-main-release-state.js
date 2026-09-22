@@ -50,6 +50,7 @@ async function main() {
     const changedFiles = String(diff.stdout || "").split(/\r?\n/).map((value) => value.trim()).filter(Boolean);
     const allowedPostReleaseFiles = new Set([
       "README.md",
+      "SPEC.md",
       "CONTRIBUTING.md",
       "STATUS.md",
       "SOURCE-MANIFEST.md",
