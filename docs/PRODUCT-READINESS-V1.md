@@ -233,3 +233,8 @@ The v3.8 release remains bounded by the same WorkProof authority, verification, 
 ## Stable v3.8.0
 
 The stable 3.8.0 line is a version promotion of the v3.8.0-dev.1 implementation already verified across feature, release, container, and main gates. The stable release is rebuilt under its own package version, tag, container image, digest, and promotion checks before closeout.
+
+
+## Stable 3.8.0 verified distribution
+
+The stable 3.8.0 package, GitHub Release, GHCR image, production Compose pin, rollback lineage, release verification, and container verification are complete. Main promotion remains a separate repository integration gate.
