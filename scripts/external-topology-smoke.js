@@ -118,7 +118,7 @@ async function main() {
 
   const password = "smoke-" + runId;
   const hash = run("openssl", ["passwd", "-apr1", "-salt", "smoke", password]).stdout.trim();
-  fs.writeFileSync(authPath, "smoke:" + hash + "\n", { encoding: "utf8", mode: 0o600 });
+  fs.writeFileSync(authPath, "smoke:" + hash + "\n", { encoding: "utf8", mode: 0o644 });
   if (hash.includes(password) || fs.readFileSync(authPath, "utf8").includes(password)) throw new Error("Raw authentication secret leaked into authorization file");
 
   run("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", path.join(tlsDir, "tls.key"), "-out", path.join(tlsDir, "tls.crt"), "-days", "1", "-subj", "/CN=localhost", "-addext", "subjectAltName=DNS:localhost,IP:127.0.0.1"]);
