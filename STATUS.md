@@ -95,3 +95,18 @@ A capability receipt is not independent proof. Work is verified only when indepe
 - release branch verification: in progress
 - publication: not yet closed
 - GHCR/Compose/main promotion: pending release verification
+
+
+## v3.8 promotion
+
+- branch: `promote/v3.8.0-dev.1-main`
+- published release: `v3.8.0-dev.1`
+- release commit: `bba39f385ab042344f4fc2ebe04aeef7ef3c98b9`
+- GHCR digest: `sha256:acafde09bd74d535fb706acde68f7e6279283ac49f6d1863585d672fb691ac02`
+- rollback: `v3.7.0-dev.1` / `sha256:28e8d9af0ab71442b33df8b72308089f520b5ba23128401c0a05675809ba1748`
+- [x] feature CI #1234
+- [x] release workflow #180
+- [x] container workflow #177
+- [x] release assets verified
+- [x] container runtime/Compose/external topology verified
+- [ ] post-merge main CI closeout
