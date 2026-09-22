@@ -274,18 +274,29 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
           sendJson(res, 400, { error: "limit must be an integer from 1 to 100", requestId: id });
           return;
         }
+        const rawOffset = url.searchParams.get("offset");
+        const offset = rawOffset === null ? 0 : Number(rawOffset);
+        if (!Number.isSafeInteger(offset) || offset < 0 || offset > 1000000) {
+          sendJson(res, 400, { error: "offset must be an integer from 0 to 1000000", requestId: id });
+          return;
+        }
         const status = url.searchParams.get("status");
+        const contextId = url.searchParams.get("contextId");
         const files = options.repository.list();
         const works = files
           .filter((file) => file.endsWith(".json"))
           .map((file) => options.repository!.load(file.slice(0, -5)))
-          .filter((work) => !status || String(work.status) === status)
+          .filter((work) =>
+            (!status || String(work.status) === status) &&
+            (!contextId || work.contract?.metadata?.a2aContextId === contextId)
+          )
           .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
         sendJson(res, 200, {
-          version: "1.1",
+          version: "1.2",
           requestId: id,
           total: works.length,
-          work: works.slice(0, limit).map((work) => ({
+          offset,
+          work: works.slice(offset, offset + limit).map((work) => ({
             id: work.id,
             objective: work.contract?.objective ?? "",
             status: work.status,
