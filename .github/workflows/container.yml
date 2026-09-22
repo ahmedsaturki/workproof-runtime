@@ -23,6 +23,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
       - name: Determine image tag
         id: image
         shell: bash
@@ -140,6 +145,10 @@ jobs:
       - name: Production compose restart and persistence smoke
         run: node scripts/container-compose-smoke.js
         timeout-minutes: 5
+
+      - name: Disposable external topology smoke
+        run: node scripts/external-topology-smoke.js
+        timeout-minutes: 10
 
       - name: Verify anonymous GHCR pull
         env:

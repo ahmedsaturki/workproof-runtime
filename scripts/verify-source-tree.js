@@ -3,6 +3,9 @@ const path = require("path");
 
 const required = [
   ".github/workflows/ci.yml",
+  "scripts/external-topology-smoke.js",
+  "scripts/verify-published-lineage.js",
+  "docs/release-lineage.json",
   ".gitignore",
   "ARCHITECTURE.md",
   "LICENSE",
@@ -88,6 +91,7 @@ const required = [
   "docs/schemas/pack.schema.json",
   "docs/schemas/work-object.schema.json",
   "examples/missions/research-local.json",
+  "examples/missions/research-transform-chain.json",
   "lab/data/suppliers.json",
   "lab/fixtures/research-pack.json",
   "lab/fixtures/database-pack.json",
@@ -187,6 +191,8 @@ const required = [
   "docs/CONTAINER-RUNTIME.md",
   "docs/PRODUCTION-DEPLOYMENT.md",
   "docs/RELEASE-3.4.0-dev.2.md",
+  "docs/RELEASE-3.4.0-dev.9.md",
+  "docs/RELEASE-3.4.0-dev.10.md",
   "types/globals.d.ts"
 ];
 
