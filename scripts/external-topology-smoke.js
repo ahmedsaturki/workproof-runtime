@@ -98,7 +98,6 @@ async function main() {
   if (!composeImage.startsWith("ghcr.io/") || !composeImage.includes("@sha256:")) {
     throw new Error("Production compose must contain a pinned GHCR image reference");
   }
-  const rollbackImage = "ghcr.io/ahmedsaturki/workproof-runtime:" + lineage.rollback.commit;
   run("docker", ["pull", lineage.container.image]);
   const pulledDigestRef = run("docker", ["image", "inspect", lineage.container.image, "--format={{index .RepoDigests 0}}"]).stdout.trim();
   if (!/^.+@sha256:[0-9a-f]{64}$/.test(pulledDigestRef)) throw new Error("Published release image digest could not be determined");
