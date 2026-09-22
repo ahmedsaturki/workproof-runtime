@@ -90,7 +90,12 @@ test("authenticated control plane enforces read/write permissions and audits act
     assert.equal(healthBody.apiVersion, "1.0");
     assert.equal(healthBody.version, "3.5-test");
 
-    const capabilitiesResponse = await fetch(baseUrl + "/v1/capabilities");
+    const unauthCapabilities = await fetch(baseUrl + "/v1/capabilities");
+    assert.equal(unauthCapabilities.status, 401);
+
+    const capabilitiesResponse = await fetch(baseUrl + "/v1/capabilities", {
+      headers: { authorization: "Bearer " + readCred.token }
+    });
     assert.equal(capabilitiesResponse.status, 200);
     const capabilitiesBody = await capabilitiesResponse.json();
     assert.deepEqual(
