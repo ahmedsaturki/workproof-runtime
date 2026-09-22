@@ -5,6 +5,7 @@ const required = [
   ".github/workflows/ci.yml",
   "scripts/external-topology-smoke.js",
   "scripts/verify-published-lineage.js",
+  "scripts/secret-scan.js",
   "docs/release-lineage.json",
   ".gitignore",
   "ARCHITECTURE.md",
