@@ -4,22 +4,10 @@ WorkProof Studio is distributed as a Node 24 container with persistent `/data/wo
 
 ## Current stable release
 
-- tag: `3.8.9`
-- release commit: `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`
-- GitHub Release ID: `394031450`
-- Release workflow #245: success
-- Container workflow #242: success
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.9`
-- published digest: `sha256:ccde8ada2227b016968328f9eec1849e7424d12c2acc89081c30ca191bb6df66`
-- immutable image tag: `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`
-- anonymous GHCR pull: verified
-- runtime health: verified
-- production Compose restart/persistence: verified
-- disposable external topology: verified
-
-Production Compose pins the image by tag@digest so tag drift cannot silently change the deployed artifact.
-
-The container sets `WORKPROOF_ALLOW_NON_LOOPBACK=1` so Studio can listen on the container interface while the host publication remains loopback-bound. The direct Studio process remains loopback-only by default. The production Compose also enables an init process, 10s graceful-stop window, 1 CPU cap, 1 GiB memory cap, 512 PID cap, and 10 MiB × 3 JSON log rotation; `scripts/container-compose-smoke.js` verifies these controls.
+- tag: `3.8.10`
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.10`
+- published digest: `sha256:cad9c467db8fe82abd1b15d30d90dbf7e87ad6683f44a8c7c8763c327af6a1c8`
+- immutable image tag: `9daac7a926ce1631ac708a6c234379d622c56c19`
 
 ## Container base provenance
 
