@@ -15,7 +15,8 @@
     "control-plane": "npm run build && node dist/apps/control-plane.js",
     "studio": "npm run build && node dist/apps/studio.js",
     "mcp-server": "npm run build && node dist/apps/mcp-server.js",
-    "a2a-server": "npm run build && node dist/apps/a2a-server.js"
+    "a2a-server": "npm run build && node dist/apps/a2a-server.js",
+    "doctor": "npm run build && node dist/packages/cli/src/index.js doctor"
   },
   "devDependencies": {
     "typescript": "^5.7.2",
