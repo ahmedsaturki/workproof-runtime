@@ -27,7 +27,7 @@
     "doctor": "npm run build && node dist/packages/cli/src/index.js doctor"
   },
   "devDependencies": {
-    "typescript": "^5.7.2",
+    "typescript": "^7.0.2",
     "@modelcontextprotocol/client": "2.0.0"
   },
   "engines": {
