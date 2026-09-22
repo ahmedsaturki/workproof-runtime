@@ -874,6 +874,16 @@ test("Studio provides actionable guidance for unresolved work and blocks unsafe 
   }
 });
 
+
+test("Studio refuses non-loopback binding because read-only Work Objects and proof must stay behind an authenticated edge", async () => {
+  const root = tempDir("workproof-studio-bind-");
+  await assert.rejects(
+    () => startStudio({ workDirectory: root, host: "0.0.0.0", port: 0 }),
+    /non-loopback Studio binding/
+  );
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
 export {};
 
 
