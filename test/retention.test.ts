@@ -30,7 +30,7 @@ function writeProof(baseDir: string, id: string, body = "artifact\n") {
 }
 
 test("retention plan keeps pinned and retained proofs and protects reachable artifacts", () => {
-  const dir = "/tmp/workproof-retention-keep";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-retention-keep");
   fs.rmSync(dir, { recursive: true, force: true });
   const p = writeProof(dir, "keep");
   const vault = path.join(dir, "vault");
@@ -43,7 +43,7 @@ test("retention plan keeps pinned and retained proofs and protects reachable art
 });
 
 test("dry-run reports an expired proof and orphan artifact without deleting data", () => {
-  const dir = "/tmp/workproof-retention-dry";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-retention-dry");
   fs.rmSync(dir, { recursive: true, force: true });
   const p = writeProof(dir, "expire");
   const vault = path.join(dir, "vault");
@@ -55,7 +55,7 @@ test("dry-run reports an expired proof and orphan artifact without deleting data
 });
 
 test("pin and unpin change reachability deterministically", () => {
-  const dir = "/tmp/workproof-retention-pin";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-retention-pin");
   fs.rmSync(dir, { recursive: true, force: true });
   const p = writeProof(dir, "pin");
   const vault = path.join(dir, "vault");
@@ -68,7 +68,7 @@ test("pin and unpin change reachability deterministically", () => {
 });
 
 test("shared artifacts remain reachable while one proof is retained", () => {
-  const dir = "/tmp/workproof-retention-shared";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-retention-shared");
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const common = path.join(dir, "common.txt");
@@ -94,7 +94,7 @@ test("shared artifacts remain reachable while one proof is retained", () => {
 });
 
 test("corrupt proofs and artifacts are never auto-deleted", () => {
-  const dir = "/tmp/workproof-retention-corrupt";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-retention-corrupt");
   fs.rmSync(dir, { recursive: true, force: true });
   const p = writeProof(dir, "corrupt");
   const vault = path.join(dir, "vault");
@@ -109,7 +109,7 @@ test("corrupt proofs and artifacts are never auto-deleted", () => {
 });
 
 test("execute garbage collection uses an index-first journal and removes expired content", () => {
-  const dir = "/tmp/workproof-retention-execute";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-retention-execute");
   fs.rmSync(dir, { recursive: true, force: true });
   const p = writeProof(dir, "delete");
   const vault = path.join(dir, "vault");
@@ -129,7 +129,7 @@ test("execute garbage collection uses an index-first journal and removes expired
 });
 
 test("repair removes stale index references and recovers a stale GC journal", () => {
-  const dir = "/tmp/workproof-retention-repair";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-retention-repair");
   fs.rmSync(dir, { recursive: true, force: true });
   const p = writeProof(dir, "repair");
   const vault = path.join(dir, "vault");
@@ -143,7 +143,7 @@ test("repair removes stale index references and recovers a stale GC journal", ()
 });
 
 test("retention inventory does not follow symlinks outside the vault", () => {
-  const dir = "/tmp/workproof-retention-symlink";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-retention-symlink");
   fs.rmSync(dir, { recursive: true, force: true });
   const vault = path.join(dir, "vault");
   const outside = path.join(dir, "outside.txt");
@@ -156,7 +156,7 @@ test("retention inventory does not follow symlinks outside the vault", () => {
 });
 
 test("namespace scoped collection is conservative and does not delete unscoped objects", () => {
-  const dir = "/tmp/workproof-retention-namespace";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-retention-namespace");
   fs.rmSync(dir, { recursive: true, force: true });
   const p = writeProof(dir, "namespace");
   const vault = path.join(dir, "vault");
