@@ -89,7 +89,7 @@ M005 retried the primary capability under bounded ambiguity, selected a compatib
 
 Published assets:
 
-- `operational-reality-core-3.4.0-dev.11.tgz`
+- `operational-reality-core-3.5.0-dev.1.tgz`
 - `workproof-runtime-v3.5.0-dev.1.tar.gz`
 - `workproof-benchmark-v3.5.0-dev.1.json`
 - `RELEASE-MANIFEST.txt`
@@ -101,16 +101,16 @@ The release pipeline re-downloads published assets, verifies SHA256 sums, verifi
 
 Published image:
 
-`ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.11`
+`ghcr.io/ahmedsaturki/workproof-runtime:3.5.0-dev.1`
 
 Verified digest:
 
 `sha256:ab5b90eb3722b96d714f105536f5c4d6cdc18cebe22992c4fe758fbc88f547d7`
 
-The same digest is exposed by the immutable release commit tag `cb48780451ed2eddf9211bc5f267b026e2243ca1`. Container verification run #115 proved:
+The same digest is exposed by the immutable release commit tag `cb48780451ed2eddf9211bc5f267b026e2243ca1`. Container verification run #141 proved:
 
 - package version matches release tag;
-- OCI version matches `3.4.0-dev.11`;
+- OCI version matches `3.5.0-dev.1`;
 - OCI revision matches the release tag commit;
 - version and immutable commit tags resolve to the same digest;
 - the published image starts successfully;
