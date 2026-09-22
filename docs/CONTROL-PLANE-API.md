@@ -19,7 +19,7 @@ Returns runtime and API protocol identity without requiring authentication:
 ```json
 {
   "status": "ok",
-  "version": "3.5.0-dev.1",
+  "version": "<runtime-version>",
   "apiVersion": "1.0",
   "requestId": "..."
 }
@@ -34,6 +34,10 @@ Requires the configured `read` permission. Returns the capabilities registered b
 The inventory is descriptive metadata; it does not authorize an operation by itself. Actual execution still passes through WorkProof risk ceilings, policy, idempotency, effect tracking, independent verification, reconciliation, recovery, and proof.
 
 ## Work
+
+`GET /v1/work?limit=100&status=verified`
+
+Returns a bounded deterministic summary list of persisted Work Objects. `limit` defaults to 100 and is capped at 100. Optional `status` filters by Work Object state.
 
 `GET /v1/work/:id`
 
@@ -68,3 +72,8 @@ The control plane does not treat a capability receipt as proof. The runtime pers
 An idempotency key is bound to the operation and a canonical request fingerprint. Reusing a key with a different operation or input is rejected as a conflict. A request already in progress is rejected rather than executed concurrently through the same key.
 
 The capability inventory is intended for Studio, SDKs, operators, and future adapters. It is a read-only discovery surface and is not a replacement for policy authorization.
+
+
+## Observability
+
+Control Plane audit events may be exported as OTLP/HTTP JSON when `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` or `OTEL_EXPORTER_OTLP_ENDPOINT` is configured. Exported fields are allowlisted and telemetry is non-authoritative.
