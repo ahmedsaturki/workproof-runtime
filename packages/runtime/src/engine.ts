@@ -7,6 +7,16 @@ import { WorkStore } from "../../core/src/work";
 import { executeWithSafety, chooseRecovery } from "../../recovery/src/engine";
 import { canExecute, Policy } from "../../policy/src/guard";
 
+function canonicalInput(value: unknown): string {
+  if (Array.isArray(value)) return "[" + value.map(canonicalInput).join(",") + "]";
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return "{" + Object.keys(record).sort().map(key => JSON.stringify(key) + ":" + canonicalInput(record[key])).join(",") + "}";
+  }
+  const serialized = JSON.stringify(value);
+  return serialized === undefined ? "undefined" : serialized;
+}
+
 const rank: Record<RiskClass, number> = { read: 0, local_write: 1, external_write: 2, destructive: 3, financial: 4 };
 
 export interface WorkStep {
@@ -94,7 +104,29 @@ export class WorkEngine {
     };
   }
 
+  private validatePersistedStepCompatibility(work: WorkObject, steps: WorkStep[]): void {
+    const seen = new Map<string, { operation: string; input: string }>();
+    for (const step of steps) {
+      const input = canonicalInput(step.input);
+      const prior = seen.get(step.idempotencyKey);
+      if (prior && (prior.operation !== step.operation || prior.input !== input)) {
+        throw new Error("Mission contains incompatible uses of the same idempotency key: " + step.idempotencyKey);
+      }
+      seen.set(step.idempotencyKey, { operation: step.operation, input });
+
+      const persisted = work.effects.find(effect => effect.idempotencyKey === step.idempotencyKey);
+      if (!persisted) continue;
+      if (persisted.operation && persisted.operation !== step.operation) {
+        throw new Error(`Persisted effect for idempotency key ${step.idempotencyKey} has operation ${persisted.operation}, not ${step.operation}`);
+      }
+      if (persisted.input !== undefined && canonicalInput(persisted.input) !== input) {
+        throw new Error("Persisted effect input does not match the current mission for idempotency key " + step.idempotencyKey);
+      }
+    }
+  }
+
   async run(work: WorkObject, steps: WorkStep[]): Promise<WorkObject> {
+    this.validatePersistedStepCompatibility(work, steps);
     this.store.transition(work, "running", "Work execution started");
     this.persist(work);
 
@@ -270,7 +302,7 @@ export class WorkEngine {
             return work;
           }
 
-          const effect = this.store.addEffect(work, capability.name, capability.riskClass, step.idempotencyKey, step.operation);
+          const effect = this.store.addEffect(work, capability.name, capability.riskClass, step.idempotencyKey, step.operation, step.input);
           this.store.event(work, "step.started", "Step " + step.id + " started", {
             stepId: step.id,
             capability: capability.name,
