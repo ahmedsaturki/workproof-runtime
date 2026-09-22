@@ -15,4 +15,4 @@ Local-first operator diagnostics prerelease.
 
 The doctor and readiness endpoints are observational. Neither can execute work, mutate Work Objects, assert verification, or replace proof.
 
-Publication evidence will be added only after the exact v3.8 release artifacts pass release/container verification.
+Publication evidence will be recorded by the release workflow only after the exact v3.8 release commit passes full release verification and container verification.
