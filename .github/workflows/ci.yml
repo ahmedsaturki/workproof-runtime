@@ -164,3 +164,66 @@ jobs:
       - name: Run browser acceptance on Windows
         run: node --test dist/test/browser.test.js
         timeout-minutes: 8
+
+
+  windows-compatibility:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Locate Chromium-based browser
+        shell: pwsh
+        run: |
+          $x86 = [System.Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
+          $candidates = @(
+            (Join-Path $env:ProgramFiles 'GoogleChromeApplicationchrome.exe'),
+            (Join-Path $x86 'GoogleChromeApplicationchrome.exe'),
+            (Join-Path $env:LOCALAPPDATA 'GoogleChromeApplicationchrome.exe'),
+            (Join-Path $env:ProgramFiles 'MicrosoftEdgeApplicationmsedge.exe'),
+            (Join-Path $x86 'MicrosoftEdgeApplicationmsedge.exe'),
+            (Join-Path $env:LOCALAPPDATA 'MicrosoftEdgeApplicationmsedge.exe')
+          ) | Where-Object { $_ -and (Test-Path $_) }
+          $browser = $candidates | Select-Object -First 1
+          if (-not $browser) { throw 'No Chromium-based browser was found on windows-latest' }
+          & $browser --version
+          "WORKPROOF_BROWSER_BINARY=$browser" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - run: npm ci
+      - name: Dependency security audit
+        run: npm audit --audit-level=high
+      - name: Secret scan
+        run: node scripts/secret-scan.js
+      - run: node scripts/verify-source-tree.js
+      - name: Build TypeScript
+        run: npm run build
+        timeout-minutes: 3
+      - name: Run full Windows unit and integration suite
+        run: node scripts/run-test-files.js
+        timeout-minutes: 25
+      - name: Operator doctor smoke
+        run: node dist/packages/cli/src/index.js doctor
+      - name: Run benchmark
+        run: npm run benchmark
+        timeout-minutes: 3
+      - name: Run demo
+        run: npm run demo
+        timeout-minutes: 3
+
+  windows-private-file-acl:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - run: npm ci
+      - name: Build TypeScript
+        run: npm run build
+      - name: Verify Windows private file ACLs
+        shell: pwsh
+        run: node --test dist/test/registry-auth.test.js
