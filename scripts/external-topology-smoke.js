@@ -41,17 +41,23 @@ function waitForStatus(baseUrl, expectedStatus, user, password) {
 }
 
 function waitHealthy(baseUrl, version, user, password) {
+  let lastStatus = "unavailable";
+  let lastBody = "";
+  let lastError = "";
   for (let attempt = 1; attempt <= 45; attempt += 1) {
     try {
-      const status = curlStatus(baseUrl + "/health", user, password);
-      if (status === 200) {
+      lastStatus = String(curlStatus(baseUrl + "/health", user, password));
+      if (lastStatus === "200") {
         const body = curlJson(baseUrl + "/health", user, password);
+        lastBody = JSON.stringify(body);
         if (body.status === "ok" && body.version === version) return body;
       }
-    } catch {}
+    } catch (error) {
+      lastError = String(error);
+    }
     run("sleep", ["1"]);
   }
-  throw new Error("External topology did not become healthy with expected version " + version);
+  throw new Error("External topology did not become healthy with expected version " + version + "; lastStatus=" + lastStatus + "; lastBody=" + lastBody.slice(0, 500) + "; lastError=" + lastError);
 }
 function imageFromCompose(composePath) {
   const text = fs.readFileSync(composePath, "utf8");
@@ -127,8 +133,14 @@ async function main() {
     run("docker", ["run", "-d", "--name", appName, "--network", network, "-v", dataDir + ":/data/work-runs", runtimeImage, "sh", "-c", "node dist/apps/studio.js /data/work-runs 8788 0.0.0.0"]);
     cleanup.push(() => remove(appName));
 
+    const directHealth = run("docker", ["exec", appName, "node", "-e", "fetch('http://127.0.0.1:8788/health').then(async r => { const t=await r.text(); if(!r.ok) process.exit(1); process.stdout.write(t); }).catch(() => process.exit(1))"]);
+    if (!/"status"\s*:\s*"ok"/.test(directHealth.stdout)) throw new Error("Direct Studio health probe failed: " + directHealth.stdout);
+
     run("docker", ["run", "-d", "--name", edgeName, "--network", network, "-p", "127.0.0.1:9443:8443", "-v", tlsDir + ":/etc/nginx/tls:ro", "-v", authPath + ":/etc/nginx/auth/.htpasswd:ro", "-v", nginxPath + ":/etc/nginx/nginx.conf:ro", "nginx:1.27-alpine"]);
     cleanup.push(() => remove(edgeName));
+
+    const nginxTest = run("docker", ["exec", edgeName, "nginx", "-t"], true);
+    if (nginxTest.status !== 0) throw new Error("Nginx configuration test failed: " + nginxTest.stderr);
 
     const baseUrl = "https://127.0.0.1:9443";
     const basic = "Basic " + Buffer.from("smoke:" + password).toString("base64");
@@ -159,6 +171,11 @@ async function main() {
     if (rolled.work?.status !== "verified") throw new Error("Rollback image did not preserve readable authoritative work");
 
     process.stdout.write(JSON.stringify({ status: "verified", releaseVersion: packageJson.version, releaseCommit: lineage.release.commit, image: runtimeImage, publishedDigest, rollbackImage, tls: true, authentication: true, secretNonLeakage: true, persistence: true, backupRestore: true, rollback: true, denyByDefaultEdge: true, workId: work.id }, null, 2) + "\n");
+  } catch (error) {
+    process.stderr.write("External topology app logs:\n" + run("docker", ["logs", appName], true).stdout + "\n");
+    process.stderr.write("External topology edge logs:\n" + run("docker", ["logs", edgeName], true).stdout + "\n");
+    throw error;
+  }
   } finally {
     for (const fn of cleanup.reverse()) { try { fn(); } catch {} }
     try { fs.rmSync(root, { recursive: true, force: true }); } catch {}
