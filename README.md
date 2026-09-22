@@ -122,7 +122,7 @@ Verified digest:
 The same digest is exposed by the immutable release commit tag `772a5a16b34e94b62bbc6564474736ef2e4da11b`. Container verification run #207 proved:
 
 - package version matches release tag;
-- OCI version matches `3.8.1`;
+- OCI version matches `3.8.3`;
 - OCI revision matches the release tag commit;
 - version and immutable commit tags resolve to the same digest;
 - the published image starts successfully;
