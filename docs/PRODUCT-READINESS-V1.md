@@ -203,7 +203,7 @@ Mutation tools require explicit idempotency keys. Capability metadata never gran
 The adapter is distributed through the same source/package/container release path as the runtime and has a packed-package acceptance test from an installed artifact.
 
 
-## v3.7.0-dev.1 release state
+## v3.7.0-dev.1 verified release state
 
 The v3.7.0-dev.1 product surface is published and verified. It includes A2A interoperability, allowlisted OTLP/HTTP JSON audit export, Work Object list/paging, expanded Studio operational timeline, packed A2A verification, and the representative A2A-ready mission.
 
