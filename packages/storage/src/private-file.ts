@@ -16,7 +16,7 @@ function currentWindowsUserSid(): string {
 }
 
 export function hardenPrivateFile(filePath: string): void {
-  if (process.platform !== "win32") {
+  if (require("process").platform !== "win32") {
     fs.chmodSync(filePath, 0o600);
     return;
   }
