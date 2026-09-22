@@ -11,7 +11,7 @@ function runCli(...args: string[]) {
 }
 
 test("CLI manages registry auth policy and emits a token only at issuance time", () => {
-  const dir = "/tmp/workproof-registry-auth-cli";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-registry-auth-cli");
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const policyPath = path.join(dir, "registry-auth.json");
@@ -19,7 +19,7 @@ test("CLI manages registry auth policy and emits a token only at issuance time",
   const init = runCli("registry-auth-init", policyPath);
   assert.equal(init.status, 0);
   assert.match(init.stdout, /initialized/);
-  assert.equal(fs.statSync(policyPath).mode & 0o777, 0o600);
+  if (process.platform !== "win32") assert.equal(fs.statSync(policyPath).mode & 0o777, 0o600);
 
   const added = runCli("registry-auth-add", policyPath, "team-reader", "read", "team-a", "reader");
   assert.equal(added.status, 0);
@@ -48,7 +48,7 @@ test("CLI manages registry auth policy and emits a token only at issuance time",
 });
 
 test("CLI rejects duplicate registry credential IDs", () => {
-  const dir = "/tmp/workproof-registry-auth-cli-duplicate";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-registry-auth-cli-duplicate");
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const policyPath = path.join(dir, "registry-auth.json");
@@ -63,7 +63,7 @@ test("CLI rejects duplicate registry credential IDs", () => {
 export {};
 
 test("registry server entrypoint loads an auth policy file and enforces it end-to-end", async () => {
-  const dir = "/tmp/workproof-registry-server-auth";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-registry-server-auth");
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const policyPath = path.join(dir, "registry-auth.json");
