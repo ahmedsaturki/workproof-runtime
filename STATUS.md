@@ -12,6 +12,12 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - release source tag commit: `de3ad9fcc10b9db7487c78620607f669249adaa9`
 - main closeout commit: `04bf0c218badd18c6a20e343030fbad71345d835`
 
+## v3.7.0-dev.1 release branch
+
+- branch: `release/3.7.0-dev.1`
+- source candidate: `5ebf4dccfab702f58e20e2b544becc706ee921a8`
+- publication workflows are expected to validate this exact release branch before distribution.
+
 ## v3.7.0-dev.1 candidate
 
 - branch: `feature/v3.7-a2a-otel-completion`
