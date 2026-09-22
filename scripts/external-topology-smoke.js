@@ -71,10 +71,22 @@ async function main() {
   const edgeName = network + "-edge";
   const packageJson = JSON.parse(fs.readFileSync(path.resolve("package.json"), "utf8"));
   const lineage = JSON.parse(fs.readFileSync(path.resolve("docs/release-lineage.json"), "utf8"));
-  const productionImage = imageFromCompose(path.resolve("compose.production.yaml"));
-  const expectedImage = lineage.container.image + "@" + lineage.container.digest;
-  if (productionImage !== expectedImage) throw new Error("Compose image does not match release-lineage.json");
+  const composeImage = imageFromCompose(path.resolve("compose.production.yaml"));
+  const expectedTagImage = lineage.container.image;
+  if (!composeImage.startsWith("ghcr.io/") || !composeImage.includes("@sha256:")) {
+    throw new Error("Production compose must contain a pinned GHCR image reference");
+  }
   const rollbackImage = "ghcr.io/ahmedsaturki/workproof-runtime:" + lineage.rollback.commit;
+  run("docker", ["pull", lineage.container.image]);
+  const pulledDigestRef = run("docker", ["image", "inspect", lineage.container.image, "--format={{index .RepoDigests 0}}"]).stdout.trim();
+  if (!/^.+@sha256:[0-9a-f]{64}$/.test(pulledDigestRef)) throw new Error("Published release image digest could not be determined");
+  const publishedDigest = pulledDigestRef.slice(pulledDigestRef.indexOf("@") + 1);
+  const runtimeImage = lineage.container.image + "@" + publishedDigest;
+  const productionImage = lineage.container.digest.startsWith("sha256:")
+    ? lineage.container.image + "@" + lineage.container.digest
+    : lineage.container.image;
+  if (!productionImage.startsWith(expectedTagImage)) throw new Error("External smoke image does not match release lineage");
+  if (!lineage.release.version || !lineage.container.image) throw new Error("Incomplete release lineage");
   fs.mkdirSync(dataDir, { recursive: true });
   fs.mkdirSync(tlsDir, { recursive: true });
   fs.mkdirSync(edgeDir, { recursive: true });
@@ -98,7 +110,7 @@ async function main() {
     run("docker", ["network", "create", network]);
     cleanup.push(() => run("docker", ["network", "rm", network], true));
 
-    run("docker", ["run", "-d", "--name", appName, "--network", network, "-v", dataDir + ":/data/work-runs", productionImage, "sh", "-c", "node dist/apps/studio.js /data/work-runs 8788 0.0.0.0"]);
+    run("docker", ["run", "-d", "--name", appName, "--network", network, "-v", dataDir + ":/data/work-runs", runtimeImage, "sh", "-c", "node dist/apps/studio.js /data/work-runs 8788 0.0.0.0"]);
     cleanup.push(() => remove(appName));
 
     run("docker", ["run", "-d", "--name", edgeName, "--network", network, "-p", "127.0.0.1:9443:8443", "-v", tlsDir + ":/etc/nginx/tls:ro", "-v", authPath + ":/etc/nginx/auth/.htpasswd:ro", "-v", nginxPath + ":/etc/nginx/nginx.conf:ro", "nginx:1.27-alpine"]);
@@ -133,7 +145,7 @@ async function main() {
     const rolled = curlJson(baseUrl + "/api/work/" + work.id, "smoke", password);
     if (rolled.work?.status !== "verified") throw new Error("Rollback image did not preserve readable authoritative work");
 
-    process.stdout.write(JSON.stringify({ status: "verified", releaseVersion: packageJson.version, releaseCommit: lineage.release.commit, image: productionImage, rollbackImage, tls: true, authentication: true, secretNonLeakage: true, persistence: true, backupRestore: true, rollback: true, denyByDefaultEdge: true, workId: work.id }, null, 2) + "\n");
+    process.stdout.write(JSON.stringify({ status: "verified", releaseVersion: packageJson.version, releaseCommit: lineage.release.commit, image: runtimeImage, publishedDigest, rollbackImage, tls: true, authentication: true, secretNonLeakage: true, persistence: true, backupRestore: true, rollback: true, denyByDefaultEdge: true, workId: work.id }, null, 2) + "\n");
   } finally {
     for (const fn of cleanup.reverse()) { try { fn(); } catch {} }
     try { fs.rmSync(root, { recursive: true, force: true }); } catch {}
