@@ -1,5 +1,5 @@
 import { Capability, CapabilityReceipt, EvidenceRef, Verifier } from "../../core/src/types";
-const { spawn } = require("child_process");
+const { spawn, spawnSync } = require("child_process");
 const { request: httpRequest } = require("http");
 const { randomBytes } = require("crypto");
 const fs = require("fs");
@@ -70,9 +70,39 @@ async function waitFor(ws: WebSocket & { call?: (m: string, p?: any) => Promise<
   return false;
 }
 
+export function resolveBrowserBinary(): string {
+  const explicit = process.env.WORKPROOF_BROWSER_BINARY?.trim();
+  if (explicit) return explicit;
+
+  const candidates: string[] = platform === "win32"
+    ? [
+        path.join(process.env.PROGRAMFILES ?? "C:\\Program Files", "Google", "Chrome", "Application", "chrome.exe"),
+        path.join(process.env["PROGRAMFILES(X86)"] ?? "C:\\Program Files (x86)", "Google", "Chrome", "Application", "chrome.exe"),
+        path.join(process.env.LOCALAPPDATA ?? "", "Google", "Chrome", "Application", "chrome.exe"),
+        path.join(process.env.PROGRAMFILES ?? "C:\\Program Files", "Microsoft", "Edge", "Application", "msedge.exe"),
+        path.join(process.env["PROGRAMFILES(X86)"] ?? "C:\\Program Files (x86)", "Microsoft", "Edge", "Application", "msedge.exe"),
+        path.join(process.env.LOCALAPPDATA ?? "", "Microsoft", "Edge", "Application", "msedge.exe"),
+        "chrome.exe",
+        "msedge.exe"
+      ]
+    : ["chromium", "chromium-browser", "google-chrome", "google-chrome-stable"];
+
+  for (const candidate of candidates) {
+    if (path.isAbsolute(candidate) && !fs.existsSync(candidate)) continue;
+    try {
+      const probe = spawnSync(candidate, ["--version"], { stdio: "ignore", windowsHide: true });
+      if (probe.status === 0) return candidate;
+    } catch {}
+  }
+
+  throw new Error(
+    "No supported Chromium executable was found. Set WORKPROOF_BROWSER_BINARY to an absolute path or executable name."
+  );
+}
+
 function ensureBrowser(port = 0): any {
   const profile = fs.mkdtempSync(path.join(require("os").tmpdir(), `workproof-chromium-${process.pid}-${randomBytes(4).toString("hex")}-`));
-  const browserBinary = process.env.WORKPROOF_BROWSER_BINARY || "chromium";
+  const browserBinary = resolveBrowserBinary();
   const browser = spawn(browserBinary, [
     "--headless",
     "--no-sandbox",
