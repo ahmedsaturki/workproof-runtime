@@ -141,6 +141,10 @@ jobs:
         run: node scripts/container-compose-smoke.js
         timeout-minutes: 5
 
+      - name: Disposable external topology smoke
+        run: node scripts/external-topology-smoke.js
+        timeout-minutes: 10
+
       - name: Verify anonymous GHCR pull
         env:
           IMAGE_TAG: ${{ steps.image.outputs.tag }}
