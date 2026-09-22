@@ -66,7 +66,7 @@ test("local product smoke boots Studio, reports release version, serves work, an
   );
   assert.equal(packageJson.bin?.workctl, "dist/packages/cli/src/index.js");
   const compiledCli = fs.readFileSync(path.resolve(path.dirname(__filename), "../packages/cli/src/index.js"), "utf8");
-  assert.match(compiledCli, /^#!\\/usr\\/bin\\/env node\\n/);
+  assert.match(compiledCli, /^#!\/usr\/bin\/env node\n/);
 
   const first = await startStudio({ workDirectory: root, host: "127.0.0.1", port: 0 });
   try {
