@@ -5,7 +5,7 @@ ARG VCS_REF=unknown
 
 WORKDIR /app
 
-COPY package.json tsconfig.json ./
+COPY package.json package-lock.json tsconfig.json ./
 COPY apps ./apps
 COPY packages ./packages
 COPY lab ./lab
