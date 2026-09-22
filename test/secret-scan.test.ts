@@ -1,7 +1,7 @@
 const assert = require("assert");
 const test = require("node:test");
 
-const { SECRET_PATTERNS } = require("../scripts/secret-scan.js");
+const { SECRET_PATTERNS } = require("../../scripts/secret-scan.js");
 
 test("secret scan does not flag a code-level private-key header check", () => {
   const code = 'if (!normalized.includes("-----BEGIN PUBLIC KEY-----") || normalized.includes("-----BEGIN PRIVATE KEY-----")) throw new Error("public-key only");';
