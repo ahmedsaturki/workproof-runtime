@@ -1,6 +1,6 @@
 # WorkProof Runtime Specification - v3.8.10
 
-## Current v3.8.9 baseline
+## Current v3.8.10 baseline
 
 The current stable product specification is maintained at v3.8.10. The v3.4 sections below remain historical acceptance records and are not the current release status.
 
