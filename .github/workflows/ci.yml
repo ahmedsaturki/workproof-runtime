@@ -8,7 +8,7 @@ on:
     branches:
       - main
       - "feature/**"
-      - "fix/**"
+      - fix/**
   pull_request:
 
 concurrency:
@@ -78,7 +78,15 @@ jobs:
           test -s "${SMOKE_DIR}/research.json"
           echo "packed CLI install, mission execution, and proof verification smoke passed"
       - name: Disposable external topology smoke
-        run: node scripts/external-topology-smoke.js
+        shell: bash
+        run: |
+          set -euo pipefail
+          REF_NAME="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          if [[ "${REF_NAME}" == release/* ]]; then
+            export WORKPROOF_RELEASE_IMAGE="ghcr.io/${GITHUB_REPOSITORY}:${REF_NAME#release/}"
+            echo "Using release image ${WORKPROOF_RELEASE_IMAGE} for external topology smoke"
+          fi
+          node scripts/external-topology-smoke.js
         timeout-minutes: 8
       - name: Verify published release lineage
         run: node scripts/verify-published-lineage.js

@@ -2,8 +2,8 @@
 
 Supported distribution target: the Node 24 GHCR container.
 
-- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.11`
-- pinned digest: `sha256:d0c4a8134e0b73d68dc6a0489bbc058b90e633a01171df980aebd1e7b47affff`
+- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.12`
+- pinned digest: `sha256:491261f71ff3b010bb7a967b74b348ca40042d3150e2f6c8a36c1a4dcf7012bb`
 - bind: `127.0.0.1:8788`
 - persistent data: `./work-runs -> /data/work-runs`
 
@@ -31,14 +31,25 @@ Release automation runs `npm run check`, verifies required release assets, downl
 
 ## Boundary
 
-The repository provides the deployable container, local compose, and runbook. A disposable CI topology additionally verifies TLS termination, authentication, persistent state, backup/restore, and rollback through an isolated reverse-proxy edge. It does not provision a public hostname, production DNS, public certificate, external host, or production secrets.
+The repository provides the deployable container, local compose, and runbook. The authenticated control-plane process is distributed separately and can be connected to Studio through `WORKPROOF_CONTROL_PLANE_URL` when authenticated mutation is required. A disposable CI topology additionally verifies TLS termination, authentication, persistent state, backup/restore, and rollback through an isolated reverse-proxy edge. It does not provision a public hostname, production DNS, public certificate, external host, or production secrets.
 
 
 ## Public container distribution
 
-The published Container Registry manifest for `3.4.0-dev.11` was verified through the anonymous pull gate; the canonical digest is `sha256:d0c4a8134e0b73d68dc6a0489bbc058b90e633a01171df980aebd1e7b47affff`.
+The published Container Registry manifest for `3.4.0-dev.12` was verified through the anonymous pull gate; the canonical digest is `sha256:491261f71ff3b010bb7a967b74b348ca40042d3150e2f6c8a36c1a4dcf7012bb`.
 
 
 ## Release verification additions
 
 Container CI executes the production Compose profile, checks runtime health and version, reads a persisted Work Object, restarts Compose, and reads the same Work Object again.
+
+
+## Dev.12 release integrity
+
+- release tag: `v3.4.0-dev.12`
+- release commit: `1b174b33da8e519e5a23e7565944aba6266d8e97`
+- GitHub Release: `393489868`
+- GHCR immutable image tag: `1b174b33da8e519e5a23e7565944aba6266d8e97`
+- GHCR digest: `sha256:491261f71ff3b010bb7a967b74b348ca40042d3150e2f6c8a36c1a4dcf7012bb`
+- rollback image: dev.11 immutable tag `aeaaac3d9224b7eac297ac8f63207bf97b532e4d`
+- rollback digest: `sha256:d0c4a8134e0b73d68dc6a0489bbc058b90e633a01171df980aebd1e7b47affff`
