@@ -1,5 +1,8 @@
 name: CI
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
@@ -36,6 +39,41 @@ jobs:
       - name: Build TypeScript
         run: npm run build
         timeout-minutes: 2
+      - name: Packed CLI install smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          PACK_DIR="${RUNNER_TEMP}/workproof-pack"
+          SMOKE_DIR="${RUNNER_TEMP}/workproof-cli-smoke"
+          mkdir -p "${PACK_DIR}" "${SMOKE_DIR}"
+          PACKAGE_FILE="$(npm pack --silent --pack-destination "${PACK_DIR}")"
+          test -s "${PACK_DIR}/${PACKAGE_FILE}"
+          npm install --prefix "${SMOKE_DIR}" "${PACK_DIR}/${PACKAGE_FILE}"
+          "${SMOKE_DIR}/node_modules/.bin/workctl" --help
+          "${SMOKE_DIR}/node_modules/.bin/workctl" keygen "${SMOKE_DIR}/private.pem" "${SMOKE_DIR}/public.pem"
+          test -s "${SMOKE_DIR}/private.pem"
+          test -s "${SMOKE_DIR}/public.pem"
+          cat > "${SMOKE_DIR}/suppliers.json" <<'EOF'
+          [{"name":"Alpha","website":"https://alpha.example","phone":"0100000001","source":"fixture"},{"name":"Beta","website":"https://beta.example","phone":"0100000002","source":"fixture"},{"name":"Gamma","website":"https://gamma.example","phone":"0100000003","source":"fixture"},{"name":"Delta","website":"https://delta.example","phone":"0100000004","source":"fixture"}]
+          EOF
+          cat > "${SMOKE_DIR}/mission.json" <<EOF
+          {
+            "objective": "Packaged CLI product smoke",
+            "inputs": { "dataPath": "${SMOKE_DIR}/suppliers.json", "outputPath": "${SMOKE_DIR}/research.json", "minRecords": 4 },
+            "success": [{ "id": "artifact", "description": "At least four unique supplier records with required fields", "verifier": "pack.research.artifact", "required": true }],
+            "deliverables": ["${SMOKE_DIR}/research.json"],
+            "riskClass": "read",
+            "steps": [{ "id": "research", "operation": "research_suppliers", "capability": "pack.research.local", "input": { "dataPath": "${SMOKE_DIR}/suppliers.json", "outputPath": "${SMOKE_DIR}/research.json", "minRecords": 4 }, "idempotencyKey": "packed-cli:research", "riskClass": "read" }],
+            "proofPath": "${SMOKE_DIR}/proof.json",
+            "workDirectory": "${SMOKE_DIR}/work-runs"
+          }
+          EOF
+          RESULT="$("${SMOKE_DIR}/node_modules/.bin/workctl" run "${SMOKE_DIR}/mission.json")"
+          printf "%s\n" "$RESULT"
+          node -e 'const x=JSON.parse(process.argv[1]); if (x.status !== "verified") process.exit(1)' "$RESULT"
+          test -s "${SMOKE_DIR}/proof.json"
+          test -s "${SMOKE_DIR}/research.json"
+          echo "packed CLI install, mission execution, and proof verification smoke passed"
       - name: Run retention lifecycle suite
         run: node --test dist/test/retention.test.js
         timeout-minutes: 2

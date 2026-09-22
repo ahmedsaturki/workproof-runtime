@@ -2,9 +2,9 @@
 
 ## Required source tree
 
-The current distribution-ready tree contains **179 required paths** enforced by `scripts/verify-source-tree.js`.
+The current distribution-ready tree contains **181 required paths** enforced by `scripts/verify-source-tree.js`.
 
-The historical v3.4 implementation closeout was 171 paths; the final distribution layer adds 8 operational paths:
+The historical v3.4 implementation closeout was 171 paths; the final distribution layer adds 8 operational paths, and the product-readiness gate adds 2 required paths:
 
 - `Dockerfile`
 - `.dockerignore`
@@ -14,6 +14,8 @@ The historical v3.4 implementation closeout was 171 paths; the final distributio
 - `docs/CONTAINER-RUNTIME.md`
 - `docs/PRODUCTION-DEPLOYMENT.md`
 - `docs/RELEASE-3.4.0-dev.2.md`
+- `docs/PRODUCT-READINESS-V1.md`
+- `test/product-smoke.test.ts`
 
 ## V3.4 benchmark
 
@@ -40,6 +42,7 @@ The historical v3.4 implementation closeout was 171 paths; the final distributio
 - container verification run: #27 (success)
 - GHCR digest: `sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`
 - latest main CI: success
+- product readiness PR #74: local-first product gate and restart smoke
 
 ## Verified main lineage
 
