@@ -23,7 +23,10 @@ function curlJson(url, user, password) {
 }
 
 function curlStatus(url, user, password) {
-  return Number(run("curl", ["-ksS", "-o", "/dev/null", "-w", "%{http_code}", "--user", user + ":" + password, url]).stdout.trim());
+  const args = ["-ksS", "-o", "/dev/null", "-w", "%{http_code}"];
+  if (user !== undefined && password !== undefined) args.push("--user", user + ":" + password);
+  args.push(url);
+  return Number(run("curl", args).stdout.trim());
 }
 
 function waitForStatus(baseUrl, expectedStatus, user, password) {
@@ -129,7 +132,7 @@ async function main() {
 
     const baseUrl = "https://127.0.0.1:9443";
     const basic = "Basic " + Buffer.from("smoke:" + password).toString("base64");
-    waitForStatus(baseUrl, 401, "", "");
+    waitForStatus(baseUrl, 401);
     waitHealthy(baseUrl, packageJson.version, "smoke", password);
 
     const workValue = curlJson(baseUrl + "/api/work/" + work.id, "smoke", password);
