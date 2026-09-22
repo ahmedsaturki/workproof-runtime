@@ -90,7 +90,7 @@ The release pipeline re-downloads published assets, verifies SHA256 sums, verifi
 
 `ghcr.io/ahmedsaturki/workproof-runtime:3.8.8@sha256:0c31c571480d45d5f46f5ae6f8b8a4b1328094a7561f76aee7016c99e586eb10`
 
-The immutable commit tag is `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`.
+The immutable commit tag is `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`.
 
 ### Self-hosted runtime
 
