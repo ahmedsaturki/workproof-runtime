@@ -124,9 +124,9 @@ Do not claim completion if any of these are true:
 
 WorkProof Runtime is not required to become a generic agent framework, browser automation product, workflow engine, memory database, observability backend, or OSINT graph. Those systems may integrate as capabilities/adapters. The durable Work Object, outcome contract, effect, verification, recovery, and proof semantics remain the product's invariant boundary.
 
-## Implemented in product-readiness-v1 / dev.4
+## Implemented local-first product baseline
 
-The following gates are executable and CI-verified on the current dev.4 release branch and published distribution:
+The following gates are executable and CI-verified on the current v3.4.0-dev.9 lineage and its published distribution:
 
 - [x] Runtime version is sourced from package metadata instead of stale hard-coded product versions.
 - [x] Studio process startup honors control-plane, proof-vault, and trust-policy configuration from arguments/environment.
@@ -142,7 +142,7 @@ The following gates are executable and CI-verified on the current dev.4 release 
 - [x] CI validates the above together with the existing security, retention, benchmark, demo, CLI, and live GitHub gates.
 
 
-## Current dev.7 readiness
+## Current product state
 
 The local-first P0 foundations are complete and executable:
 
@@ -152,10 +152,11 @@ The local-first P0 foundations are complete and executable:
 - [x] portable proof export/verify/import
 - [x] versioned proof compatibility
 - [x] operator guidance for failure, ambiguity, recovery, and verification states
+- [x] operational overview and attention summary
 - [x] production Compose restart/persistence smoke
 - [x] package distribution includes operator docs and representative mission examples
 
-Remaining gates are external deployment validation, broader multi-capability UX, and richer operational visualization.
+Remaining product-validation gates are the disposable external topology and broader multi-capability mission UX.
 
 
 ## Dev.9 release state
