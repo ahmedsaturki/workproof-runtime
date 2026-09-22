@@ -8,8 +8,8 @@ Main contains the v3.4 benchmark, restart/resume safety, portable proof, explici
 
 ## Current release
 
-- version: `3.4.0-dev.8`
-- branch: `release/3.4.0-dev.8`
+- version: `3.4.0-dev.9`
+- branch: `release/3.4.0-dev.9`
 - parent candidate: `15de76521f63100249eccd12c5e4f94643c8ab83`
 - purpose: coherent distribution after dev.7 candidate lineage was superseded by the clean dev.8 release branch
 
@@ -28,8 +28,8 @@ Main contains the v3.4 benchmark, restart/resume safety, portable proof, explici
 
 ## Distribution gates
 
-- [ ] GitHub Release v3.4.0-dev.8 publication and re-download verification
-- [ ] GHCR v3.4.0-dev.8 publication, health, anonymous pull, and digest verification
+- [ ] GitHub Release v3.4.0-dev.9 publication and re-download verification
+- [ ] GHCR v3.4.0-dev.9 publication, health, anonymous pull, and digest verification
 - [ ] main promotion CI after release
 
 ## Benchmark
