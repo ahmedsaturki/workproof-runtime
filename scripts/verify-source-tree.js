@@ -108,6 +108,7 @@ const required = [
   "lab/fixtures/message-outbox-pack.json",
   "lab/fixtures/git-local-pack.json",
   "package.json",
+  "package-lock.json",
   "packages/capabilities/src/registry.ts",
   "packages/compensation/src/engine.ts",
   "packages/control-plane/src/http.ts",
@@ -184,6 +185,7 @@ const required = [
   "test/git-local-pack.test.ts",
   "test/operator-benchmark.test.ts",
   "test/product-smoke.test.ts",
+  "test/release-metadata.test.ts",
   "test/portable-proof.test.ts",
   "test/trust-cli.test.ts",
   "test/trust-sync.test.ts",
@@ -210,7 +212,6 @@ const required = [
   "docs/A2A-ADAPTER.md",
   "docs/OPENTELEMETRY.md",
   "docs/OPERATOR-DOCTOR.md",
-  "docs/CONTROL-PLANE-API.md",
   "docs/RELEASE-3.7.0-dev.1.md",
   "docs/RELEASE-3.8.0.md",
   "docs/RELEASE-3.8.0-dev.1.md",
@@ -231,4 +232,10 @@ if (missing.length) {
   process.exit(1);
 }
 
-console.log(JSON.stringify({ requiredFiles: required.length, missing: 0, status: "verified" }));
+const uniqueRequired = new Set(required);
+if (uniqueRequired.size !== required.length) {
+  console.error("Duplicate required source paths detected.");
+  process.exit(1);
+}
+
+console.log(JSON.stringify({ requiredFiles: required.length, missing: 0, duplicates: 0, status: "verified" }));
