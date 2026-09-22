@@ -113,6 +113,101 @@ test("resume does not re-execute an already acknowledged external effect", async
   assert.ok(loaded.events.some((e: any) => e.type === "step.resumed"));
 });
 
+
+test("persisted idempotency keys reject changed operation or input before execution", async () => {
+  const path = "/tmp/work-idempotency-drift";
+  fs.rmSync(path, { recursive: true, force: true });
+
+  let calls = 0;
+  const store = new WorkStore();
+  const registry = new CapabilityRegistry();
+  const verification = new VerificationEngine();
+  registry.register({
+    name: "drift-safe",
+    version: "1",
+    operations: ["publish"],
+    riskClass: "external_write",
+    execute: async () => {
+      calls++;
+      return { status: "accepted", externalEffectId: "external:drift" };
+    }
+  });
+  verification.register({
+    name: "drift-proof",
+    verify: async (ctx: any) => ({
+      id: ctx.criterion.id,
+      criterion: ctx.criterion.description,
+      passed: calls === 1,
+      evidence: []
+    })
+  });
+
+  const contract = {
+    objective: "reject idempotency drift",
+    success: [{ id: "proof", description: "Exactly one publish occurred", verifier: "drift-proof", required: true }],
+    deliverables: [],
+    riskClass: "external_write"
+  };
+  const firstStep = {
+    id: "publish",
+    operation: "publish",
+    capability: "drift-safe",
+    input: { record: "A" },
+    idempotencyKey: "drift:1",
+    riskClass: "external_write"
+  };
+  const repo = new JsonWorkRepository(path);
+  const work = store.create(contract);
+  const firstEngine = new WorkEngine(store, registry, verification, async () => false, undefined, repo);
+  await firstEngine.run(work, [firstStep]);
+  assert.equal(work.status, "verified");
+  assert.equal(calls, 1);
+  assert.deepEqual(work.effects[0].input, { record: "A" });
+
+  const loaded = repo.load(work.id);
+  const resumedStore = new WorkStore();
+  const resumedRegistry = new CapabilityRegistry();
+  const resumedVerification = new VerificationEngine();
+  resumedStore.register(loaded);
+  resumedRegistry.register({
+    name: "drift-safe",
+    version: "1",
+    operations: ["publish"],
+    riskClass: "external_write",
+    execute: async () => {
+      calls++;
+      return { status: "accepted", externalEffectId: "external:drift-duplicate" };
+    }
+  });
+  resumedVerification.register({
+    name: "drift-proof",
+    verify: async () => ({ id: "proof", criterion: "Exactly one publish occurred", passed: calls === 1, evidence: [] })
+  });
+  const beforeStatus = loaded.status;
+  assert.throws(
+    () => new WorkEngine(resumedStore, resumedRegistry, resumedVerification, async () => false, undefined, repo)
+      .run(loaded, [{
+        ...firstStep,
+        input: { record: "B" }
+      }]),
+    /Persisted effect input does not match/
+  );
+  assert.equal(loaded.status, beforeStatus);
+  assert.equal(calls, 1);
+
+  fs.rmSync(path, { recursive: true, force: true });
+});
+
+test("same idempotency key with reordered JSON object keys remains compatible", async () => {
+  const store = new WorkStore();
+  const registry = new CapabilityRegistry();
+  const verification = new VerificationEngine();
+  const work = store.create({ objective: "canonical input", success: [], deliverables: [], riskClass: "read" });
+  const first = store.addEffect(work, "cap", "read", "canonical:1", "read", { a: 1, b: { x: 2, y: 3 } });
+  const second = store.addEffect(work, "cap", "read", "canonical:1", "read", { b: { y: 3, x: 2 }, a: 1 });
+  assert.equal(first.effectId, second.effectId);
+});
+
 export {};
 
 test("router honors preferred capability and risk ceiling", () => {
