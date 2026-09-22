@@ -72,7 +72,7 @@ function rpcError(id: unknown, code: number, message: string, data?: unknown): R
 function send(res: any, status: number, body: Record<string, unknown>, headers: Record<string, string> = {}): void {
   const payload = JSON.stringify(body);
   res.writeHead(status, {
-    "content-type": "application/a2a+json; charset=utf-8",
+    "content-type": "application/json; charset=utf-8",
     "content-length": Buffer.byteLength(payload),
     "cache-control": "no-store",
     "x-content-type-options": "nosniff",
@@ -273,12 +273,17 @@ export async function startA2AServer(options: A2AOptions): Promise<RunningA2A> {
         if (params.contextId !== undefined && typeof params.contextId !== "string") {
           throw Object.assign(new Error("ListTasks contextId must be a string"), { rpcCode: -32602 });
         }
-        if (params.pageToken !== undefined && String(params.pageToken) !== "") {
-          throw Object.assign(new Error("ListTasks pagination tokens are not supported by this adapter"), { rpcCode: -32004 });
-        }
-        const rawPageSize = params.pageSize === undefined ? 50 : Number(params.pageSize);
-        if (!Number.isSafeInteger(rawPageSize) || rawPageSize < 1 || rawPageSize > 100) {
+        const pageSize = params.pageSize === undefined ? 50 : Number(params.pageSize);
+        if (!Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > 100) {
           throw Object.assign(new Error("ListTasks pageSize must be an integer from 1 to 100"), { rpcCode: -32602 });
+        }
+        const tokenValue = params.pageToken === undefined ? "" : String(params.pageToken);
+        if (tokenValue && !/^[A-Za-z0-9._~-]{1,64}$/.test(tokenValue)) {
+          throw Object.assign(new Error("Invalid ListTasks pageToken"), { rpcCode: -32602 });
+        }
+        const offset = tokenValue ? Number(Buffer.from(tokenValue, "base64url").toString("utf8")) : 0;
+        if (!Number.isSafeInteger(offset) || offset < 0 || offset > 1000000) {
+          throw Object.assign(new Error("Invalid ListTasks pageToken"), { rpcCode: -32602 });
         }
         let statusFilter: string | undefined;
         if (params.status !== undefined) {
@@ -292,20 +297,25 @@ export async function startA2AServer(options: A2AOptions): Promise<RunningA2A> {
           statusFilter = map[String(params.status)];
           if (!statusFilter) throw Object.assign(new Error("Unsupported ListTasks status filter"), { rpcCode: -32602 });
         }
-        let works = await control.listWork({ limit: 100, status: statusFilter });
-        if (params.contextId !== undefined) {
-          const contextId = String(params.contextId);
-          works = works.filter(item => item.a2aContextId === contextId);
-        }
-        const tasks = works.slice(0, rawPageSize).map(item => workTask(item));
+        const page = await control.listWorkPage({
+          limit: pageSize,
+          offset,
+          status: statusFilter,
+          contextId: params.contextId === undefined ? undefined : String(params.contextId)
+        });
+        const tasks = page.items.map(item => workTask(item));
+        const nextOffset = offset + tasks.length;
+        const nextPageToken = nextOffset < page.total
+          ? Buffer.from(String(nextOffset)).toString("base64url")
+          : "";
         send(res, 200, {
           jsonrpc: "2.0",
           id: body.id,
           result: {
             tasks,
-            nextPageToken: "",
-            pageSize: rawPageSize,
-            totalSize: works.length
+            nextPageToken,
+            pageSize,
+            totalSize: page.total
           }
         });
         return;
