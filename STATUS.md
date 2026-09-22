@@ -34,14 +34,6 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - immutable image tag: `9daac7a926ce1631ac708a6c234379d622c56c19`
 - prior stable rollback: `v3.8.1` / `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 
-## Candidate verification basis
-
-- package version: `3.8.10`
-- release branch: `release/3.8.10`
-- source baseline: fully reconciled `main` at branch creation
-- previous published stable release: `v3.8.9`
-- release and container publication evidence is recorded only after the corresponding workflows succeed
-
 ## Current main closeout
 
 - v3.8.10 stable release: published and fully Container-verified
