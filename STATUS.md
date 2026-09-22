@@ -8,20 +8,20 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 
 ## Current main
 
-- package version: `3.4.0-dev.11`
-- release target commit: `aeaaac3d9224b7eac297ac8f63207bf97b532e4d`
+- package version: `3.4.0-dev.12`
+- release target commit: `1b174b33da8e519e5a23e7565944aba6266d8e97`
 
 ## Current verified release
 
-- version: `3.4.0-dev.11`
-- tag: `v3.4.0-dev.11`
-- release commit: `aeaaac3d9224b7eac297ac8f63207bf97b532e4d`
-- GitHub Release id: 393476961
+- version: `3.4.0-dev.12`
+- tag: `v3.4.0-dev.12`
+- release commit: `1b174b33da8e519e5a23e7565944aba6266d8e97`
+- GitHub Release id: 393489868
 - release verification run #124: success
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.11`
-- GHCR digest: `sha256:d0c4a8134e0b73d68dc6a0489bbc058b90e633a01171df980aebd1e7b47affff`
-- immutable image tag: `aeaaac3d9224b7eac297ac8f63207bf97b532e4d`
-- Container verification run #121: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.12`
+- GHCR digest: `sha256:491261f71ff3b010bb7a967b74b348ca40042d3150e2f6c8a36c1a4dcf7012bb`
+- immutable image tag: `1b174b33da8e519e5a23e7565944aba6266d8e97`
+- Container verification run #127: success
 - five release assets present, re-downloaded, and SHA256-verified
 
 ## Product gates
