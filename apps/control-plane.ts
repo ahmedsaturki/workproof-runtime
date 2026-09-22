@@ -19,6 +19,7 @@ import { registerMessageOutboxPack } from "../packages/packs/src/message-outbox-
 import { registerGitLocalPack } from "../packages/packs/src/git-local-pack";
 import { buildProofBundle } from "../packages/evidence/src/bundle";
 import { buildIntegrityManifest } from "../packages/evidence/src/integrity";
+import { createOtlpLogExporterFromEnv } from "../packages/telemetry/src/otel";
 
 const host = process.env.WORKPROOF_CONTROL_PLANE_HOST ?? "127.0.0.1";
 const port = Number(process.env.WORKPROOF_CONTROL_PLANE_PORT ?? "8789");
@@ -79,6 +80,10 @@ function createRuntimeRegistry(): CapabilityRegistry {
 }
 
 const controlCapabilityRegistry = createRuntimeRegistry();
+const telemetry = createOtlpLogExporterFromEnv({
+  serviceName: "workproof-control-plane",
+  serviceVersion: runtimeVersion()
+});
 
 function safeWorkId(value: unknown): string {
   if (typeof value !== "string" || !/^[A-Za-z0-9._-]+$/.test(value)) throw new Error("Invalid work id");
@@ -186,7 +191,11 @@ async function resumeMission(work: WorkObject): Promise<WorkObject> {
 
 async function main(): Promise<void> {
   const controlPlane = await startControlPlane({
-    repository,
+    repository: {
+      load: (id: string) => repository.load(id),
+      save: (work: WorkObject) => repository.save(work),
+      list: () => repository.list()
+    },
     authPolicy,
     host,
     port,
@@ -202,7 +211,8 @@ async function main(): Promise<void> {
         riskClass: capability.riskClass
       }))
     },
-    runtimeVersion: runtimeVersion()
+    runtimeVersion: runtimeVersion(),
+    telemetry
   });
 
   process.stdout.write(JSON.stringify({
