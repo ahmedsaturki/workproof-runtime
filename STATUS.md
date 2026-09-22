@@ -9,9 +9,15 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 ## Current main
 
 - package version: `3.8.0`
+- current main commit: `2f0929014a4af78459a0d3cc335a2aceec4a1007`
+- latest main CI #1255: success
 - stable release source commit: `2b02d22e897d5fe736f93267c72036d951f74082`
 - promotion branch: `promote/v3.8.0-main`
 - stable main promotion: complete in `5b74c2f98f5f46ce75371bcf8301857da75a0947`
+- post-release hardening PR #97: merged; reproducible `npm ci` install tree
+- post-release hardening PR #98: merged; release metadata/license/source-manifest reconciliation
+
+The stable v3.8.0 release remains bound to its published release commit and container digest. The current `main` adds metadata/distribution hardening after that stable release without changing runtime semantics.
 
 ## Current verified release
 
@@ -102,6 +108,13 @@ A capability receipt is not independent proof. Work is verified only when indepe
 - GHCR digest: `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
 - immutable image tag: `2b02d22e897d5fe736f93267c72036d951f74082`
 - rollback: `v3.8.0-dev.1` / `sha256:acafde09bd74d535fb706acde68f7e6279283ac49f6d1863585d672fb691ac02`
+
+## Post-release main hardening closeout
+
+- PR #97: merged; `npm ci` enforced by CI, release, and Docker build paths
+- PR #98: merged; explicit Apache-2.0 package metadata, complete license text, current contributor baseline, duplicate-free source manifest, `package-lock.json` source-tree coverage, and release metadata regression test
+- main commit after PR #98: `2f0929014a4af78459a0d3cc335a2aceec4a1007`
+- main CI #1255: success
 
 ## v3.8 stable main closeout
 
