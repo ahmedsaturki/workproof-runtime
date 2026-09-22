@@ -218,7 +218,7 @@ Feature CI #1234, Release #180, and Container #177 completed successfully before
 
 ## Main-verified v3.8 state
 
-The current published prerelease is `v3.8.0-dev.1`. It adds explicit Control Plane readiness, import-safe initialization, and `workctl doctor` diagnostics for package/runtime state, Control Plane, Studio, and A2A services.
+`v3.8.0-dev.1` is the verified prerelease baseline for the stable v3.8.0 line. It adds explicit Control Plane readiness, import-safe initialization, and `workctl doctor` diagnostics for package/runtime state, Control Plane, Studio, and A2A services.
 
 The feature, release, container, promotion, and final main verification gates are complete:
 - Feature CI #1234: success.
@@ -237,4 +237,4 @@ The stable 3.8.0 line is a version promotion of the v3.8.0-dev.1 implementation 
 
 ## Stable 3.8.0 verified distribution
 
-The stable 3.8.0 package, GitHub Release, GHCR image, production Compose pin, rollback lineage, release verification, and container verification are complete. Main promotion remains a separate repository integration gate.
+The stable 3.8.0 package, GitHub Release, GHCR image, production Compose pin, rollback lineage, release verification, container verification, and main promotion are complete. The final stable release-state reconciliation was performed by Release workflow #190 and Container workflow #187.

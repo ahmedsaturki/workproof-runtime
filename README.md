@@ -107,7 +107,7 @@ Published assets:
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
-The release pipeline re-downloads published assets, verifies SHA256 sums, verifies the release target matches the tag, and validates published benchmark semantics.
+The release pipeline re-downloads published assets, verifies SHA256 sums, verifies the release target matches the tag, validates published benchmark semantics, and reconciles stable versus prerelease publication state.
 
 ### GHCR container
 
@@ -119,7 +119,7 @@ Verified digest:
 
 `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
 
-The same digest is exposed by the immutable release commit tag `2b02d22e897d5fe736f93267c72036d951f74082`. Container verification run #186 proved:
+The same digest is exposed by the immutable release commit tag `2b02d22e897d5fe736f93267c72036d951f74082`. Container verification runs #186/#187 proved:
 
 - package version matches release tag;
 - OCI version matches `3.8.0`;

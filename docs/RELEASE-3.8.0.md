@@ -18,7 +18,7 @@ The stable release is a version promotion of the same code path verified by:
 - Container workflow #177.
 - Main CI #1236 and final documentation closeout #1241.
 
-The stable release is rebuilt and revalidated under its own version, release tag, container image, digest, and main promotion gates before being called released.
+The stable release is rebuilt and revalidated under its own version, release tag, container image, digest, publication state, and main promotion gates before being called released.
 
 ## Distribution
 
@@ -35,8 +35,10 @@ The diagnostics surface is observational only. It never executes work, mutates a
 
 - GitHub Release: `v3.8.0` / ID `393558255`
 - release commit: `2b02d22e897d5fe736f93267c72036d951f74082`
-- Release workflow #189: success
-- Container workflow #186: success
+- Initial Release workflow #189: success
+- Stable release-state reconciliation workflow #190: success
+- Initial Container workflow #186: success
+- Final Container workflow #187: success
 - GHCR digest: `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
 - immutable image tag: `2b02d22e897d5fe736f93267c72036d951f74082`
 - production Compose digest pin: verified

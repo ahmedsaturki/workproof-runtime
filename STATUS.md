@@ -11,7 +11,7 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - package version: `3.8.0`
 - stable release source commit: `2b02d22e897d5fe736f93267c72036d951f74082`
 - promotion branch: `promote/v3.8.0-main`
-- main promotion: pending
+- stable main promotion: complete in `5b74c2f98f5f46ce75371bcf8301857da75a0947`
 
 ## Current verified release
 
@@ -19,11 +19,13 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - tag: `v3.8.0`
 - release commit: `2b02d22e897d5fe736f93267c72036d951f74082`
 - GitHub Release ID: 393558255
-- release verification run #189: success
+- release creation/verification run #189: success
+- final stable release-state reconciliation run #190: success
 - GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.0`
 - GHCR digest: `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
 - immutable image tag: `2b02d22e897d5fe736f93267c72036d951f74082`
-- Container verification run #186: success
+- initial Container verification run #186: success
+- final Container verification run #187: success
 - five release assets published and verified
 
 ## Product gates

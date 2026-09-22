@@ -41,8 +41,10 @@ Do not call 3.8.0 stable if any release artifact differs from the tested source 
 - release tag: `v3.8.0`
 - release commit: `2b02d22e897d5fe736f93267c72036d951f74082`
 - GitHub Release ID: `393558255`
-- Release workflow #189: success
-- Container workflow #186: success
+- Initial Release workflow #189: success
+- Stable release-state reconciliation workflow #190: success
+- Initial Container workflow #186: success
+- Final Container workflow #187: success
 - GHCR digest: `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
 - immutable image tag: `2b02d22e897d5fe736f93267c72036d951f74082`
 - rollback: `v3.8.0-dev.1` / `sha256:acafde09bd74d535fb706acde68f7e6279283ac49f6d1863585d672fb691ac02`
