@@ -13,7 +13,7 @@ COPY test ./test
 COPY types ./types
 COPY scripts ./scripts
 
-RUN npm install
+RUN npm ci
 RUN npm run build
 
 FROM node:24-bookworm-slim
