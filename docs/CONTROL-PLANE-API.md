@@ -19,7 +19,7 @@ Returns runtime and API protocol identity without requiring authentication:
 ```json
 {
   "status": "ok",
-  "version": "<runtime-version>",
+  "version": "3.5.0-dev.1",
   "apiVersion": "1.0",
   "requestId": "..."
 }
