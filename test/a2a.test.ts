@@ -166,7 +166,7 @@ test("A2A ListTasks projects Work Object summaries into tasks", async () => {
       })
     });
     assert.equal(response.status, 200);
-    assert.equal(response.headers.get("content-type").startsWith("application/a2a+json"), true);
+    assert.equal(response.headers.get("content-type").startsWith("application/json"), true);
     const body = await response.json();
     assert.equal(body.result.tasks.length, 1);
     assert.equal(body.result.tasks[0].id, "work_one");
