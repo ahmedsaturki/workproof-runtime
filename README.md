@@ -6,7 +6,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 **v3.8.10 is the current stable release.**
 
-v3.8.9 preserves the verified v3.8.8 runtime contract and promotes the current specification and GitHub governance baseline.
+v3.8.10 is the corrective stable distribution built from the fully reconciled v3.8.9 main lineage; the runtime contract remains unchanged.
 
 The v3.4 line established the executable operator benchmark across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution. Later releases added local product surfaces, proof compatibility, recovery, Control Plane safety, MCP/A2A interoperability, OTLP audit export, diagnostics, network-boundary hardening, and reproducible distribution.
 
@@ -86,7 +86,7 @@ The release pipeline re-downloads published assets, verifies SHA256 sums, verifi
 
 `ghcr.io/ahmedsaturki/workproof-runtime:3.8.10@sha256:cad9c467db8fe82abd1b15d30d90dbf7e87ad6683f44a8c7c8763c327af6a1c8`
 
-The immutable commit tag is `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`.
+The immutable commit tag is `9daac7a926ce1631ac708a6c234379d622c56c19`.
 
 ### Self-hosted runtime
 
