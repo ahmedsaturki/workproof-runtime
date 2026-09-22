@@ -6,8 +6,9 @@ import type {
   WorkContract,
   WorkObject
 } from "../../core/src/types";
+import type { WorkStep } from "../../runtime/src/engine";
 
-export type { CapabilityReceipt, EvidenceRef, SuccessCriterion, VerificationResult, WorkContract, WorkObject };
+export type { CapabilityReceipt, EvidenceRef, SuccessCriterion, VerificationResult, WorkContract, WorkObject, WorkStep };
 
 export interface ProofReference {
   digest: string;
@@ -23,6 +24,7 @@ export interface WorkDispatchRequest {
   deliverables?: string[];
   riskClass?: WorkContract["riskClass"];
   approvalRequired?: boolean;
+  steps?: WorkStep[];
   metadata?: Record<string, unknown>;
 }
 
