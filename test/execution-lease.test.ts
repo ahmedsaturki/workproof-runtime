@@ -85,6 +85,7 @@ function makeEngine(
     ownerId: string;
     ttlMs: number;
     heartbeatIntervalMs?: number;
+    timers?: ExecutionLeaseTimers;
   }
 ): WorkEngine {
   return new WorkEngine(
