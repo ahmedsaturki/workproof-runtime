@@ -34,7 +34,7 @@ function fixture() {
       attempts: 1,
       idempotencyKey: "internal-smoke-key"
     }],
-    artifacts: [{ uri: "file:///tmp/smoke-proof.json", mediaType: "application/json" }],
+    artifacts: [{ uri: require("url").pathToFileURL(require("path").join(require("os").tmpdir(), "smoke-proof.json")).toString(), mediaType: "application/json" }],
     verification: {
       status: "verified",
       verifiedAt: "2026-09-22T00:00:00.000Z",
@@ -42,7 +42,7 @@ function fixture() {
         criterion: "persisted Work Object remains readable",
         status: "passed",
         details: "product smoke fixture",
-        evidence: [{ kind: "observed", uri: "file:///tmp/smoke-proof.json" }]
+        evidence: [{ kind: "observed", uri: require("url").pathToFileURL(require("path").join(require("os").tmpdir(), "smoke-proof.json")).toString() }]
       }]
     },
     events: [{
