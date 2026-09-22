@@ -68,6 +68,14 @@ function safeRelativePath(rootDir: string, relativePath: string, label: string):
   return absolute;
 }
 
+function assertRegularFileWithin(rootDir: string, filePath: string, label: string): void {
+  if (!fs.existsSync(filePath)) throw new Error(label + " is missing");
+  const stat = fs.lstatSync(filePath);
+  if (!stat.isFile() || stat.isSymbolicLink()) throw new Error(label + " must be a regular file");
+  const realPath = fs.realpathSync(filePath);
+  assertInside(rootDir, realPath, label);
+}
+
 function localArtifactPath(uri: string): string | null {
   if (typeof uri !== "string" || !uri) return null;
   let candidate = uri;
@@ -262,6 +270,7 @@ export function verifyPortableProof(bundleDir: string): PortableProofManifest {
     throw new Error("Portable proof file is missing");
   }
 
+  assertRegularFileWithin(bundleDir, proofPath, "Portable proof");
   const proofData = JSON.parse(fs.readFileSync(proofPath, "utf8"));
   const proof = requireIntegrityProof(proofData);
 
@@ -276,13 +285,31 @@ export function verifyPortableProof(bundleDir: string): PortableProofManifest {
     throw new Error("Portable proof digest or work ID mismatch");
   }
 
+  const proofUris = new Set(
+    Array.isArray(proofData.artifacts)
+      ? proofData.artifacts
+        .map((artifact: any) => artifact?.uri)
+        .filter((uri: unknown): uri is string => typeof uri === "string" && uri.length > 0)
+      : []
+  );
+  const manifestUris = new Set(manifest.artifacts.map((artifact) => artifact.uri));
+  if (proofUris.size !== manifestUris.size || [...proofUris].some((uri) => !manifestUris.has(uri))) {
+    throw new Error("Portable proof artifact manifest does not match proof artifacts");
+  }
+
+  for (const uri of proofUris) {
+    const manifestArtifact = manifest.artifacts.find((artifact) => artifact.uri === uri);
+    if (!manifestArtifact) throw new Error("Portable artifact manifest entry is missing: " + uri);
+    if (uri.startsWith("file://") && !manifestArtifact.portable) {
+      throw new Error("Local file artifact must be portable: " + uri);
+    }
+  }
+
   for (const artifact of manifest.artifacts) {
     if (!artifact.portable) continue;
 
     const artifactPath = safeRelativePath(bundleDir, artifact.path as string, "portable artifact");
-    if (!fs.existsSync(artifactPath) || !fs.statSync(artifactPath).isFile()) {
-      throw new Error("Portable artifact is missing: " + artifact.uri);
-    }
+    assertRegularFileWithin(bundleDir, artifactPath, "Portable artifact");
 
     const stat = fs.statSync(artifactPath);
     if (stat.size !== artifact.size || sha256File(artifactPath) !== artifact.sha256) {
