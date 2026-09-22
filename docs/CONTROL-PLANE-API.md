@@ -31,7 +31,7 @@ Returns runtime and API protocol identity without requiring authentication:
 
 Requires the configured `read` permission. Returns the capabilities registered by the running runtime, including version, supported operations, and risk classification. The list is sorted deterministically by capability name and operations.
 
-The inventory is descriptive metadata; it does not authorize an operation by itself. Actual execution still passes through WorkProof risk ceilings, policy, idempotency, effect tracking, independent verification, reconciliation, recovery, and proof.
+The inventory is descriptive metadata; it does not authorize an operation by itself. Actual execution still passes through WorkProof risk ceilings, the control-plane execution policy, idempotency, effect tracking, independent verification, reconciliation, recovery, and proof. The default control-plane execution ceiling is `external_write`; `destructive` and `financial` work are not executable through this default boundary, and a Work Contract marked `approvalRequired` is blocked until an explicit approval mechanism is provided by the host application.
 
 ## Work
 
