@@ -12,6 +12,8 @@ v3.8.7 is a patch release following the verified v3.8.6 stable distribution.
 
 ## Verification
 
+The release-state verifier is compatible with the repository's shallow CI checkout: it checks whether the published release commit is locally available and fetches that commit by SHA when required before comparing post-release drift.
+
 The release is valid only after the complete release and container verification chain succeeds, including:
 
 - clean install and security checks;
