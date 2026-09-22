@@ -33,7 +33,7 @@ jobs:
           "$WORKPROOF_BROWSER_BINARY" --version
       - name: Chromium CDP preflight
         run: node scripts/chromium-cdp-smoke.js
-      - run: npm install
+      - run: npm ci
       - name: Dependency security audit
         run: npm audit --audit-level=high
       - name: Secret scan
