@@ -105,7 +105,7 @@ Remaining product-validation gates:
 Remaining product-validation gates:
 
 5. Operator UX for failure, ambiguity, recovery, and proof—not only success paths.
-6. Versioned compatibility policy for capabilities and proof bundles.
+6. Operator UX for failure, ambiguity, recovery, and proof—not only success paths.
 7. External deployment profile and runbook validation in a disposable environment when infrastructure is available.
 
 ## Stop conditions
@@ -137,5 +137,6 @@ The following gates are executable and CI-verified on the current dev.4 release 
 - [x] End-to-end resume smoke re-verifies a persisted research outcome after simulated interruption.
 - [x] Persisted idempotency keys reject changed operation or input before any retry.
 - [x] Portable proof export, independent bundle verification, and import/materialization workflow.
+- [x] Explicit versioned proof compatibility policy with strict unsupported-version handling.
 - [x] Source-tree verification includes the product readiness specification and product smoke suite.
 - [x] CI validates the above together with the existing security, retention, benchmark, demo, CLI, and live GitHub gates.
