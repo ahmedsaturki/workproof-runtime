@@ -8,24 +8,26 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 
 ## Current main
 
-- package version: `3.6.0-dev.1`
-- release source tag commit: `de3ad9fcc10b9db7487c78620607f669249adaa9`
-- main closeout commit: `04bf0c218badd18c6a20e343030fbad71345d835`
+- package version: `3.7.0-dev.1`
+- release source tag commit: `f776ed9f5fcbb055f7da41ca69714c19b20f9aad`
+- promotion branch: `promote/v3.7.0-dev.1-main`
+- main closeout commit: pending promotion merge
 
 ## Current verified release
 
-- version: `3.6.0-dev.1`
-- tag: `v3.6.0-dev.1`
-- release commit: `de3ad9fcc10b9db7487c78620607f669249adaa9`
-- GitHub Release id: 393506625
-- release verification run #161: success
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.6.0-dev.1`
-- GHCR digest: `sha256:2c5ba1b58697ec545cf7098d93e8750394b9b1e2ccd9e8f45b647cec689bd247`
-- immutable image tag: `de3ad9fcc10b9db7487c78620607f669249adaa9`
-- Container verification run #158: success
+- version: `3.7.0-dev.1`
+- tag: `v3.7.0-dev.1`
+- release commit: `f776ed9f5fcbb055f7da41ca69714c19b20f9aad`
+- GitHub Release id: 393526164
+- release verification run #171: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.7.0-dev.1`
+- GHCR digest: `sha256:28e8d9af0ab71442b33df8b72308089f520b5ba23128401c0a05675809ba1748`
+- immutable image tag: `f776ed9f5fcbb055f7da41ca69714c19b20f9aad`
+- Container verification run #168: success
 - five release assets published and post-publication integrity verified
 
 ## Product gates
+
 
 - [x] local WorkProof Studio
 - [x] packaged `workctl`
@@ -72,3 +74,15 @@ The disposable topology gate verifies TLS, authentication, secret non-leakage, p
 ## Verification rule
 
 A capability receipt is not independent proof. Work is verified only when independent evidence satisfies the Work Contract and the published artifact remains verifiable outside the running operator.
+
+
+## v3.7 promotion
+
+- [x] A2A 1.0 interoperability product surface
+- [x] OTLP/HTTP JSON audit export
+- [x] Work Object list/paging for SDK and adapters
+- [x] expanded Studio operational timeline
+- [x] packed A2A artifact smoke
+- [x] release publication and GHCR digest verification
+- [x] production Compose digest pin
+- [ ] post-merge main CI closeout

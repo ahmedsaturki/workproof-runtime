@@ -148,6 +148,37 @@ test("authenticated control plane enforces read/write permissions and audits act
   }
 });
 
+test("SDK lists Work Objects with deterministic status filtering", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "workproof-control-plane-list-"));
+  const repo = new JsonWorkRepository(path.join(root, "work"));
+  const first = sampleWork();
+  first.status = "verified";
+  first.updatedAt = "2026-09-22T00:00:02.000Z";
+  const second = sampleWork();
+  second.id = "second";
+  second.status = "failed";
+  second.updatedAt = "2026-09-22T00:00:01.000Z";
+  repo.save(first);
+  repo.save(second);
+  const server = await startControlPlane({ repository: repo });
+  try {
+    const client = new ControlPlaneClient({ baseUrl: `http://${server.host}:${server.port}` });
+    const all = await client.listWork({ limit: 10 });
+    assert.deepEqual(all.map(item => item.id), [first.id, "second"]);
+    const page1 = await client.listWorkPage({ limit: 1 });
+    assert.deepEqual(page1.items.map(item => item.id), [first.id]);
+    assert.equal(page1.total, 2);
+    assert.equal(page1.offset, 0);
+    const page2 = await client.listWorkPage({ limit: 1, offset: 1 });
+    assert.deepEqual(page2.items.map(item => item.id), ["second"]);
+    const verified = await client.listWork({ status: "verified" });
+    assert.deepEqual(verified.map(item => item.id), [first.id]);
+  } finally {
+    await server.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("SDK rejects invalid URLs and malformed Work Objects", () => {
   assert.throws(() => new ControlPlaneClient({ baseUrl: "ftp://localhost:1" }), /HTTP or HTTPS/);
   assert.throws(() => parseWorkObject(JSON.stringify({ id: "x" })), /Invalid Work Object/);

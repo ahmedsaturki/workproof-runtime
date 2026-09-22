@@ -50,6 +50,7 @@ export interface WorkContract {
   deliverables: string[];
   riskClass: RiskClass;
   approvalRequired?: boolean;
+  metadata?: Record<string, unknown>;
 }
 
 export interface WorkEvent {

@@ -726,6 +726,7 @@ button { background: #21262d; color: #e6edf3; border: 1px solid #30363d; padding
 <section id="operatorGuidance" class="card" aria-label="Operator guidance"></section>
 <section id="effectsSummary" class="card" aria-label="Effect summary"></section>
 <section id="capabilityChain" class="card" aria-label="Capability chain"></section>
+<section id="timeline" class="card" aria-label="Operational timeline"></section>
 <section id="proofSection" hidden>
 <h3>Proof & audit</h3>
 <div id="proofs"></div>
@@ -741,6 +742,7 @@ const payload = document.getElementById("payload");
 const operatorGuidanceBox = document.getElementById("operatorGuidance");
 const effectsSummaryBox = document.getElementById("effectsSummary");
 const capabilityChainBox = document.getElementById("capabilityChain");
+const timelineBox = document.getElementById("timeline");
 const token = document.getElementById("token");
 const dispatchObjective = document.getElementById("dispatchObjective");
 const actionStatus = document.getElementById("actionStatus");
@@ -979,6 +981,7 @@ async function load() {
 }
 
 async function show(id) {
+  selectedId = id;
   const response = await fetch("/api/work/" + encodeURIComponent(id), {cache:"no-store"});
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || "Failed to load work");
@@ -992,6 +995,10 @@ async function show(id) {
   effectsSummaryBox.innerHTML = "<small>Effect summary</small><h3>" + Number(effects.total) + " effect(s)</h3><div>verified " + Number(effects.verified) + " · unknown " + Number(effects.unknown) + " · unresolved " + Number(effects.unresolved) + " · failed " + Number(effects.failed) + " · attempts " + Number(effects.attempts) + "</div>";
   const chain = Array.isArray(data.work.capabilityChain) ? data.work.capabilityChain : [];
   capabilityChainBox.innerHTML = "<small>Capability chain</small>" + (chain.length ? "<ol>" + chain.map(item => "<li><strong>" + esc(item.operation) + "</strong> → " + esc(item.capability) + " · " + esc(item.status) + " · attempts " + Number(item.attempts) + "</li>").join("") + "</ol>" : "<div>No executed capabilities recorded.</div>");
+  const events = Array.isArray(data.work.events) ? data.work.events.slice(-50).reverse() : [];
+  timelineBox.innerHTML = "<small>Operational timeline</small>" + (events.length
+    ? "<ol>" + events.map(event => "<li><strong>" + esc(event.type) + "</strong> · " + esc(event.at) + "<br>" + esc(event.message) + "</li>").join("") + "</ol>"
+    : "<div>No runtime events recorded.</div>");
   const resumeButton = document.getElementById("resume");
   resumeButton.disabled = data.work.status === "verified" || data.work.status === "cancelled";
   resumeButton.title = data.work.status === "verified" ? "Verified work should not be resumed." : data.work.status === "cancelled" ? "Cancelled work requires an approved control path." : "Resume this Work Object through the control plane.";

@@ -14,6 +14,7 @@ const {
 export interface ControlPlaneRepository {
   load(id: string): import("../../core/src/types").WorkObject;
   save(work: import("../../core/src/types").WorkObject): string;
+  list?(): string[];
 }
 
 export interface ControlPlaneOptions {
@@ -30,6 +31,7 @@ export interface ControlPlaneOptions {
   leaseStatusSource?: { listLeaseStatuses(): LeaseStatus[] };
   capabilitySource?: { listCapabilities(): Array<{ name: string; version: string; operations: string[]; riskClass: string }> };
   runtimeVersion?: string;
+  telemetry?: { emit(entry: Record<string, unknown>): void | Promise<boolean> };
 }
 
 export interface RunningControlPlane {
@@ -116,8 +118,10 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
   }
 
   const audit = (entry: Record<string, unknown>): void => {
-    if (!auditPath) return;
-    fs.appendFileSync(auditPath, JSON.stringify(entry) + "\n", "utf8");
+    if (auditPath) fs.appendFileSync(auditPath, JSON.stringify(entry) + "\n", "utf8");
+    if (options.telemetry) {
+      try { void Promise.resolve(options.telemetry.emit(entry)).catch(() => {}); } catch {}
+    }
   };
 
   const idempotency = options.idempotencyDbPath
@@ -255,6 +259,66 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
           requestId: id,
           staleAfterMs: workerStaleAfterMs,
           workers: options.workerStatusSource.listWorkerStatuses(workerStaleAfterMs)
+        });
+        return;
+      }
+
+      if (method === "GET" && url.pathname === "/v1/work") {
+        if (!options.repository.list) {
+          sendJson(res, 503, { error: "work-list-not-configured", requestId: id });
+          return;
+        }
+        const rawLimit = url.searchParams.get("limit");
+        const limit = rawLimit === null ? 100 : Number(rawLimit);
+        if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100) {
+          sendJson(res, 400, { error: "limit must be an integer from 1 to 100", requestId: id });
+          return;
+        }
+        const rawOffset = url.searchParams.get("offset");
+        const offset = rawOffset === null ? 0 : Number(rawOffset);
+        if (!Number.isSafeInteger(offset) || offset < 0 || offset > 1000000) {
+          sendJson(res, 400, { error: "offset must be an integer from 0 to 1000000", requestId: id });
+          return;
+        }
+        const status = url.searchParams.get("status");
+        const contextId = url.searchParams.get("contextId");
+        const includeArtifacts = url.searchParams.get("includeArtifacts") === "true";
+        const files = options.repository.list();
+        const works = files
+          .filter((file) => file.endsWith(".json"))
+          .map((file) => options.repository!.load(file.slice(0, -5)))
+          .filter((work) =>
+            (!status || String(work.status) === status) &&
+            (!contextId || work.contract?.metadata?.a2aContextId === contextId)
+          )
+          .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+        sendJson(res, 200, {
+          version: "1.2",
+          requestId: id,
+          total: works.length,
+          offset,
+          work: works.slice(offset, offset + limit).map((work) => ({
+            id: work.id,
+            objective: work.contract?.objective ?? "",
+            status: work.status,
+            riskClass: work.contract?.riskClass,
+            approvalRequired: Boolean(work.contract?.approvalRequired),
+            createdAt: work.createdAt,
+            updatedAt: work.updatedAt,
+            ...(typeof work.contract?.metadata?.a2aContextId === "string"
+              ? { a2aContextId: work.contract.metadata.a2aContextId }
+              : {}),
+            ...(includeArtifacts
+              ? {
+                  artifacts: Array.isArray(work.artifacts)
+                    ? work.artifacts.map((artifact) => ({
+                        ...(typeof artifact?.uri === "string" ? { uri: artifact.uri } : {}),
+                        ...(typeof artifact?.metadata?.mediaType === "string" ? { mediaType: artifact.metadata.mediaType } : {})
+                      }))
+                    : []
+                }
+              : {})
+          }))
         });
         return;
       }
@@ -403,7 +467,7 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
       });
 
       const status =
-        /Unknown work/i.test(message)
+        /Unknown work|ENOENT|no such file/i.test(message)
           ? 404
           : (/Invalid work id|Invalid JSON|Idempotency-Key/i.test(message) ? 400 : 500);
 

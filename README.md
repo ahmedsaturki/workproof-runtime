@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.4 benchmark foundations remain verified; v3.6.0-dev.1 is the current shipped prerelease.**
+**v3.4 benchmark foundations remain verified; v3.7.0-dev.1 is the current CI-verified release candidate. The published shipped prerelease remains v3.6.0-dev.1 until the v3.7 publication gate closes.**
 
 The v3.4 line is the first executable operator benchmark with controlled failure injection across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution.
 
@@ -81,6 +81,18 @@ M004 accepted an external effect whose acknowledgement was lost, reconciled exis
 
 M005 retried the primary capability under bounded ambiguity, selected a compatible fallback, and independently verified the stored outcome.
 
+## v3.7 release candidate
+
+The v3.7 candidate adds:
+- A2A 1.0 JSON-RPC interoperability over the authenticated WorkProof Control Plane.
+- A2A Agent Card discovery, task listing/filtering/paging, and deterministic mutation idempotency.
+- Work Object listing and paging in the Control Plane and SDK.
+- Dependency-free OTLP/HTTP JSON audit export with an explicit field allowlist.
+- An expanded Studio operational timeline.
+- A2A-ready representative mission and packed A2A artifact smoke.
+
+Feature CI #1179 passed the complete repository gate on the candidate commit. Release publication, GHCR digest pinning, and main promotion are still separate final release gates.
+
 ## Distribution and operation
 
 ### GitHub Release
@@ -125,7 +137,7 @@ The repository includes:
 - `docs/CONTAINER-RUNTIME.md`
 - `docs/PRODUCTION-DEPLOYMENT.md`
 
-The production compose targets the verified v3.5.0-dev.1 image digest, binds Studio to localhost, and persists `./work-runs`. The separate control-plane process is the authenticated mutation boundary and can be connected to Studio with `WORKPROOF_CONTROL_PLANE_URL` plus a matching auth policy. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
+The production compose targets the verified v3.6.0-dev.1 image digest, binds Studio to localhost, and persists `./work-runs`. The separate control-plane process is the authenticated mutation boundary and can be connected to Studio with `WORKPROOF_CONTROL_PLANE_URL` plus a matching auth policy. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
 
 `package.json` remains `private: true`; no npm registry publication is claimed.
 
@@ -136,6 +148,19 @@ The messaging capability is intentionally local-only. A capability receipt is no
 ## Product boundary
 
 WorkProof Runtime is not a replacement for agents, browsers, workflow engines, MCP registries, memory systems, observability backends, or OSINT graphs. Those systems can integrate as capabilities or adapters while Work Object, effect, verification, recovery, and proof semantics remain invariant.
+
+## v3.7 interoperability and observability
+
+The v3.7 development line adds:
+- an A2A 1.0 HTTP/JSON-RPC interoperability adapter backed by the authenticated WorkProof Control Plane;
+- deterministic mutation idempotency for A2A message/task mutations;
+- Work Object listing through the Control Plane and SDK;
+- allowlisted OTLP/HTTP JSON export of Control Plane audit events;
+- a packed A2A artifact smoke and A2A-ready representative mission.
+
+A2A and telemetry are adapters only. WorkProof remains the sole authority for execution, risk policy, effects, verification, reconciliation, recovery, and proof.
+
+See `docs/A2A-ADAPTER.md` and `docs/OPENTELEMETRY.md`.
 
 ## Current product-validation state
 

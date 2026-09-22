@@ -73,6 +73,7 @@ test("Studio serves an operational dashboard and sanitized Work Object APIs", as
     assert.match(html, /Operator guidance/);
     assert.match(html, /Effect summary/);
     assert.match(html, /Capability chain/);
+    assert.match(html, /Operational timeline/);
     assert.match(page.headers.get("content-security-policy") ?? "", /default-src 'self'/i);
     assert.equal(page.headers.get("x-content-type-options"), "nosniff");
     assert.equal(page.headers.get("cache-control"), "no-store");
@@ -94,11 +95,28 @@ test("Studio serves an operational dashboard and sanitized Work Object APIs", as
     assert.equal(data.work.effectsSummary.verified, 1);
     assert.equal(data.work.capabilityChain[0].capability, "pack.local.read");
     assert.equal(data.work.capabilityChain[0].sequence, 1);
+    assert.equal(data.work.events[0].type, "work.verified");
     assert.equal(data.work.effects[0].idempotencyKey, undefined);
     assert.equal(data.work.contract, undefined);
     assert.equal(data.work.inputs, undefined);
     assert.equal(data.work.constraints, undefined);
     assert.match(data.work.verification.checks[0].details, /independent/);
+  } finally {
+    await studio.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("Studio detail binds selected Work Object for control actions", async () => {
+  const root = tempDir("workproof-studio-selection-");
+  const repository = new JsonWorkRepository(root);
+  repository.save(workFixture());
+  const studio = await startStudio({ workDirectory: root, port: 0 });
+  try {
+    const page = await fetch(`http://127.0.0.1:${studio.port}`);
+    const html = await page.text();
+    assert.match(html, /selectedId = id/);
+    assert.match(html, /id="timeline"/);
   } finally {
     await studio.close();
     fs.rmSync(root, { recursive: true, force: true });

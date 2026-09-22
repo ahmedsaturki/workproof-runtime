@@ -37,8 +37,8 @@ The default deployment is local/self-hosted. Remote infrastructure is an optiona
 ### P2 — Interoperability adapters
 
 - MCP adapter: expose approved capabilities without replacing WorkProof semantics. **Implemented:** v3.6 adds the official MCP v2 stdio adapter, authenticated Control Plane forwarding, explicit mutation idempotency, protocol acceptance tests, and packed-package verification.
-- A2A adapter: connect external agents as planners/requesters while WorkProof remains the execution/proof boundary.
-- OpenTelemetry adapter: correlate external telemetry with work/evidence without making telemetry authoritative.
+- A2A adapter: connect external agents as planners/requesters while WorkProof remains the execution/proof boundary. **Implemented in v3.7 candidate:** Agent Card, JSON-RPC task lifecycle, authentication, idempotency, task listing/filtering/paging, and Control Plane forwarding.
+- OpenTelemetry adapter: correlate external telemetry with work/evidence without making telemetry authoritative. **Implemented in v3.7 candidate:** dependency-free OTLP/HTTP JSON audit export with field allowlisting and non-fatal exporter failures.
 
 ## Local-first contract
 
@@ -85,9 +85,9 @@ A product release must not be called production-ready solely because CI is green
 
 ## Current verified baseline — 2026-09-22
 
-The repository now records the coherent `v3.6.0-dev.1` distribution path. Main CI, release verification, container publication, secret scanning, and the disposable external-topology gate are integrity-verified. Localhost-bound production compose and the deployment runbook are pinned to the verified `v3.6.0-dev.1` image.
+The repository now records the coherent published `v3.7.0-dev.1` distribution path. Release workflow #171 and Container workflow #168 verified the release and container artifacts, including published digest lineage, restart/persistence, disposable TLS/auth topology, backup/restore, rollback, and anonymous GHCR pull.
 
-These facts establish a strong verified foundation, but they do **not** by themselves establish a public production deployment. Public host/DNS/TLS/auth/secrets provisioning remains an external infrastructure gate.
+Public host/DNS/TLS/auth/secrets provisioning remains an external deployment-resource boundary; the repository does not claim those external resources are provisioned.
 
 ## Next implementation gates
 
@@ -105,8 +105,8 @@ Completed:
 
 Remaining:
 
-8. Broader mission composition and operational visualization beyond the current representative multi-capability chain.
-9. A2A/OpenTelemetry adapters and wider mission coverage beyond the current prerelease acceptance set.
+8. Broader ecosystem expansion remains a future product phase rather than an unfinished v3.7 release gate.
+9. Future A2A streaming/push/multi-turn support and richer telemetry signals remain optional follow-on capabilities.
 
 ## Stop conditions
 
@@ -157,8 +157,13 @@ The local-first P0 foundations are complete and executable:
 - [x] package distribution includes operator docs and representative mission examples
 - [x] MCP v2 stdio interoperability adapter with explicit mutation idempotency
 - [x] official MCP client protocol acceptance and packed-package smoke
+- [x] A2A 1.0 JSON-RPC interoperability adapter with authenticated Control Plane forwarding
+- [x] A2A Agent Card, task lifecycle, ListTasks filtering/paging, and mutation idempotency
+- [x] OTLP/HTTP JSON audit export with bounded field allowlist
+- [x] expanded Studio operational timeline
+- [x] packed A2A artifact smoke and representative A2A-ready mission
 
-Remaining product-validation work is expansion beyond the current prerelease scope: broader mission composition, additional adapters, and wider operational visualization. The required local-first/external-topology acceptance gates for this prerelease are complete.
+The required local-first and external-topology acceptance gates for v3.7.0-dev.1 are complete. Future expansion may add wider mission composition and interoperability features without changing WorkProof authority semantics.
 
 
 ## v3.6.0-dev.1 release state
@@ -196,3 +201,10 @@ The MCP interoperability layer is executable, authenticated through the WorkProo
 Mutation tools require explicit idempotency keys. Capability metadata never grants execution permission. The Control Plane remains authoritative for authentication, authorization, risk ceilings, execution, effect tracking, independent verification, reconciliation, recovery, and proof.
 
 The adapter is distributed through the same source/package/container release path as the runtime and has a packed-package acceptance test from an installed artifact.
+
+
+## v3.7.0-dev.1 release state
+
+The v3.7.0-dev.1 product surface is published and verified. It includes A2A interoperability, allowlisted OTLP/HTTP JSON audit export, Work Object list/paging, expanded Studio operational timeline, packed A2A verification, and the representative A2A-ready mission.
+
+Release artifacts and the GHCR container are integrity-verified and tied to release commit `f776ed9f5fcbb055f7da41ca69714c19b20f9aad`.

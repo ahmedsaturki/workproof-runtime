@@ -2,9 +2,9 @@
 
 Supported distribution target: the Node 24 GHCR container.
 
-- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.6.0-dev.1`
-- pinned digest: `sha256:2c5ba1b58697ec545cf7098d93e8750394b9b1e2ccd9e8f45b647cec689bd247`
-- immutable image tag: `de3ad9fcc10b9db7487c78620607f669249adaa9`
+- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.7.0-dev.1`
+- pinned digest: `sha256:28e8d9af0ab71442b33df8b72308089f520b5ba23128401c0a05675809ba1748`
+- immutable image tag: `f776ed9f5fcbb055f7da41ca69714c19b20f9aad`
 - bind: `127.0.0.1:8788`
 - persistent data: `./work-runs -> /data/work-runs`
 
@@ -48,13 +48,13 @@ Do not expose port 8788 directly to the Internet. Use a TLS reverse proxy with a
 
 Back up `work-runs` and any configured proof vault. Roll back by pinning Compose to a previously verified immutable GHCR tag@digest and restarting the stack.
 
-## Verified v3.6.0-dev.1 release
+## Verified v3.7.0-dev.1 release
 
-- GitHub Release: `v3.6.0-dev.1`
-- release commit: `de3ad9fcc10b9db7487c78620607f669249adaa9`
-- GHCR digest: `sha256:2c5ba1b58697ec545cf7098d93e8750394b9b1e2ccd9e8f45b647cec689bd247`
-- rollback release: `3.5.0-dev.1`
-- rollback immutable tag: `cb48780451ed2eddf9211bc5f267b026e2243ca1`
-- rollback digest: `sha256:ab5b90eb3722b96d714f105536f5c4d6cdc18cebe22992c4fe758fbc88f547d7`
+- GitHub Release: `v3.7.0-dev.1`
+- release commit: `f776ed9f5fcbb055f7da41ca69714c19b20f9aad`
+- GHCR digest: `sha256:28e8d9af0ab71442b33df8b72308089f520b5ba23128401c0a05675809ba1748`
+- rollback release: `3.6.0-dev.1`
+- rollback immutable tag: `de3ad9fcc10b9db7487c78620607f669249adaa9`
+- rollback digest: `sha256:2c5ba1b58697ec545cf7098d93e8750394b9b1e2ccd9e8f45b647cec689bd247`
 
 The disposable external topology gate verifies TLS termination, authentication, secret non-leakage, persistence, backup/restore, rollback, and deny-by-default network exposure. The repository does not claim a public host, public DNS, public certificate, external production secrets, or third-party hosted control plane are provisioned.
