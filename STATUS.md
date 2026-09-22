@@ -28,8 +28,8 @@ Main contains the v3.4 benchmark, restart/resume safety, portable proof, explici
 
 ## Distribution gates
 
-- [ ] GitHub Release v3.4.0-dev.9 publication and re-download verification
-- [ ] GHCR v3.4.0-dev.9 publication, health, anonymous pull, and digest verification
+- [x] GitHub Release v3.4.0-dev.9 publication and re-download verification
+- [x] GHCR v3.4.0-dev.9 publication, health, anonymous pull, and digest verification
 - [ ] main promotion CI after release
 
 ## Benchmark
