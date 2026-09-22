@@ -65,4 +65,12 @@ After any governance change, verify all of the following from GitHub:
 9. Code-owner review is required.
 10. No bypass actors are configured.
 
+## Release and tag integrity
+
+The published `v3.8.10` tag currently resolves to the verified release commit `9daac7a926ce1631ac708a6c234379d622c56c19`, and Release workflow #261 verified tag/commit lineage plus the five published assets and their SHA256 manifest.
+
+GitHub's current Release API reports `immutable: false` for `v3.8.10`. Therefore the release pipeline's digest/lineage checks provide publication-time integrity evidence, but GitHub-level **immutable release enforcement is not retroactive for this already-published release**.
+
+For future release integrity, enable GitHub release immutability in repository/organization settings and add an active tag ruleset covering release tags (for example, `v*`) with tag deletion and force-update protection. GitHub documents that immutable releases lock the associated tag and release assets after publication, while tag rulesets can separately restrict updates/deletions. This is a supply-chain hardening layer above the release workflow.
+
 Branch protection/rulesets are GitHub repository controls around source delivery. They do not replace WorkProof Runtime's runtime authorization, risk, effect, verification, reconciliation, recovery, or proof boundaries.
