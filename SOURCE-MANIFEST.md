@@ -4,13 +4,14 @@
 
 The current distribution-ready tree contains **223 required paths** enforced by `scripts/verify-source-tree.js`. The count is kept synchronized with the executable source-tree gate; every required path is present on the current main lineage.
 
-The historical v3.4 implementation closeout was 171 paths. The current stable distribution additionally covers the release/container, interoperability, diagnostics, current release metadata, and reproducible-install surfaces.
+The historical v3.4 implementation closeout was 171 paths. The current stable distribution additionally covers the release/container, interoperability, diagnostics, current release metadata, network-boundary hardening, and reproducible-install surfaces.
 
 - `Dockerfile`
 - `.dockerignore`
 - `compose.production.yaml`
 - `.github/workflows/release.yml`
 - `.github/workflows/container.yml`
+- `.github/CODEOWNERS`
 - `docs/CONTAINER-RUNTIME.md`
 - `docs/PRODUCTION-DEPLOYMENT.md`
 - `docs/RELEASE-3.4.0-dev.2.md`
@@ -18,8 +19,6 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 - `test/product-smoke.test.ts`
 - `test/release-metadata.test.ts`
 - `test/control-plane-execution-policy.test.ts`
-- `package-lock.json`
-- `.github/CODEOWNERS`
 
 ## V3.4 benchmark
 
@@ -45,7 +44,6 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 - release verification run: #30 (success)
 - container verification run: #27 (success)
 - GHCR digest: `sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`
-- latest main CI: success
 - product readiness PR #74: local-first product gate and restart smoke
 
 ## Current v3.8.1 distribution state
@@ -61,12 +59,15 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 - reproducible-install hardening PR #97: merged
 - release-metadata/source-manifest PR #98: merged
 - Control Plane safety PR #102: merged
+- network-boundary hardening PR #104: merged
 - `npm ci` is enforced by CI, release, and Docker build paths
 - package metadata declares `Apache-2.0`; the repository license file contains the complete Apache License 2.0 text
 - executable source-tree gate currently verifies 223 required paths
 
 ## Verified main lineage
 
+- current verified main: `9ef0f74f4356f6f237a66422116fb064eacddcd5`
+- main CI #1280: success
 - latest verified release lineage: v3.8.1
 - v3.3 implementation merge: `c5e951056461c37f45bed8bb8406d119880d63df`
 - v3.3 closeout correction: `0c92a8c86950776243646de4bb40b0c0f2fe5876`
@@ -77,4 +78,4 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 
 ## Verification discipline
 
-Path completeness, compilation, security, retention, integration behavior, benchmark, demo, live smoke, release artifacts, and container publication are separate gates. Passing one does not imply the others passed.
+Path completeness, compilation, security, retention, integration behavior, benchmark, demo, live smoke, release artifacts, container publication, and network-boundary regressions are separate gates. Passing one does not imply the others passed.
