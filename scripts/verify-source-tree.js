@@ -19,6 +19,7 @@ const required = [
   "apps/registry-server.ts",
   "apps/lease-worker.ts",
   "apps/fenced-worker.ts",
+  "apps/mcp-server.ts",
   "apps/studio.ts",
   "docs/BENCHMARK-V1.md",
   "docs/BENCHMARK-V2.md",
