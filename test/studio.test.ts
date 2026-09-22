@@ -33,7 +33,7 @@ function workFixture() {
       attempts: 1,
       idempotencyKey: "internal-key-not-for-ui"
     }],
-    artifacts: [{ uri: "file:///tmp/report.json", mediaType: "application/json" }],
+    artifacts: [{ uri: require("url").pathToFileURL(require("path").join(require("os").tmpdir(), "report.json")).toString(), mediaType: "application/json" }],
     verification: {
       status: "verified",
       verifiedAt: "2026-09-21T00:00:00.000Z",
