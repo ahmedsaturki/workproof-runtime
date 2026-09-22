@@ -76,7 +76,7 @@ The current stable product baseline is **v3.8.9**.
 - Release workflow #245: success
 - Container workflow #242: success
 - GHCR digest: `sha256:ccde8ada2227b016968328f9eec1849e7424d12c2acc89081c30ca191bb6df66`
-- immutable image tag: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
+- immutable image tag: `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`
 - rollback: v3.8.1
 
 The v3.8.9 distribution additionally enforces an immutable Node 24.21.0 Trixie slim base digest and a bounded production resource/log envelope.
