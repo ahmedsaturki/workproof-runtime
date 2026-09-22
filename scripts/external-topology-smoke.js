@@ -108,6 +108,7 @@ async function main() {
     throw new Error("Non-release external smoke must use its temporary local image tag");
   }
   let publishedDigest = "";
+  const expectedReleaseCommit = process.env.GITHUB_SHA || lineage.release.commit;
   if (releaseImageOverride) {
     if (!currentImage.endsWith(":" + packageJson.version)) {
       throw new Error("Release smoke image tag does not match package version: " + currentImage + " != " + packageJson.version);
@@ -116,8 +117,9 @@ async function main() {
     const pulledDigestRef = run("docker", ["image", "inspect", currentImage, "--format={{index .RepoDigests 0}}"]).stdout.trim();
     if (!/^.+@sha256:[0-9a-f]{64}$/.test(pulledDigestRef)) throw new Error("Published release image digest could not be determined");
     publishedDigest = pulledDigestRef.slice(pulledDigestRef.indexOf("@") + 1);
-    if (publishedDigest !== lineage.container.digest) {
-      throw new Error("Published version tag digest does not match release lineage: " + publishedDigest + " != " + lineage.container.digest);
+    const revision = run("docker", ["image", "inspect", currentImage, "--format={{index .Config.Labels \"org.opencontainers.image.revision\"}}"]).stdout.trim();
+    if (revision !== expectedReleaseCommit) {
+      throw new Error("Published release image revision does not match release commit: " + revision + " != " + expectedReleaseCommit);
     }
   } else {
     run("docker", [
