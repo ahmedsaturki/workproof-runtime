@@ -29,3 +29,15 @@ The stable release is rebuilt and revalidated under its own version, release tag
 ## Safety boundary
 
 The diagnostics surface is observational only. It never executes work, mutates authoritative Work Objects, declares verification, or replaces independent proof.
+
+
+## Stable publication verification
+
+- GitHub Release: `v3.8.0` / ID `393558255`
+- release commit: `2b02d22e897d5fe736f93267c72036d951f74082`
+- Release workflow #189: success
+- Container workflow #186: success
+- GHCR digest: `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
+- immutable image tag: `2b02d22e897d5fe736f93267c72036d951f74082`
+- production Compose digest pin: verified
+- rollback: `v3.8.0-dev.1` / `sha256:acafde09bd74d535fb706acde68f7e6279283ac49f6d1863585d672fb691ac02`
