@@ -164,7 +164,13 @@ test("SDK lists Work Objects with deterministic status filtering", async () => {
   try {
     const client = new ControlPlaneClient({ baseUrl: `http://${server.host}:${server.port}` });
     const all = await client.listWork({ limit: 10 });
-    assert.deepEqual(all.map(item => item.id), ["second", first.id]);
+    assert.deepEqual(all.map(item => item.id), [first.id, "second"]);
+    const page1 = await client.listWorkPage({ limit: 1 });
+    assert.deepEqual(page1.items.map(item => item.id), [first.id]);
+    assert.equal(page1.total, 2);
+    assert.equal(page1.offset, 0);
+    const page2 = await client.listWorkPage({ limit: 1, offset: 1 });
+    assert.deepEqual(page2.items.map(item => item.id), ["second"]);
     const verified = await client.listWork({ status: "verified" });
     assert.deepEqual(verified.map(item => item.id), [first.id]);
   } finally {
