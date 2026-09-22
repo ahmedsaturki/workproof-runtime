@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.8.10 is the release candidate; v3.8.10 is the latest published stable release until this candidate completes.**
+**v3.8.10 is the release candidate; v3.8.9 is the latest published stable release until this candidate completes.**
 
 v3.8.9 preserves the verified v3.8.8 runtime contract and promotes the current specification and GitHub governance baseline.
 
@@ -16,19 +16,12 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 
 ## v3.8.10 release candidate
 
-- GitHub Release: `v3.8.10` (ID `394031450`)
-- release commit: `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`
-- Release workflow #245: success
-- Container workflow #242: success
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.9`
-- GHCR digest: `sha256:ccde8ada2227b016968328f9eec1849e7424d12c2acc89081c30ca191bb6df66`
-- immutable image tag: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
-- rollback: v3.8.1 / `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
-- five release assets published and SHA256-verified
-- anonymous GHCR pull: verified
-- runtime health: verified
-- production Compose restart/persistence: verified
-- disposable external TLS/auth/backup/restore/rollback topology: verified
+- Package version: `3.8.10`
+- Release branch: `release/3.8.10`
+- Previous published stable release: `v3.8.9`
+- This candidate is built from the fully reconciled `main` tree.
+- The release/container workflows are the source of truth for publication, digest, asset, and benchmark verification.
+- Production Compose on the candidate branch intentionally remains pinned to the last published stable image until the v3.8.10 container digest is published and reconciled into `main`.
 
 ### v3.8.9 closeout hardening
 
@@ -157,6 +150,6 @@ WorkProof Runtime is not a replacement for agents, browsers, workflow engines, m
 
 ## Historical release provenance
 
-v3.8.9 is the immediately preceding published stable distribution; v3.8.1 remains the verified rollback release. v3.8.2 is retained as superseded history and is not a rollback target. v3.8.1 remains the verified rollback release.
+v3.8.9 is the immediately preceding published stable distribution. v3.8.2 is retained as superseded history and is not a rollback target. v3.8.1 remains the verified rollback release.
 
 See `STATUS.md`, `SOURCE-MANIFEST.md`, `docs/release-lineage.json`, and `docs/PRODUCT-READINESS-V1.md` for the current verification and product-readiness records.
