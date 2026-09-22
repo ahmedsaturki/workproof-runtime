@@ -85,9 +85,9 @@ A product release must not be called production-ready solely because CI is green
 
 ## Current verified baseline — 2026-09-22
 
-The published verified distribution remains `v3.6.0-dev.1`. The repository also contains a fully CI-verified `v3.7.0-dev.1` release candidate on the feature branch; publication is a separate gate. Main CI, release verification, container publication, secret scanning, and the disposable external-topology gate are integrity-verified. Localhost-bound production compose and the deployment runbook are pinned to the verified `v3.6.0-dev.1` image.
+The repository now records the coherent published `v3.7.0-dev.1` distribution path. Release workflow #171 and Container workflow #168 verified the release and container artifacts, including published digest lineage, restart/persistence, disposable TLS/auth topology, backup/restore, rollback, and anonymous GHCR pull.
 
-These facts establish a strong verified foundation, but they do **not** by themselves establish a public production deployment. Public host/DNS/TLS/auth/secrets provisioning remains an external infrastructure gate.
+Public host/DNS/TLS/auth/secrets provisioning remains an external deployment-resource boundary; the repository does not claim those external resources are provisioned.
 
 ## Next implementation gates
 
@@ -105,8 +105,8 @@ Completed:
 
 Remaining:
 
-8. Wider operational visualization beyond the current representative multi-capability chain.
-9. Later interoperability expansion beyond the bounded v3.7 A2A/OTLP surface (streaming/push/multi-turn A2A and richer telemetry signals).
+8. Broader ecosystem expansion remains a future product phase rather than an unfinished v3.7 release gate.
+9. Future A2A streaming/push/multi-turn support and richer telemetry signals remain optional follow-on capabilities.
 
 ## Stop conditions
 
@@ -163,7 +163,7 @@ The local-first P0 foundations are complete and executable:
 - [x] expanded Studio operational timeline
 - [x] packed A2A artifact smoke and representative A2A-ready mission
 
-Remaining product-validation work is expansion beyond the current prerelease scope: broader mission composition, additional adapters, and wider operational visualization. The required local-first/external-topology acceptance gates for this prerelease are complete.
+The required local-first and external-topology acceptance gates for v3.7.0-dev.1 are complete. Future expansion may add wider mission composition and interoperability features without changing WorkProof authority semantics.
 
 
 ## v3.6.0-dev.1 release state
@@ -203,8 +203,8 @@ Mutation tools require explicit idempotency keys. Capability metadata never gran
 The adapter is distributed through the same source/package/container release path as the runtime and has a packed-package acceptance test from an installed artifact.
 
 
-## v3.7.0-dev.1 candidate state
+## v3.7.0-dev.1 release state
 
-The current v3.7 candidate is implementation-complete and CI-verified. It adds A2A interoperability, bounded OTLP audit export, durable Work Object listing/paging for adapters, and an operator-facing Studio timeline while preserving WorkProof as the execution/proof authority.
+The v3.7.0-dev.1 product surface is published and verified. It includes A2A interoperability, allowlisted OTLP/HTTP JSON audit export, Work Object list/paging, expanded Studio operational timeline, packed A2A verification, and the representative A2A-ready mission.
 
-Release publication, GHCR digest capture, production Compose re-pin, and main promotion remain release gates rather than pre-release claims.
+Release artifacts and the GHCR container are integrity-verified and tied to release commit `f776ed9f5fcbb055f7da41ca69714c19b20f9aad`.
