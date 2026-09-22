@@ -187,27 +187,6 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
         return;
       }
 
-      if (method === "GET" && url.pathname === "/v1/capabilities") {
-        if (!options.capabilitySource) {
-          sendJson(res, 503, { error: "capability-list-not-configured", requestId: id });
-          return;
-        }
-        const capabilities = options.capabilitySource.listCapabilities()
-          .map((capability) => ({
-            name: capability.name,
-            version: capability.version,
-            operations: [...capability.operations].sort(),
-            riskClass: capability.riskClass
-          }))
-          .sort((a, b) => a.name.localeCompare(b.name));
-        sendJson(res, 200, {
-          version: "1.0",
-          requestId: id,
-          capabilities
-        });
-        return;
-      }
-
       let permission: "read" | "write" = "read";
       if (method === "POST") permission = "write";
 
@@ -228,6 +207,27 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
         sendJson(res, decision.statusCode, {
           error: decision.statusCode === 401 ? "unauthorized" : "forbidden",
           requestId: id
+        });
+        return;
+      }
+
+      if (method === "GET" && url.pathname === "/v1/capabilities") {
+        if (!options.capabilitySource) {
+          sendJson(res, 503, { error: "capability-list-not-configured", requestId: id });
+          return;
+        }
+        const capabilities = options.capabilitySource.listCapabilities()
+          .map((capability) => ({
+            name: capability.name,
+            version: capability.version,
+            operations: [...capability.operations].sort(),
+            riskClass: capability.riskClass
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+        sendJson(res, 200, {
+          version: "1.0",
+          requestId: id,
+          capabilities
         });
         return;
       }
