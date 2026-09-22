@@ -11,7 +11,7 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - package version: `3.7.0-dev.1`
 - release source tag commit: `f776ed9f5fcbb055f7da41ca69714c19b20f9aad`
 - promotion branch: `promote/v3.7.0-dev.1-main`
-- main closeout commit: pending promotion merge
+- main closeout commit: `a7a6dfcc6b7a6a4b5a7280ad3123431d738ff3ac`
 
 ## Current verified release
 
@@ -67,7 +67,7 @@ M001-M005: 5/5 verified.
 - [x] pinned localhost production compose
 - [x] production deployment runbook
 - [x] disposable external-topology smoke with TLS/auth/backup/restore/rollback
-- [ ] public production host/DNS/TLS/auth/secrets provisioning
+- [external] public host/DNS/TLS/auth/secrets provisioning is intentionally outside the repository's provisioned resources
 
 The disposable topology gate verifies TLS, authentication, secret non-leakage, persistent state, backup/restore, rollback to a previous immutable release, and deny-by-default network exposure. The release smoke additionally binds the published tag to the verified immutable digest. Public infrastructure remains a separate external resource; the public-host portion is deployment provisioning, not a hidden runtime dependency.
 
@@ -85,4 +85,4 @@ A capability receipt is not independent proof. Work is verified only when indepe
 - [x] packed A2A artifact smoke
 - [x] release publication and GHCR digest verification
 - [x] production Compose digest pin
-- [ ] post-merge main CI closeout
+- [x] post-merge main CI closeout (CI #1185)
