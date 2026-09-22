@@ -92,7 +92,7 @@ export async function runDoctor(env: Record<string, string | undefined> = proces
     detail: String(require("process").version ?? "unknown")
   });
 
-  const workDirectory = path.resolve(packageRoot, env.WORKPROOF_WORK_DIRECTORY ?? "./work-runs");
+  const workDirectory = path.resolve(require("process").cwd(), env.WORKPROOF_WORK_DIRECTORY ?? "./work-runs");
   try {
     const stat = fs.statSync(workDirectory);
     checks.push({ id: "work-directory", state: stat.isDirectory() ? "ok" : "failed", detail: stat.isDirectory() ? workDirectory : "configured work directory is not a directory" });
