@@ -121,6 +121,10 @@ async function listen(server: any, port: number, host: string): Promise<number> 
 export async function startRegistryServer(options: RegistryServerOptions): Promise<RunningRegistryServer> {
   const host = options.host ?? "127.0.0.1";
   const port = options.port ?? 0;
+  const loopbackHosts = new Set(["127.0.0.1", "localhost", "::1"]);
+  if (!loopbackHosts.has(host) && !options.authPolicy) {
+    throw new Error("Refusing non-loopback registry binding without auth policy");
+  }
   fs.mkdirSync(options.vaultDir, { recursive: true });
 
   const trustedAdminKeyIds = new Set(options.trustedAdminKeyIds ?? []);
