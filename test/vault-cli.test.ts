@@ -13,7 +13,7 @@ function runCli(...args: string[]) {
 }
 
 test("CLI publishes, lists, inspects, and restores a proof through the local vault", () => {
-  const dir = "/tmp/workproof-vault-cli";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-vault-cli");
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const proofPath = path.join(dir, "proof.json");
