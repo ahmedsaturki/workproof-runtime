@@ -1,6 +1,6 @@
 {
   "name": "operational-reality-core",
-  "version": "3.4.0-dev.5",
+  "version": "3.4.0-dev.7",
   "private": true,
   "description": "WorkProof Runtime — outcome-first digital work kernel and local-first operator",
   "scripts": {
@@ -30,6 +30,8 @@
     "SPEC.md",
     "ARCHITECTURE.md",
     "docs/EXTENSION-CONTRACT.md",
-    "docs/schemas"
+    "docs/schemas",
+    "docs",
+    "examples"
   ]
 }

@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.4 executable operator benchmark is fully verified, and v3.4.0-dev.5 is the current coherent prerelease distribution.**
+**v3.4 executable operator benchmark is fully verified; v3.4.0-dev.7 is the current release target.**
 
 The v3.4 line is the first executable operator benchmark with controlled failure injection across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution.
 
@@ -83,7 +83,7 @@ M005 retried the primary capability under bounded ambiguity, selected a compatib
 
 ### GitHub Release
 
-`v3.4.0-dev.5` is the current release target. Its release and container workflows are required to publish from the same release branch lineage.
+`v3.4.0-dev.7` is the current release target. Release and container workflows publish from the same release branch lineage.
 
 Published assets:
 
@@ -99,7 +99,7 @@ The release pipeline re-downloads published assets, verifies SHA256 sums, verifi
 
 Published image:
 
-`ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.5`
+`ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.7`
 
 Verified digest:
 
@@ -171,6 +171,10 @@ Studio is localhost-bound by default. Optional runtime configuration is read fro
 - `WORKPROOF_TRUST_POLICY_PATH`
 
 Do not expose port 8788 directly to the public Internet. Put an authenticated, TLS-terminating reverse proxy in front of WorkProof before external deployment.
+
+### Operator guidance UX
+
+Studio maps execution, verification, lease, partial, unresolved, failed, and unverifiable states to operator guidance and effect summaries. Terminal-state Resume is disabled in the UI.
 
 ### Proof compatibility
 
