@@ -12,6 +12,18 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - release source tag commit: `de3ad9fcc10b9db7487c78620607f669249adaa9`
 - main closeout commit: `04bf0c218badd18c6a20e343030fbad71345d835`
 
+## v3.7.0-dev.1 candidate
+
+- branch: `feature/v3.7-a2a-otel-completion`
+- candidate commit: `197a2598d3d338bd15b9a8b7678fce090fa689f9`
+- feature CI #1179: success
+- A2A 1.0 interoperability adapter: implemented and tested
+- OTLP/HTTP JSON audit export: implemented and tested
+- paged/context-aware Work listing: implemented and tested
+- expanded Studio operational timeline: implemented and tested
+- packed A2A artifact smoke: implemented and tested
+- release status: candidate; publication gate not yet closed
+
 ## Current verified release
 
 - version: `3.6.0-dev.1`
