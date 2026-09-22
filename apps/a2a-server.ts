@@ -2,23 +2,18 @@ const http = require("http");
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
+const { URL } = require("url");
 import { ControlPlaneClient, WorkDispatchRequest } from "../packages/sdk/src/index";
-
-const host = process.env.WORKPROOF_A2A_HOST ?? "127.0.0.1";
-const port = Number(process.env.WORKPROOF_A2A_PORT ?? "8790");
-const controlPlaneUrl = process.env.WORKPROOF_A2A_CONTROL_PLANE_URL ?? "http://127.0.0.1:8789";
-const token = process.env.WORKPROOF_A2A_TOKEN;
-const publicUrl = process.env.WORKPROOF_A2A_PUBLIC_URL ?? `http://${host}:${port}`;
 
 const protocolVersion = "1.0";
 const maxBodyBytes = 1024 * 1024;
 
-if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error("WORKPROOF_A2A_PORT must be a valid TCP port");
-if (!token || !/^[A-Za-z0-9._~-]{16,4096}$/.test(token)) {
-  throw new Error("WORKPROOF_A2A_TOKEN is required and must be a safe bearer token");
-}
-if (host !== "127.0.0.1" && host !== "localhost" && host !== "::1" && publicUrl.startsWith("http://")) {
-  process.stderr.write("Warning: non-loopback A2A deployments should use HTTPS at the edge.\n");
+export interface A2AOptions {
+  host?: string;
+  port?: number;
+  controlPlaneUrl?: string;
+  token: string;
+  publicUrl?: string;
 }
 
 interface RunningA2A {
@@ -154,7 +149,18 @@ function idempotencyFor(prefix: string, value: string): string {
   return "a2a." + prefix + "." + crypto.createHash("sha256").update(value, "utf8").digest("hex");
 }
 
-export async function startA2AServer(): Promise<RunningA2A> {
+export async function startA2AServer(options: A2AOptions): Promise<RunningA2A> {
+  const host = options.host ?? "127.0.0.1";
+  const port = options.port ?? 8790;
+  const controlPlaneUrl = options.controlPlaneUrl ?? "http://127.0.0.1:8789";
+  const token = options.token;
+  const publicUrl = options.publicUrl ?? `http://${host}:${port}`;
+  if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error("A2A port must be a valid TCP port");
+  if (!token || !/^[A-Za-z0-9._~-]{16,4096}$/.test(token)) throw new Error("A2A bearer token is required and must be a safe bearer token");
+  if (host !== "127.0.0.1" && host !== "localhost" && host !== "::1" && publicUrl.startsWith("http://")) {
+    process.stderr.write("Warning: non-loopback A2A deployments should use HTTPS at the edge.\n");
+  }
+
   const control = new ControlPlaneClient({ baseUrl: controlPlaneUrl, token });
   const server = http.createServer(async (req: any, res: any) => {
     const method = String(req.method ?? "GET").toUpperCase();
@@ -281,8 +287,14 @@ export async function startA2AServer(): Promise<RunningA2A> {
 }
 
 async function main(): Promise<void> {
-  const running = await startA2AServer();
-  process.stderr.write(JSON.stringify({ status: "ready", version: version(), a2aProtocolVersion: protocolVersion, host: running.host, port: running.port }) + "\n");
+  const running = await startA2AServer({
+    host: process.env.WORKPROOF_A2A_HOST ?? "127.0.0.1",
+    port: Number(process.env.WORKPROOF_A2A_PORT ?? "8790"),
+    controlPlaneUrl: process.env.WORKPROOF_A2A_CONTROL_PLANE_URL ?? "http://127.0.0.1:8789",
+    token: process.env.WORKPROOF_A2A_TOKEN ?? "",
+    publicUrl: process.env.WORKPROOF_A2A_PUBLIC_URL
+  });
+  process.stdout.write(JSON.stringify({ status: "ready", version: version(), a2aProtocolVersion: protocolVersion, host: running.host, port: running.port }) + "\n");
 }
 
 main().catch((error) => {
