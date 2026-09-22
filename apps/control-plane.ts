@@ -30,7 +30,7 @@ const auditPath = process.env.WORKPROOF_CONTROL_AUDIT_PATH ?? path.join(workDire
 const authPolicyPath = process.env.WORKPROOF_AUTH_POLICY;
 
 const loopbackHosts = new Set(["127.0.0.1", "localhost", "::1"]);
-if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("WORKPROOF_CONTROL_PLANE_PORT must be a valid TCP port");
+if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error("WORKPROOF_CONTROL_PLANE_PORT must be a valid TCP port");
 if (!loopbackHosts.has(host) && !authPolicyPath) {
   throw new Error("Refusing non-loopback control-plane binding without WORKPROOF_AUTH_POLICY");
 }
@@ -40,6 +40,13 @@ fs.mkdirSync(proofDirectory, { recursive: true });
 
 const authPolicy = authPolicyPath ? loadAuthPolicy(authPolicyPath) : undefined;
 const repository = new JsonWorkRepository(workDirectory);
+
+function runtimeVersion(): string {
+  const packagePath = path.resolve(__dirname, "../package.json");
+  const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
+  if (typeof packageJson.version !== "string" || !packageJson.version.trim()) throw new Error("Unable to determine WorkProof Runtime version");
+  return packageJson.version.trim();
+}
 
 function registerRuntimePacks(registry: CapabilityRegistry, verification: VerificationEngine): void {
   registerLocalPack(registry);
@@ -173,7 +180,7 @@ async function main(): Promise<void> {
 
   process.stdout.write(JSON.stringify({
     status: "ready",
-    version: "3.4.0-dev.11",
+    version: runtimeVersion(),
     host: controlPlane.host,
     port: controlPlane.port,
     workDirectory,
