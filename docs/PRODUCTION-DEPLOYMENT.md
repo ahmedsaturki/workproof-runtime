@@ -3,7 +3,7 @@
 Supported distribution target: the Node 24 GHCR container.
 
 - image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.9`
-- pinned digest: recorded by the verified dev.9 Container workflow after publication
+- pinned digest: `sha256:3acde2ee0e82c0d7bf1e9bd8217aa774e1ceb5cdafd64150b87b7581aa0ea04d`
 - bind: `127.0.0.1:8788`
 - persistent data: `./work-runs -> /data/work-runs`
 
