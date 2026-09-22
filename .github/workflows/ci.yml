@@ -56,16 +56,16 @@ jobs:
           cat > "${SMOKE_DIR}/suppliers.json" <<'EOF'
           [{"name":"Alpha","website":"https://alpha.example","phone":"0100000001","source":"fixture"},{"name":"Beta","website":"https://beta.example","phone":"0100000002","source":"fixture"},{"name":"Gamma","website":"https://gamma.example","phone":"0100000003","source":"fixture"},{"name":"Delta","website":"https://delta.example","phone":"0100000004","source":"fixture"}]
           EOF
-          cat > "${SMOKE_DIR}/mission.json" <<'EOF'
+          cat > "${SMOKE_DIR}/mission.json" <<EOF
           {
             "objective": "Packaged CLI product smoke",
-            "inputs": { "dataPath": "./suppliers.json", "outputPath": "./research.json", "minRecords": 4 },
+            "inputs": { "dataPath": "${SMOKE_DIR}/suppliers.json", "outputPath": "${SMOKE_DIR}/research.json", "minRecords": 4 },
             "success": [{ "id": "artifact", "description": "At least four unique supplier records with required fields", "verifier": "pack.research.artifact", "required": true }],
-            "deliverables": ["./research.json"],
+            "deliverables": ["${SMOKE_DIR}/research.json"],
             "riskClass": "read",
-            "steps": [{ "id": "research", "operation": "research_suppliers", "capability": "pack.research.local", "input": { "dataPath": "./suppliers.json", "outputPath": "./research.json", "minRecords": 4 }, "idempotencyKey": "packed-cli:research", "riskClass": "read" }],
-            "proofPath": "./proof.json",
-            "workDirectory": "./work-runs"
+            "steps": [{ "id": "research", "operation": "research_suppliers", "capability": "pack.research.local", "input": { "dataPath": "${SMOKE_DIR}/suppliers.json", "outputPath": "${SMOKE_DIR}/research.json", "minRecords": 4 }, "idempotencyKey": "packed-cli:research", "riskClass": "read" }],
+            "proofPath": "${SMOKE_DIR}/proof.json",
+            "workDirectory": "${SMOKE_DIR}/work-runs"
           }
           EOF
           RESULT="$("${SMOKE_DIR}/node_modules/.bin/workctl" run "${SMOKE_DIR}/mission.json")"
