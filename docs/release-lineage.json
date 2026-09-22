@@ -1,17 +1,17 @@
 {
   "schemaVersion": "1.0",
   "release": {
-    "version": "3.8.6",
-    "tag": "v3.8.6",
-    "commit": "f8deba828ca0f206714e3b2acc7e12ed774f5816",
-    "githubReleaseId": 394008890,
-    "releaseWorkflowRun": 222,
-    "containerWorkflowRun": 219
+    "version": "3.8.7",
+    "tag": "v3.8.7",
+    "commit": "7a7a9ec7da0947d04440c5f953d71237558fb6de",
+    "githubReleaseId": 394013921,
+    "releaseWorkflowRun": 230,
+    "containerWorkflowRun": 227
   },
   "container": {
-    "image": "ghcr.io/ahmedsaturki/workproof-runtime:3.8.6",
-    "digest": "sha256:953bab56b734434885bf74022e9b0260f64369c4a9c968e1792ce49874f6058d",
-    "immutableTag": "f8deba828ca0f206714e3b2acc7e12ed774f5816"
+    "image": "ghcr.io/ahmedsaturki/workproof-runtime:3.8.7",
+    "digest": "sha256:696514815980f4ea01b115c8b8fbd77ff18715cabb9e22b361bbd631db95fb76",
+    "immutableTag": "7a7a9ec7da0947d04440c5f953d71237558fb6de"
   },
   "rollback": {
     "version": "3.8.1",
