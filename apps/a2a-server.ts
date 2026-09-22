@@ -154,17 +154,13 @@ export async function startA2AServer(options: A2AOptions): Promise<RunningA2A> {
   const port = options.port ?? 8790;
   const controlPlaneUrl = options.controlPlaneUrl ?? "http://127.0.0.1:8789";
   const token = options.token;
-  const publicUrl = options.publicUrl ?? `http://${host}:${port}`;
+  let publicUrl = options.publicUrl;
   if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error("A2A port must be a valid TCP port");
   if (!token || !/^[A-Za-z0-9._~-]{16,4096}$/.test(token)) throw new Error("A2A bearer token is required and must be a safe bearer token");
-  if (host !== "127.0.0.1" && host !== "localhost" && host !== "::1" && publicUrl.startsWith("http://")) {
-    process.stderr.write("Warning: non-loopback A2A deployments should use HTTPS at the edge.\n");
-  }
-
   const control = new ControlPlaneClient({ baseUrl: controlPlaneUrl, token });
   const server = http.createServer(async (req: any, res: any) => {
     const method = String(req.method ?? "GET").toUpperCase();
-    const requestUrl = new URL(String(req.url ?? "/"), publicUrl);
+    const requestUrl = new URL(String(req.url ?? "/"), publicUrl ?? "http://" + host + ":" + port);
 
     if (method === "GET" && requestUrl.pathname === "/health") {
       send(res, 200, { status: "ok", version: version(), a2aProtocolVersion: protocolVersion });
@@ -175,7 +171,7 @@ export async function startA2AServer(options: A2AOptions): Promise<RunningA2A> {
       const card = {
         name: "WorkProof Runtime",
         description: "Outcome-first digital work agent backed by durable Work Objects, independent verification, recovery, and portable proof.",
-        supportedInterfaces: [{ url: publicUrl + "/rpc", protocolBinding: "JSONRPC", protocolVersion }],
+        supportedInterfaces: [{ url: (publicUrl ?? "http://" + host + ":" + port) + "/rpc", protocolBinding: "JSONRPC", protocolVersion }],
         version: version(),
         capabilities: { streaming: false, pushNotifications: false, extendedAgentCard: false },
         defaultInputModes: ["text"],
@@ -284,6 +280,11 @@ export async function startA2AServer(options: A2AOptions): Promise<RunningA2A> {
       resolve(address.port);
     });
   });
+
+  if (!publicUrl) publicUrl = "http://" + host + ":" + actualPort;
+  if (host !== "127.0.0.1" && host !== "localhost" && host !== "::1" && publicUrl.startsWith("http://")) {
+    process.stderr.write("Warning: non-loopback A2A deployments should use HTTPS at the edge.\n");
+  }
 
   return {
     host,
