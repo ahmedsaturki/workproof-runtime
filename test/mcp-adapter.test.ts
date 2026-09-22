@@ -124,11 +124,11 @@ test("MCP stdio adapter exposes modern tool discovery and forwards through the a
     const listed = await client.listTools();
     const names = listed.tools.map((tool: any) => tool.name);
     assert.deepEqual(names, [
-      "workproof_cancel",
       "workproof_capabilities",
-      "workproof_dispatch",
       "workproof_get_work",
-      "workproof_resume"
+      "workproof_dispatch",
+      "workproof_resume",
+      "workproof_cancel"
     ]);
 
     const capabilities = await client.callTool({
