@@ -37,7 +37,7 @@ function fixture() {
 
 test("CLI verify accepts an intact proof and rejects a tampered proof bundle", () => {
   const { proof, integrity } = fixture();
-  const dir = "/tmp/workproof-cli-integrity";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-cli-integrity");
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const proofPath = path.join(dir, "proof.json");
@@ -58,7 +58,7 @@ test("CLI verify accepts an intact proof and rejects a tampered proof bundle", (
 
 test("CLI verify rejects altered integrity metadata even when the bundle digest is unchanged", () => {
   const { proof, integrity } = fixture();
-  const dir = "/tmp/workproof-cli-integrity-metadata";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-cli-integrity-metadata");
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const proofPath = path.join(dir, "proof.json");
@@ -73,7 +73,7 @@ test("CLI verify rejects altered integrity metadata even when the bundle digest 
 
 test("CLI verify keeps legacy proofs readable without an integrity manifest", () => {
   const { proof } = fixture();
-  const dir = "/tmp/workproof-cli-legacy";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-cli-legacy");
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const proofPath = path.join(dir, "legacy.json");
@@ -88,7 +88,7 @@ test("CLI verify keeps legacy proofs readable without an integrity manifest", ()
 
 test("CLI compatibility accepts supported and legacy proof formats, but rejects unsupported versions", () => {
   const { proof, integrity } = fixture();
-  const dir = "/tmp/workproof-cli-compatibility";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-cli-compatibility");
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
 
