@@ -191,6 +191,37 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
         return;
       }
 
+      if (method === "GET" && url.pathname === "/ready") {
+        const checks: Record<string, { status: "ok" | "failed"; detail?: string }> = {};
+        try {
+          if (!options.repository.list) throw new Error("repository list is not configured");
+          options.repository.list();
+          checks.repository = { status: "ok" };
+        } catch (error) {
+          checks.repository = { status: "failed", detail: String((error as any)?.message ?? error) };
+        }
+        if (options.idempotencyDbPath) {
+          try {
+            const parent = require("path").dirname(require("path").resolve(options.idempotencyDbPath));
+            fs.mkdirSync(parent, { recursive: true });
+            checks.idempotency = fs.existsSync(parent) ? { status: "ok" } : { status: "failed", detail: "idempotency parent directory unavailable" };
+          } catch (error) {
+            checks.idempotency = { status: "failed", detail: String((error as any)?.message ?? error) };
+          }
+        } else {
+          checks.idempotency = { status: "ok", detail: "disabled" };
+        }
+        const ready = Object.values(checks).every((check) => check.status === "ok");
+        sendJson(res, ready ? 200 : 503, {
+          status: ready ? "ready" : "not-ready",
+          version: options.runtimeVersion ?? "unknown",
+          apiVersion: "1.0",
+          requestId: id,
+          checks
+        });
+        return;
+      }
+
       let permission: "read" | "write" = "read";
       if (method === "POST") permission = "write";
 
