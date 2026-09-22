@@ -117,3 +117,17 @@ Do not claim completion if any of these are true:
 ## Product boundary
 
 WorkProof Runtime is not required to become a generic agent framework, browser automation product, workflow engine, memory database, observability backend, or OSINT graph. Those systems may integrate as capabilities/adapters. The durable Work Object, outcome contract, effect, verification, recovery, and proof semantics remain the product's invariant boundary.
+
+## Implemented in product-readiness-v1
+
+The following gates are now executable and CI-verified on this branch:
+
+- [x] Runtime version is sourced from package metadata instead of stale hard-coded product versions.
+- [x] Studio process startup honors control-plane, proof-vault, and trust-policy configuration from arguments/environment.
+- [x] Fresh local Studio smoke checks health, UI, filtering, and persisted Work Object visibility.
+- [x] Studio restart smoke confirms authoritative local Work Object state survives process restart.
+- [x] CLI exposes a packaged `workctl` entrypoint.
+- [x] CLI provides a guarded `resume <work-id> <mission.json>` path for persisted work.
+- [x] End-to-end resume smoke re-verifies a persisted research outcome after simulated interruption.
+- [x] Source-tree verification includes the product readiness specification and product smoke suite.
+- [x] CI validates the above together with the existing security, retention, benchmark, demo, CLI, and live GitHub gates.
