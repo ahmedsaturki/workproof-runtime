@@ -4,13 +4,13 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.4 executable operator benchmark is fully verified; v3.4.0-dev.11 is the current shipped prerelease.**
+**v3.4 executable operator benchmark is fully verified; v3.4.0-dev.12 is the current shipped prerelease.**
 
 The v3.4 line is the first executable operator benchmark with controlled failure injection across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution.
 
 The v3.4.0-dev.10 product baseline adds a representative multi-capability Research → Transform mission, Studio capability-chain visibility, and a disposable external-topology gate covering TLS, authentication, persistence, backup/restore, and rollback.
 
-The v3.4.0-dev.11 release is the current verified distribution and carries the local-first product-readiness, packaged CLI, restart/resume, Studio configuration, persistence hardening, multi-capability execution, disposable external-topology validation, exact published digest lineage, and tracked-file secret scanning.
+The v3.4.0-dev.12 release is the current verified distribution and carries the local-first product-readiness, packaged CLI, restart/resume, Studio configuration, persistence hardening, multi-capability execution, disposable external-topology validation, exact published digest lineage, tracked-file secret scanning, and the runnable authenticated control-plane product surface.
 
 ## Core loop
 
@@ -85,13 +85,13 @@ M005 retried the primary capability under bounded ambiguity, selected a compatib
 
 ### GitHub Release
 
-`v3.4.0-dev.11` is the current shipped prerelease. Release and container workflows publish from the same release-branch lineage.
+`v3.4.0-dev.12` is the current shipped prerelease. Release and container workflows publish from the same release-branch lineage.
 
 Published assets:
 
 - `operational-reality-core-3.4.0-dev.11.tgz`
-- `workproof-runtime-v3.4.0-dev.11.tar.gz`
-- `workproof-benchmark-v3.4.0-dev.11.json`
+- `workproof-runtime-v3.4.0-dev.12.tar.gz`
+- `workproof-benchmark-v3.4.0-dev.12.json`
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
@@ -105,9 +105,9 @@ Published image:
 
 Verified digest:
 
-`sha256:d0c4a8134e0b73d68dc6a0489bbc058b90e633a01171df980aebd1e7b47affff`
+`sha256:491261f71ff3b010bb7a967b74b348ca40042d3150e2f6c8a36c1a4dcf7012bb`
 
-The same digest is exposed by the immutable release commit tag `aeaaac3d9224b7eac297ac8f63207bf97b532e4d`. Container verification run #115 proved:
+The same digest is exposed by the immutable release commit tag `1b174b33da8e519e5a23e7565944aba6266d8e97`. Container verification run #115 proved:
 
 - package version matches release tag;
 - OCI version matches `3.4.0-dev.11`;
@@ -125,7 +125,7 @@ The repository includes:
 - `docs/CONTAINER-RUNTIME.md`
 - `docs/PRODUCTION-DEPLOYMENT.md`
 
-The production compose targets the verified v3.4.0-dev.11 image digest, binds Studio to localhost, and persists `./work-runs`. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
+The production compose targets the verified v3.4.0-dev.12 image digest, binds Studio to localhost, and persists `./work-runs`. The separate control-plane process is the authenticated mutation boundary and can be connected to Studio with `WORKPROOF_CONTROL_PLANE_URL` plus a matching auth policy. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
 
 `package.json` remains `private: true`; no npm registry publication is claimed.
 
@@ -159,6 +159,16 @@ The run creates a durable Work Object under `./work-runs` and emits a portable p
 ```bash
 node dist/packages/cli/src/index.js resume <work-id> examples/missions/research-local.json
 ```
+
+### Local-first control plane
+
+Run the authenticated control-plane process separately when mutation/control APIs are required:
+
+```bash
+WORKPROOF_CONTROL_PLANE_PORT=8789 node dist/apps/control-plane.js
+```
+
+The default bind is loopback. Non-loopback binding is refused unless `WORKPROOF_AUTH_POLICY` is configured. Mutating requests require an idempotency key when the durable control-plane ledger is enabled.
 
 ### Local Studio
 
