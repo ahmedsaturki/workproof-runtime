@@ -4,7 +4,7 @@ const http = require("http");
 const fs = require("fs");
 const crypto = require("crypto");
 const { URL } = require("url");
-const { authorize, validateAuthPolicy } = require("../../registry/src/auth.js");
+const { authorize, validateAuthPolicy, hardenPrivateFile } = require("../../registry/src/auth.js");
 const {
   ControlIdempotencyLedger,
   fingerprintControlRequest,
@@ -119,7 +119,7 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
   if (auditPath) {
     fs.mkdirSync(require("path").dirname(require("path").resolve(auditPath)), { recursive: true });
     if (!fs.existsSync(auditPath)) fs.writeFileSync(auditPath, "", { encoding: "utf8", mode: 0o600 });
-    fs.chmodSync(auditPath, 0o600);
+    hardenPrivateFile(auditPath);
   }
 
   const audit = (entry: Record<string, unknown>): void => {
