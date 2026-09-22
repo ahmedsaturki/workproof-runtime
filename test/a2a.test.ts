@@ -18,6 +18,7 @@ function fakeWork(id: string, objective: string, status: string = "verified") {
 test("A2A adapter exposes agent card, authentication, version negotiation, SendMessage, and idempotent forwarding", async () => {
   const token = "a2a-local-test-token-123456";
   let dispatchCount = 0;
+  const idempotencyKeys: string[] = [];
   const created = fakeWork("a2a_created", "hello");
 
   const controlServer = http.createServer((req: any, res: any) => {
@@ -34,6 +35,7 @@ test("A2A adapter exposes agent card, authentication, version negotiation, SendM
     }
     if (req.method === "POST" && url.pathname === "/v1/work/dispatch") {
       dispatchCount += 1;
+      idempotencyKeys.push(String(req.headers["idempotency-key"] ?? ""));
       const chunks: any[] = [];
       req.on("data", (chunk: any) => chunks.push(chunk));
       req.on("end", () => {
@@ -95,6 +97,8 @@ test("A2A adapter exposes agent card, authentication, version negotiation, SendM
     assert.equal(replay.status, 200);
     assert.equal((await replay.json()).result.task.id, "a2a_created");
     assert.equal(dispatchCount, 2);
+    assert.equal(idempotencyKeys[0], idempotencyKeys[1]);
+    assert.match(idempotencyKeys[0], /^a2a\.message\.[0-9a-f]{64}$/);
   } finally {
     await a2a.close();
     await new Promise<void>(resolve => controlServer.close(() => resolve()));
