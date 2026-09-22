@@ -120,3 +120,13 @@ A capability receipt is not independent proof. Work is verified only when indepe
 - release commit: `bba39f385ab042344f4fc2ebe04aeef7ef3c98b9`
 - published GHCR digest: `sha256:acafde09bd74d535fb706acde68f7e6279283ac49f6d1863585d672fb691ac02`
 - rollback release: `v3.7.0-dev.1`
+
+
+## Stable 3.8.0 release
+
+- release branch: `release/3.8.0`
+- stable package version: `3.8.0`
+- dev.1 baseline: verified
+- stable release verification: in progress
+- stable publication: in progress
+- stable main promotion: pending
