@@ -151,9 +151,16 @@ async function waitForCdp(browser: any, requestedPort = 0): Promise<number> {
   }
 
   let output = "";
+  let exitCode: number | null = null;
+  let exitSignal: string | null = null;
   const append = (chunk: any) => { output += chunk.toString(); };
+  const onExit = (code: number | null, signal: string | null) => {
+    exitCode = code;
+    exitSignal = signal;
+  };
   browser.stdout?.on("data", append);
   browser.stderr?.on("data", append);
+  browser.once?.("exit", onExit);
   try {
     for (let i = 0; i < 80; i++) {
       const match = /DevTools listening on ws:\/\/127\.0\.0\.1:(\d+)\//.exec(output);
@@ -174,9 +181,14 @@ async function waitForCdp(browser: any, requestedPort = 0): Promise<number> {
   } finally {
     browser.stdout?.off?.("data", append);
     browser.stderr?.off?.("data", append);
+    browser.off?.("exit", onExit);
   }
 
-  throw new Error(output.trim() || "Chromium CDP did not announce an endpoint");
+  const detail = output.trim() || [
+    exitCode === null ? null : `Chromium exited with code ${exitCode}`,
+    exitSignal ? `signal ${exitSignal}` : null
+  ].filter(Boolean).join("; ");
+  throw new Error(detail || "Chromium CDP did not announce an endpoint");
 }
 
 function killBrowser(browser: any): void {
