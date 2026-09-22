@@ -107,10 +107,10 @@ Verified digest:
 
 `sha256:3fa81f645ccb0c13e0dbfd5da13c089e982f5ed85a0c79b5ec49e021820315fa`
 
-The same digest is exposed by the immutable release commit tag `78932bba20b48bf1ebc0c3d873d0e716b2ca296c`. Container verification run #110 proved:
+The same digest is exposed by the immutable release commit tag `620ae90f396319630ef6913b66a664634d695039`. Container verification run #110 proved:
 
 - package version matches release tag;
-- OCI version matches `3.4.0-dev.9`;
+- OCI version matches `3.4.0-dev.10`;
 - OCI revision matches the release tag commit;
 - version and immutable commit tags resolve to the same digest;
 - the published image starts successfully;
