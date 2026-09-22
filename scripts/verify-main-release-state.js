@@ -34,6 +34,16 @@ async function main() {
   const expectedImage = lineage.container.image + "@" + lineage.container.digest;
   if (!compose.includes(expectedImage)) throw new Error("Production Compose does not contain the last verified stable image/digest");
   if (packageVersion === stableVersion) {
+    const shallow = spawnSync("git", ["rev-parse", "--is-shallow-repository"], { encoding: "utf8", cwd: process.cwd(), stdio: ["ignore", "pipe", "pipe"] });
+    if (shallow.error) throw shallow.error;
+    if (String(shallow.stdout || "").trim() === "true") {
+      const unshallow = spawnSync("git", ["fetch", "--no-tags", "--prune", "--unshallow", "origin"], { encoding: "utf8", cwd: process.cwd(), stdio: ["ignore", "pipe", "pipe"] });
+      if (unshallow.error) throw unshallow.error;
+      if (unshallow.status !== 0) throw new Error("Unable to unshallow repository for release lineage comparison: " + String(unshallow.stderr || "").trim());
+    }
+    const releaseObject = spawnSync("git", ["cat-file", "-e", lineage.release.commit + "^{commit}"], { encoding: "utf8", cwd: process.cwd(), stdio: ["ignore", "pipe", "pipe"] });
+    if (releaseObject.error) throw releaseObject.error;
+    if (releaseObject.status !== 0) throw new Error("Published release commit is not available after repository history synchronization: " + lineage.release.commit);
     const diff = spawnSync("git", ["diff", "--name-only", lineage.release.commit + "..HEAD"], { encoding: "utf8", cwd: process.cwd(), stdio: ["ignore", "pipe", "pipe"] });
     if (diff.error) throw diff.error;
     if (diff.status !== 0) throw new Error("Unable to inspect main-vs-release source drift: " + String(diff.stderr || "").trim());
