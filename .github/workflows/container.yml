@@ -44,6 +44,18 @@ jobs:
           PACKAGE_VERSION: ${{ steps.version.outputs.version }}
         run: test "${IMAGE_TAG}" = "${PACKAGE_VERSION}"
 
+      - name: Verify release branch immutability
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if git rev-parse -q --verify "refs/tags/v${IMAGE_TAG}^{commit}" >/dev/null 2>&1; then
+            TAG_COMMIT="$(git rev-list -n 1 "refs/tags/v${IMAGE_TAG}")"
+            if [ "${TAG_COMMIT}" != "${GITHUB_SHA}" ]; then
+              echo "Release tag v${IMAGE_TAG} already points to ${TAG_COMMIT}; refusing to build from moved release branch ${GITHUB_SHA}."
+              exit 1
+            fi
+          fi
       - name: Resolve release commit
         id: source
         env:
@@ -51,9 +63,6 @@ jobs:
         run: |
           set -euo pipefail
           RELEASE_COMMIT="${GITHUB_SHA}"
-          if git rev-parse -q --verify "refs/tags/v${IMAGE_TAG}^{commit}" >/dev/null 2>&1; then
-            RELEASE_COMMIT="$(git rev-list -n 1 "refs/tags/v${IMAGE_TAG}")"
-          fi
           echo "commit=${RELEASE_COMMIT}" >> "$GITHUB_OUTPUT"
 
       - name: Login to GHCR
