@@ -16,6 +16,7 @@
   "rollback": {
     "version": "3.4.0-dev.9",
     "tag": "v3.4.0-dev.9",
-    "commit": "3041aeb49241dc50daae56ba70763bc61aeb29bf"
+    "commit": "3041aeb49241dc50daae56ba70763bc61aeb29bf",
+    "digest": "sha256:3acde2ee0e82c0d7bf1e9bd8217aa774e1ceb5cdafd64150b87b7581aa0ea04d"
   }
 }
