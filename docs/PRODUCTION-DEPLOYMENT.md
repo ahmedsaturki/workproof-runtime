@@ -2,8 +2,8 @@
 
 Supported distribution target: the Node 24 GHCR container.
 
-- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.9`
-- pinned digest: `sha256:3acde2ee0e82c0d7bf1e9bd8217aa774e1ceb5cdafd64150b87b7581aa0ea04d`
+- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.10`
+- pinned digest: `sha256:3fa81f645ccb0c13e0dbfd5da13c089e982f5ed85a0c79b5ec49e021820315fa`
 - bind: `127.0.0.1:8788`
 - persistent data: `./work-runs -> /data/work-runs`
 
@@ -31,12 +31,12 @@ Release automation runs `npm run check`, verifies required release assets, downl
 
 ## Boundary
 
-The repository provides the deployable container and runbook. It does not provision a public hostname, TLS certificate, reverse proxy, production host, or production secrets.
+The repository provides the deployable container, local compose, and runbook. A disposable CI topology additionally verifies TLS termination, authentication, persistent state, backup/restore, and rollback through an isolated reverse-proxy edge. It does not provision a public hostname, production DNS, public certificate, external host, or production secrets.
 
 
 ## Public container distribution
 
-The published Container Registry manifest for `3.4.0-dev.9` was verified through the anonymous pull gate; the canonical digest is `sha256:3acde2ee0e82c0d7bf1e9bd8217aa774e1ceb5cdafd64150b87b7581aa0ea04d`.
+The published Container Registry manifest for `3.4.0-dev.10` was verified through the anonymous pull gate; the canonical digest is `sha256:3fa81f645ccb0c13e0dbfd5da13c089e982f5ed85a0c79b5ec49e021820315fa`.
 
 
 ## Release verification additions
