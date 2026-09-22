@@ -58,7 +58,7 @@ The v3.8.0 release remains historical provenance. v3.8.1 is the verified rollbac
 - v3.8.2: superseded after Container runtime smoke failure
 - PR #104: merged; network-boundary and status hardening
 - post-release reconciliation is subject to its own main CI verification
-- the current main hardening changes are verified after merge; the published v3.8.1 release remains the stable distribution artifact
+- the v3.8.3 stable release is the current distribution artifact; v3.8.1 remains the verified rollback target
 
 ## Product gates
 
