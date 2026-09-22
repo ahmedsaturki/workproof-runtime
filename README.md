@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.4 benchmark foundations remain verified; v3.8.0-dev.1 is the current published prerelease.**
+**v3.4 benchmark foundations remain verified; v3.8.0 is the current stable release.**
 
 The v3.4 line is the first executable operator benchmark with controlled failure injection across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution.
 
@@ -97,13 +97,13 @@ Feature CI #1179 and post-merge main CI #1189 passed the complete v3.7 repositor
 
 ### GitHub Release
 
-`v3.8.0-dev.1` is the current shipped prerelease. Release and container workflows publish from the same release-branch lineage.
+`v3.8.0` is the current stable release. Release and container workflows publish from the same release-branch lineage.
 
 Published assets:
 
-- `operational-reality-core-3.8.0-dev.1.tgz`
-- `workproof-runtime-v3.8.0-dev.1.tar.gz`
-- `workproof-benchmark-v3.8.0-dev.1.json`
+- `operational-reality-core-3.8.0.tgz`
+- `workproof-runtime-v3.8.0.tar.gz`
+- `workproof-benchmark-v3.8.0.json`
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
@@ -113,11 +113,11 @@ The release pipeline re-downloads published assets, verifies SHA256 sums, verifi
 
 Published image:
 
-`ghcr.io/ahmedsaturki/workproof-runtime:3.8.0-dev.1`
+`ghcr.io/ahmedsaturki/workproof-runtime:3.8.0`
 
 Verified digest:
 
-`sha256:acafde09bd74d535fb706acde68f7e6279283ac49f6d1863585d672fb691ac02`
+`stable digest is recorded after publication`
 
 The same digest is exposed by the immutable release commit tag `bba39f385ab042344f4fc2ebe04aeef7ef3c98b9`. Container verification run #158 proved:
 
