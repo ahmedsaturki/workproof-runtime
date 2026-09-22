@@ -385,6 +385,52 @@ async function fetchRemoteLeases(controlPlaneUrl: string | undefined, req: any):
     return { status: 503, payload: { error: "control-plane-unavailable" } };
   }
 }
+async function fetchRemoteCapabilities(controlPlaneUrl: string | undefined, req: any): Promise<{ status: number; payload: Record<string, unknown> }> {
+  if (!controlPlaneUrl) return { status: 503, payload: { error: "control-not-configured" } };
+  const token = authHeader(req);
+  if (!token) return { status: 401, payload: { error: "unauthorized" } };
+
+  try {
+    const response = await fetch(controlPlaneUrl + "/v1/capabilities", {
+      method: "GET",
+      headers: { authorization: token }
+    });
+    const raw = await response.text();
+    let data: any = {};
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      return { status: 502, payload: { error: "control-plane-invalid-json" } };
+    }
+    if (!response.ok) {
+      return {
+        status: response.status,
+        payload: {
+          error: typeof data?.error === "string" ? data.error : "capability-list-request-failed"
+        }
+      };
+    }
+    const capabilities = Array.isArray(data?.capabilities)
+      ? data.capabilities.map((item: any) => ({
+          name: String(item?.name ?? ""),
+          version: String(item?.version ?? ""),
+          operations: Array.isArray(item?.operations) ? item.operations.map((value: unknown) => String(value)).sort() : [],
+          riskClass: String(item?.riskClass ?? "")
+        }))
+      : [];
+    return {
+      status: 200,
+      payload: {
+        version: "1.0",
+        source: "control-plane",
+        capabilities
+      }
+    };
+  } catch {
+    return { status: 503, payload: { error: "control-plane-unavailable" } };
+  }
+}
+
 async function fetchRemoteWorkers(controlPlaneUrl: string | undefined, req: any): Promise<{ status: number; payload: Record<string, unknown> }> {
   if (!controlPlaneUrl) return { status: 503, payload: { error: "control-not-configured" } };
   const token = authHeader(req);
@@ -656,6 +702,10 @@ button { background: #21262d; color: #e6edf3; border: 1px solid #30363d; padding
 <h2>Attention queue</h2>
 <div id="attention" class="grid"></div>
 </section>
+<section id="capabilitiesSection">
+<h2>Capability registry</h2>
+<div id="capabilities" class="grid"></div>
+</section>
 <section class="toolbar" aria-label="Work filters">
 <label><small>Search</small><br><input id="workQuery" autocomplete="off" placeholder="objective or work id"></label>
 <label><small>Status</small><br><select id="workStatus"><option value="">All</option><option value="new">New</option><option value="planned">Planned</option><option value="running">Running</option><option value="waiting_verification">Waiting verification</option><option value="verified">Verified</option><option value="partial">Partial</option><option value="waiting_lease">Waiting lease</option><option value="failed">Failed</option><option value="unresolved">Unresolved</option><option value="unverifiable">Unverifiable</option><option value="cancelled">Cancelled</option></select></label>
@@ -705,6 +755,7 @@ const leases = document.getElementById("leases");
 const proofs = document.getElementById("proofs");
 const overview = document.getElementById("overview");
 const attention = document.getElementById("attention");
+const capabilities = document.getElementById("capabilities");
 let selectedId = null;
 
 function setActionStatus(message) {
@@ -810,6 +861,36 @@ async function loadOverview() {
   }
 }
 
+async function loadCapabilities() {
+  capabilities.innerHTML = "<div class='card'>Loading capability registry…</div>";
+  const response = await fetch("/api/capabilities", {
+    cache: "no-store",
+    headers: token.value.trim() ? {"authorization":"Bearer " + token.value.trim()} : {}
+  });
+  const data = await response.json();
+  if (response.status === 503) {
+    capabilities.innerHTML = "<div class='card'>Capability registry is not connected. Configure the authenticated control plane.</div>";
+    return;
+  }
+  if (response.status === 401) {
+    capabilities.innerHTML = "<div class='card'>Capability registry requires the control token.</div>";
+    return;
+  }
+  if (!response.ok) throw new Error(data.error || "Failed to load capabilities");
+  capabilities.innerHTML = "";
+  for (const capability of data.capabilities || []) {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML =
+      "<div><span class='badge'>" + esc(capability.riskClass) + "</span> <span class='badge'>" + esc(capability.version) + "</span></div>" +
+      "<h3>" + esc(capability.name) + "</h3>" +
+      "<small>" + capability.operations.length + " operation(s)</small>" +
+      "<pre>" + esc(JSON.stringify({operations: capability.operations}, null, 2)) + "</pre>";
+    capabilities.appendChild(card);
+  }
+  if (!data.capabilities?.length) capabilities.innerHTML = "<div class='card'>No capabilities are registered.</div>";
+}
+
 async function loadWorkers() {
   workers.innerHTML = "<div class='card'>Loading worker status…</div>";
   const workerHeaders = token.value.trim() ? {"authorization":"Bearer " + token.value.trim()} : {};
@@ -863,6 +944,7 @@ async function loadLeases() {
   if (!data.leases.length) leases.innerHTML = "<div class='card'>No active execution leases.</div>";
 }
 async function load() {
+  await loadCapabilities().catch(error => { capabilities.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
   await loadOverview().catch(error => { overview.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; attention.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
   await loadWorkers().catch(error => { workers.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
   await loadLeases().catch(error => { leases.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
@@ -983,6 +1065,12 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
         });
         return;
       }
+      if (method === "GET" && url.pathname === "/api/capabilities") {
+        const remote = await fetchRemoteCapabilities(configuredControlPlane, req);
+        sendJson(res, remote.status, remote.payload);
+        return;
+      }
+
       if (method === "GET" && url.pathname === "/api/workers") {
         if (configuredControlPlane) {
           const remote = await fetchRemoteWorkers(configuredControlPlane, req);
