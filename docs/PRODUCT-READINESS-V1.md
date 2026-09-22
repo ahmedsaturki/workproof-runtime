@@ -159,12 +159,12 @@ The local-first P0 foundations are complete and executable:
 Remaining product-validation work is expansion beyond the current prerelease scope: broader mission composition, additional adapters, and wider operational visualization. The required local-first/external-topology acceptance gates for this prerelease are complete.
 
 
-## Dev.12 release state
+## v3.5.0-dev.1 release state
 
-The current shipped prerelease is `v3.5.0-dev.1`. Release verification run #124 and Container verification run #127 both completed their required gates, including the disposable external-topology validation and published digest lineage.
+The current shipped prerelease is `v3.5.0-dev.1`. Release verification run #144 and Container verification run #141 both completed their required gates, including the disposable external-topology validation and published digest lineage.
 
 
-## Dev.12 control-plane product surface
+## v3.5.0-dev.1 control-plane product surface
 
 The dev.12 product surface adds a runnable authenticated control-plane process and SDK dispatch support for executable Work Steps. The control-plane persists Work Objects, mission definitions, proof bundles, audit records, and its durable idempotency ledger. Non-loopback binding is refused unless an explicit auth policy is configured.
 
