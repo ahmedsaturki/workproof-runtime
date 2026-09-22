@@ -3,6 +3,7 @@ const path = require("path");
 
 const required = [
   ".github/workflows/ci.yml",
+  ".github/CODEOWNERS",
   "scripts/external-topology-smoke.js",
   "scripts/packed-control-plane-smoke.js",
   "scripts/packed-mcp-smoke.js",

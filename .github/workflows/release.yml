@@ -17,11 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
           package-manager-cache: false
@@ -31,6 +31,18 @@ jobs:
         shell: bash
         run: echo "tag=v${GITHUB_REF_NAME#release/}" >> "$GITHUB_OUTPUT"
 
+      - name: Verify release branch immutability
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if git rev-parse -q --verify "refs/tags/${RELEASE_TAG}^{commit}" >/dev/null 2>&1; then
+            TAG_COMMIT="$(git rev-list -n 1 "${RELEASE_TAG}")"
+            if [ "${TAG_COMMIT}" != "${GITHUB_SHA}" ]; then
+              echo "Release tag ${RELEASE_TAG} already points to ${TAG_COMMIT}; refusing to build from moved release branch ${GITHUB_SHA}."
+              exit 1
+            fi
+          fi
       - name: Install dependencies
         run: npm ci
 
@@ -56,9 +68,6 @@ jobs:
           BENCHMARK_FILE="workproof-benchmark-${RELEASE_TAG}.json"
 
           RELEASE_COMMIT="${GITHUB_SHA}"
-          if git rev-parse -q --verify "refs/tags/${RELEASE_TAG}^{commit}" >/dev/null 2>&1; then
-            RELEASE_COMMIT="$(git rev-list -n 1 "${RELEASE_TAG}")"
-          fi
 
           git archive --format=tar.gz --output="release-dist/${SOURCE_FILE}" "${RELEASE_COMMIT}"
           cp benchmark-result.json "release-dist/${BENCHMARK_FILE}"

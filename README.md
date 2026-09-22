@@ -186,7 +186,7 @@ Requirements: Node.js 24.15+.
 ### From source
 
 ```bash
-npm install
+npm ci
 npm run build
 node dist/packages/cli/src/index.js run examples/missions/research-local.json
 ```

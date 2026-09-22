@@ -6,7 +6,11 @@ WorkProof Runtime can execute digital work and interact with external systems th
 
 ## Reporting
 
-Do not disclose active vulnerabilities in public issues. Use a private security channel when one is configured for the project owner.
+Do not disclose active vulnerabilities in public issues.
+
+Use GitHub's private vulnerability reporting / Security Advisories interface for this repository when it is enabled. The connected repository settings are maintained outside this source tree; the repository currently documents the reporting path but does not claim that the GitHub-side feature is enabled.
+
+When private reporting is unavailable, contact the project owner through a non-public channel before disclosure.
 
 ## Design principles
 
