@@ -273,14 +273,21 @@ export async function startA2AServer(options: A2AOptions): Promise<RunningA2A> {
     }
   });
 
-  await new Promise<void>((resolve, reject) => {
+  const actualPort = await new Promise<number>((resolve, reject) => {
     server.once("error", reject);
-    server.listen(port, host, () => resolve());
+    server.listen(port, host, () => {
+      const address = server.address();
+      if (!address || typeof address === "string") {
+        reject(new Error("A2A server did not expose a TCP address"));
+        return;
+      }
+      resolve(address.port);
+    });
   });
 
   return {
     host,
-    port,
+    port: actualPort,
     server,
     close: () => new Promise((resolve, reject) => server.close((error: unknown) => error ? reject(error) : resolve()))
   };
