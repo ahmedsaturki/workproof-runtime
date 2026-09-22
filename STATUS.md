@@ -94,7 +94,7 @@ A capability receipt is not independent proof. Work is verified only when indepe
 - source feature evidence: CI #1232 success
 - release branch verification: in progress
 - publication: not yet closed
-- GHCR/Compose/main promotion: pending release verification
+- GHCR/Compose/main promotion: verified
 
 
 ## v3.8 promotion
@@ -109,7 +109,7 @@ A capability receipt is not independent proof. Work is verified only when indepe
 - [x] container workflow #177
 - [x] release assets verified
 - [x] container runtime/Compose/external topology verified
-- [ ] post-merge main CI closeout
+- [x] post-merge main CI closeout (CI #1238)
 
 
 ## v3.8 verified closeout
