@@ -8,6 +8,8 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 The v3.4 line is the first executable operator benchmark with controlled failure injection across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution.
 
+The next prerelease, v3.4.0-dev.3, carries the local-first product-readiness and packaged-operator hardening described below.
+
 ## Core loop
 
 Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify -> Recover/Substitute -> Deliver -> Proof -> Retain -> Control -> Compensate
@@ -81,7 +83,7 @@ M005 retried the primary capability under bounded ambiguity, selected a compatib
 
 ### GitHub Release
 
-`v3.4.0-dev.2` is published as GitHub Release **393311702**, targeting commit `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`.
+`v3.4.0-dev.2` remains the previous verified distribution baseline. `v3.4.0-dev.3` is the current release branch target and will be published only after the release verification pipeline passes.
 
 Published assets:
 
