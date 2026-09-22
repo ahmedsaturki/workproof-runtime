@@ -20,6 +20,7 @@ import { registerGitLocalPack } from "../packages/packs/src/git-local-pack";
 import { buildProofBundle } from "../packages/evidence/src/bundle";
 import { buildIntegrityManifest } from "../packages/evidence/src/integrity";
 import { createOtlpLogExporterFromEnv } from "../packages/telemetry/src/otel";
+import { Policy } from "../packages/policy/src/guard";
 
 interface RuntimeConfig {
   host: string;
@@ -90,6 +91,11 @@ function createRuntimeRegistry(): CapabilityRegistry {
   registerRuntimePacks(registry, verification);
   return registry;
 }
+
+export const CONTROL_PLANE_EXECUTION_POLICY: Policy = {
+  maxRisk: "external_write",
+  approved: false
+};
 
 const controlCapabilityRegistry = createRuntimeRegistry();
 
@@ -162,7 +168,7 @@ function loadMission(work: WorkObject, config: RuntimeConfig): WorkStep[] {
   return validateSteps(spec.steps, work.contract.riskClass);
 }
 
-async function executeMission(input: Record<string, unknown>): Promise<WorkObject> {
+export async function executeMission(input: Record<string, unknown>): Promise<WorkObject> {
   const config = readRuntimeConfig();
   if (typeof input.objective !== "string" || !input.objective.trim()) throw new Error("Dispatch objective is required");
   const riskClass = validateRisk(input.riskClass, "read");
@@ -184,13 +190,13 @@ async function executeMission(input: Record<string, unknown>): Promise<WorkObjec
   });
   saveMission(work, steps, config);
   const repository = new JsonWorkRepository(config.workDirectory);
-  const engine = new WorkEngine(store, registry, verification, async () => false, undefined, repository);
+  const engine = new WorkEngine(store, registry, verification, async () => false, CONTROL_PLANE_EXECUTION_POLICY, repository);
   await engine.run(work, steps);
   persistProof(work, config);
   return work;
 }
 
-async function resumeMission(work: WorkObject): Promise<WorkObject> {
+export async function resumeMission(work: WorkObject): Promise<WorkObject> {
   const config = readRuntimeConfig();
   const steps = loadMission(work, config);
   const store = new WorkStore();
