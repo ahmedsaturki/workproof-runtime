@@ -65,6 +65,20 @@ function escapeHtml(value: unknown): string {
     .replace(/'/g, "&#39;");
 }
 
+function operatorGuidance(work: any): { level: "info" | "success" | "warning" | "critical"; title: string; detail: string; action: string } {
+  const status = String(work?.status ?? "unknown");
+  if (status === "verified") return { level: "success", title: "Outcome verified", detail: "Required success criteria have independently verified evidence.", action: "Inspect proof and deliver; do not rerun a verified outcome unnecessarily." };
+  if (status === "running") return { level: "info", title: "Execution is active", detail: "A worker may still be executing or reconciling effects.", action: "Monitor effects and leases; avoid starting a duplicate run." };
+  if (status === "waiting_verification") return { level: "warning", title: "Verification is still required", detail: "Execution progress is not the same as a verified outcome.", action: "Inspect verification criteria and evidence before treating this work as done." };
+  if (status === "waiting_lease") return { level: "warning", title: "Waiting for execution ownership", detail: "This Work Object is blocked on a lease or worker ownership decision.", action: "Inspect worker/lease state and recover ownership rather than duplicating execution." };
+  if (status === "partial") return { level: "warning", title: "Outcome is only partial", detail: "Some criteria or effects are complete, but the Work Contract is not fully satisfied.", action: "Inspect failed criteria and remaining effects before delivery or retry." };
+  if (status === "unresolved") return { level: "critical", title: "External outcome is unresolved", detail: "At least one effect has an ambiguous or unresolved outcome.", action: "Reconcile existing external state before repeating any write." };
+  if (status === "failed") return { level: "critical", title: "Execution failed", detail: "The Work Object or a required verification path failed.", action: "Inspect attempts, evidence, and recovery events before retrying." };
+  if (status === "unverifiable") return { level: "critical", title: "Outcome is not independently verifiable", detail: "Available evidence is insufficient to support a verified result.", action: "Obtain stronger evidence or correct the verification path before delivery." };
+  if (status === "cancelled") return { level: "warning", title: "Work was cancelled", detail: "The Work Object has been deliberately stopped.", action: "Review why it was cancelled; only resume through an approved control path." };
+  if (status === "new" || status === "planned") return { level: "info", title: "Work is not executing yet", detail: "The Work Object is defined but not currently running.", action: "Review the contract and risk before dispatch." };
+  return { level: "warning", title: "Unknown runtime state", detail: "The Studio cannot map this state to a known operator workflow.", action: "Inspect the raw Work Object before taking an action." };
+}
 function sanitizeWork(work: any): Record<string, unknown> {
   return {
     id: work.id,
@@ -91,6 +105,23 @@ function sanitizeWork(work: any): Record<string, unknown> {
           mediaType: artifact?.mediaType
         }))
       : [],
+    operatorGuidance: operatorGuidance(work),
+    effectsSummary: (() => {
+      const effects = Array.isArray(work.effects) ? work.effects : [];
+      const byStatus: Record<string, number> = {};
+      for (const effect of effects) {
+        const status = String(effect?.status ?? "unknown");
+        byStatus[status] = (byStatus[status] ?? 0) + 1;
+      }
+      return {
+        total: effects.length,
+        verified: byStatus.verified ?? 0,
+        unknown: byStatus.unknown ?? 0,
+        unresolved: byStatus.unresolved ?? 0,
+        failed: byStatus.failed ?? 0,
+        attempts: effects.reduce((sum: number, effect: any) => sum + Number(effect?.attempts ?? 0), 0)
+      };
+    })(),
     verification: work.verification
       ? {
           status: work.verification.status,
@@ -577,6 +608,10 @@ small { color: #8b949e; }
 .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap: 16px; margin-top: 20px; }
 .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 16px; cursor: pointer; }
 .card:hover { border-color: #58a6ff; }
+.guidance-success { border-left: 4px solid #2da44e; }
+.guidance-info { border-left: 4px solid #58a6ff; }
+.guidance-warning { border-left: 4px solid #d29922; }
+.guidance-critical { border-left: 4px solid #f85149; }
 .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #21262d; font-size: 12px; }
 pre { white-space: pre-wrap; word-break: break-word; background: #0d1117; padding: 12px; border-radius: 8px; }
 button { background: #21262d; color: #e6edf3; border: 1px solid #30363d; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
@@ -627,6 +662,8 @@ button { background: #21262d; color: #e6edf3; border: 1px solid #30363d; padding
 <button id="cancel">Cancel</button>
 </div>
 <pre id="payload"></pre>
+<section id="operatorGuidance" class="card" aria-label="Operator guidance"></section>
+<section id="effectsSummary" class="card" aria-label="Effect summary"></section>
 <section id="proofSection" hidden>
 <h3>Proof & audit</h3>
 <div id="proofs"></div>
@@ -639,6 +676,8 @@ const detail = document.getElementById("detail");
 const title = document.getElementById("title");
 const meta = document.getElementById("meta");
 const payload = document.getElementById("payload");
+const operatorGuidanceBox = document.getElementById("operatorGuidance");
+const effectsSummaryBox = document.getElementById("effectsSummary");
 const token = document.getElementById("token");
 const dispatchObjective = document.getElementById("dispatchObjective");
 const actionStatus = document.getElementById("actionStatus");
@@ -851,6 +890,14 @@ async function show(id) {
   title.textContent = data.work.objective || data.work.id;
   meta.textContent = data.work.status + " · " + data.work.id;
   payload.textContent = JSON.stringify(data.work, null, 2);
+  const guidance = data.work.operatorGuidance || { level: "warning", title: "No operator guidance available", detail: "The runtime did not provide a known state mapping.", action: "Inspect the raw Work Object before acting." };
+  operatorGuidanceBox.className = "card guidance-" + String(guidance.level);
+  operatorGuidanceBox.innerHTML = "<small>Operator guidance</small><h3>" + esc(guidance.title) + "</h3><div>" + esc(guidance.detail) + "</div><p><strong>Next action:</strong> " + esc(guidance.action) + "</p>";
+  const effects = data.work.effectsSummary || { total: 0, verified: 0, unknown: 0, unresolved: 0, failed: 0, attempts: 0 };
+  effectsSummaryBox.innerHTML = "<small>Effect summary</small><h3>" + Number(effects.total) + " effect(s)</h3><div>verified " + Number(effects.verified) + " · unknown " + Number(effects.unknown) + " · unresolved " + Number(effects.unresolved) + " · failed " + Number(effects.failed) + " · attempts " + Number(effects.attempts) + "</div>";
+  const resumeButton = document.getElementById("resume");
+  resumeButton.disabled = data.work.status === "verified" || data.work.status === "cancelled";
+  resumeButton.title = data.work.status === "verified" ? "Verified work should not be resumed." : data.work.status === "cancelled" ? "Cancelled work requires an approved control path." : "Resume this Work Object through the control plane.";
   detail.hidden = false;
   await loadProofs(id).catch(error => { proofSection.hidden = false; proofs.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
   window.scrollTo({top: document.body.scrollHeight, behavior:"smooth"});

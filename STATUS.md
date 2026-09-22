@@ -2,102 +2,58 @@
 
 Date: 2026-09-22
 
-Verification note: this status snapshot is itself CI-gated on the current main commit.
-The current product-readiness merge and distribution closeout are CI-gated on main.
-Chromium CDP smoke is environment-isolated from D-Bus and uses a bounded startup window.
+## Main verified baseline
 
-## Current main
+Main contains the v3.4 benchmark, restart/resume safety, portable proof, explicit proof compatibility, operator guidance, and packaging improvements.
 
-**v3.4 benchmark is verified; v3.4.0-dev.5 is the current coherent distribution target.**
+## Current release
 
-Latest main: the current branch head; see the GitHub ref and the latest CI run for the exact commit SHA.
+- version: `3.4.0-dev.9`
+- branch: `release/3.4.0-dev.9`
+- parent candidate: `15de76521f63100249eccd12c5e4f94643c8ab83`
+- purpose: coherent distribution after dev.7 candidate lineage was superseded by the clean dev.8 release branch
 
-Since the release target `c1c1f378d0e79acfc4ee22d5d2ca3fa389e8402d`, main has added distribution hardening, documentation corrections, and deterministic persistent-lease test hardening. The v3.4.0-dev.5 source release is pinned to the release tag commit.
+## Product gates included
 
-## Verified main gates
+- [x] local WorkProof Studio
+- [x] packaged `workctl`
+- [x] Work Object restart/resume
+- [x] idempotency operation/input drift protection
+- [x] portable proof export/verify/import
+- [x] versioned proof compatibility
+- [x] operator guidance UX
+- [x] production Compose restart/persistence smoke
+- [x] exact release-commit Docker build context
+- [x] package includes docs/examples
 
-- [x] source tree: 181/181
-- [x] dependency security audit: 0 vulnerabilities
-- [x] Chromium/CDP preflight
-- [x] strict TypeScript build
-- [x] retention lifecycle
-- [x] full unit/integration suite
-- [x] operator benchmark
-- [x] demo
-- [x] CLI proof verification
-- [x] CLI mission execution
-- [x] live GitHub integration smoke
-- [x] Main CI for latest main: success
+## Distribution gates
 
-## Verified v3.3 gates
+- [ ] GitHub Release v3.4.0-dev.9 publication and re-download verification
+- [ ] GHCR v3.4.0-dev.9 publication, health, anonymous pull, and digest verification
+- [ ] main promotion CI after release
 
-- [x] deterministic local RFC-style message composition
-- [x] deterministic Message-ID and SHA-256 identity
-- [x] digest-addressed local outbox persistence
-- [x] idempotent duplicate handling
-- [x] strict address/header validation
-- [x] message size bounds
-- [x] evidence-bearing capability result
-- [x] independent persisted-message verification
-- [x] pack manifest and fixture
-- [x] CLI registration
-- [x] feature CI
-- [x] merged-main CI
+## Benchmark
 
-## Verified v3.4 benchmark
+M001-M005: 5/5 verified.
+verifiedCompletionRate: 1.0
+falseDoneCount: 0
+duplicateExternalEffectCount: 0
+ambiguousOutcomeResolvedCount: 1
+capabilitySubstitutionCount: 1
+evidenceCompleteRate: 1
+humanInterventionCount: 0
 
-M001-M005 all verify successfully:
+## External boundary
 
-- verifiedCompletionRate: 1.0
-- falseDoneCount: 0
-- duplicateExternalEffectCount: 0
-- ambiguousOutcomeResolvedCount: 1
-- capabilitySubstitutionCount: 1
-- evidenceCompleteRate: 1.0
-- humanInterventionCount: 0
-
-## Release distribution
-
-### GitHub Release
-
-- tag: `v3.4.0-dev.4`
-- release id: 393378852
-- target commit: `fcff799b77404f99ee0c17929f44cd2e4e8d47bf`
-- release verification run: #42 (success)
-- assets: 5/5 present and re-downloaded
-- SHA256 verification: success
-- published benchmark semantic verification: success
-
-The previous `v3.4.0-dev.3` release remains available as the prior prerelease baseline.
-
-### GHCR
-
-- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.4`
-- digest: `sha256:1500730c2c2c9dc0d6da24ca2dd1de4948699e4f2956768d39107b91d753efba`
-- immutable release commit tag: `fcff799b77404f99ee0c17929f44cd2e4e8d47bf`
-- container verification run: #42 (success)
-- OCI version/revision checks: success
-- published-image `/health`: success
-- anonymous GHCR pull: success
-
-The runtime image is built from the exact release-tag source commit.
-
-## Operational boundary
-
-- [x] reproducible source archive
-- [x] npm-compatible package artifact
-- [x] GitHub Release publication
-- [x] post-publication release verification
-- [x] GHCR container publication
-- [x] published image smoke
-- [x] localhost-bound production compose
+- [x] reproducible source distribution
+- [x] local production compose
 - [x] production deployment runbook
-- [x] v3.4.0-dev.5 GHCR image publication and smoke
-- [x] v3.4.0-dev.5 GitHub Release publication and re-download verification
 - [ ] public production host/DNS/TLS/auth/secrets provisioning
 
-The unchecked line is deliberately external infrastructure, not a missing repository implementation.
+## Remaining product gates
 
-## Verification rule
+- [ ] disposable external deployment with real TLS/auth/secrets/backup/rollback
+- [ ] broader multi-capability mission UX
+- [ ] richer operational visualization
 
-A successful tool response is a receipt, not proof. Work is verified only when independent evidence satisfies the Work Contract success criteria.
+A capability receipt is never treated as independent proof. Verification requires evidence satisfying the Work Contract.

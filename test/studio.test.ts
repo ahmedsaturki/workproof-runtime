@@ -70,6 +70,8 @@ test("Studio serves an operational dashboard and sanitized Work Object APIs", as
     assert.equal(page.status, 200);
     const html = await page.text();
     assert.match(html, /WorkProof Studio/);
+    assert.match(html, /Operator guidance/);
+    assert.match(html, /Effect summary/);
     assert.match(page.headers.get("content-security-policy") ?? "", /default-src 'self'/i);
     assert.equal(page.headers.get("x-content-type-options"), "nosniff");
     assert.equal(page.headers.get("cache-control"), "no-store");
@@ -85,6 +87,10 @@ test("Studio serves an operational dashboard and sanitized Work Object APIs", as
     const data = await detail.json();
     assert.equal(data.work.objective, "<Operational Objective>");
     assert.equal(data.work.effects[0].operation, "read");
+    assert.equal(data.work.operatorGuidance.level, "success");
+    assert.equal(data.work.operatorGuidance.title, "Outcome verified");
+    assert.equal(data.work.effectsSummary.total, 1);
+    assert.equal(data.work.effectsSummary.verified, 1);
     assert.equal(data.work.effects[0].idempotencyKey, undefined);
     assert.equal(data.work.contract, undefined);
     assert.equal(data.work.inputs, undefined);
@@ -813,6 +819,34 @@ test("Studio operational overview fails soft when optional worker or lease healt
     assert.equal(data.leases.available, false);
     assert.equal(data.leases.total, undefined);
     assert.equal(data.leases.active, undefined);
+  } finally {
+    await studio.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("Studio provides actionable guidance for unresolved work and blocks unsafe resume affordance", async () => {
+  const root = tempDir("workproof-studio-guidance-");
+  const repository = new JsonWorkRepository(root);
+  const work = workFixture();
+  work.id = "studio_unresolved";
+  work.status = "unresolved";
+  work.effects[0].status = "unknown";
+  repository.save(work);
+  const studio = await startStudio({ workDirectory: root, port: 0 });
+  try {
+    const base = "http://127.0.0.1:" + studio.port;
+    const detail = await fetch(base + "/api/work/studio_unresolved");
+    assert.equal(detail.status, 200);
+    const data = await detail.json();
+    assert.equal(data.work.operatorGuidance.level, "critical");
+    assert.equal(data.work.operatorGuidance.title, "External outcome is unresolved");
+    assert.match(data.work.operatorGuidance.action, /Reconcile existing external state/);
+    assert.equal(data.work.effectsSummary.unknown, 1);
+    const page = await fetch(base);
+    const html = await page.text();
+    assert.match(html, /Operator guidance/);
+    assert.match(html, /Effect summary/);
   } finally {
     await studio.close();
     fs.rmSync(root, { recursive: true, force: true });

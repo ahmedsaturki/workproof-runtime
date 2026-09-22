@@ -85,7 +85,7 @@ A product release must not be called production-ready solely because CI is green
 
 ## Current verified baseline — 2026-09-22
 
-The repository currently records v3.4 benchmark verification and the coherent `v3.4.0-dev.5` distribution path. Main CI, release verification, and container publication are integrity-verified. Localhost-bound production compose and a deployment runbook are pinned to the verified dev.4 image.
+The repository currently records v3.4 benchmark verification and the coherent `v3.4.0-dev.9` distribution path. Main CI, release verification, and container publication are integrity-verified. Localhost-bound production compose and a deployment runbook are pinned to the verified dev.4 image.
 
 These facts establish a strong verified foundation, but they do **not** by themselves establish a public production deployment. Public host/DNS/TLS/auth/secrets provisioning remains an external infrastructure gate.
 
@@ -140,3 +140,24 @@ The following gates are executable and CI-verified on the current dev.4 release 
 - [x] Explicit versioned proof compatibility policy with strict unsupported-version handling.
 - [x] Source-tree verification includes the product readiness specification and product smoke suite.
 - [x] CI validates the above together with the existing security, retention, benchmark, demo, CLI, and live GitHub gates.
+
+
+## Current dev.7 readiness
+
+The local-first P0 foundations are complete and executable:
+
+- [x] package install and representative mission smoke
+- [x] persistent restart/resume acceptance
+- [x] idempotency operation/input drift protection
+- [x] portable proof export/verify/import
+- [x] versioned proof compatibility
+- [x] operator guidance for failure, ambiguity, recovery, and verification states
+- [x] production Compose restart/persistence smoke
+- [x] package distribution includes operator docs and representative mission examples
+
+Remaining gates are external deployment validation, broader multi-capability UX, and richer operational visualization.
+
+
+## Dev.8 release target
+
+The current release target is `v3.4.0-dev.9`, carrying the completed local-first P0/P1 gates: operator guidance, production Compose restart/persistence validation, portable proof, proof compatibility, resume safety, and packaged docs/examples.

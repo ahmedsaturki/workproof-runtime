@@ -51,7 +51,7 @@ jobs:
             echo "Release tag ${RELEASE_TAG} does not match package version ${PACKAGE_VERSION}"
             exit 1
           fi
-          PACKAGE_FILE="$(npm pack --pack-destination release-dist | tail -n 1)"
+          PACKAGE_FILE="$(npm pack --silent --pack-destination release-dist)"
           SOURCE_FILE="workproof-runtime-${RELEASE_TAG}.tar.gz"
           BENCHMARK_FILE="workproof-benchmark-${RELEASE_TAG}.json"
 

@@ -2,8 +2,8 @@
 
 Supported distribution target: the Node 24 GHCR container.
 
-- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.4`
-- pinned digest: `sha256:1500730c2c2c9dc0d6da24ca2dd1de4948699e4f2956768d39107b91d753efba`
+- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.9`
+- pinned digest: recorded by the verified dev.9 Container workflow after publication
 - bind: `127.0.0.1:8788`
 - persistent data: `./work-runs -> /data/work-runs`
 
@@ -36,4 +36,9 @@ The repository provides the deployable container and runbook. It does not provis
 
 ## Public container distribution
 
-The published Container Registry manifest for `3.4.0-dev.5` was verified through the anonymous pull gate; the canonical digest is `sha256:88be340ace01e1d6d48f62af41c806048c41d3f6e3a20741fba29cdc70b8bd4f`.
+The published Container Registry manifest for `3.4.0-dev.9` was verified through the anonymous pull gate; the canonical digest is `sha256:88be340ace01e1d6d48f62af41c806048c41d3f6e3a20741fba29cdc70b8bd4f`.
+
+
+## Release verification additions
+
+Container CI executes the production Compose profile, checks runtime health and version, reads a persisted Work Object, restarts Compose, and reads the same Work Object again.
