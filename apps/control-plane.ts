@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+const fs = require("fs");
+const path = require("path");
 import { WorkStore } from "../packages/core/src/work";
 import { RiskClass, WorkObject } from "../packages/core/src/types";
 import { CapabilityRegistry } from "../packages/capabilities/src/registry";
@@ -180,14 +180,6 @@ async function main(): Promise<void> {
     proofDirectory,
     auth: Boolean(authPolicy)
   }, null, 2) + "\n");
-
-  const shutdown = async (signal: string): Promise<void> => {
-    process.stdout.write(`control-plane ${signal}\n`);
-    await controlPlane.close();
-    process.exit(0);
-  };
-  process.once("SIGINT", () => { void shutdown("SIGINT"); });
-  process.once("SIGTERM", () => { void shutdown("SIGTERM"); });
 }
 
 main().catch((error) => {
