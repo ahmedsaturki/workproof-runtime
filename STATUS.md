@@ -6,16 +6,17 @@ Date: 2026-09-22
 
 Main contains the v3.4 executable benchmark, restart/resume safety, portable proof, explicit proof compatibility, operator guidance, packaged operator docs/examples, multi-capability execution, external-topology validation, and distribution hardening.
 
-## Current main
+## Main verification basis
 
 - package version: `3.8.0`
-- latest verified main state: `f1fffafd415af41c4b4a12ffb6418d2d5850fd7c`
-- verification basis: main CI #1257 succeeded on that main state
+- verification basis before this repository-hardening closeout: main state `f391ae4ce60f0fd102c731c78551d258fbde1f12`
+- main CI #1260: success on that verification basis
 - stable release source commit: `2b02d22e897d5fe736f93267c72036d951f74082`
 - promotion branch: `promote/v3.8.0-main`
 - stable main promotion: complete in `5b74c2f98f5f46ce75371bcf8301857da75a0947`
 - post-release hardening PR #97: merged; reproducible `npm ci` install tree
 - post-release hardening PR #98: merged; release metadata/license/source-manifest reconciliation
+- repository hardening PR #101: pins workflow actions to immutable commits, adds CODEOWNERS coverage, reconciles the source manifest, and clarifies security reporting
 
 The stable v3.8.0 release remains bound to its published release commit and container digest. The current `main` adds metadata/distribution hardening after that stable release without changing runtime semantics.
 
@@ -113,8 +114,8 @@ A capability receipt is not independent proof. Work is verified only when indepe
 
 - PR #97: merged; `npm ci` enforced by CI, release, and Docker build paths
 - PR #98: merged; explicit Apache-2.0 package metadata, complete license text, current contributor baseline, duplicate-free source manifest, `package-lock.json` source-tree coverage, and release metadata regression test
-- main state produced by PR #99: `f1fffafd415af41c4b4a12ffb6418d2d5850fd7c`
-- main CI #1257: success
+- PR #99: merged; status wording normalization
+- main CI #1260: success on the pre-#101 main baseline
 
 ## v3.8 stable main closeout
 
