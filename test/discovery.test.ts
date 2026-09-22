@@ -25,7 +25,7 @@ test("web discovery searches over HTTP, deduplicates, materializes an artifact, 
   });
   await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
   const base = `http://127.0.0.1:${(server.address() as any).port}/search`;
-  const output = "/tmp/web-discovery.json"; try { fs.unlinkSync(output); } catch {}
+  const output = require("path").join(require("os").tmpdir(), "web-discovery.json"); try { fs.unlinkSync(output); } catch {}
   try {
     const store = new WorkStore(); const registry = new CapabilityRegistry(); const verification = new VerificationEngine();
     registerWebDiscoveryPack(registry, verification);
