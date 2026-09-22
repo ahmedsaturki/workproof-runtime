@@ -37,7 +37,7 @@ The default deployment is local/self-hosted. Remote infrastructure is an optiona
 ### P2 — Interoperability adapters
 
 - MCP adapter: expose approved capabilities without replacing WorkProof semantics. **Implemented:** v3.6 adds the official MCP v2 stdio adapter, authenticated Control Plane forwarding, explicit mutation idempotency, protocol acceptance tests, and packed-package verification.
-- A2A adapter: connect external agents as planners/requesters while WorkProof remains the execution/proof boundary. **Implemented in v3.7 candidate:** Agent Card, JSON-RPC task lifecycle, authentication, idempotency, task listing/filtering/paging, and Control Plane forwarding.
+- A2A adapter: connect external agents as planners/requesters while WorkProof remains the execution/proof boundary. **Implemented in v3.7.0-dev.1:** Agent Card, JSON-RPC task lifecycle, authentication, idempotency, task listing/filtering/paging, and Control Plane forwarding.
 - OpenTelemetry adapter: correlate external telemetry with work/evidence without making telemetry authoritative. **Implemented in v3.7 candidate:** dependency-free OTLP/HTTP JSON audit export with field allowlisting and non-fatal exporter failures.
 
 ## Local-first contract
@@ -166,12 +166,12 @@ The local-first P0 foundations are complete and executable:
 The required local-first and external-topology acceptance gates for v3.7.0-dev.1 are complete. Future expansion may add wider mission composition and interoperability features without changing WorkProof authority semantics.
 
 
-## v3.6.0-dev.1 release state
+## v3.7.0-dev.1 release state
 
-The current shipped prerelease is `v3.6.0-dev.1`. Release verification run #161 and Container verification run #158 both completed their required gates, including the disposable external-topology validation and published digest lineage.
+The current shipped prerelease is `v3.7.0-dev.1`. Release verification run #171 and Container verification run #168 both completed their required gates, including the disposable external-topology validation and published digest lineage.
 
 
-## v3.6.0-dev.1 control-plane product surface
+## v3.7.0-dev.1 control-plane product surface
 
 The dev.12 product surface adds a runnable authenticated control-plane process and SDK dispatch support for executable Work Steps. The control-plane persists Work Objects, mission definitions, proof bundles, audit records, and its durable idempotency ledger. Non-loopback binding is refused unless an explicit auth policy is configured.
 
