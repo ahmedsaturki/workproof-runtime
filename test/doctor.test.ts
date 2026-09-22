@@ -31,7 +31,7 @@ test("doctor reports a healthy local installation and connected services", async
   const control = await server((req: any, res: any) => {
     const body = req.url === "/health"
       ? { status: "ok", version: "3.8.0-dev.1" }
-      : { status: "ready", checks: { repository: { status: "ok" }, idempotency: { status: "ok" } } };
+      : { status: "ready", version: "3.8.0-dev.1", checks: { repository: { status: "ok" }, idempotency: { status: "ok" } } };
     res.writeHead(200, { "content-type": "application/json" });
     res.end(JSON.stringify(body));
   });
