@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.4 executable operator benchmark is fully verified; v3.4.0-dev.9 is the current release target..**
+**v3.4 executable operator benchmark is fully verified; v3.4.0-dev.9 is the current shipped prerelease.**
 
 The v3.4 line is the first executable operator benchmark with controlled failure injection across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution.
 
@@ -83,11 +83,11 @@ M005 retried the primary capability under bounded ambiguity, selected a compatib
 
 ### GitHub Release
 
-`v3.4.0-dev.7` is the current release target. Release and container workflows publish from the same release branch lineage.
+`v3.4.0-dev.9` is the current shipped prerelease. Release and container workflows publish from the same release-branch lineage.
 
 Published assets:
 
-- `operational-reality-core-3.4.0-dev.9.tgz
+- `operational-reality-core-3.4.0-dev.9.tgz`
 - `workproof-runtime-v3.4.0-dev.9.tar.gz
 - `workproof-benchmark-v3.4.0-dev.9.json
 - `RELEASE-MANIFEST.txt`
@@ -103,9 +103,9 @@ Published image:
 
 Verified digest:
 
-`sha256:88be340ace01e1d6d48f62af41c806048c41d3f6e3a20741fba29cdc70b8bd4f`
+`sha256:3acde2ee0e82c0d7bf1e9bd8217aa774e1ceb5cdafd64150b87b7581aa0ea04d`
 
-The same digest is exposed by the immutable release commit tag `78932bba20b48bf1ebc0c3d873d0e716b2ca296c`. Container verification run #55 proved:
+The same digest is exposed by the immutable release commit tag `3041aeb49241dc50daae56ba70763bc61aeb29bf`. Container verification run #95 proved:
 
 - package version matches release tag;
 - OCI version matches `3.4.0-dev.5`;
@@ -123,7 +123,7 @@ The repository includes:
 - `docs/CONTAINER-RUNTIME.md`
 - `docs/PRODUCTION-DEPLOYMENT.md`
 
-The production compose targets the verified v3.4.0-dev.5 image, binds Studio to localhost, and persists `./work-runs`. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
+The production compose targets the verified v3.4.0-dev.9 image, binds Studio to localhost, and persists `./work-runs`. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
 
 `package.json` remains `private: true`; no npm registry publication is claimed.
 
