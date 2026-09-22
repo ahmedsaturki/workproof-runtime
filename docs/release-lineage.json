@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "release": {
+    "version": "3.4.0-dev.9",
+    "tag": "v3.4.0-dev.9",
+    "commit": "3041aeb49241dc50daae56ba70763bc61aeb29bf",
+    "githubReleaseId": 393389908,
+    "releaseWorkflowRun": 98,
+    "containerWorkflowRun": 95
+  },
+  "container": {
+    "image": "ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.9",
+    "digest": "sha256:3acde2ee0e82c0d7bf1e9bd8217aa774e1ceb5cdafd64150b87b7581aa0ea04d",
+    "immutableTag": "3041aeb49241dc50daae56ba70763bc61aeb29bf"
+  },
+  "rollback": {
+    "version": "3.4.0-dev.8",
+    "tag": "v3.4.0-dev.8",
+    "commit": "149b9a7741988c7ede0accc624737d2768809a6e"
+  }
+}
