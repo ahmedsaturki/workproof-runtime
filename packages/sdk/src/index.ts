@@ -55,6 +55,12 @@ export interface WorkSummary {
   a2aContextId?: string;
 }
 
+export interface WorkListPage {
+  items: WorkSummary[];
+  total: number;
+  offset: number;
+}
+
 function normalizeBaseUrl(value: string): string {
   const url = new URL(value);
   if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("Control plane URL must use HTTP or HTTPS");
@@ -123,14 +129,19 @@ export class ControlPlaneClient {
     this.token = options.token;
   }
 
-  async listWork(options: { limit?: number; status?: string } = {}): Promise<WorkSummary[]> {
+  async listWorkPage(options: { limit?: number; offset?: number; status?: string; contextId?: string } = {}): Promise<WorkListPage> {
     const limit = options.limit ?? 100;
+    const offset = options.offset ?? 0;
     if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100) throw new Error("Invalid work list limit");
-    const query = new URLSearchParams({ limit: String(limit) });
+    if (!Number.isSafeInteger(offset) || offset < 0 || offset > 1000000) throw new Error("Invalid work list offset");
+    const query = new URLSearchParams({ limit: String(limit), offset: String(offset) });
     if (options.status) query.set("status", options.status);
+    if (options.contextId) query.set("contextId", options.contextId);
     const data = await request(this.baseUrl, this.token, "GET", "/v1/work?" + query.toString());
-    if (!Array.isArray(data?.work)) throw new Error("Control plane returned an invalid work list");
-    return data.work.map((item: any) => ({
+    if (!Array.isArray(data?.work) || !Number.isSafeInteger(data?.total)) {
+      throw new Error("Control plane returned an invalid work list");
+    }
+    const items = data.work.map((item: any) => ({
       id: String(item?.id ?? ""),
       objective: String(item?.objective ?? ""),
       status: String(item?.status ?? ""),
@@ -140,8 +151,12 @@ export class ControlPlaneClient {
       updatedAt: String(item?.updatedAt ?? ""),
       ...(typeof item?.a2aContextId === "string" ? { a2aContextId: item.a2aContextId } : {})
     }));
+    return { items, total: data.total, offset: Number(data.offset ?? offset) };
   }
 
+  async listWork(options: { limit?: number; status?: string; contextId?: string } = {}): Promise<WorkSummary[]> {
+    return (await this.listWorkPage({ ...options, limit: options.limit ?? 100, offset: 0 })).items;
+  }
   async getWork(workId: string): Promise<WorkObject> {
     if (!/^[A-Za-z0-9._-]+$/.test(workId)) throw new Error("Invalid work id");
     return parseWorkObject(JSON.stringify((await request(this.baseUrl, this.token, "GET", `/v1/work/${workId}`)).work));
