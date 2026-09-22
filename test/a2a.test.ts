@@ -106,3 +106,62 @@ test("A2A adapter exposes agent card, authentication, version negotiation, SendM
 });
 
 export {};
+
+test("A2A ListTasks projects Work Object summaries into tasks", async () => {
+  const token = "a2a-list-test-token-123456";
+  const works = [
+    { id: "work_one", status: "verified", contract: { objective: "one", riskClass: "read" }, createdAt: "2026-09-22T00:00:00.000Z", updatedAt: "2026-09-22T00:00:03.000Z" },
+    { id: "work_two", status: "failed", contract: { objective: "two", riskClass: "read" }, createdAt: "2026-09-22T00:00:00.000Z", updatedAt: "2026-09-22T00:00:02.000Z" }
+  ];
+  const controlServer = http.createServer((req: any, res: any) => {
+    const url = new URL(String(req.url ?? "/"), "http://127.0.0.1");
+    if (req.headers.authorization !== "Bearer " + token) {
+      res.writeHead(401, { "content-type": "application/json" });
+      res.end("{}");
+      return;
+    }
+    if (req.method === "GET" && url.pathname === "/v1/work") {
+      const status = url.searchParams.get("status");
+      const filtered = status ? works.filter(w => w.status === status) : works;
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({ work: filtered, total: filtered.length }));
+      return;
+    }
+    res.writeHead(404);
+    res.end("{}");
+  });
+  await new Promise<void>(resolve => controlServer.listen(0, "127.0.0.1", () => resolve()));
+  const controlPort = controlServer.address().port;
+  const a2a = await startA2AServer({
+    host: "127.0.0.1",
+    port: 0,
+    controlPlaneUrl: "http://127.0.0.1:" + controlPort,
+    token
+  });
+  try {
+    const response = await fetch("http://127.0.0.1:" + a2a.port + "/rpc", {
+      method: "POST",
+      headers: {
+        "content-type": "application/a2a+json",
+        "authorization": "Bearer " + token,
+        "a2a-version": "1.0"
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 9,
+        method: "ListTasks",
+        params: { pageSize: 1, status: "TASK_STATE_COMPLETED" }
+      })
+    });
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("content-type").startsWith("application/a2a+json"), true);
+    const body = await response.json();
+    assert.equal(body.result.tasks.length, 1);
+    assert.equal(body.result.tasks[0].id, "work_one");
+    assert.equal(body.result.nextPageToken, "");
+    assert.equal(body.result.pageSize, 1);
+  } finally {
+    await a2a.close();
+    await new Promise<void>(resolve => controlServer.close(() => resolve()));
+  }
+});
