@@ -73,6 +73,8 @@ The current stable product baseline is **v3.8.10**.
 - previous stable: `v3.8.9`
 - no new runtime semantics are introduced by this correction
 
+The published `v3.8.10` artifacts are immutable snapshots of release commit `9daac7a926ce1631ac708a6c234379d622c56c19`. The current `main` lineage was reconciled after publication to match the exact GitHub/GHCR evidence; that reconciliation is documentation/distribution metadata only and does not rewrite the published snapshot.
+
 The v3.8.10 distribution enforces an immutable Node 24.21.0 Trixie slim base digest and a bounded production resource/log envelope.
 
 ## Release acceptance gates
