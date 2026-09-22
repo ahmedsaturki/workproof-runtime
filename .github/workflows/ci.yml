@@ -172,6 +172,7 @@ jobs:
           $browser = $candidates | Select-Object -First 1
           if (-not $browser) { throw 'No Chromium-based browser was found on windows-latest' }
           & $browser --version
+          "WORKPROOF_BROWSER_BINARY=$browser" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - run: npm ci
       - name: Dependency security audit
         run: npm audit --audit-level=high
