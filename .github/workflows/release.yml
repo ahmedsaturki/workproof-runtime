@@ -77,6 +77,18 @@ jobs:
           (cd release-dist && sha256sum -- * > SHA256SUMS.txt)
           cat release-dist/SHA256SUMS.txt
 
+      - name: Packed CLI install smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          SMOKE_DIR="$(mktemp -d)"
+          npm install --prefix "${SMOKE_DIR}" "./release-dist/${PACKAGE_FILE}"
+          "${SMOKE_DIR}/node_modules/.bin/workctl" keygen "${SMOKE_DIR}/private.pem" "${SMOKE_DIR}/public.pem"
+          test -s "${SMOKE_DIR}/private.pem"
+          test -s "${SMOKE_DIR}/public.pem"
+          "${SMOKE_DIR}/node_modules/.bin/workctl" trust-add "${SMOKE_DIR}/public.pem" "${SMOKE_DIR}/trust.json" "packed-cli-smoke"
+          test -s "${SMOKE_DIR}/trust.json"
+          echo "packed CLI install and execution verified"
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
