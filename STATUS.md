@@ -11,7 +11,7 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - package version: `3.7.0-dev.1`
 - release source tag commit: `f776ed9f5fcbb055f7da41ca69714c19b20f9aad`
 - promotion branch: `promote/v3.7.0-dev.1-main`
-- main closeout commit: `c744c3d4f3dd6f54e1ce1d656cfb92e820f13f98`
+- main closeout commit: `354cf4d660aec814ba83d0c44d7e3468d6b726ca`
 
 ## Current verified release
 
