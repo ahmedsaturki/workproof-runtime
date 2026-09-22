@@ -204,4 +204,15 @@ test("control plane rejects unauthenticated access when an auth policy is config
   }
 });
 
+
+test("control plane refuses non-loopback binding without authentication policy", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "workproof-control-plane-bind-"));
+  const repo = new JsonWorkRepository(path.join(root, "work"));
+  await assert.rejects(
+    () => startControlPlane({ repository: repo, host: "0.0.0.0", port: 0 }),
+    /non-loopback control-plane binding without auth policy/
+  );
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
 export {};
