@@ -12,6 +12,7 @@ services:
       HOST: 0.0.0.0
       PORT: "8788"
       WORK_DIRECTORY: /data/work-runs
+      WORKPROOF_ALLOW_NON_LOOPBACK: "1"
     security_opt:
       - no-new-privileges:true
     cap_drop:
