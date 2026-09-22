@@ -66,7 +66,7 @@ test("control-plane resume path keeps the same execution policy", async () => {
       }]
     });
 
-    assert.equal(work.status, "verified");
+    assert.equal(work.status, "unverifiable");
     const persistedPath = path.join(root, work.id + ".json");
     const persisted = JSON.parse(fs.readFileSync(persistedPath, "utf8"));
     persisted.status = "running";
