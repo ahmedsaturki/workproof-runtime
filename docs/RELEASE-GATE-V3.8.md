@@ -16,11 +16,11 @@ Add a local-first operational diagnostics surface without changing WorkProof aut
 - [x] doctor failure reporting
 - [x] source-tree gate coverage
 - [x] full unit/integration suite
-- [ ] benchmark
-- [ ] demo
-- [ ] CLI proof
-- [ ] representative missions
-- [ ] live GitHub integration smoke
+- [x] benchmark
+- [x] demo
+- [x] CLI proof
+- [x] representative missions
+- [x] live GitHub integration smoke
 - [ ] release artifact publication
 - [ ] GHCR image publication
 - [ ] production Compose digest pin
@@ -44,3 +44,11 @@ Do not call v3.8 verified if:
 - Module import safety is tested without starting a server or creating runtime state.
 
 Release publication, GHCR digest capture, production Compose pinning, and main promotion remain open until the exact v3.8 release artifact is generated and reverified.
+
+
+## Feature evidence
+
+- Feature CI #1232: success
+- Candidate commit: `9825fccc952103714405b0c891e9970f474f89ad`
+- Build, packed CLI, Operator Doctor, retention, full unit/integration suite, benchmark, demo, CLI proof, representative missions, and live GitHub smoke all passed on the feature line.
+- The release branch is re-running `npm run check` from the exact publication commit before artifacts are created.
