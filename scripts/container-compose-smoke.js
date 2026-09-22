@@ -51,6 +51,21 @@ async function main() {
   ].join("\n") + "\n", "utf8");
   const compose = ["compose", "-f", "compose.production.yaml", "-f", overridePath, "-p", project];
   const baseUrl = "http://127.0.0.1:8788";
+  const renderedConfig = JSON.parse(run("docker", compose.concat(["config", "--format", "json"])));
+  const service = renderedConfig?.services?.["workproof-studio"];
+  if (!service) throw new Error("Production Compose did not render workproof-studio");
+  if (service.init !== true) throw new Error("Production Compose must enable init");
+  if (String(service.stop_grace_period) !== "10s") throw new Error("Production Compose must set a 10s stop grace period");
+  if (Number(service.cpus) !== 1) throw new Error("Production Compose must cap the Studio service at 1 CPU");
+  const memoryLimit = Number(service.mem_limit);
+  if (!(memoryLimit === 1073741824 || memoryLimit === 1_000_000_000)) throw new Error("Production Compose must cap the Studio service at 1 GiB");
+  if (Number(service.pids_limit) !== 512) throw new Error("Production Compose must cap the Studio service at 512 processes");
+  const logging = service.logging || {};
+  if (logging.driver !== "json-file") throw new Error("Production Compose must use bounded json-file logging");
+  if (String(logging.options?.["max-size"]) !== "10m" || String(logging.options?.["max-file"]) !== "3") {
+    throw new Error("Production Compose must configure 10m x 3 log rotation");
+  }
+
   try {
     run("docker", compose.concat(["up", "-d", "--wait"]));
     await waitForHealthy(baseUrl, packageJson.version);
