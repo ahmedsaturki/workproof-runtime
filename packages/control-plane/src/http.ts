@@ -282,6 +282,7 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
         }
         const status = url.searchParams.get("status");
         const contextId = url.searchParams.get("contextId");
+        const includeArtifacts = url.searchParams.get("includeArtifacts") === "true";
         const files = options.repository.list();
         const works = files
           .filter((file) => file.endsWith(".json"))
@@ -306,6 +307,16 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
             updatedAt: work.updatedAt,
             ...(typeof work.contract?.metadata?.a2aContextId === "string"
               ? { a2aContextId: work.contract.metadata.a2aContextId }
+              : {}),
+            ...(includeArtifacts
+              ? {
+                  artifacts: Array.isArray(work.artifacts)
+                    ? work.artifacts.map((artifact) => ({
+                        ...(typeof artifact?.uri === "string" ? { uri: artifact.uri } : {}),
+                        ...(typeof artifact?.metadata?.mediaType === "string" ? { mediaType: artifact.metadata.mediaType } : {})
+                      }))
+                    : []
+                }
               : {})
           }))
         });
