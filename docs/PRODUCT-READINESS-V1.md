@@ -85,7 +85,7 @@ A product release must not be called production-ready solely because CI is green
 
 ## Current verified baseline — 2026-09-22
 
-The repository currently records v3.4 benchmark verification and the coherent `v3.4.0-dev.4` distribution path. Main CI, release verification, and container publication are integrity-verified. Localhost-bound production compose and a deployment runbook are pinned to the verified dev.4 image.
+The repository currently records v3.4 benchmark verification and the coherent `v3.4.0-dev.5` distribution path. Main CI, release verification, and container publication are integrity-verified. Localhost-bound production compose and a deployment runbook are pinned to the verified dev.4 image.
 
 These facts establish a strong verified foundation, but they do **not** by themselves establish a public production deployment. Public host/DNS/TLS/auth/secrets provisioning remains an external infrastructure gate.
 
@@ -134,5 +134,6 @@ The following gates are executable and CI-verified on the current dev.4 release 
 - [x] CLI exposes a packaged `workctl` entrypoint.
 - [x] CLI provides a guarded `resume <work-id> <mission.json>` path for persisted work.
 - [x] End-to-end resume smoke re-verifies a persisted research outcome after simulated interruption.
+- [x] Persisted idempotency keys reject changed operation or input before any retry.
 - [x] Source-tree verification includes the product readiness specification and product smoke suite.
 - [x] CI validates the above together with the existing security, retention, benchmark, demo, CLI, and live GitHub gates.
