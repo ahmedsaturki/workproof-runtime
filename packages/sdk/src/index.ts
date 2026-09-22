@@ -52,6 +52,7 @@ export interface WorkSummary {
   approvalRequired: boolean;
   createdAt: string;
   updatedAt: string;
+  a2aContextId?: string;
 }
 
 function normalizeBaseUrl(value: string): string {
