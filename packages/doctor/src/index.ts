@@ -84,10 +84,10 @@ export async function runDoctor(env: Record<string, string | undefined> = proces
     checks.push({ id: "work-directory", state: "warn", detail: workDirectory + " does not exist yet" });
   }
 
-  pushFileCheck(checks, "cli-entrypoint", path.resolve(__dirname, "../packages/cli/src/index.js"));
-  pushFileCheck(checks, "control-plane-entrypoint", path.resolve(__dirname, "../apps/control-plane.js"));
-  pushFileCheck(checks, "studio-entrypoint", path.resolve(__dirname, "../apps/studio.js"));
-  pushFileCheck(checks, "a2a-entrypoint", path.resolve(__dirname, "../apps/a2a-server.js"));
+  pushFileCheck(checks, "cli-entrypoint", path.resolve(__dirname, "../../cli/src/index.js"));
+  pushFileCheck(checks, "control-plane-entrypoint", path.resolve(__dirname, "../../../apps/control-plane.js"));
+  pushFileCheck(checks, "studio-entrypoint", path.resolve(__dirname, "../../../apps/studio.js"));
+  pushFileCheck(checks, "a2a-entrypoint", path.resolve(__dirname, "../../../apps/a2a-server.js"));
 
   const controlPlaneUrl = env.WORKPROOF_CONTROL_PLANE_URL;
   if (controlPlaneUrl) {
