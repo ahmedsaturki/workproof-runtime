@@ -20,6 +20,7 @@ const { buildIntegrityManifest, verifyProofIntegrity } = require("../../evidence
 const { generateProofKeyPair, signProof, verifyProofSignature, proofKeyId } = require("../../evidence/src/signature.js");
 const { loadTrustPolicy, saveTrustPolicy, trustKey, revokeKey, evaluateProofTrust } = require("../../evidence/src/trust.js");
 const { publishProof, restoreProof, listProofs, inspectProof } = require("../../evidence/src/vault.js");
+const { exportPortableProof, verifyPortableProof, importPortableProof } = require("../../evidence/src/portable.js");
 const { setRetentionClass, pinRetention, unpinRetention, inventoryVault, planGarbageCollection, executeGarbageCollection, repairVaultIndex } = require("../../evidence/src/retention.js");
 const { createAuthPolicy, loadAuthPolicy, saveAuthPolicy, issueCredential, addIssuedCredential, revokeCredential } = require("../../registry/src/auth.js");
 const { publishTrustSnapshotToRegistry, getTrustSnapshotFromRegistry, listTrustSnapshotsFromRegistry, getCurrentTrustSnapshotFromRegistry, applyTrustSnapshotToRegistry } = require("../../registry/src/client.js");
@@ -31,6 +32,9 @@ function usage(): void {
   inspect <proof.json>
   verify <proof.json> [trust-policy.json] [--require-trusted]
   summarize <proof.json>
+  proof-export <proof.json> <bundle-dir>
+  proof-bundle-verify <bundle-dir>
+  proof-import <bundle-dir> <output-dir>
   keygen <private.pem> <public.pem>
   sign <proof.json> <private.pem>
   trust-add <public.pem> <trust-policy.json> [label]
@@ -97,6 +101,43 @@ function trustAdd(publicPath: string, policyPath: string, label?: string): void 
   const record = trustKey(policy, publicKey, label);
   saveTrustPolicy(policyPath, policy);
   process.stdout.write(JSON.stringify({ policy: policyPath, keyId: record.keyId, state: record.state, label: record.label ?? null }, null, 2) + "\n");
+}
+
+function proofExport(proofPath: string, bundleDir: string): void {
+  const manifest = exportPortableProof(proofPath, bundleDir);
+  process.stdout.write(JSON.stringify({
+    status: "exported",
+    workId: manifest.workId,
+    proofDigest: manifest.proofDigest,
+    bundleDir,
+    portableArtifactCount: manifest.artifacts.filter((item: any) => item.portable).length,
+    externalArtifactCount: manifest.artifacts.filter((item: any) => !item.portable).length
+  }, null, 2) + "\n");
+}
+
+function proofBundleVerify(bundleDir: string): void {
+  const manifest = verifyPortableProof(bundleDir);
+  process.stdout.write(JSON.stringify({
+    status: "verified",
+    workId: manifest.workId,
+    proofDigest: manifest.proofDigest,
+    bundleDir,
+    artifactCount: manifest.artifacts.length,
+    portableArtifactCount: manifest.artifacts.filter((item: any) => item.portable).length,
+    externalArtifactCount: manifest.artifacts.filter((item: any) => !item.portable).length
+  }, null, 2) + "\n");
+}
+
+function proofImport(bundleDir: string, outputDir: string): void {
+  const result = importPortableProof(bundleDir, outputDir);
+  process.stdout.write(JSON.stringify({
+    status: "imported",
+    workId: result.manifest.workId,
+    proofDigest: result.manifest.proofDigest,
+    outputDir,
+    proofPath: result.proofPath,
+    artifactPaths: result.artifactPaths
+  }, null, 2) + "\n");
 }
 
 function vaultPublish(proofPath: string, vaultDir: string): void {
@@ -405,6 +446,24 @@ if (!command || command === "--help" || command === "-h" || command === "help") 
   if (!firstArg) { usage(); process.exitCode = 1; }
   else {
     try { registryAuthList(firstArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+} else if (command === "proof-export") {
+  if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
+  else {
+    try { proofExport(firstArg, secondArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+} else if (command === "proof-bundle-verify") {
+  if (!firstArg) { usage(); process.exitCode = 1; }
+  else {
+    try { proofBundleVerify(firstArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
+} else if (command === "proof-import") {
+  if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
+  else {
+    try { proofImport(firstArg, secondArg); }
     catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "vault-publish") {

@@ -102,10 +102,11 @@ Completed in the dev.4 product-readiness line:
 
 Remaining product-validation gates:
 
-5. Portable export/import of mission proof as a first-class user workflow.
-6. Operator UX for failure, ambiguity, recovery, and proof—not only success paths.
-7. Versioned compatibility policy for capabilities and proof bundles.
-8. External deployment profile and runbook validation in a disposable environment when infrastructure is available.
+Remaining product-validation gates:
+
+5. Operator UX for failure, ambiguity, recovery, and proof—not only success paths.
+6. Versioned compatibility policy for capabilities and proof bundles.
+7. External deployment profile and runbook validation in a disposable environment when infrastructure is available.
 
 ## Stop conditions
 
@@ -135,5 +136,6 @@ The following gates are executable and CI-verified on the current dev.4 release 
 - [x] CLI provides a guarded `resume <work-id> <mission.json>` path for persisted work.
 - [x] End-to-end resume smoke re-verifies a persisted research outcome after simulated interruption.
 - [x] Persisted idempotency keys reject changed operation or input before any retry.
+- [x] Portable proof export, independent bundle verification, and import/materialization workflow.
 - [x] Source-tree verification includes the product readiness specification and product smoke suite.
 - [x] CI validates the above together with the existing security, retention, benchmark, demo, CLI, and live GitHub gates.

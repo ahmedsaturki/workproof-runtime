@@ -172,6 +172,19 @@ Studio is localhost-bound by default. Optional runtime configuration is read fro
 
 Do not expose port 8788 directly to the public Internet. Put an authenticated, TLS-terminating reverse proxy in front of WorkProof before external deployment.
 
+### Portable proof
+
+Portable proof bundles keep the original proof payload and optional signature unchanged while carrying local artifact sidecars with SHA-256 manifest entries.
+
+```bash
+workctl proof-export proof.json ./portable-bundle
+workctl proof-bundle-verify ./portable-bundle
+workctl proof-import ./portable-bundle ./imported-proof
+workctl verify ./imported-proof/proof.json
+```
+
+The bundle format is dependency-free and filesystem-based; external/non-local artifact references remain explicitly marked as non-portable in the manifest.
+
 ### Packaged CLI
 
 The package exposes the `workctl` executable. For a local package smoke test:
