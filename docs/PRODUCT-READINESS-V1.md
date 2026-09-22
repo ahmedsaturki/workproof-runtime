@@ -74,7 +74,7 @@ The v3.8.9 distribution additionally enforces an immutable Node 24.21.0 Trixie s
 
 ## Release acceptance gates
 
-| Gate | v3.8.8 evidence |
+| Gate | v3.8.9 evidence |
 | --- | --- |
 | Build | CI/Release/Container builds succeed from clean checkout |
 | Tests | Full unit/integration suite succeeds |
