@@ -48,32 +48,31 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 - GHCR digest: `sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`
 - product readiness PR #74: local-first product gate and restart smoke
 
-## Prepared v3.8.4 distribution state
+## Current v3.8.4 distribution state
 
-- release reconciliation baseline: `27bdec369b3e0664224054471656b3f736e763db`
-- release workflow #210: success
-- container workflow #207: success
-- prepared package version: `3.8.4`
-- stable release: `v3.8.3`
-- stable release commit: `27bdec369b3e0664224054471656b3f736e763db`
-- GitHub Release: `393869578`
-- GHCR digest: `sha256:ec6f891f8e3fc427937f904eb039d95d58387b1d06261cd91c8c9a886bc7cf67`
+- release reconciliation baseline: `a232ed61ec5c5307c5ae3edc40f4c157d3f69432`
+- release workflow #214: success
+- container workflow #211: success
+- current package version: `3.8.4`
+- stable release: `v3.8.4`
+- stable release commit: `a232ed61ec5c5307c5ae3edc40f4c157d3f69432`
+- GitHub Release: `393951969`
+- GHCR digest: `sha256:0a756db6683db2bcdc2664dd35458e181782ed557b8dbb84f4f878f5b358bb50`
 - reproducible-install hardening PR #97: merged
 - release-metadata/source-manifest PR #98: merged
 - Control Plane safety PR #102: merged
 - network-boundary hardening PR #104: merged
-- v3.8.2 superseded after Container runtime smoke failure; rollback remains v3.8.1
+- v3.8.2 superseded after Container runtime smoke failure; rollback remains v3.8.3
 - `npm ci` is enforced by CI, release, and Docker build paths
 - package metadata declares `Apache-2.0`; the repository license file contains the complete Apache License 2.0 text
 - executable source-tree gate currently verifies 226 required paths
 
 ## Verified main lineage
 
-- current verified release lineage: v3.8.3
-- container base pin hardening is included in the prepared v3.8.4 release cycle
-- stable release commit: `27bdec369b3e0664224054471656b3f736e763db`
-- release workflow #210: success
-- container workflow #207: success
+- current verified release lineage: v3.8.4
+- stable release commit: `a232ed61ec5c5307c5ae3edc40f4c157d3f69432`
+- release workflow #214: success
+- container workflow #211: success
 - v3.3 implementation merge: `c5e951056461c37f45bed8bb8406d119880d63df`
 - v3.3 closeout correction: `0c92a8c86950776243646de4bb40b0c0f2fe5876`
 - v3.4 implementation merge: `fe662d5bb5337bde18772f22864434935d59f66f`
