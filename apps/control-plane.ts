@@ -42,7 +42,7 @@ const authPolicy = authPolicyPath ? loadAuthPolicy(authPolicyPath) : undefined;
 const repository = new JsonWorkRepository(workDirectory);
 
 function runtimeVersion(): string {
-  const packagePath = path.resolve(process.cwd(), "package.json");
+  const packagePath = path.resolve(process.env.PWD ?? ".", "package.json");
   const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
   if (typeof packageJson.version !== "string" || !packageJson.version.trim()) throw new Error("Unable to determine WorkProof Runtime version");
   return packageJson.version.trim();
