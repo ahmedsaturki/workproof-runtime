@@ -4,7 +4,7 @@ const http = require("http");
 const fs = require("fs");
 const crypto = require("crypto");
 const { URL } = require("url");
-const { authorize } = require("../../registry/src/auth.js");
+const { authorize, validateAuthPolicy } = require("../../registry/src/auth.js");
 const {
   ControlIdempotencyLedger,
   fingerprintControlRequest,
@@ -105,6 +105,11 @@ function requireIdempotencyKey(req: any): string {
 export async function startControlPlane(options: ControlPlaneOptions): Promise<RunningControlPlane> {
   const host = options.host ?? "127.0.0.1";
   const port = options.port ?? 0;
+  const loopbackHosts = new Set(["127.0.0.1", "localhost", "::1"]);
+  if (!loopbackHosts.has(host) && !options.authPolicy) {
+    throw new Error("Refusing non-loopback control-plane binding without auth policy");
+  }
+  if (options.authPolicy) validateAuthPolicy(options.authPolicy);
   const auditPath = options.auditPath;
   const workerStaleAfterMs = options.workerStaleAfterMs ?? 30_000;
   if (!Number.isSafeInteger(workerStaleAfterMs) || workerStaleAfterMs <= 0) {
