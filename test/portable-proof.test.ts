@@ -155,7 +155,7 @@ test("portable proof verification rejects bundle path traversal", () => {
       exportedAt: "2026-09-22T00:00:00.000Z"
     };
     fs.writeFileSync(path.join(root, "manifest.json"), JSON.stringify(manifest), "utf8");
-    assert.throws(() => verifyPortableProof(root), /Invalid proof path|Portable proof manifest/);
+    assert.throws(() => verifyPortableProof(root), /Invalid portable proof manifest/);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
