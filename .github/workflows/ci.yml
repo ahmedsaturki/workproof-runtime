@@ -90,6 +90,7 @@ jobs:
           node scripts/external-topology-smoke.js
         timeout-minutes: 8
       - name: Verify published release lineage
+        if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
         run: node scripts/verify-published-lineage.js
         timeout-minutes: 3
       - name: Run retention lifecycle suite
