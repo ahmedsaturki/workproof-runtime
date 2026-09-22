@@ -1,22 +1,22 @@
 {
   "schemaVersion": "1.0",
   "release": {
+    "version": "3.4.0-dev.12",
+    "tag": "v3.4.0-dev.12",
+    "commit": "1b174b33da8e519e5a23e7565944aba6266d8e97",
+    "githubReleaseId": 393489868,
+    "releaseWorkflowRun": 124,
+    "containerWorkflowRun": 127
+  },
+  "container": {
+    "image": "ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.12",
+    "digest": "sha256:491261f71ff3b010bb7a967b74b348ca40042d3150e2f6c8a36c1a4dcf7012bb",
+    "immutableTag": "1b174b33da8e519e5a23e7565944aba6266d8e97"
+  },
+  "rollback": {
     "version": "3.4.0-dev.11",
     "tag": "v3.4.0-dev.11",
     "commit": "aeaaac3d9224b7eac297ac8f63207bf97b532e4d",
-    "githubReleaseId": 393476961,
-    "releaseWorkflowRun": 124,
-    "containerWorkflowRun": 121
-  },
-  "container": {
-    "image": "ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.11",
-    "digest": "sha256:d0c4a8134e0b73d68dc6a0489bbc058b90e633a01171df980aebd1e7b47affff",
-    "immutableTag": "aeaaac3d9224b7eac297ac8f63207bf97b532e4d"
-  },
-  "rollback": {
-    "version": "3.4.0-dev.10",
-    "tag": "v3.4.0-dev.10",
-    "commit": "620ae90f396319630ef6913b66a664634d695039",
-    "digest": "sha256:3fa81f645ccb0c13e0dbfd5da13c089e982f5ed85a0c79b5ec49e021820315fa"
+    "digest": "sha256:d0c4a8134e0b73d68dc6a0489bbc058b90e633a01171df980aebd1e7b47affff"
   }
 }
