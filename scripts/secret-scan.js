@@ -3,7 +3,7 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 
 const SECRET_PATTERNS = [
-  { name: "PEM private key", regex: /-----BEGIN(?: [A-Z0-9-]+)? PRIVATE KEY-----/ },
+  { name: "PEM private key", regex: /-----BEGIN(?: [A-Z0-9-]+)? PRIVATE KEY-----\r?\n[A-Za-z0-9+/]{40,}={0,2}\r?\n-----END(?: [A-Z0-9-]+)? PRIVATE KEY-----/ },
   { name: "GitHub token", regex: /\b(?:gh[pousr]|github_pat)_[A-Za-z0-9_]{20,}\b/ },
   { name: "Slack token", regex: /\bxox[baprs]-[A-Za-z0-9-]{10,}\b/ },
   { name: "AWS access key", regex: /\bAKIA[0-9A-Z]{16}\b/ },
