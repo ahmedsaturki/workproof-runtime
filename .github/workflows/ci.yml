@@ -110,9 +110,9 @@ jobs:
           fi
           node scripts/external-topology-smoke.js
         timeout-minutes: 8
-      - name: Verify published release lineage
+      - name: Verify main release state
         if: ${{ github.ref == 'refs/heads/main' }}
-        run: node scripts/verify-published-lineage.js
+        run: node scripts/verify-main-release-state.js
         timeout-minutes: 3
       - name: Run retention lifecycle suite
         run: node --test dist/test/retention.test.js

@@ -10,6 +10,7 @@ const required = [
   "scripts/packed-mcp-smoke.js",
   "scripts/packed-a2a-smoke.js",
   "scripts/verify-published-lineage.js",
+  "scripts/verify-main-release-state.js",
   "scripts/verify-container-base.js",
   "scripts/secret-scan.js",
   "docs/release-lineage.json",
