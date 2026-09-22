@@ -67,7 +67,6 @@ The current stable product baseline is **v3.8.8**.
 - Release workflow #239: success
 - Container workflow #236: success
 - GHCR digest: `sha256:0c31c571480d45d5f46f5ae6f8b8a4b1328094a7561f76aee7016c99e586eb10`
-- immutable image tag: `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`
 - immutable image tag: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
 - rollback: v3.8.1
 
