@@ -11,7 +11,7 @@ test("Control Plane application import does not start a server or create runtime
     "-e",
     'require("./dist/apps/control-plane.js"); process.stdout.write("import-ok\n");'
   ], {
-    cwd: process.cwd(),
+    cwd: require("process").cwd(),
     env: {
       ...process.env,
       WORKPROOF_WORK_DIRECTORY: path.join(root, "work-runs"),
