@@ -32,6 +32,10 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 
 ### v3.8.6 hardening
 
+- Dockerfile OCI metadata is emitted as real Dockerfile `LABEL` instructions rather than embedded escaped-newline text.
+- Container-base validation rejects literal escaped-newline instruction sequences.
+- Main release-state verification requires a version bump for post-release source/distribution drift beyond the explicit reconciliation surface.
+
 - Docker build/runtime stages use immutable `node:24.21.0-trixie-slim` digest `sha256:8ec5d7557396cfe32d21c3f9c13072355ceab22b584578ca4bb28af31120cffe`.
 - CI, Release, and Container workflows reject mutable Docker base references.
 - Production Compose uses init, 10s stop grace, 1 CPU, 1 GiB RAM, 512 PIDs, and 10 MiB × 3 JSON log rotation.
