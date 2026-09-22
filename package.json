@@ -1,6 +1,6 @@
 {
   "name": "operational-reality-core",
-  "version": "3.5.0-dev.1",
+  "version": "3.6.0-dev.1",
   "private": true,
   "description": "WorkProof Runtime — outcome-first digital work kernel and local-first operator",
   "scripts": {
@@ -13,10 +13,12 @@
     "live-github-smoke": "npm run build && node dist/apps/github-smoke.js",
     "registry-server": "npm run build && node dist/apps/registry-server.js",
     "control-plane": "npm run build && node dist/apps/control-plane.js",
-    "studio": "npm run build && node dist/apps/studio.js"
+    "studio": "npm run build && node dist/apps/studio.js",
+    "mcp-server": "npm run build && node dist/apps/mcp-server.js"
   },
   "devDependencies": {
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "@modelcontextprotocol/client": "2.0.0"
   },
   "engines": {
     "node": ">=24.15.0"
@@ -34,5 +36,9 @@
     "docs/schemas",
     "docs",
     "examples"
-  ]
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.0.0",
+    "zod": "4.6.5"
+  }
 }
