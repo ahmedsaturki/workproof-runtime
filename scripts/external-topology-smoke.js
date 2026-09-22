@@ -94,7 +94,8 @@ async function main() {
   const packageJson = JSON.parse(fs.readFileSync(path.resolve("package.json"), "utf8"));
   const lineage = JSON.parse(fs.readFileSync(path.resolve("docs/release-lineage.json"), "utf8"));
   const releaseImageOverride = process.env.WORKPROOF_RELEASE_IMAGE || null;
-  const currentImage = releaseImageOverride || lineage.container.image;
+  const localImage = "workproof-runtime-external:" + packageJson.version + "-" + runId;
+  const currentImage = releaseImageOverride || localImage;
   const composeImage = imageFromCompose(path.resolve("compose.production.yaml"));
   if (!composeImage.startsWith("ghcr.io/") || !composeImage.includes("@sha256:")) {
     throw new Error("Production compose must contain a pinned GHCR image reference");
@@ -102,20 +103,34 @@ async function main() {
   if (!currentImage.startsWith("ghcr.io/") || !currentImage.includes(":")) {
     throw new Error("External smoke image must be a valid GHCR tag");
   }
-  if (releaseImageOverride && !currentImage.endsWith(":" + packageJson.version)) {
-    throw new Error("Release smoke image tag does not match package version: " + currentImage + " != " + packageJson.version);
-  }
-  run("docker", ["pull", currentImage]);
-  const pulledDigestRef = run("docker", ["image", "inspect", currentImage, "--format={{index .RepoDigests 0}}"]).stdout.trim();
-  if (!/^.+@sha256:[0-9a-f]{64}$/.test(pulledDigestRef)) throw new Error("Published release image digest could not be determined");
-  const publishedDigest = pulledDigestRef.slice(pulledDigestRef.indexOf("@") + 1);
-  if (!releaseImageOverride && publishedDigest !== lineage.container.digest) {
-    throw new Error("Published version tag digest does not match release lineage: " + publishedDigest + " != " + lineage.container.digest);
+  let publishedDigest = "";
+  if (releaseImageOverride) {
+    if (!currentImage.endsWith(":" + packageJson.version)) {
+      throw new Error("Release smoke image tag does not match package version: " + currentImage + " != " + packageJson.version);
+    }
+    run("docker", ["pull", currentImage]);
+    const pulledDigestRef = run("docker", ["image", "inspect", currentImage, "--format={{index .RepoDigests 0}}"]).stdout.trim();
+    if (!/^.+@sha256:[0-9a-f]{64}$/.test(pulledDigestRef)) throw new Error("Published release image digest could not be determined");
+    publishedDigest = pulledDigestRef.slice(pulledDigestRef.indexOf("@") + 1);
+    if (publishedDigest !== lineage.container.digest) {
+      throw new Error("Published version tag digest does not match release lineage: " + publishedDigest + " != " + lineage.container.digest);
+    }
+  } else {
+    run("docker", [
+      "build",
+      "--pull",
+      "--build-arg", "VERSION=" + packageJson.version,
+      "--build-arg", "VCS_REF=" + (process.env.GITHUB_SHA || "local"),
+      "-t", currentImage,
+      "."
+    ]);
+    const localImageId = run("docker", ["image", "inspect", currentImage, "--format={{.Id}}"]).stdout.trim();
+    if (!localImageId) throw new Error("Local external-topology test image could not be built");
   }
   if (!lineage.rollback?.digest || !/^sha256:[0-9a-f]{64}$/.test(lineage.rollback.digest)) {
     throw new Error("Rollback release lineage is missing a verified digest");
   }
-  const runtimeImage = currentImage + "@" + publishedDigest;
+  const runtimeImage = releaseImageOverride ? currentImage + "@" + publishedDigest : currentImage;
   const productionImage = runtimeImage;
   const rollbackImage = "ghcr.io/" + (process.env.GITHUB_REPOSITORY || "ahmedsaturki/workproof-runtime").toLowerCase() + ":" + lineage.rollback.commit + "@" + lineage.rollback.digest;
   if (!lineage.release.version || !currentImage) throw new Error("Incomplete release lineage or current release image");
