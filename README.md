@@ -215,6 +215,8 @@ node dist/apps/studio.js ./work-runs 8788 127.0.0.1
 
 Studio is localhost-bound by default. Optional runtime configuration is read from the command line or environment:
 
+Container deployments set `WORKPROOF_ALLOW_NON_LOOPBACK=1` inside the container so Studio can listen on the container interface while the host port remains bound to `127.0.0.1`. This is an explicit container-topology opt-in, not permission to expose a direct host process publicly.
+
 - `WORKPROOF_CONTROL_PLANE_URL`
 - `WORKPROOF_VAULT_DIRECTORY`
 - `WORKPROOF_TRUST_POLICY_PATH`
