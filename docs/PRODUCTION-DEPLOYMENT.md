@@ -51,9 +51,9 @@ Back up `work-runs` and any configured proof vault. Roll back by pinning Compose
 ## Verified v3.8.9 stable release
 
 - GitHub Release: `v3.8.9`
-- release commit: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.8`
-- GHCR digest: `sha256:0c31c571480d45d5f46f5ae6f8b8a4b1328094a7561f76aee7016c99e586eb10`
+- release commit: `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.9`
+- GHCR digest: `sha256:ccde8ada2227b016968328f9eec1849e7424d12c2acc89081c30ca191bb6df66`
 - immutable image tag: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
 - GitHub Release ID: `394031450`
 - Release workflow: #245
