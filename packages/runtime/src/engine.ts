@@ -41,12 +41,18 @@ export interface ExecutionLeaseAuthority {
   assertOwned(resourceId: string, leaseId: string, ownerId: string): import("../../coordination/src/leases").LeaseRecord;
 }
 
+export interface ExecutionLeaseTimers {
+  setInterval(handler: () => void, intervalMs: number): ReturnType<typeof setInterval>;
+  clearInterval(handle: ReturnType<typeof setInterval>): void;
+}
+
 export interface ExecutionLeaseConfig {
   authority: ExecutionLeaseAuthority;
   ownerId: string;
   ttlMs: number;
   heartbeatIntervalMs?: number;
   resourceId?: (work: WorkObject, step: WorkStep) => string;
+  timers?: ExecutionLeaseTimers;
 }
 
 export class WorkEngine {
@@ -184,7 +190,11 @@ export class WorkEngine {
             throw new Error("Execution lease heartbeat interval must be a positive safe integer");
           }
 
-          heartbeatTimer = setInterval(() => {
+          const timers = this.executionLease.timers ?? {
+            setInterval: (handler: () => void, timeoutMs: number) => setInterval(handler, timeoutMs),
+            clearInterval: (handle: ReturnType<typeof setInterval>) => clearInterval(handle)
+          };
+          heartbeatTimer = timers.setInterval(() => {
             if (!lease || leaseLost) return;
             try {
               lease = this.executionLease!.authority.renew(
@@ -396,7 +406,10 @@ export class WorkEngine {
           return work;
         }
       } finally {
-        if (heartbeatTimer) clearInterval(heartbeatTimer);
+        if (heartbeatTimer) (this.executionLease?.timers ?? {
+          setInterval: (handler: () => void, timeoutMs: number) => setInterval(handler, timeoutMs),
+          clearInterval: (handle: ReturnType<typeof setInterval>) => clearInterval(handle)
+        }).clearInterval(heartbeatTimer);
         if (lease && this.executionLease && resourceId) {
           try {
             this.executionLease.authority.release(resourceId, lease.leaseId, this.executionLease.ownerId);
