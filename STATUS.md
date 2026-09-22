@@ -29,16 +29,13 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - immutable image tag: `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`
 - prior stable rollback: `v3.8.1` / `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 
-## Main verification basis
+## Candidate verification basis
 
-- package version: `3.8.8`
-- verified release reconciliation target: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
-- release workflow #239: success
-- container workflow #236: success
-- release assets: five published and independently rechecked
-- v3.8.9 container: exact commit revision, immutable digest, runtime health, Compose restart/persistence/resource/log envelope, disposable external topology, anonymous pull, backup/restore, rollback, and deny-by-default edge all verified
-
-The v3.8.0 release remains historical provenance. v3.8.1 is the verified rollback target. v3.8.2 is retained as superseded release history and is not a rollback target. v3.8.8 remains historical stable provenance immediately preceding v3.8.9.
+- package version: `3.8.10`
+- release branch: `release/3.8.10`
+- source baseline: fully reconciled `main` at branch creation
+- previous published stable release: `v3.8.9`
+- release and container publication evidence is recorded only after the corresponding workflows succeed
 
 ## Current main closeout
 
