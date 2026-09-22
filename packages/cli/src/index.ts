@@ -26,6 +26,7 @@ const { publishTrustSnapshotToRegistry, getTrustSnapshotFromRegistry, listTrustS
 function usage(): void {
   process.stdout.write(`workctl
   run <mission.json>
+  resume <work-id> <mission.json>
   inspect <proof.json>
   verify <proof.json> [trust-policy.json] [--require-trusted]
   summarize <proof.json>
@@ -250,12 +251,7 @@ function signProofFile(file: string, privatePath: string): void {
   }, null, 2) + "\n");
 }
 
-async function runMission(file: string): Promise<void> {
-  const spec = JSON.parse(fs.readFileSync(file, "utf8"));
-  if (!spec?.objective || !Array.isArray(spec?.steps)) throw new Error("Mission spec requires objective and steps[]");
-  const store = new WorkStore();
-  const registry = new CapabilityRegistry();
-  const verification = new VerificationEngine();
+function registerRuntimePacks(registry: any, verification: any): void {
   registerLocalPack(registry);
   registerResearchPack(registry, verification);
   registerWebDiscoveryPack(registry, verification);
@@ -265,6 +261,31 @@ async function runMission(file: string): Promise<void> {
   registerDataTransformPack(registry, verification);
   registerMessageOutboxPack(registry, verification);
   registerGitLocalPack(registry, verification);
+}
+
+function writeMissionProof(work: any, spec: any): void {
+  const proof = buildProofBundle(work);
+  const integrity = buildIntegrityManifest(work);
+  const proofPath = spec.proofPath ?? `./${work.id}.json`;
+  fs.writeFileSync(proofPath, JSON.stringify({ ...proof, integrity }, null, 2), "utf8");
+  process.stdout.write(JSON.stringify({
+    id: work.id,
+    status: work.status,
+    proof: proofPath,
+    events: work.events.length,
+    effects: work.effects.length,
+    integrity: integrity.digest
+  }, null, 2) + "\n");
+  if (work.status !== "verified") process.exitCode = 2;
+}
+
+async function runMission(file: string): Promise<void> {
+  const spec = JSON.parse(fs.readFileSync(file, "utf8"));
+  if (!spec?.objective || !Array.isArray(spec?.steps)) throw new Error("Mission spec requires objective and steps[]");
+  const store = new WorkStore();
+  const registry = new CapabilityRegistry();
+  const verification = new VerificationEngine();
+  registerRuntimePacks(registry, verification);
   const work = store.create({
     objective: spec.objective,
     inputs: spec.inputs ?? {},
@@ -277,14 +298,34 @@ async function runMission(file: string): Promise<void> {
   const repo = new JsonWorkRepository(spec.workDirectory ?? "./work-runs");
   const engine = new WorkEngine(store, registry, verification, async () => false, spec.policy, repo);
   await engine.run(work, spec.steps);
-  const proof = buildProofBundle(work);
-  const integrity = buildIntegrityManifest(work);
-  fs.writeFileSync(spec.proofPath ?? `./${work.id}.json`, JSON.stringify({ ...proof, integrity }, null, 2), "utf8");
-  const proofPath = spec.proofPath ?? `./${work.id}.json`;
-  process.stdout.write(JSON.stringify({ id: work.id, status: work.status, proof: proofPath, events: work.events.length, effects: work.effects.length, integrity: integrity.digest }, null, 2) + "\n");
-  if (work.status !== "verified") process.exitCode = 2;
+  writeMissionProof(work, spec);
 }
 
+async function resumeMission(workId: string, file: string): Promise<void> {
+  if (!/^[A-Za-z0-9._-]+$/.test(workId)) throw new Error("Invalid work id");
+  const spec = JSON.parse(fs.readFileSync(file, "utf8"));
+  if (!spec?.objective || !Array.isArray(spec?.steps)) throw new Error("Mission spec requires objective and steps[]");
+  const repo = new JsonWorkRepository(spec.workDirectory ?? "./work-runs");
+  const work = repo.load(workId);
+  if (work.contract?.objective !== spec.objective) {
+    throw new Error("Mission objective does not match persisted Work Object");
+  }
+  if (work.status === "verified") {
+    writeMissionProof(work, spec);
+    return;
+  }
+  if (work.status === "cancelled") {
+    throw new Error("Cannot resume a cancelled Work Object");
+  }
+  const store = new WorkStore();
+  store.register(work);
+  const registry = new CapabilityRegistry();
+  const verification = new VerificationEngine();
+  registerRuntimePacks(registry, verification);
+  const engine = new WorkEngine(store, registry, verification, async () => false, spec.policy, repo);
+  await engine.run(work, spec.steps);
+  writeMissionProof(work, spec);
+}
 const [, , command, firstArg, secondArg, thirdArg, fourthArg, fifthArg, sixthArg] = process.argv;
 if (!command) {
   usage();
@@ -416,6 +457,9 @@ if (!command) {
 } else if (command === "run") {
   if (!firstArg) { usage(); process.exitCode = 1; }
   else runMission(firstArg).catch(error => { process.stderr.write(String(error) + "\n"); process.exitCode = 1; });
+} else if (command === "resume") {
+  if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
+  else resumeMission(firstArg, secondArg).catch(error => { process.stderr.write(String(error) + "\n"); process.exitCode = 1; });
 } else {
   const file = firstArg;
   if (!file) { usage(); process.exitCode = 1; }
