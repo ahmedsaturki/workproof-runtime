@@ -21,6 +21,7 @@ const { generateProofKeyPair, signProof, verifyProofSignature, proofKeyId } = re
 const { loadTrustPolicy, saveTrustPolicy, trustKey, revokeKey, evaluateProofTrust } = require("../../evidence/src/trust.js");
 const { publishProof, restoreProof, listProofs, inspectProof } = require("../../evidence/src/vault.js");
 const { exportPortableProof, verifyPortableProof, importPortableProof } = require("../../evidence/src/portable.js");
+const { assessProofCompatibility, compatibilityPolicy } = require("../../evidence/src/compatibility.js");
 const { setRetentionClass, pinRetention, unpinRetention, inventoryVault, planGarbageCollection, executeGarbageCollection, repairVaultIndex } = require("../../evidence/src/retention.js");
 const { createAuthPolicy, loadAuthPolicy, saveAuthPolicy, issueCredential, addIssuedCredential, revokeCredential } = require("../../registry/src/auth.js");
 const { publishTrustSnapshotToRegistry, getTrustSnapshotFromRegistry, listTrustSnapshotsFromRegistry, getCurrentTrustSnapshotFromRegistry, applyTrustSnapshotToRegistry } = require("../../registry/src/client.js");
@@ -35,6 +36,7 @@ function usage(): void {
   proof-export <proof.json> <bundle-dir>
   proof-bundle-verify <bundle-dir>
   proof-import <bundle-dir> <output-dir>
+  compatibility <proof.json>
   keygen <private.pem> <public.pem>
   sign <proof.json> <private.pem>
   trust-add <public.pem> <trust-policy.json> [label]
@@ -101,6 +103,17 @@ function trustAdd(publicPath: string, policyPath: string, label?: string): void 
   const record = trustKey(policy, publicKey, label);
   saveTrustPolicy(policyPath, policy);
   process.stdout.write(JSON.stringify({ policy: policyPath, keyId: record.keyId, state: record.state, label: record.label ?? null }, null, 2) + "\n");
+}
+
+function showCompatibility(proofPath: string): void {
+  const data = JSON.parse(fs.readFileSync(proofPath, "utf8"));
+  const assessment = assessProofCompatibility(data);
+  process.stdout.write(JSON.stringify({
+    status: assessment.status,
+    reason: assessment.reason,
+    policy: assessment.policy
+  }, null, 2) + "\n");
+  if (assessment.status !== "compatible") process.exitCode = 6;
 }
 
 function proofExport(proofPath: string, bundleDir: string): void {
@@ -448,6 +461,12 @@ if (!command || command === "--help" || command === "-h" || command === "help") 
     try { registryAuthList(firstArg); }
     catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
   }
+} else if (command === "compatibility") {
+  if (!firstArg) { usage(); process.exitCode = 1; }
+  else {
+    try { showCompatibility(firstArg); }
+    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+  }
 } else if (command === "proof-export") {
   if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
   else {
@@ -553,7 +572,9 @@ if (!command || command === "--help" || command === "-h" || command === "help") 
       const status = data.work?.status ?? data.verification?.status ?? "unverified";
       const trustPolicyPath = secondArg && !secondArg.startsWith("--") ? secondArg : undefined;
       const requireTrusted = [secondArg, thirdArg].includes("--require-trusted");
-      let exitCode = 0;
+      const compatibility = assessProofCompatibility(data);
+      process.stdout.write(`compatibility=${compatibility.status}; `);
+      let exitCode = compatibility.status === "compatible" ? 0 : 6;
       if (data.integrity) {
         const valid = verifyProofIntegrity(proofBundleFromFile(data), data.integrity);
         if (!valid) {

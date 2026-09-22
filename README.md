@@ -172,6 +172,12 @@ Studio is localhost-bound by default. Optional runtime configuration is read fro
 
 Do not expose port 8788 directly to the public Internet. Put an authenticated, TLS-terminating reverse proxy in front of WorkProof before external deployment.
 
+### Proof compatibility
+
+Proof formats are versioned explicitly. `workctl compatibility <proof.json>` reports the supported format policy, and `workctl verify` rejects unknown proof/integrity versions rather than silently interpreting them.
+
+See `docs/PROOF-COMPATIBILITY.md` for the compatibility contract.
+
 ### Portable proof
 
 Portable proof bundles keep the original proof payload and optional signature unchanged while carrying local artifact sidecars with SHA-256 manifest entries.
