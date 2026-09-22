@@ -154,6 +154,7 @@ The local-first P0 foundations are complete and executable:
 - [x] operator guidance for failure, ambiguity, recovery, and verification states
 - [x] operational overview and attention summary
 - [x] production Compose restart/persistence smoke
+- [x] production Compose resource and log envelope smoke
 - [x] package distribution includes operator docs and representative mission examples
 - [x] MCP v2 stdio interoperability adapter with explicit mutation idempotency
 - [x] official MCP client protocol acceptance and packed-package smoke
