@@ -18,15 +18,15 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - Container workflow #236: success
 - GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.8`
 - GHCR digest: `sha256:0c31c571480d45d5f46f5ae6f8b8a4b1328094a7561f76aee7016c99e586eb10`
-- immutable image tag: `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`
+- immutable image tag: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
 - prior stable rollback: `v3.8.1` / `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 
 ## Main verification basis
 
-- package version: `3.8.5`
-- verified release reconciliation target: `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`
-- release workflow #218: success
-- container workflow #215: success
+- package version: `3.8.8`
+- verified release reconciliation target: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
+- release workflow #239: success
+- container workflow #236: success
 - release assets: five published and independently rechecked
 - v3.8.8 container: exact commit revision, immutable digest, runtime health, Compose restart/persistence/resource/log envelope, disposable external topology, anonymous pull, backup/restore, rollback, and deny-by-default edge all verified
 
