@@ -152,7 +152,7 @@ export function hardenPrivateFile(filePath: string): void {
     filePath,
     "/inheritance:r",
     "/grant:r",
-    `*\${userSid}:(F)`,
+    `*${userSid}:(F)`,
     "/grant:r",
     "*S-1-5-18:(F)"
   ], {
