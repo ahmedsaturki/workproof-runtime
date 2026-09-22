@@ -1,6 +1,6 @@
 services:
   workproof-studio:
-    image: ghcr.io/ahmedsaturki/workproof-runtime:3.8.5@sha256:0efe2ff7d2a2b97707c32d91523d38a0932e796ea417d38b0d4a1fdb8d1315a5
+    image: ghcr.io/ahmedsaturki/workproof-runtime:3.8.6@sha256:953bab56b734434885bf74022e9b0260f64369c4a9c968e1792ce49874f6058d
     container_name: workproof-runtime
     restart: unless-stopped
     init: true
