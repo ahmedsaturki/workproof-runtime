@@ -442,7 +442,7 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
       });
 
       const status =
-        /Unknown work/i.test(message)
+        /Unknown work|ENOENT|no such file/i.test(message)
           ? 404
           : (/Invalid work id|Invalid JSON|Idempotency-Key/i.test(message) ? 400 : 500);
 
