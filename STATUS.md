@@ -3,12 +3,12 @@
 Date: 2026-09-22
 
 Verification note: this status snapshot is itself CI-gated on the current main commit.
-The current product-readiness merge is CI-gated by main CI #957; this distribution closeout is also CI-gated.
+The current product-readiness merge and distribution closeout are CI-gated on main.
 Chromium CDP smoke is environment-isolated from D-Bus and uses a bounded startup window.
 
 ## Current main
 
-**v3.4 benchmark and v3.4.0-dev.3 distribution path are verified.**
+**v3.4 benchmark is verified; v3.4.0-dev.4 is the current coherent distribution target.**
 
 Latest main: the current branch head; see the GitHub ref and the latest CI run for the exact commit SHA.
 
@@ -92,8 +92,8 @@ The runtime image uses the verified `v3.4.0-dev.3` runtime and was rebuilt when 
 - [x] published image smoke
 - [x] localhost-bound production compose
 - [x] production deployment runbook
-- [x] v3.4.0-dev.3 GHCR image publication and smoke
-- [x] v3.4.0-dev.3 GitHub Release publication and re-download verification
+- [x] v3.4.0-dev.4 GHCR image publication and smoke
+- [x] v3.4.0-dev.4 GitHub Release publication and re-download verification
 - [ ] public production host/DNS/TLS/auth/secrets provisioning
 
 The unchecked line is deliberately external infrastructure, not a missing repository implementation.
