@@ -25,7 +25,6 @@ interface RunningA2A {
 
 function version(): string {
   const candidates = [
-    path.resolve(path.dirname(__filename), "../..", "package.json"),
     path.resolve(path.dirname(__filename), "../..", "package.json")
   ];
   for (const candidate of candidates) {
@@ -301,7 +300,8 @@ export async function startA2AServer(options: A2AOptions): Promise<RunningA2A> {
           limit: pageSize,
           offset,
           status: statusFilter,
-          contextId: params.contextId === undefined ? undefined : String(params.contextId)
+          contextId: params.contextId === undefined ? undefined : String(params.contextId),
+          includeArtifacts: params.includeArtifacts === true
         });
         const tasks = page.items.map(item => workTask(item));
         const nextOffset = offset + tasks.length;
@@ -365,7 +365,9 @@ async function main(): Promise<void> {
   process.stdout.write(JSON.stringify({ status: "ready", version: version(), a2aProtocolVersion: protocolVersion, host: running.host, port: running.port }) + "\n");
 }
 
-main().catch((error) => {
-  process.stderr.write(String(error) + "\n");
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  main().catch((error) => {
+    process.stderr.write(String(error) + "\n");
+    process.exitCode = 1;
+  });
+}
