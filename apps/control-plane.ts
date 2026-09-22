@@ -21,26 +21,38 @@ import { buildProofBundle } from "../packages/evidence/src/bundle";
 import { buildIntegrityManifest } from "../packages/evidence/src/integrity";
 import { createOtlpLogExporterFromEnv } from "../packages/telemetry/src/otel";
 
-const host = process.env.WORKPROOF_CONTROL_PLANE_HOST ?? "127.0.0.1";
-const port = Number(process.env.WORKPROOF_CONTROL_PLANE_PORT ?? "8789");
-const workDirectory = process.env.WORKPROOF_WORK_DIRECTORY ?? "./work-runs";
-const missionDirectory = process.env.WORKPROOF_MISSION_DIRECTORY ?? path.join(workDirectory, "missions");
-const proofDirectory = process.env.WORKPROOF_PROOF_DIRECTORY ?? path.join(workDirectory, "proofs");
-const idempotencyDbPath = process.env.WORKPROOF_IDEMPOTENCY_DB ?? path.join(workDirectory, "control-plane.sqlite");
-const auditPath = process.env.WORKPROOF_CONTROL_AUDIT_PATH ?? path.join(workDirectory, "control-audit.jsonl");
-const authPolicyPath = process.env.WORKPROOF_AUTH_POLICY;
-
-const loopbackHosts = new Set(["127.0.0.1", "localhost", "::1"]);
-if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error("WORKPROOF_CONTROL_PLANE_PORT must be a valid TCP port");
-if (!loopbackHosts.has(host) && !authPolicyPath) {
-  throw new Error("Refusing non-loopback control-plane binding without WORKPROOF_AUTH_POLICY");
+interface RuntimeConfig {
+  host: string;
+  port: number;
+  workDirectory: string;
+  missionDirectory: string;
+  proofDirectory: string;
+  idempotencyDbPath: string;
+  auditPath: string;
+  authPolicyPath?: string;
 }
 
-fs.mkdirSync(missionDirectory, { recursive: true });
-fs.mkdirSync(proofDirectory, { recursive: true });
+function readRuntimeConfig(): RuntimeConfig {
+  const workDirectory = process.env.WORKPROOF_WORK_DIRECTORY ?? "./work-runs";
+  return {
+    host: process.env.WORKPROOF_CONTROL_PLANE_HOST ?? "127.0.0.1",
+    port: Number(process.env.WORKPROOF_CONTROL_PLANE_PORT ?? "8789"),
+    workDirectory,
+    missionDirectory: process.env.WORKPROOF_MISSION_DIRECTORY ?? path.join(workDirectory, "missions"),
+    proofDirectory: process.env.WORKPROOF_PROOF_DIRECTORY ?? path.join(workDirectory, "proofs"),
+    idempotencyDbPath: process.env.WORKPROOF_IDEMPOTENCY_DB ?? path.join(workDirectory, "control-plane.sqlite"),
+    auditPath: process.env.WORKPROOF_CONTROL_AUDIT_PATH ?? path.join(workDirectory, "control-audit.jsonl"),
+    authPolicyPath: process.env.WORKPROOF_AUTH_POLICY
+  };
+}
 
-const authPolicy = authPolicyPath ? loadAuthPolicy(authPolicyPath) : undefined;
-const repository = new JsonWorkRepository(workDirectory);
+function assertRuntimeConfig(config: RuntimeConfig): void {
+  const loopbackHosts = new Set(["127.0.0.1", "localhost", "::1"]);
+  if (!Number.isInteger(config.port) || config.port < 0 || config.port > 65535) throw new Error("WORKPROOF_CONTROL_PLANE_PORT must be a valid TCP port");
+  if (!loopbackHosts.has(config.host) && !config.authPolicyPath) {
+    throw new Error("Refusing non-loopback control-plane binding without WORKPROOF_AUTH_POLICY");
+  }
+}
 
 function runtimeVersion(): string {
   const candidates = [
@@ -80,10 +92,6 @@ function createRuntimeRegistry(): CapabilityRegistry {
 }
 
 const controlCapabilityRegistry = createRuntimeRegistry();
-const telemetry = createOtlpLogExporterFromEnv({
-  serviceName: "workproof-control-plane",
-  serviceVersion: runtimeVersion()
-});
 
 function safeWorkId(value: unknown): string {
   if (typeof value !== "string" || !/^[A-Za-z0-9._-]+$/.test(value)) throw new Error("Invalid work id");
@@ -120,22 +128,22 @@ function validateSteps(value: unknown, contractRisk: RiskClass): WorkStep[] {
   });
 }
 
-function proofPath(work: WorkObject): string {
-  return path.join(proofDirectory, `${safeWorkId(work.id)}.json`);
+function proofPath(work: WorkObject, config: RuntimeConfig): string {
+  return path.join(config.proofDirectory, `${safeWorkId(work.id)}.json`);
 }
 
-function persistProof(work: WorkObject): void {
+function persistProof(work: WorkObject, config: RuntimeConfig): void {
   const proof = buildProofBundle(work);
   const integrity = buildIntegrityManifest(work);
-  fs.writeFileSync(proofPath(work), JSON.stringify({ ...proof, integrity }, null, 2) + "\n", { encoding: "utf8", mode: 0o600 });
+  fs.writeFileSync(proofPath(work, config), JSON.stringify({ ...proof, integrity }, null, 2) + "\n", { encoding: "utf8", mode: 0o600 });
 }
 
-function missionPath(workId: string): string {
-  return path.join(missionDirectory, `${safeWorkId(workId)}.json`);
+function missionPath(workId: string, config: RuntimeConfig): string {
+  return path.join(config.missionDirectory, `${safeWorkId(workId)}.json`);
 }
 
-function saveMission(work: WorkObject, steps: WorkStep[]): void {
-  fs.writeFileSync(missionPath(work.id), JSON.stringify({
+function saveMission(work: WorkObject, steps: WorkStep[], config: RuntimeConfig): void {
+  fs.writeFileSync(missionPath(work.id, config), JSON.stringify({
     objective: work.contract.objective,
     inputs: work.contract.inputs ?? {},
     constraints: work.contract.constraints ?? {},
@@ -147,14 +155,15 @@ function saveMission(work: WorkObject, steps: WorkStep[]): void {
   }, null, 2) + "\n", { encoding: "utf8", mode: 0o600 });
 }
 
-function loadMission(work: WorkObject): WorkStep[] {
-  const file = missionPath(work.id);
+function loadMission(work: WorkObject, config: RuntimeConfig): WorkStep[] {
+  const file = missionPath(work.id, config);
   if (!fs.existsSync(file)) throw new Error("Persisted mission definition is missing for resume");
   const spec = JSON.parse(fs.readFileSync(file, "utf8"));
   return validateSteps(spec.steps, work.contract.riskClass);
 }
 
 async function executeMission(input: Record<string, unknown>): Promise<WorkObject> {
+  const config = readRuntimeConfig();
   if (typeof input.objective !== "string" || !input.objective.trim()) throw new Error("Dispatch objective is required");
   const riskClass = validateRisk(input.riskClass, "read");
   const steps = validateSteps(input.steps, riskClass);
@@ -176,23 +185,36 @@ async function executeMission(input: Record<string, unknown>): Promise<WorkObjec
   saveMission(work, steps);
   const engine = new WorkEngine(store, registry, verification, async () => false, undefined, repository);
   await engine.run(work, steps);
-  persistProof(work);
+  persistProof(work, config);
   return work;
 }
 
 async function resumeMission(work: WorkObject): Promise<WorkObject> {
-  const steps = loadMission(work);
+  const config = readRuntimeConfig();
+  const steps = loadMission(work, config);
   const store = new WorkStore();
   store.register(work);
   const registry = createRuntimeRegistry();
   const verification = new VerificationEngine();
+  const repository = new JsonWorkRepository(config.workDirectory);
   const engine = new WorkEngine(store, registry, verification, async () => false, undefined, repository);
   await engine.run(work, steps);
-  persistProof(work);
+  persistProof(work, config);
   return work;
 }
 
 async function main(): Promise<void> {
+  const config = readRuntimeConfig();
+  assertRuntimeConfig(config);
+  fs.mkdirSync(config.missionDirectory, { recursive: true });
+  fs.mkdirSync(config.proofDirectory, { recursive: true });
+  const authPolicy = config.authPolicyPath ? loadAuthPolicy(config.authPolicyPath) : undefined;
+  const repository = new JsonWorkRepository(config.workDirectory);
+  const telemetry = createOtlpLogExporterFromEnv({
+    serviceName: "workproof-control-plane",
+    serviceVersion: runtimeVersion()
+  });
+
   const controlPlane = await startControlPlane({
     repository: {
       load: (id: string) => repository.load(id),
@@ -200,10 +222,10 @@ async function main(): Promise<void> {
       list: () => repository.list()
     },
     authPolicy,
-    host,
-    port,
-    auditPath,
-    idempotencyDbPath,
+    host: config.host,
+    port: config.port,
+    auditPath: config.auditPath,
+    idempotencyDbPath: config.idempotencyDbPath,
     dispatch: executeMission,
     resume: resumeMission,
     capabilitySource: {
@@ -224,8 +246,8 @@ async function main(): Promise<void> {
     apiVersion: "1.0",
     host: controlPlane.host,
     port: controlPlane.port,
-    workDirectory,
-    proofDirectory,
+    workDirectory: config.workDirectory,
+    proofDirectory: config.proofDirectory,
     auth: Boolean(authPolicy)
   }, null, 2) + "\n");
 }
