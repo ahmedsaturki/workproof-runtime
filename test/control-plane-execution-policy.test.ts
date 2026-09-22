@@ -26,7 +26,7 @@ test("control-plane mission executor enforces approval and risk policy before ca
         operation: "create_file",
         capability: "pack.local.file.create",
         input: { path: path.join(root, "should-not-exist.txt"), content: "blocked" },
-        idempotencyKey: "control-policy:approval",
+        idempotencyKey: "control-policy.approval",
         riskClass: "local_write"
       }]
     });
@@ -61,7 +61,7 @@ test("control-plane resume path keeps the same execution policy", async () => {
         operation: "create_file",
         capability: "pack.local.file.create",
         input: { path: path.join(root, "resume-policy.txt"), content: "initial" },
-        idempotencyKey: "control-policy:resume",
+        idempotencyKey: "control-policy.resume",
         riskClass: "local_write"
       }]
     });
