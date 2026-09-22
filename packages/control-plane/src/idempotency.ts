@@ -1,5 +1,5 @@
 const { DatabaseSync } = require("node:sqlite");
-const { hardenPrivateFile } = require("../../registry/src/auth.js");
+const { hardenPrivateFile } = require("../../storage/src/private-file.js");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
