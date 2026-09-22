@@ -47,3 +47,18 @@ test("OTLP exporter sends a valid JSON log record without arbitrary audit fields
 });
 
 export {};
+
+test("OTLP environment configuration rejects unsupported transport", () => {
+  const { createOtlpLogExporterFromEnv } = require("../packages/telemetry/src/otel");
+  assert.throws(
+    () => createOtlpLogExporterFromEnv({
+      serviceName: "workproof-test",
+      serviceVersion: "3.7.0-dev.1",
+      env: {
+        OTEL_EXPORTER_OTLP_ENDPOINT: "http://127.0.0.1:4318",
+        OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+      }
+    }),
+    /only http\/json/
+  );
+});
