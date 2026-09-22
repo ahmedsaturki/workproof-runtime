@@ -18,7 +18,7 @@ function setup() {
 }
 
 function fixture() {
-  const dir = fs.mkdtempSync(path.join("/tmp", "workproof-mail-"));
+  const dir = fs.mkdtempSync(path.join(require("os").tmpdir(), "workproof-mail-"));
   return {
     dir,
     input: {
