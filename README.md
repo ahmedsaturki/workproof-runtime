@@ -4,13 +4,13 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.4 executable operator benchmark is fully verified; v3.4.0-dev.10 is the current shipped prerelease.**
+**v3.4 executable operator benchmark is fully verified; v3.4.0-dev.11 is the current shipped prerelease.**
 
 The v3.4 line is the first executable operator benchmark with controlled failure injection across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution.
 
 The v3.4.0-dev.10 product baseline adds a representative multi-capability Research → Transform mission, Studio capability-chain visibility, and a disposable external-topology gate covering TLS, authentication, persistence, backup/restore, and rollback.
 
-The v3.4.0-dev.10 release is the current verified distribution and carries the local-first product-readiness, packaged CLI, restart/resume, Studio configuration, persistence hardening, multi-capability execution, and disposable external-topology validation.
+The v3.4.0-dev.11 release is the current verified distribution and carries the local-first product-readiness, packaged CLI, restart/resume, Studio configuration, persistence hardening, multi-capability execution, disposable external-topology validation, exact published digest lineage, and tracked-file secret scanning.
 
 ## Core loop
 
@@ -85,13 +85,13 @@ M005 retried the primary capability under bounded ambiguity, selected a compatib
 
 ### GitHub Release
 
-`v3.4.0-dev.10` is the current shipped prerelease. Release and container workflows publish from the same release-branch lineage.
+`v3.4.0-dev.11` is the current shipped prerelease. Release and container workflows publish from the same release-branch lineage.
 
 Published assets:
 
-- `operational-reality-core-3.4.0-dev.10.tgz
-- `workproof-runtime-v3.4.0-dev.10.tar.gz
-- `workproof-benchmark-v3.4.0-dev.10.json
+- `operational-reality-core-3.4.0-dev.11.tgz`
+- `workproof-runtime-v3.4.0-dev.11.tar.gz`
+- `workproof-benchmark-v3.4.0-dev.11.json`
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
@@ -101,16 +101,16 @@ The release pipeline re-downloads published assets, verifies SHA256 sums, verifi
 
 Published image:
 
-`ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.10`
+`ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.11`
 
 Verified digest:
 
-`sha256:3fa81f645ccb0c13e0dbfd5da13c089e982f5ed85a0c79b5ec49e021820315fa`
+`sha256:d0c4a8134e0b73d68dc6a0489bbc058b90e633a01171df980aebd1e7b47affff`
 
-The same digest is exposed by the immutable release commit tag `620ae90f396319630ef6913b66a664634d695039`. Container verification run #110 proved:
+The same digest is exposed by the immutable release commit tag `aeaaac3d9224b7eac297ac8f63207bf97b532e4d`. Container verification run #115 proved:
 
 - package version matches release tag;
-- OCI version matches `3.4.0-dev.10`;
+- OCI version matches `3.4.0-dev.11`;
 - OCI revision matches the release tag commit;
 - version and immutable commit tags resolve to the same digest;
 - the published image starts successfully;
@@ -125,7 +125,7 @@ The repository includes:
 - `docs/CONTAINER-RUNTIME.md`
 - `docs/PRODUCTION-DEPLOYMENT.md`
 
-The production compose targets the verified v3.4.0-dev.10 image digest, binds Studio to localhost, and persists `./work-runs`. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
+The production compose targets the verified v3.4.0-dev.11 image digest, binds Studio to localhost, and persists `./work-runs`. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
 
 `package.json` remains `private: true`; no npm registry publication is claimed.
 

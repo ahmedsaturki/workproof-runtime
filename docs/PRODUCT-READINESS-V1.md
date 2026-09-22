@@ -85,7 +85,7 @@ A product release must not be called production-ready solely because CI is green
 
 ## Current verified baseline — 2026-09-22
 
-The repository now records the coherent `v3.4.0-dev.10` distribution path. Main CI, release verification, container publication, and the disposable external-topology gate are integrity-verified. Localhost-bound production compose and the deployment runbook are pinned to the verified `v3.4.0-dev.10` image.
+The repository now records the coherent `v3.4.0-dev.11` distribution path. Main CI, release verification, container publication, secret scanning, and the disposable external-topology gate are integrity-verified. Localhost-bound production compose and the deployment runbook are pinned to the verified `v3.4.0-dev.11` image.
 
 These facts establish a strong verified foundation, but they do **not** by themselves establish a public production deployment. Public host/DNS/TLS/auth/secrets provisioning remains an external infrastructure gate.
 
@@ -105,8 +105,8 @@ Completed:
 
 Remaining:
 
-8. Disposable external-topology validation with TLS, authentication, secret non-leakage, backup/restore, and rollback to a previous immutable release.
-9. Broader multi-capability mission UX and workflow visualization.
+8. Broader mission composition and operational visualization beyond the current representative multi-capability chain.
+9. Additional adapters and wider mission coverage beyond the current prerelease acceptance set.
 
 ## Stop conditions
 
@@ -126,7 +126,7 @@ WorkProof Runtime is not required to become a generic agent framework, browser a
 
 ## Implemented local-first product baseline
 
-The following gates are executable and CI-verified on the current v3.4.0-dev.10 lineage and its published distribution:
+The following gates are executable and CI-verified on the current v3.4.0-dev.11 lineage and its published distribution:
 
 - [x] Runtime version is sourced from package metadata instead of stale hard-coded product versions.
 - [x] Studio process startup honors control-plane, proof-vault, and trust-policy configuration from arguments/environment.
@@ -139,7 +139,7 @@ The following gates are executable and CI-verified on the current v3.4.0-dev.10 
 - [x] Portable proof export, independent bundle verification, and import/materialization workflow.
 - [x] Explicit versioned proof compatibility policy with strict unsupported-version handling.
 - [x] Source-tree verification includes the product readiness specification and product smoke suite.
-- [x] CI validates the above together with the existing security, retention, benchmark, demo, CLI, and live GitHub gates.
+- [x] CI validates the above together with secret scanning, external topology, retention, benchmark, demo, CLI, multi-capability, and live GitHub gates.
 
 
 ## Current product state
@@ -156,9 +156,9 @@ The local-first P0 foundations are complete and executable:
 - [x] production Compose restart/persistence smoke
 - [x] package distribution includes operator docs and representative mission examples
 
-Remaining product-validation work is expansion beyond the current prerelease scope: broader multi-capability mission composition, additional adapters, and wider operational visualization. The required local-first/external-topology acceptance gates for this prerelease are complete.
+Remaining product-validation work is expansion beyond the current prerelease scope: broader mission composition, additional adapters, and wider operational visualization. The required local-first/external-topology acceptance gates for this prerelease are complete.
 
 
-## Dev.10 release state
+## Dev.11 release state
 
-The current shipped prerelease is `v3.4.0-dev.10`. Release verification run #113 and Container verification run #110 both completed their required gates, including the disposable external-topology validation.
+The current shipped prerelease is `v3.4.0-dev.11`. Release verification run #118 and Container verification run #115 both completed their required gates, including the disposable external-topology validation and published digest lineage.

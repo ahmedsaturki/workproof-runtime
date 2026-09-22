@@ -147,7 +147,12 @@ jobs:
         timeout-minutes: 5
 
       - name: Disposable external topology smoke
-        run: node scripts/external-topology-smoke.js
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          set -euo pipefail
+          export WORKPROOF_RELEASE_IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}:${IMAGE_TAG}"
+          node scripts/external-topology-smoke.js
         timeout-minutes: 10
 
       - name: Verify anonymous GHCR pull
