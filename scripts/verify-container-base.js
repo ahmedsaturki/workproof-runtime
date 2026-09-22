@@ -4,6 +4,12 @@ const path = require("path");
 const dockerfilePath = path.resolve("Dockerfile");
 const source = fs.readFileSync(dockerfilePath, "utf8");
 
+if (/\\n(?:LABEL|FROM|RUN|COPY|ENV|ARG|WORKDIR|USER|VOLUME|EXPOSE|HEALTHCHECK|CMD|ENTRYPOINT)\\b/.test(source)) {
+  console.error("Dockerfile contains a literal escaped newline before a Docker instruction; use real instruction lines.");
+  process.exit(1);
+}
+
+
 const fromLines = source
   .split(/\r?\n/)
   .map((line) => line.trim())
