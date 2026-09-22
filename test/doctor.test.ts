@@ -6,6 +6,8 @@ const os = require("os");
 const path = require("path");
 import { runDoctor } from "../packages/doctor/src/index";
 
+const packageVersion = JSON.parse(fs.readFileSync(path.join(require("process").cwd(), "package.json"), "utf8")).version;
+
 async function server(handler: any): Promise<{ base: string; close(): Promise<void> }> {
   const instance = http.createServer(handler);
   await new Promise<void>(resolve => instance.listen(0, "127.0.0.1", resolve));
@@ -30,8 +32,8 @@ test("doctor reports a healthy local installation and connected services", async
 
   const control = await server((req: any, res: any) => {
     const body = req.url === "/health"
-      ? { status: "ok", version: "3.8.0-dev.1" }
-      : { status: "ready", version: "3.8.0-dev.1", checks: { repository: { status: "ok" }, idempotency: { status: "ok" } } };
+      ? { status: "ok", version: packageVersion }
+      : { status: "ready", version: packageVersion, checks: { repository: { status: "ok" }, idempotency: { status: "ok" } } };
     res.writeHead(200, { "content-type": "application/json" });
     res.end(JSON.stringify(body));
   });
@@ -41,7 +43,7 @@ test("doctor reports a healthy local installation and connected services", async
   });
   const a2a = await server((req: any, res: any) => {
     res.writeHead(200, { "content-type": "application/json" });
-    res.end(JSON.stringify({ name: "WorkProof Runtime", version: "3.8.0-dev.1", supportedInterfaces: [{ url: "http://127.0.0.1/rpc" }] }));
+    res.end(JSON.stringify({ name: "WorkProof Runtime", version: packageVersion, supportedInterfaces: [{ url: "http://127.0.0.1/rpc" }] }));
   });
 
   try {

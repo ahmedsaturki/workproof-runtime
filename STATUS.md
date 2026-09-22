@@ -8,23 +8,23 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 
 ## Current main
 
-- package version: `3.8.0-dev.1`
-- release source tag commit: `bba39f385ab042344f4fc2ebe04aeef7ef3c98b9`
-- promotion branch: `promote/v3.8.0-dev.1-main`
-- main closeout commit: `354cf4d660aec814ba83d0c44d7e3468d6b726ca`
+- package version: `3.8.0`
+- stable release source commit: `2b02d22e897d5fe736f93267c72036d951f74082`
+- promotion branch: `promote/v3.8.0-main`
+- main promotion: pending
 
 ## Current verified release
 
-- version: `3.8.0-dev.1`
-- tag: `v3.8.0-dev.1`
-- release commit: `bba39f385ab042344f4fc2ebe04aeef7ef3c98b9`
-- GitHub Release id: 393551082
-- release verification run #180: success
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.0-dev.1`
-- GHCR digest: `sha256:acafde09bd74d535fb706acde68f7e6279283ac49f6d1863585d672fb691ac02`
-- immutable image tag: `bba39f385ab042344f4fc2ebe04aeef7ef3c98b9`
-- Container verification run #177: success
-- five release assets published and post-publication integrity verified
+- version: `3.8.0`
+- tag: `v3.8.0`
+- release commit: `2b02d22e897d5fe736f93267c72036d951f74082`
+- GitHub Release ID: 393558255
+- release verification run #189: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.0`
+- GHCR digest: `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
+- immutable image tag: `2b02d22e897d5fe736f93267c72036d951f74082`
+- Container verification run #186: success
+- five release assets published and verified
 
 ## Product gates
 
@@ -120,3 +120,26 @@ A capability receipt is not independent proof. Work is verified only when indepe
 - release commit: `bba39f385ab042344f4fc2ebe04aeef7ef3c98b9`
 - published GHCR digest: `sha256:acafde09bd74d535fb706acde68f7e6279283ac49f6d1863585d672fb691ac02`
 - rollback release: `v3.7.0-dev.1`
+
+
+## Stable 3.8.0 release
+
+- release branch: `release/3.8.0`
+- stable package version: `3.8.0`
+- dev.1 baseline: verified
+- stable release verification: in progress
+- stable publication: in progress
+- stable main promotion: pending
+
+
+## Stable 3.8.0 publication
+
+- [x] package version 3.8.0
+- [x] release verification #189
+- [x] GitHub Release v3.8.0
+- [x] Container verification #186
+- [x] GHCR digest reconciliation
+- [x] production Compose stable digest pin
+- [x] rollback lineage to v3.8.0-dev.1
+- [ ] promotion to main
+- [ ] final main CI closeout

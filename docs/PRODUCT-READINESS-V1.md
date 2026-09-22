@@ -168,7 +168,7 @@ The required local-first and external-topology acceptance gates for v3.7.0-dev.1
 
 ## Historical v3.7.0-dev.1 release state
 
-The v3.8.0-dev.1 release is the current shipped prerelease. Release workflow #180 and Container workflow #177 completed their required gates, including disposable external-topology validation and published digest lineage.
+The v3.8.0 release is the current stable release. Release workflow #180 and Container workflow #177 completed their required gates, including disposable external-topology validation and published digest lineage.
 
 
 ## Historical v3.7.0-dev.1 control-plane product surface
@@ -228,3 +228,13 @@ The feature, release, container, promotion, and final main verification gates ar
 - Main closeout CI #1238: success.
 
 The v3.8 release remains bounded by the same WorkProof authority, verification, reconciliation, recovery, idempotency, and proof semantics established by earlier releases.
+
+
+## Stable v3.8.0
+
+The stable 3.8.0 line is a version promotion of the v3.8.0-dev.1 implementation already verified across feature, release, container, and main gates. The stable release is rebuilt under its own package version, tag, container image, digest, and promotion checks before closeout.
+
+
+## Stable 3.8.0 verified distribution
+
+The stable 3.8.0 package, GitHub Release, GHCR image, production Compose pin, rollback lineage, release verification, and container verification are complete. Main promotion remains a separate repository integration gate.
