@@ -32,7 +32,7 @@ jobs:
         run: echo "tag=v${GITHUB_REF_NAME#release/}" >> "$GITHUB_OUTPUT"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Full release verification
         run: npm run check

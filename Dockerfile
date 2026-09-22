@@ -5,7 +5,7 @@ ARG VCS_REF=unknown
 
 WORKDIR /app
 
-COPY package.json tsconfig.json ./
+COPY package.json package-lock.json tsconfig.json ./
 COPY apps ./apps
 COPY packages ./packages
 COPY lab ./lab
@@ -13,7 +13,7 @@ COPY test ./test
 COPY types ./types
 COPY scripts ./scripts
 
-RUN npm install
+RUN npm ci
 RUN npm run build
 
 FROM node:24-bookworm-slim
