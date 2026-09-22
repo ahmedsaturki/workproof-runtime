@@ -48,13 +48,13 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 
 ## Current v3.8.3 distribution state
 
-- release reconciliation baseline: `772a5a16b34e94b62bbc6564474736ef2e4da11b`
+- release reconciliation baseline: `27bdec369b3e0664224054471656b3f736e763db`
 - release workflow #210: success
 - container workflow #207: success
 - current package version: `3.8.3`
 - stable release: `v3.8.3`
-- stable release commit: `772a5a16b34e94b62bbc6564474736ef2e4da11b`
-- GitHub Release: `393862783`
+- stable release commit: `27bdec369b3e0664224054471656b3f736e763db`
+- GitHub Release: `393869578`
 - GHCR digest: `sha256:ec6f891f8e3fc427937f904eb039d95d58387b1d06261cd91c8c9a886bc7cf67`
 - reproducible-install hardening PR #97: merged
 - release-metadata/source-manifest PR #98: merged
