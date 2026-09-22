@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const fs = require("fs");
+const path = require("path");
 const { WorkStore } = require("../../core/src/work.js");
 const { CapabilityRegistry } = require("../../capabilities/src/registry.js");
 const { VerificationEngine } = require("../../verification/src/engine.js");
