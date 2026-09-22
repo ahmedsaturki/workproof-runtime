@@ -156,6 +156,7 @@ const required = [
   "test/browser.test.ts",
   "test/compensation.test.ts",
   "test/control-plane-sdk.test.ts",
+  "test/control-plane-execution-policy.test.ts",
   "test/a2a.test.ts",
   "test/doctor.test.ts",
   "test/otel.test.ts",
