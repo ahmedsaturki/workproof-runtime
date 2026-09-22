@@ -69,7 +69,7 @@ Returns sanitized execution lease data when a lease-status source is configured.
 
 The control plane does not treat a capability receipt as proof. The runtime persists Work Objects, effects, events, and proof artifacts, and the verifier independently establishes requested outcomes.
 
-An idempotency key is bound to the operation and a canonical request fingerprint. Reusing a key with a different operation or input is rejected as a conflict. A request already in progress is rejected rather than executed concurrently through the same key.
+An idempotency key is bound to the operation and a canonical request fingerprint. Reusing a key with a different operation or input is rejected as a conflict. A request already in progress is rejected rather than executed concurrently through the same key. If mutation execution throws after the key is claimed, the ledger records a terminal `failed` result and replays the safe failure response on reuse; the same key is never executed again.
 
 The capability inventory is intended for Studio, SDKs, operators, and future adapters. It is a read-only discovery surface and is not a replacement for policy authorization.
 
