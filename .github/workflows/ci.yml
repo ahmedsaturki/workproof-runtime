@@ -55,7 +55,7 @@ jobs:
           test -s "${SMOKE_DIR}/public.pem"
           cat > "${SMOKE_DIR}/suppliers.json" <<'EOF'
 [{"name":"Alpha","website":"https://alpha.example","phone":"0100000001","source":"fixture"},{"name":"Beta","website":"https://beta.example","phone":"0100000002","source":"fixture"},{"name":"Gamma","website":"https://gamma.example","phone":"0100000003","source":"fixture"},{"name":"Delta","website":"https://delta.example","phone":"0100000004","source":"fixture"}]
-EOF
+          EOF
           cat > "${SMOKE_DIR}/mission.json" <<'EOF'
 {
   "objective": "Packaged CLI product smoke",
@@ -67,7 +67,7 @@ EOF
   "proofPath": "./proof.json",
   "workDirectory": "./work-runs"
 }
-EOF
+          EOF
           RESULT="$("${SMOKE_DIR}/node_modules/.bin/workctl" run "${SMOKE_DIR}/mission.json")"
           printf "%s\n" "$RESULT"
           node -e 'const x=JSON.parse(process.argv[1]); if (x.status !== "verified") process.exit(1)' "$RESULT"
