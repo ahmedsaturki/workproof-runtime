@@ -8,22 +8,22 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 
 ## Current main
 
-- package version: `3.7.0-dev.1`
-- release source tag commit: `f776ed9f5fcbb055f7da41ca69714c19b20f9aad`
-- promotion branch: `promote/v3.7.0-dev.1-main`
+- package version: `3.8.0-dev.1`
+- release source tag commit: `bba39f385ab042344f4fc2ebe04aeef7ef3c98b9`
+- promotion branch: `promote/v3.8.0-dev.1-main`
 - main closeout commit: `354cf4d660aec814ba83d0c44d7e3468d6b726ca`
 
 ## Current verified release
 
-- version: `3.7.0-dev.1`
-- tag: `v3.7.0-dev.1`
-- release commit: `f776ed9f5fcbb055f7da41ca69714c19b20f9aad`
-- GitHub Release id: 393526164
-- release verification run #171: success
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.7.0-dev.1`
-- GHCR digest: `sha256:28e8d9af0ab71442b33df8b72308089f520b5ba23128401c0a05675809ba1748`
-- immutable image tag: `f776ed9f5fcbb055f7da41ca69714c19b20f9aad`
-- Container verification run #168: success
+- version: `3.8.0-dev.1`
+- tag: `v3.8.0-dev.1`
+- release commit: `bba39f385ab042344f4fc2ebe04aeef7ef3c98b9`
+- GitHub Release id: 393551082
+- release verification run #180: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.0-dev.1`
+- GHCR digest: `sha256:acafde09bd74d535fb706acde68f7e6279283ac49f6d1863585d672fb691ac02`
+- immutable image tag: `bba39f385ab042344f4fc2ebe04aeef7ef3c98b9`
+- Container verification run #177: success
 - five release assets published and post-publication integrity verified
 
 ## Product gates
@@ -76,7 +76,7 @@ The disposable topology gate verifies TLS, authentication, secret non-leakage, p
 A capability receipt is not independent proof. Work is verified only when independent evidence satisfies the Work Contract and the published artifact remains verifiable outside the running operator.
 
 
-## v3.7 promotion
+## v3.8 promotion
 
 - [x] A2A 1.0 interoperability product surface
 - [x] OTLP/HTTP JSON audit export
@@ -110,3 +110,13 @@ A capability receipt is not independent proof. Work is verified only when indepe
 - [x] release assets verified
 - [x] container runtime/Compose/external topology verified
 - [ ] post-merge main CI closeout
+
+
+## v3.8 verified closeout
+
+- main merge commit: `0e7e8050a98a4c4863fe81f49a69ab4bc8a646b8`
+- main CI #1236: success
+- published release: `v3.8.0-dev.1`
+- release commit: `bba39f385ab042344f4fc2ebe04aeef7ef3c98b9`
+- published GHCR digest: `sha256:acafde09bd74d535fb706acde68f7e6279283ac49f6d1863585d672fb691ac02`
+- rollback release: `v3.7.0-dev.1`
