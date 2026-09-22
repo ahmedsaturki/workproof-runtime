@@ -1,7 +1,0 @@
-[
-  {"name":"Alpha Metals","website":"https://alpha.example","phone":"010000001","source":"catalog-A"},
-  {"name":"Beta Industrial","website":"https://beta.example","phone":"010000002","source":"catalog-B"},
-  {"name":"Gamma Plastics","website":"https://gamma.example","phone":"010000003","source":"catalog-A"},
-  {"name":"Alpha Metals Duplicate","website":"https://alpha.example","phone":"010000001","source":"catalog-C"},
-  {"name":"Delta Packaging","website":"https://delta.example","phone":"010000004","source":"catalog-B"}
-]

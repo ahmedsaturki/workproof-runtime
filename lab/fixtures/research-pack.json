@@ -1,8 +1,0 @@
-{
-  "name":"research-local",
-  "version":"0.1.0",
-  "capabilities":["pack.research.local"],
-  "verifiers":["pack.research.artifact"],
-  "policies":[],
-  "fixtures":["lab/data/suppliers.json"]
-}

@@ -2,11 +2,11 @@
 
 ## Corrective distribution release
 
-v3.8.10 is a corrective patch release built from the fully reconciled `main` lineage.
+v3.8.10 is a corrective patch release for the runtime contract.
 
-The v3.8.9 publication completed its release and container verification gates successfully, but the published v3.8.9 source snapshot retained pre-reconciliation distribution metadata in several operator-facing files. The subsequent main reconciliation corrected those records without changing the runtime contract.
+The immutable `v3.8.10` tag and published source/container assets are anchored to release commit `9daac7a926ce1631ac708a6c234379d622c56c19`. That release snapshot was followed by a post-publication reconciliation on `main` that corrected operator-facing lineage metadata to match the published GitHub Release and GHCR evidence without changing runtime semantics.
 
-v3.8.10 exists to establish a new immutable release boundary from that reconciled source of truth.
+The published assets remain immutable historical snapshots of their tag commit; the reconciliation does not rewrite the release tag or its assets.
 
 ### Verification requirements
 
@@ -34,4 +34,4 @@ GitHub `main` branch protection remains a repository-level external control and 
 - Container workflow: #258 — success
 - GHCR digest: `sha256:cad9c467db8fe82abd1b15d30d90dbf7e87ad6683f44a8c7c8763c327af6a1c8`
 - immutable image tag: `9daac7a926ce1631ac708a6c234379d622c56c19`
-- five release assets published with SHA256 verification
+- five release assets published with SHA256 verification; current `main` carries the subsequent operator-facing lineage reconciliation
