@@ -85,7 +85,7 @@ A product release must not be called production-ready solely because CI is green
 
 ## Current verified baseline — 2026-09-22
 
-The repository currently records v3.4 benchmark verification and the coherent `v3.4.0-dev.9` distribution path. Main CI, release verification, and container publication are integrity-verified. Localhost-bound production compose and the deployment runbook are pinned to the verified `v3.4.0-dev.9` image.
+The repository now records the coherent `v3.4.0-dev.10` distribution path. Main CI, release verification, container publication, and the disposable external-topology gate are integrity-verified. Localhost-bound production compose and the deployment runbook are pinned to the verified `v3.4.0-dev.10` image.
 
 These facts establish a strong verified foundation, but they do **not** by themselves establish a public production deployment. Public host/DNS/TLS/auth/secrets provisioning remains an external infrastructure gate.
 
@@ -156,7 +156,7 @@ The local-first P0 foundations are complete and executable:
 - [x] production Compose restart/persistence smoke
 - [x] package distribution includes operator docs and representative mission examples
 
-Remaining product-validation gates are the disposable external topology and broader multi-capability mission UX.
+Remaining product-validation work is expansion beyond the current prerelease scope: broader multi-capability mission composition, additional adapters, and wider operational visualization. The required local-first/external-topology acceptance gates for this prerelease are complete.
 
 
 ## Dev.9 release state
