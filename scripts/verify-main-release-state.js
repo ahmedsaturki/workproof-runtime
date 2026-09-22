@@ -34,6 +34,29 @@ async function main() {
   const expectedImage = lineage.container.image + "@" + lineage.container.digest;
   if (!compose.includes(expectedImage)) throw new Error("Production Compose does not contain the last verified stable image/digest");
   if (packageVersion === stableVersion) {
+    const diff = spawnSync("git", ["diff", "--name-only", stableVersion === packageVersion ? lineage.release.commit + "..HEAD" : "",], { encoding: "utf8", cwd: process.cwd(), stdio: ["ignore", "pipe", "pipe"] });
+    if (diff.error) throw diff.error;
+    if (diff.status !== 0) throw new Error("Unable to inspect main-vs-release source drift: " + String(diff.stderr || "").trim());
+    const changedFiles = String(diff.stdout || "").split(/\r?\n/).map((value) => value.trim()).filter(Boolean);
+    const allowedPostReleaseFiles = new Set([
+      "README.md",
+      "CONTRIBUTING.md",
+      "STATUS.md",
+      "SOURCE-MANIFEST.md",
+      "compose.production.yaml",
+      "docs/release-lineage.json",
+      "docs/PRODUCT-READINESS-V1.md",
+      "docs/PRODUCTION-DEPLOYMENT.md",
+      "docs/CONTAINER-RUNTIME.md"
+    ]);
+    const unexpectedDrift = changedFiles.filter((file) => !allowedPostReleaseFiles.has(file) && !file.startsWith("docs/"));
+    if (unexpectedDrift.length) {
+      throw new Error(
+        "Main contains source/distribution drift after the published release without a version bump: " +
+        unexpectedDrift.join(", ") +
+        ". Bump package.json to the next release version before changing product/source files."
+      );
+    }
     const child = spawnSync(process.execPath, [path.resolve("scripts/verify-published-lineage.js")], { stdio: "inherit", cwd: process.cwd() });
     if (child.error) throw child.error;
     process.exit(child.status === null ? 1 : child.status);
