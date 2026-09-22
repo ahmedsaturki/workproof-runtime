@@ -176,7 +176,7 @@ async function main() {
     process.stderr.write("External topology edge logs:\n" + run("docker", ["logs", edgeName], true).stdout + "\n");
     throw error;
   }
-  } finally {
+  finally {
     for (const fn of cleanup.reverse()) { try { fn(); } catch {} }
     try { fs.rmSync(root, { recursive: true, force: true }); } catch {}
   }
