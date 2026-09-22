@@ -45,7 +45,14 @@ test("authenticated control plane enforces read/write permissions and audits act
   const server = await startControlPlane({
     repository: repo,
     authPolicy: withWriter,
+    runtimeVersion: "3.5-test",
     auditPath,
+    capabilitySource: {
+      listCapabilities: () => [
+        { name: "z.cap", version: "1.0.0", operations: ["z", "a"], riskClass: "read" },
+        { name: "a.cap", version: "2.0.0", operations: ["b"], riskClass: "local_write" }
+      ]
+    },
     dispatch: async (input) => {
       const created = sampleWork();
       created.contract.objective = String(input.objective);
@@ -71,6 +78,33 @@ test("authenticated control plane enforces read/write permissions and audits act
     const baseUrl = `http://${server.host}:${server.port}`;
     const reader = new ControlPlaneClient({ baseUrl, token: readCred.token });
     const writer = new ControlPlaneClient({ baseUrl, token: writeCred.token });
+    assert.deepEqual(await reader.listCapabilities(), [
+      { name: "a.cap", version: "2.0.0", operations: ["b"], riskClass: "local_write" },
+      { name: "z.cap", version: "1.0.0", operations: ["a", "z"], riskClass: "read" }
+    ]);
+
+    const health = await fetch(baseUrl + "/health");
+    assert.equal(health.status, 200);
+    const healthBody = await health.json();
+    assert.equal(healthBody.status, "ok");
+    assert.equal(healthBody.apiVersion, "1.0");
+    assert.equal(healthBody.version, "3.5-test");
+
+    const unauthCapabilities = await fetch(baseUrl + "/v1/capabilities");
+    assert.equal(unauthCapabilities.status, 401);
+
+    const capabilitiesResponse = await fetch(baseUrl + "/v1/capabilities", {
+      headers: { authorization: "Bearer " + readCred.token }
+    });
+    assert.equal(capabilitiesResponse.status, 200);
+    const capabilitiesBody = await capabilitiesResponse.json();
+    assert.deepEqual(
+      capabilitiesBody.capabilities,
+      [
+        { name: "a.cap", version: "2.0.0", operations: ["b"], riskClass: "local_write" },
+        { name: "z.cap", version: "1.0.0", operations: ["a", "z"], riskClass: "read" }
+      ]
+    );
 
     const status = await reader.getWork(work.id);
     assert.equal(status.id, work.id);

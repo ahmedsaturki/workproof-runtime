@@ -37,6 +37,13 @@ export interface ControlMutationOptions {
   idempotencyKey?: string;
 }
 
+export interface CapabilityInfo {
+  name: string;
+  version: string;
+  operations: string[];
+  riskClass: string;
+}
+
 function normalizeBaseUrl(value: string): string {
   const url = new URL(value);
   if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("Control plane URL must use HTTP or HTTPS");
@@ -108,6 +115,17 @@ export class ControlPlaneClient {
   async getWork(workId: string): Promise<WorkObject> {
     if (!/^[A-Za-z0-9._-]+$/.test(workId)) throw new Error("Invalid work id");
     return parseWorkObject(JSON.stringify((await request(this.baseUrl, this.token, "GET", `/v1/work/${workId}`)).work));
+  }
+
+  async listCapabilities(): Promise<CapabilityInfo[]> {
+    const data = await request(this.baseUrl, this.token, "GET", "/v1/capabilities");
+    if (!Array.isArray(data?.capabilities)) throw new Error("Control plane returned an invalid capability list");
+    return data.capabilities.map((item: any) => ({
+      name: String(item?.name ?? ""),
+      version: String(item?.version ?? ""),
+      operations: Array.isArray(item?.operations) ? item.operations.map((value: unknown) => String(value)).sort() : [],
+      riskClass: String(item?.riskClass ?? "")
+    }));
   }
 
   async dispatch(input: WorkDispatchRequest, options: ControlMutationOptions = {}): Promise<WorkObject> {

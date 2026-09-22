@@ -42,10 +42,21 @@ const authPolicy = authPolicyPath ? loadAuthPolicy(authPolicyPath) : undefined;
 const repository = new JsonWorkRepository(workDirectory);
 
 function runtimeVersion(): string {
-  const packagePath = path.resolve(process.env.PWD ?? ".", "package.json");
-  const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
-  if (typeof packageJson.version !== "string" || !packageJson.version.trim()) throw new Error("Unable to determine WorkProof Runtime version");
-  return packageJson.version.trim();
+  const candidates = [
+    path.resolve(path.dirname(__filename), "../../package.json"),
+    path.resolve(require("process").cwd(), "package.json")
+  ];
+  for (const candidate of candidates) {
+    try {
+      const packageJson = JSON.parse(fs.readFileSync(candidate, "utf8"));
+      if (typeof packageJson.version === "string" && packageJson.version.trim()) return packageJson.version.trim();
+    } catch {
+      // Try the next known package location.
+    }
+  }
+  const environmentVersion = process.env.npm_package_version;
+  if (environmentVersion && environmentVersion.trim()) return environmentVersion.trim();
+  throw new Error("Unable to determine WorkProof Runtime version");
 }
 
 function registerRuntimePacks(registry: CapabilityRegistry, verification: VerificationEngine): void {
@@ -59,6 +70,15 @@ function registerRuntimePacks(registry: CapabilityRegistry, verification: Verifi
   registerMessageOutboxPack(registry, verification);
   registerGitLocalPack(registry, verification);
 }
+
+function createRuntimeRegistry(): CapabilityRegistry {
+  const registry = new CapabilityRegistry();
+  const verification = new VerificationEngine();
+  registerRuntimePacks(registry, verification);
+  return registry;
+}
+
+const controlCapabilityRegistry = createRuntimeRegistry();
 
 function safeWorkId(value: unknown): string {
   if (typeof value !== "string" || !/^[A-Za-z0-9._-]+$/.test(value)) throw new Error("Invalid work id");
@@ -134,9 +154,8 @@ async function executeMission(input: Record<string, unknown>): Promise<WorkObjec
   const riskClass = validateRisk(input.riskClass, "read");
   const steps = validateSteps(input.steps, riskClass);
   const store = new WorkStore();
-  const registry = new CapabilityRegistry();
+  const registry = createRuntimeRegistry();
   const verification = new VerificationEngine();
-  registerRuntimePacks(registry, verification);
   const work = store.create({
     objective: input.objective,
     inputs: input.inputs && typeof input.inputs === "object" && !Array.isArray(input.inputs) ? input.inputs as Record<string, unknown> : {},
@@ -157,9 +176,8 @@ async function resumeMission(work: WorkObject): Promise<WorkObject> {
   const steps = loadMission(work);
   const store = new WorkStore();
   store.register(work);
-  const registry = new CapabilityRegistry();
+  const registry = createRuntimeRegistry();
   const verification = new VerificationEngine();
-  registerRuntimePacks(registry, verification);
   const engine = new WorkEngine(store, registry, verification, async () => false, undefined, repository);
   await engine.run(work, steps);
   persistProof(work);
@@ -175,12 +193,22 @@ async function main(): Promise<void> {
     auditPath,
     idempotencyDbPath,
     dispatch: executeMission,
-    resume: resumeMission
+    resume: resumeMission,
+    capabilitySource: {
+      listCapabilities: () => controlCapabilityRegistry.list().map((capability) => ({
+        name: capability.name,
+        version: capability.version,
+        operations: capability.operations,
+        riskClass: capability.riskClass
+      }))
+    },
+    runtimeVersion: runtimeVersion()
   });
 
   process.stdout.write(JSON.stringify({
     status: "ready",
     version: runtimeVersion(),
+    apiVersion: "1.0",
     host: controlPlane.host,
     port: controlPlane.port,
     workDirectory,

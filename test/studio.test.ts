@@ -857,3 +857,54 @@ test("Studio provides actionable guidance for unresolved work and blocks unsafe 
 });
 
 export {};
+
+
+test("Studio exposes the connected control-plane capability registry", async () => {
+  const root = tempDir("workproof-studio-capabilities-");
+  const repo = new JsonWorkRepository(root);
+  const auth = require("../packages/registry/src/auth.js");
+  const policy = auth.createAuthPolicy();
+  const credential = auth.issueCredential({ id: "studio-reader", permissions: ["read"] });
+  const authPolicy = auth.addIssuedCredential(policy, credential);
+  const controlApi = require("../packages/control-plane/src/http.js");
+
+  const control = await controlApi.startControlPlane({
+    repository: repo,
+    authPolicy,
+    runtimeVersion: "3.5-test",
+    capabilitySource: {
+      listCapabilities: () => [
+        { name: "z.cap", version: "1.0.0", operations: ["z"], riskClass: "read" },
+        { name: "a.cap", version: "2.0.0", operations: ["a"], riskClass: "local_write" }
+      ]
+    }
+  });
+
+  const studio = await startStudio({
+    workDirectory: root,
+    port: 0,
+    controlPlaneUrl: "http://" + control.host + ":" + control.port
+  });
+
+  try {
+    const base = "http://127.0.0.1:" + studio.port;
+    const response = await fetch(base + "/api/capabilities", {
+      headers: { authorization: "Bearer " + credential.token }
+    });
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.deepEqual(body.capabilities, [
+      { name: "a.cap", version: "2.0.0", operations: ["a"], riskClass: "local_write" },
+      { name: "z.cap", version: "1.0.0", operations: ["z"], riskClass: "read" }
+    ]);
+
+    const page = await fetch(base);
+    assert.equal(page.status, 200);
+    const html = await page.text();
+    assert.match(html, /Capability registry/);
+  } finally {
+    await studio.close();
+    await control.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

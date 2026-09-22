@@ -28,6 +28,8 @@ export interface ControlPlaneOptions {
   workerStatusSource?: { listWorkerStatuses(staleAfterMs: number): WorkerStatus[] };
   workerStaleAfterMs?: number;
   leaseStatusSource?: { listLeaseStatuses(): LeaseStatus[] };
+  capabilitySource?: { listCapabilities(): Array<{ name: string; version: string; operations: string[]; riskClass: string }> };
+  runtimeVersion?: string;
 }
 
 export interface RunningControlPlane {
@@ -176,7 +178,12 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
       const url = new URL(String(req.url ?? "/"), `http://${host}`);
 
       if (method === "GET" && url.pathname === "/health") {
-        sendJson(res, 200, { status: "ok", version: "1.0", requestId: id });
+        sendJson(res, 200, {
+          status: "ok",
+          version: options.runtimeVersion ?? "unknown",
+          apiVersion: "1.0",
+          requestId: id
+        });
         return;
       }
 
@@ -200,6 +207,27 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
         sendJson(res, decision.statusCode, {
           error: decision.statusCode === 401 ? "unauthorized" : "forbidden",
           requestId: id
+        });
+        return;
+      }
+
+      if (method === "GET" && url.pathname === "/v1/capabilities") {
+        if (!options.capabilitySource) {
+          sendJson(res, 503, { error: "capability-list-not-configured", requestId: id });
+          return;
+        }
+        const capabilities = options.capabilitySource.listCapabilities()
+          .map((capability) => ({
+            name: capability.name,
+            version: capability.version,
+            operations: [...capability.operations].sort(),
+            riskClass: capability.riskClass
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+        sendJson(res, 200, {
+          version: "1.0",
+          requestId: id,
+          capabilities
         });
         return;
       }

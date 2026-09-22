@@ -4,6 +4,7 @@ const path = require("path");
 const required = [
   ".github/workflows/ci.yml",
   "scripts/external-topology-smoke.js",
+  "scripts/packed-control-plane-smoke.js",
   "scripts/verify-published-lineage.js",
   "scripts/secret-scan.js",
   "docs/release-lineage.json",
@@ -191,6 +192,7 @@ const required = [
   ".github/workflows/release.yml",
   ".github/workflows/container.yml",
   "docs/CONTAINER-RUNTIME.md",
+  "docs/CONTROL-PLANE-API.md",
   "docs/PRODUCTION-DEPLOYMENT.md",
   "docs/RELEASE-3.4.0-dev.2.md",
   "docs/RELEASE-3.4.0-dev.9.md",
