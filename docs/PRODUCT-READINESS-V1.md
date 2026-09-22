@@ -85,28 +85,28 @@ A product release must not be called production-ready solely because CI is green
 
 ## Current verified baseline — 2026-09-22
 
-The repository currently records v3.4 benchmark verification and the coherent `v3.4.0-dev.9` distribution path. Main CI, release verification, and container publication are integrity-verified. Localhost-bound production compose and a deployment runbook are pinned to the verified dev.4 image.
+The repository now records the coherent `v3.4.0-dev.10` distribution path. Main CI, release verification, container publication, and the disposable external-topology gate are integrity-verified. Localhost-bound production compose and the deployment runbook are pinned to the verified `v3.4.0-dev.10` image.
 
 These facts establish a strong verified foundation, but they do **not** by themselves establish a public production deployment. Public host/DNS/TLS/auth/secrets provisioning remains an external infrastructure gate.
 
 ## Next implementation gates
 
-The next work must prioritize executable product value over additional abstract architecture:
+The next work prioritizes executable product value over additional abstract architecture.
 
-Completed in the dev.4 product-readiness line:
+Completed:
 
 1. Fresh-checkout package install and operator smoke.
 2. Stable product-facing mission format and runnable example mission.
 3. Persistent restart/recovery acceptance test.
 4. Security negative-path coverage for authenticated control and capability policy.
+5. Operator UX for failure, ambiguity, recovery, and proof.
+6. Operational overview and attention summary.
+7. Package distribution of operator docs and representative mission examples.
 
-Remaining product-validation gates:
+Remaining:
 
-Remaining product-validation gates:
-
-5. Operator UX for failure, ambiguity, recovery, and proof—not only success paths.
-6. Operator UX for failure, ambiguity, recovery, and proof—not only success paths.
-7. External deployment profile and runbook validation in a disposable environment when infrastructure is available.
+8. Disposable external-topology validation with TLS, authentication, secret non-leakage, backup/restore, and rollback to a previous immutable release.
+9. Broader multi-capability mission UX and workflow visualization.
 
 ## Stop conditions
 
@@ -124,9 +124,9 @@ Do not claim completion if any of these are true:
 
 WorkProof Runtime is not required to become a generic agent framework, browser automation product, workflow engine, memory database, observability backend, or OSINT graph. Those systems may integrate as capabilities/adapters. The durable Work Object, outcome contract, effect, verification, recovery, and proof semantics remain the product's invariant boundary.
 
-## Implemented in product-readiness-v1 / dev.4
+## Implemented local-first product baseline
 
-The following gates are executable and CI-verified on the current dev.4 release branch and published distribution:
+The following gates are executable and CI-verified on the current v3.4.0-dev.10 lineage and its published distribution:
 
 - [x] Runtime version is sourced from package metadata instead of stale hard-coded product versions.
 - [x] Studio process startup honors control-plane, proof-vault, and trust-policy configuration from arguments/environment.
@@ -142,7 +142,7 @@ The following gates are executable and CI-verified on the current dev.4 release 
 - [x] CI validates the above together with the existing security, retention, benchmark, demo, CLI, and live GitHub gates.
 
 
-## Current dev.7 readiness
+## Current product state
 
 The local-first P0 foundations are complete and executable:
 
@@ -152,12 +152,13 @@ The local-first P0 foundations are complete and executable:
 - [x] portable proof export/verify/import
 - [x] versioned proof compatibility
 - [x] operator guidance for failure, ambiguity, recovery, and verification states
+- [x] operational overview and attention summary
 - [x] production Compose restart/persistence smoke
 - [x] package distribution includes operator docs and representative mission examples
 
-Remaining gates are external deployment validation, broader multi-capability UX, and richer operational visualization.
+Remaining product-validation work is expansion beyond the current prerelease scope: broader multi-capability mission composition, additional adapters, and wider operational visualization. The required local-first/external-topology acceptance gates for this prerelease are complete.
 
 
-## Dev.8 release target
+## Dev.10 release state
 
-The current release target is `v3.4.0-dev.9`, carrying the completed local-first P0/P1 gates: operator guidance, production Compose restart/persistence validation, portable proof, proof compatibility, resume safety, and packaged docs/examples.
+The current shipped prerelease is `v3.4.0-dev.10`. Release verification run #113 and Container verification run #110 both completed their required gates, including the disposable external-topology validation.
