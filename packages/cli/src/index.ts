@@ -56,6 +56,23 @@ function usage(): void {
 `);
 }
 
+function runtimeVersion(): string {
+  const candidates = [
+    path.resolve(path.dirname(__filename), "../../../../package.json"),
+    path.resolve(path.dirname(__filename), "../../../package.json"),
+    path.resolve(require("process").cwd(), "package.json")
+  ];
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(candidate, "utf8"));
+      if (typeof parsed?.version === "string" && parsed.version.trim()) return parsed.version.trim();
+    } catch {
+      // Try the next candidate.
+    }
+  }
+  throw new Error("Unable to determine WorkProof Runtime version");
+}
+
 function proofBundleFromFile(data: any): Record<string, unknown> {
   return {
     version: data.version,
@@ -327,9 +344,11 @@ async function resumeMission(workId: string, file: string): Promise<void> {
   writeMissionProof(work, spec);
 }
 const [, , command, firstArg, secondArg, thirdArg, fourthArg, fifthArg, sixthArg] = process.argv;
-if (!command) {
+if (!command || command === "--help" || command === "-h" || command === "help") {
   usage();
-  process.exitCode = 1;
+  process.exitCode = command ? 0 : 1;
+} else if (command === "--version" || command === "-v" || command === "version") {
+  process.stdout.write(runtimeVersion() + "\n");
 } else if (command === "keygen") {
   if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
   else {
