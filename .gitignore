@@ -1,0 +1,11 @@
+node_modules/
+dist/
+benchmark-runs/
+mission-proof.json
+benchmark-result.json
+*.log
+work-runs/
+workctl-research-proof.json
+# Runtime-generated proof and benchmark outputs
+
+proof-vault/

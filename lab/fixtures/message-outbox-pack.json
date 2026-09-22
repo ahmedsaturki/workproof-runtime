@@ -1,0 +1,13 @@
+{
+  "representation": "RFC-style text/plain message",
+  "delivery": "local-outbox-only",
+  "deterministic": true,
+  "externalSending": false,
+  "bounds": {
+    "recipients": 50,
+    "subjectBytes": 8192,
+    "bodyBytes": 1048576,
+    "messageBytes": 2097152
+  },
+  "injectionProtection": true
+}

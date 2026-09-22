@@ -1,0 +1,17 @@
+{
+  "input": "array of JSON objects",
+  "operations": [
+    "filter",
+    "select",
+    "sortBy",
+    "limit"
+  ],
+  "bounds": {
+    "inputBytes": 2097152,
+    "inputItems": 10000,
+    "depth": 20,
+    "selectFields": 50,
+    "outputItems": 500
+  },
+  "expressionsAllowed": false
+}

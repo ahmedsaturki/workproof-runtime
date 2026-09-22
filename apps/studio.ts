@@ -1,0 +1,1351 @@
+import { LeaseStatus, WorkerStatus } from "../packages/coordination/src/leases";
+const http = require("http");
+const path = require("path");
+const fs = require("fs");
+const crypto = require("crypto");
+const { URL } = require("url");
+const { JsonWorkRepository } = require("../packages/storage/src/json.js");
+const { listProofs } = require("../packages/evidence/src/vault.js");
+const { loadTrustPolicy, evaluateProofTrust } = require("../packages/evidence/src/trust.js");
+const { verifyProofIntegrity } = require("../packages/evidence/src/integrity.js");
+const { verifyProofSignature } = require("../packages/evidence/src/signature.js");
+
+function readRuntimeVersion(): string {
+  const candidates = [
+    path.resolve(path.dirname(__filename), "../../package.json"),
+    path.resolve(require("process").cwd(), "package.json")
+  ];
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(candidate, "utf8"));
+      if (typeof parsed?.version === "string" && parsed.version.trim()) return parsed.version.trim();
+    } catch {
+      // Try the next known package location.
+    }
+  }
+  const environmentVersion = process.env.npm_package_version;
+  if (environmentVersion && environmentVersion.trim()) return environmentVersion.trim();
+  throw new Error("Unable to determine WorkProof Runtime version");
+}
+
+const RUNTIME_VERSION = readRuntimeVersion();
+
+const MAX_WORKS = 1000;
+const MAX_BODY_BYTES = 1024 * 1024;
+
+export interface StudioOptions {
+  workDirectory: string;
+  host?: string;
+  port?: number;
+  allowNonLoopback?: boolean;
+  controlPlaneUrl?: string;
+  vaultDirectory?: string;
+  trustPolicyPath?: string;
+  workerStatusSource?: { listWorkerStatuses(staleAfterMs: number): WorkerStatus[] };
+  workerStaleAfterMs?: number;
+  leaseStatusSource?: { listLeaseStatuses(): LeaseStatus[] };
+}
+
+export interface RunningStudio {
+  host: string;
+  port: number;
+  server: any;
+  close(): Promise<void>;
+}
+
+function isWorkId(value: string): boolean {
+  return /^[A-Za-z0-9._-]+$/.test(value);
+}
+
+function escapeHtml(value: unknown): string {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function operatorGuidance(work: any): { level: "info" | "success" | "warning" | "critical"; title: string; detail: string; action: string } {
+  const status = String(work?.status ?? "unknown");
+  if (status === "verified") return { level: "success", title: "Outcome verified", detail: "Required success criteria have independently verified evidence.", action: "Inspect proof and deliver; do not rerun a verified outcome unnecessarily." };
+  if (status === "running") return { level: "info", title: "Execution is active", detail: "A worker may still be executing or reconciling effects.", action: "Monitor effects and leases; avoid starting a duplicate run." };
+  if (status === "waiting_verification") return { level: "warning", title: "Verification is still required", detail: "Execution progress is not the same as a verified outcome.", action: "Inspect verification criteria and evidence before treating this work as done." };
+  if (status === "waiting_lease") return { level: "warning", title: "Waiting for execution ownership", detail: "This Work Object is blocked on a lease or worker ownership decision.", action: "Inspect worker/lease state and recover ownership rather than duplicating execution." };
+  if (status === "partial") return { level: "warning", title: "Outcome is only partial", detail: "Some criteria or effects are complete, but the Work Contract is not fully satisfied.", action: "Inspect failed criteria and remaining effects before delivery or retry." };
+  if (status === "unresolved") return { level: "critical", title: "External outcome is unresolved", detail: "At least one effect has an ambiguous or unresolved outcome.", action: "Reconcile existing external state before repeating any write." };
+  if (status === "failed") return { level: "critical", title: "Execution failed", detail: "The Work Object or a required verification path failed.", action: "Inspect attempts, evidence, and recovery events before retrying." };
+  if (status === "unverifiable") return { level: "critical", title: "Outcome is not independently verifiable", detail: "Available evidence is insufficient to support a verified result.", action: "Obtain stronger evidence or correct the verification path before delivery." };
+  if (status === "cancelled") return { level: "warning", title: "Work was cancelled", detail: "The Work Object has been deliberately stopped.", action: "Review why it was cancelled; only resume through an approved control path." };
+  if (status === "new" || status === "planned") return { level: "info", title: "Work is not executing yet", detail: "The Work Object is defined but not currently running.", action: "Review the contract and risk before dispatch." };
+  return { level: "warning", title: "Unknown runtime state", detail: "The Studio cannot map this state to a known operator workflow.", action: "Inspect the raw Work Object before taking an action." };
+}
+function sanitizeWork(work: any): Record<string, unknown> {
+  return {
+    id: work.id,
+    objective: work.contract?.objective ?? "",
+    status: work.status,
+    riskClass: work.contract?.riskClass,
+    approvalRequired: Boolean(work.contract?.approvalRequired),
+    createdAt: work.createdAt,
+    updatedAt: work.updatedAt,
+    deliverables: Array.isArray(work.contract?.deliverables) ? work.contract.deliverables : [],
+    effects: Array.isArray(work.effects)
+      ? work.effects.map((effect: any) => ({
+          effectId: effect.effectId,
+          operation: effect.operation,
+          capability: effect.capability,
+          riskClass: effect.riskClass,
+          status: effect.status,
+          attempts: effect.attempts
+        }))
+      : [],
+    artifacts: Array.isArray(work.artifacts)
+      ? work.artifacts.map((artifact: any) => ({
+          uri: artifact?.uri,
+          mediaType: artifact?.mediaType
+        }))
+      : [],
+    capabilityChain: Array.isArray(work.effects)
+      ? work.effects.map((effect: any, index: number) => ({
+          sequence: index + 1,
+          effectId: effect.effectId,
+          operation: effect.operation,
+          capability: effect.capability,
+          riskClass: effect.riskClass,
+          status: effect.status,
+          attempts: effect.attempts
+        }))
+      : [],
+    operatorGuidance: operatorGuidance(work),
+    effectsSummary: (() => {
+      const effects = Array.isArray(work.effects) ? work.effects : [];
+      const byStatus: Record<string, number> = {};
+      for (const effect of effects) {
+        const status = String(effect?.status ?? "unknown");
+        byStatus[status] = (byStatus[status] ?? 0) + 1;
+      }
+      return {
+        total: effects.length,
+        verified: byStatus.verified ?? 0,
+        unknown: byStatus.unknown ?? 0,
+        unresolved: byStatus.unresolved ?? 0,
+        failed: byStatus.failed ?? 0,
+        attempts: effects.reduce((sum: number, effect: any) => sum + Number(effect?.attempts ?? 0), 0)
+      };
+    })(),
+    verification: work.verification
+      ? {
+          status: work.verification.status,
+          verifiedAt: work.verification.verifiedAt,
+          checks: Array.isArray(work.verification.checks)
+            ? work.verification.checks.map((check: any) => ({
+                criterion: check.criterion,
+                status: check.status,
+                details: check.details,
+                evidence: Array.isArray(check.evidence) ? check.evidence : []
+              }))
+            : []
+        }
+      : null,
+    events: Array.isArray(work.events)
+      ? work.events.slice(-50).map((event: any) => ({
+          type: event.type,
+          at: event.at,
+          message: event.message
+        }))
+      : []
+  };
+}
+
+function sendJson(res: any, statusCode: number, body: Record<string, unknown>, extraHeaders: Record<string, string> = {}): void {
+  const payload = JSON.stringify(body);
+  res.writeHead(statusCode, {
+    "content-type": "application/json; charset=utf-8",
+    "content-length": Buffer.byteLength(payload),
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "DENY",
+    "referrer-policy": "no-referrer",
+    "permissions-policy": "camera=(), microphone=(), geolocation=()",
+    "connection": "close",
+    ...extraHeaders
+  });
+  res.end(payload);
+}
+
+function sendHtml(res: any, body: string): void {
+  res.writeHead(200, {
+    "content-type": "text/html; charset=utf-8",
+    "content-length": Buffer.byteLength(body),
+    "cache-control": "no-store",
+    "content-security-policy": "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "DENY",
+    "referrer-policy": "no-referrer",
+    "permissions-policy": "camera=(), microphone=(), geolocation=()",
+    "connection": "close"
+  });
+  res.end(body);
+}
+
+function readBody(req: any): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let total = 0;
+    const chunks: any[] = [];
+    req.on("data", (chunk: any) => {
+      total += chunk.length;
+      if (total > MAX_BODY_BYTES) {
+        reject(new Error("Request body too large"));
+        req.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+    req.on("error", reject);
+  });
+}
+
+function authHeader(req: any): string | null {
+  const raw = req.headers?.authorization;
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  if (!value) return null;
+  return /^Bearer [A-Za-z0-9._~-]+$/.test(String(value).trim()) ? String(value).trim() : null;
+}
+
+function controlBaseUrl(value: string): string {
+  const url = new URL(value);
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new Error("Control plane URL must use HTTP or HTTPS");
+  }
+  return url.toString().replace(/\/$/, "");
+}
+
+async function forwardControl(
+  controlPlaneUrl: string | undefined,
+  req: any,
+  route: string,
+  body?: unknown
+): Promise<{ status: number; payload: Record<string, unknown>; headers?: Record<string, string> }> {
+  if (!controlPlaneUrl) return { status: 503, payload: { error: "control-not-configured" } };
+  const token = authHeader(req);
+  if (!token) return { status: 401, payload: { error: "unauthorized" } };
+
+  const headers: Record<string, string> = { authorization: token };
+  const idempotencyKey = req.headers?.["idempotency-key"];
+  if (idempotencyKey !== undefined) {
+    const value = Array.isArray(idempotencyKey) ? idempotencyKey[0] : String(idempotencyKey);
+    if (!/^[A-Za-z0-9._~-]{1,200}$/.test(value)) {
+      return { status: 400, payload: { error: "invalid-idempotency-key" } };
+    }
+    headers["idempotency-key"] = value;
+  }
+  if (body !== undefined) headers["content-type"] = "application/json";
+  const response = await fetch(`${controlPlaneUrl}${route}`, {
+    method: "POST",
+    headers,
+    body: body === undefined ? undefined : JSON.stringify(body)
+  });
+  const raw = await response.text();
+  let data: any;
+  try {
+    data = raw ? JSON.parse(raw) : {};
+  } catch {
+    return { status: 502, payload: { error: "control-plane-invalid-json" } };
+  }
+  if (data?.work) {
+    return {
+      status: response.status,
+      headers: response.headers.get("x-idempotency-replayed") === "true"
+        ? { "x-idempotency-replayed": "true" }
+        : undefined,
+      payload: {
+        version: "2.1",
+        ...(data.requestId ? { requestId: data.requestId } : {}),
+        work: sanitizeWork(data.work)
+      }
+    };
+  }
+  return {
+    status: response.status,
+    payload: {
+      ...(typeof data === "object" && data ? data : { error: String(data) })
+    }
+  };
+}
+
+function proofBundleFromFile(data: any): Record<string, unknown> {
+  return {
+    version: data.version,
+    work: data.work,
+    effects: data.effects,
+    sagas: data.sagas ?? [],
+    artifacts: data.artifacts,
+    verification: data.verification,
+    events: data.events
+  };
+}
+
+function proofAuditSummary(record: any, vaultDirectory: string, trustPolicyPath?: string): Record<string, unknown> {
+  const data = JSON.parse(fs.readFileSync(record.proofPath, "utf8"));
+  const integrity = Boolean(data.integrity && verifyProofIntegrity(proofBundleFromFile(data), data.integrity));
+  let signature: "verified" | "invalid" | "not-present" = "not-present";
+  let trust: string = "not-present";
+  if (data.signature) {
+    signature = verifyProofSignature(data, data.signature) ? "verified" : "invalid";
+    trust = trustPolicyPath
+      ? evaluateProofTrust(loadTrustPolicy(trustPolicyPath), data.signature)
+      : "unknown";
+  }
+  return {
+    digest: record.digest,
+    workId: record.workId,
+    signerKeyId: record.signerKeyId ?? null,
+    createdAt: record.createdAt,
+    publishedAt: record.publishedAt,
+    artifactCount: Object.keys(record.artifacts ?? {}).length,
+    integrity: integrity ? "verified" : "invalid",
+    signature,
+    trust,
+    verification: data.verification ? {
+      status: data.verification.status,
+      verifiedAt: data.verification.verifiedAt,
+      checks: Array.isArray(data.verification.checks)
+        ? data.verification.checks.map((check: any) => ({
+            criterion: check.criterion,
+            status: check.status,
+            details: check.details,
+            evidence: Array.isArray(check.evidence) ? check.evidence : []
+          }))
+        : []
+    } : null,
+    _vaultDirectory: vaultDirectory
+  };
+}
+
+function sanitizeWorkerStatus(worker: WorkerStatus): Record<string, unknown> {
+  return {
+    workerId: worker.workerId,
+    capabilities: Array.isArray(worker.capabilities) ? worker.capabilities.slice().sort() : [],
+    state: worker.state,
+    liveness: worker.liveness,
+    heartbeatAgeMs: worker.heartbeatAgeMs,
+    staleAfterMs: worker.staleAfterMs,
+    reassignmentEligible: worker.reassignmentEligible
+  };
+}
+
+function sanitizeLeaseStatus(lease: LeaseStatus): Record<string, unknown> {
+  return {
+    leaseId: lease.leaseId,
+    resourceId: lease.resourceId,
+    ownerId: lease.ownerId,
+    acquiredAt: lease.acquiredAt,
+    renewedAt: lease.renewedAt,
+    expiresAt: lease.expiresAt,
+    revision: lease.revision,
+    active: lease.active
+  };
+}
+
+async function fetchRemoteLeases(controlPlaneUrl: string | undefined, req: any): Promise<{ status: number; payload: Record<string, unknown> }> {
+  if (!controlPlaneUrl) return { status: 503, payload: { error: "control-not-configured" } };
+  const token = authHeader(req);
+  if (!token) return { status: 401, payload: { error: "unauthorized" } };
+  try {
+    const response = await fetch(controlPlaneUrl + "/v1/leases", {
+      method: "GET",
+      headers: { authorization: token }
+    });
+    const raw = await response.text();
+    let data: any = {};
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      return { status: 502, payload: { error: "control-plane-invalid-json" } };
+    }
+    if (!response.ok) {
+      return {
+        status: response.status,
+        payload: {
+          error: typeof data?.error === "string" ? data.error : "lease-status-request-failed"
+        }
+      };
+    }
+    const leases = Array.isArray(data?.leases) ? data.leases : [];
+    return {
+      status: 200,
+      payload: {
+        version: "2.8",
+        source: "control-plane",
+        leases: leases.map((lease: LeaseStatus) => sanitizeLeaseStatus(lease))
+      }
+    };
+  } catch {
+    return { status: 503, payload: { error: "control-plane-unavailable" } };
+  }
+}
+async function fetchRemoteCapabilities(controlPlaneUrl: string | undefined, req: any): Promise<{ status: number; payload: Record<string, unknown> }> {
+  if (!controlPlaneUrl) return { status: 503, payload: { error: "control-not-configured" } };
+  const token = authHeader(req);
+  if (!token) return { status: 401, payload: { error: "unauthorized" } };
+
+  try {
+    const response = await fetch(controlPlaneUrl + "/v1/capabilities", {
+      method: "GET",
+      headers: { authorization: token }
+    });
+    const raw = await response.text();
+    let data: any = {};
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      return { status: 502, payload: { error: "control-plane-invalid-json" } };
+    }
+    if (!response.ok) {
+      return {
+        status: response.status,
+        payload: {
+          error: typeof data?.error === "string" ? data.error : "capability-list-request-failed"
+        }
+      };
+    }
+    const capabilities = Array.isArray(data?.capabilities)
+      ? data.capabilities.map((item: any) => ({
+          name: String(item?.name ?? ""),
+          version: String(item?.version ?? ""),
+          operations: Array.isArray(item?.operations) ? item.operations.map((value: unknown) => String(value)).sort() : [],
+          riskClass: String(item?.riskClass ?? "")
+        }))
+      : [];
+    return {
+      status: 200,
+      payload: {
+        version: "1.0",
+        source: "control-plane",
+        capabilities
+      }
+    };
+  } catch {
+    return { status: 503, payload: { error: "control-plane-unavailable" } };
+  }
+}
+
+async function fetchRemoteWorkers(controlPlaneUrl: string | undefined, req: any): Promise<{ status: number; payload: Record<string, unknown> }> {
+  if (!controlPlaneUrl) return { status: 503, payload: { error: "control-not-configured" } };
+  const token = authHeader(req);
+  if (!token) return { status: 401, payload: { error: "unauthorized" } };
+
+  try {
+    const response = await fetch(`${controlPlaneUrl}/v1/workers`, {
+      method: "GET",
+      headers: { authorization: token }
+    });
+    const raw = await response.text();
+    let data: any = {};
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      return { status: 502, payload: { error: "control-plane-invalid-json" } };
+    }
+
+    if (!response.ok) {
+      return {
+        status: response.status,
+        payload: {
+          error: typeof data?.error === "string" ? data.error : "worker-status-request-failed"
+        }
+      };
+    }
+
+    const workerList = Array.isArray(data?.workers) ? data.workers : [];
+    return {
+      status: 200,
+      payload: {
+        version: "2.7",
+        source: "control-plane",
+        ...(Number.isSafeInteger(data?.staleAfterMs) ? { staleAfterMs: data.staleAfterMs } : {}),
+        workers: workerList.map((worker: WorkerStatus) => sanitizeWorkerStatus(worker))
+      }
+    };
+  } catch {
+    return { status: 503, payload: { error: "control-plane-unavailable" } };
+  }
+}
+
+const MAX_ATTENTION = 100;
+const MAX_OVERVIEW_WORKS = 10000;
+
+function attentionReasons(work: any): { code: string; detail: string }[] {
+  const reasons: { code: string; detail: string }[] = [];
+  const add = (code: string, detail: string) => {
+    if (!reasons.some(reason => reason.code === code)) reasons.push({ code, detail });
+  };
+
+  const status = String(work?.status ?? "unknown");
+  if (status === "failed") add("work-failed", "Work Object is failed.");
+  if (status === "unresolved") add("work-unresolved", "Work Object has unresolved outcome state.");
+  if (status === "unverifiable") add("work-unverifiable", "Work Object has no independently verified outcome.");
+  if (status === "partial") add("work-partial", "Work Object is only partially complete.");
+  if (status === "waiting_verification") add("waiting-verification", "Work Object is waiting for verification.");
+  if (status === "waiting_lease") add("waiting-lease", "Work Object is waiting for an execution lease.");
+
+  const effects = Array.isArray(work?.effects) ? work.effects : [];
+  for (const effect of effects) {
+    const effectStatus = String(effect?.status ?? "unknown");
+    if (effectStatus === "unknown") add("effect-unknown", "An effect outcome is ambiguous or unknown.");
+    if (effectStatus === "unresolved") add("effect-unresolved", "An effect remains unresolved.");
+  }
+
+  const verificationStatus = work?.verification?.status ? String(work.verification.status) : "";
+  if (verificationStatus === "failed") add("verification-failed", "A verification result failed.");
+  if (verificationStatus === "partial") add("verification-partial", "Verification is partial.");
+  if (verificationStatus === "unverifiable") add("verification-unverifiable", "Verification is not independently sufficient.");
+
+  return reasons;
+}
+
+function buildOperationalOverview(repository: any, options: StudioOptions): Record<string, unknown> {
+  const byStatus: Record<string, number> = {};
+  const byRisk: Record<string, number> = {};
+  const effectByStatus: Record<string, number> = {};
+  const verificationByStatus: Record<string, number> = {};
+  const attention: any[] = [];
+  let totalWork = 0;
+  let totalEffects = 0;
+  let verifiedWork = 0;
+
+  const files = repository.list()
+    .filter((file: string) => file.endsWith(".json"))
+    .sort()
+    .slice(0, MAX_OVERVIEW_WORKS);
+  const totalWorkFiles = repository.list().filter((file: string) => file.endsWith(".json")).length;
+  const overviewTruncated = totalWorkFiles > files.length;
+  for (const file of files) {
+    const id = file.slice(0, -".json".length);
+    if (!isWorkId(id)) continue;
+    try {
+      const work = repository.load(id);
+      if (!work || typeof work !== "object") continue;
+      const status = String(work.status ?? "unknown");
+      const riskClass = String(work.contract?.riskClass ?? "unknown");
+      byStatus[status] = (byStatus[status] ?? 0) + 1;
+      byRisk[riskClass] = (byRisk[riskClass] ?? 0) + 1;
+      totalWork += 1;
+      if (status === "verified") verifiedWork += 1;
+
+      const effects = Array.isArray(work.effects) ? work.effects : [];
+      totalEffects += effects.length;
+      for (const effect of effects) {
+        const effectStatus = String(effect?.status ?? "unknown");
+        effectByStatus[effectStatus] = (effectByStatus[effectStatus] ?? 0) + 1;
+      }
+
+      const verificationStatus = work.verification?.status ? String(work.verification.status) : "not-present";
+      verificationByStatus[verificationStatus] = (verificationByStatus[verificationStatus] ?? 0) + 1;
+
+      const reasons = attentionReasons(work);
+      if (reasons.length) {
+        attention.push({
+          workId: work.id,
+          objective: String(work.contract?.objective ?? ""),
+          status,
+          riskClass,
+          updatedAt: String(work.updatedAt ?? ""),
+          reasons
+        });
+      }
+    } catch {
+      // Corrupt Work Objects are excluded from the projection rather than guessed.
+    }
+  }
+
+  attention.sort((a, b) => {
+    const byUpdated = String(b.updatedAt).localeCompare(String(a.updatedAt));
+    return byUpdated || String(a.workId).localeCompare(String(b.workId));
+  });
+
+  const workerHealth: Record<string, unknown> = options.workerStatusSource
+    ? (() => {
+        try {
+          const workers = options.workerStatusSource!.listWorkerStatuses(options.workerStaleAfterMs ?? 30_000);
+          const byLiveness: Record<string, number> = {};
+          let reassignmentEligible = 0;
+          for (const worker of workers) {
+            const liveness = String(worker.liveness);
+            byLiveness[liveness] = (byLiveness[liveness] ?? 0) + 1;
+            if (worker.reassignmentEligible) reassignmentEligible += 1;
+          }
+          return {
+            configured: true,
+            available: true,
+            total: workers.length,
+            byLiveness,
+            reassignmentEligible
+          };
+        } catch {
+          return { configured: true, available: false, error: "worker-health-unavailable" };
+        }
+      })()
+    : { configured: false };
+
+  const leaseHealth: Record<string, unknown> = options.leaseStatusSource
+    ? (() => {
+        try {
+          const leases = options.leaseStatusSource!.listLeaseStatuses();
+          let active = 0;
+          let expired = 0;
+          for (const lease of leases) {
+            if (lease.active) active += 1;
+            else expired += 1;
+          }
+          return {
+            configured: true,
+            available: true,
+            total: leases.length,
+            active,
+            expired
+          };
+        } catch {
+          return { configured: true, available: false, error: "lease-health-unavailable" };
+        }
+      })()
+    : { configured: false };
+
+  const attentionByReason: Record<string, number> = {};
+  for (const item of attention) {
+    for (const reason of item.reasons) {
+      attentionByReason[reason.code] = (attentionByReason[reason.code] ?? 0) + 1;
+    }
+  }
+
+  return {
+    version: "3.0",
+    work: {
+      total: totalWork,
+      verified: verifiedWork,
+      byStatus,
+      byRisk,
+      sourceFiles: totalWorkFiles,
+      scannedFiles: files.length,
+      truncated: overviewTruncated
+    },
+    effects: {
+      total: totalEffects,
+      byStatus: effectByStatus,
+      attention: (effectByStatus.unknown ?? 0) + (effectByStatus.unresolved ?? 0)
+    },
+    verification: {
+      byStatus: verificationByStatus,
+      notVerified: totalWork - verifiedWork
+    },
+    workers: workerHealth,
+    leases: leaseHealth,
+    attention: {
+      total: attention.length,
+      byReason: attentionByReason,
+      items: attention.slice(0, MAX_ATTENTION)
+    }
+  };
+}
+
+function studioHtml(controlEnabled: boolean): string {
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WorkProof Studio</title>
+<style>
+:root { font-family: system-ui, sans-serif; color-scheme: dark; }
+body { margin: 0; background: #0d1117; color: #e6edf3; }
+main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+small { color: #8b949e; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap: 16px; margin-top: 20px; }
+.card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 16px; cursor: pointer; }
+.card:hover { border-color: #58a6ff; }
+.guidance-success { border-left: 4px solid #2da44e; }
+.guidance-info { border-left: 4px solid #58a6ff; }
+.guidance-warning { border-left: 4px solid #d29922; }
+.guidance-critical { border-left: 4px solid #f85149; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #21262d; font-size: 12px; }
+pre { white-space: pre-wrap; word-break: break-word; background: #0d1117; padding: 12px; border-radius: 8px; }
+button { background: #21262d; color: #e6edf3; border: 1px solid #30363d; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+</style>
+</head>
+<body>
+<main>
+<header>
+<div><h1>WorkProof Studio</h1><small>Local operational view · ${controlEnabled ? "authenticated control enabled" : "read-only foundation"}</small></div>
+<button id="refresh">Refresh</button>
+</header>
+<section class="toolbar">
+<label><small>Control token</small><br><input id="token" type="password" autocomplete="off" placeholder="Bearer token without prefix"></label>
+<label><small>Dispatch objective</small><br><input id="dispatchObjective" autocomplete="off" placeholder="New bounded outcome"></label>
+<button id="dispatch">Dispatch</button>
+<span id="actionStatus"><small></small></span>
+</section>
+<section id="workersSection">
+<h2>Workers</h2>
+<div id="workers" class="grid"></div>
+</section>
+<section id="leasesSection">
+<h2>Execution leases</h2>
+<div id="leases" class="grid"></div>
+</section>
+<section>
+<h2>Operational health</h2>
+<div id="overview" class="grid"></div>
+</section>
+<section>
+<h2>Attention queue</h2>
+<div id="attention" class="grid"></div>
+</section>
+<section id="capabilitiesSection">
+<h2>Capability registry</h2>
+<div id="capabilities" class="grid"></div>
+</section>
+<section class="toolbar" aria-label="Work filters">
+<label><small>Search</small><br><input id="workQuery" autocomplete="off" placeholder="objective or work id"></label>
+<label><small>Status</small><br><select id="workStatus"><option value="">All</option><option value="new">New</option><option value="planned">Planned</option><option value="running">Running</option><option value="waiting_verification">Waiting verification</option><option value="verified">Verified</option><option value="partial">Partial</option><option value="waiting_lease">Waiting lease</option><option value="failed">Failed</option><option value="unresolved">Unresolved</option><option value="unverifiable">Unverifiable</option><option value="cancelled">Cancelled</option></select></label>
+<label><small>Risk</small><br><select id="workRisk"><option value="">All</option><option value="read">Read</option><option value="local_write">Local write</option><option value="external_write">External write</option><option value="destructive">Destructive</option><option value="financial">Financial</option></select></label>
+<label><small>Limit</small><br><input id="workLimit" type="number" min="1" max="1000" value="100"></label>
+<button id="clearFilters">Clear filters</button>
+</section>
+<section id="summary" class="grid"></section>
+<section id="list" class="grid"></section>
+<section id="detail" hidden>
+<h2 id="title"></h2>
+<div id="meta"></div>
+<div class="toolbar">
+<button id="resume">Resume</button>
+<button id="cancel">Cancel</button>
+</div>
+<pre id="payload"></pre>
+<section id="operatorGuidance" class="card" aria-label="Operator guidance"></section>
+<section id="effectsSummary" class="card" aria-label="Effect summary"></section>
+<section id="capabilityChain" class="card" aria-label="Capability chain"></section>
+<section id="timeline" class="card" aria-label="Operational timeline"></section>
+<section id="proofSection" hidden>
+<h3>Proof & audit</h3>
+<div id="proofs"></div>
+</section>
+</section>
+</main>
+<script>
+const list = document.getElementById("list");
+const detail = document.getElementById("detail");
+const title = document.getElementById("title");
+const meta = document.getElementById("meta");
+const payload = document.getElementById("payload");
+const operatorGuidanceBox = document.getElementById("operatorGuidance");
+const effectsSummaryBox = document.getElementById("effectsSummary");
+const capabilityChainBox = document.getElementById("capabilityChain");
+const timelineBox = document.getElementById("timeline");
+const token = document.getElementById("token");
+const dispatchObjective = document.getElementById("dispatchObjective");
+const actionStatus = document.getElementById("actionStatus");
+const proofSection = document.getElementById("proofSection");
+const workQuery = document.getElementById("workQuery");
+const workStatus = document.getElementById("workStatus");
+const workRisk = document.getElementById("workRisk");
+const workLimit = document.getElementById("workLimit");
+const summary = document.getElementById("summary");
+const workers = document.getElementById("workers");
+const leases = document.getElementById("leases");
+const proofs = document.getElementById("proofs");
+const overview = document.getElementById("overview");
+const attention = document.getElementById("attention");
+const capabilities = document.getElementById("capabilities");
+let selectedId = null;
+
+function setActionStatus(message) {
+  actionStatus.textContent = message;
+}
+
+async function control(route, body) {
+  const value = token.value.trim();
+  if (!value) { setActionStatus("Enter a control token."); return; }
+  if (!selectedId && route !== "/api/control/dispatch") { setActionStatus("Select a Work Object first."); return; }
+  setActionStatus("Sending…");
+  const headers = {"authorization":"Bearer " + value, "idempotency-key": crypto.randomUUID().replace(/-/g, "")};
+  if (body !== undefined) headers["content-type"] = "application/json";
+  const response = await fetch(route, {method:"POST", headers, body: body === undefined ? undefined : JSON.stringify(body)});
+  const data = await response.json();
+  if (!response.ok) { setActionStatus(data.error || "Control request failed."); return; }
+  await load();
+  if (data.work?.id) await show(data.work.id);
+  setActionStatus("Control request accepted.");
+}
+
+function esc(value) {
+  return String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+async function loadProofs(workId) {
+  proofSection.hidden = false;
+  proofs.innerHTML = "<div class='card'>Loading proof audit…</div>";
+  const response = await fetch("/api/proofs?workId=" + encodeURIComponent(workId), {cache:"no-store"});
+  const data = await response.json();
+  if (response.status === 503) {
+    proofSection.hidden = true;
+    return;
+  }
+  if (!response.ok) throw new Error(data.error || "Failed to load proof audit");
+  proofs.innerHTML = "";
+  for (const proof of data.proofs) {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML =
+      "<div><span class='badge'>" + esc(proof.integrity) + "</span> " +
+      "<span class='badge'>" + esc(proof.signature) + "</span> " +
+      "<span class='badge'>" + esc(proof.trust) + "</span></div>" +
+      "<h4>" + esc(proof.digest) + "</h4>" +
+      "<small>published " + esc(proof.publishedAt) + " · artifacts " + proof.artifactCount + "</small>";
+    card.onclick = () => showProof(proof.digest);
+    proofs.appendChild(card);
+  }
+  if (!data.proofs.length) proofs.innerHTML = "<div class='card'>No retained proof found for this Work Object.</div>";
+}
+
+async function showProof(digest) {
+  const response = await fetch("/api/proof/" + encodeURIComponent(digest), {cache:"no-store"});
+  const data = await response.json();
+  if (!response.ok) { setActionStatus(data.error || "Failed to load proof audit."); return; }
+  const detailCard = document.createElement("article");
+  detailCard.className = "card";
+  detailCard.innerHTML = "<div><span class='badge'>" + esc(data.proof.integrity) + "</span> " +
+    "<span class='badge'>" + esc(data.proof.signature) + "</span> " +
+    "<span class='badge'>" + esc(data.proof.trust) + "</span></div>" +
+    "<h4>Proof " + esc(data.proof.digest) + "</h4>" +
+    "<pre>" + esc(JSON.stringify(data.proof, null, 2)) + "</pre>";
+  proofs.prepend(detailCard);
+}
+
+async function loadOverview() {
+  overview.innerHTML = "<div class='card'>Loading operational health…</div>";
+  attention.innerHTML = "<div class='card'>Loading attention queue…</div>";
+  const response = await fetch("/api/operations/overview", {cache:"no-store"});
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || "Failed to load operational overview");
+
+  const workerTotal = data.workers?.configured ? Number(data.workers.total || 0) : null;
+  const workerIssues = data.workers?.configured
+    ? Number((data.workers.byLiveness?.stale || 0) + (data.workers.byLiveness?.offline || 0))
+    : null;
+  const leaseActive = data.leases?.configured ? Number(data.leases.active || 0) : null;
+
+  overview.innerHTML =
+    "<article class='card'><small>Work Objects</small><h3>" + Number(data.work?.total || 0) + "</h3><small>verified " + Number(data.work?.verified || 0) + "</small></article>" +
+    "<article class='card'><small>Effects needing attention</small><h3>" + Number(data.effects?.attention || 0) + "</h3><small>unknown + unresolved</small></article>" +
+    "<article class='card'><small>Work not verified</small><h3>" + Number(data.verification?.notVerified || 0) + "</h3><small>requires outcome evidence</small></article>" +
+    "<article class='card'><small>Attention items</small><h3>" + Number(data.attention?.total || 0) + "</h3><small>" + Object.keys(data.attention?.byReason || {}).length + " reason codes</small></article>" +
+    (workerTotal === null ? "<article class='card'><small>Workers</small><h3>Not configured</h3></article>" :
+      "<article class='card'><small>Workers</small><h3>" + workerTotal + "</h3><small>stale/offline " + workerIssues + "</small></article>") +
+    (leaseActive === null ? "<article class='card'><small>Active leases</small><h3>Not configured</h3></article>" :
+      "<article class='card'><small>Active leases</small><h3>" + leaseActive + "</h3></article>");
+
+  attention.innerHTML = "";
+  for (const item of (data.attention?.items || [])) {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML =
+      "<div><span class='badge'>" + esc(item.status) + "</span> <span class='badge'>" + esc(item.riskClass) + "</span></div>" +
+      "<h3>" + esc(item.objective) + "</h3>" +
+      "<small>" + esc(item.workId) + "</small>" +
+      "<ul>" + item.reasons.map(reason => "<li>" + esc(reason.code) + " — " + esc(reason.detail) + "</li>").join("") + "</ul>";
+    card.onclick = () => show(item.workId);
+    attention.appendChild(card);
+  }
+  if (!data.attention?.items?.length) {
+    attention.innerHTML = "<div class='card'>No attention items in the current persisted Work set.</div>";
+  }
+}
+
+async function loadCapabilities() {
+  capabilities.innerHTML = "<div class='card'>Loading capability registry…</div>";
+  const response = await fetch("/api/capabilities", {
+    cache: "no-store",
+    headers: token.value.trim() ? {"authorization":"Bearer " + token.value.trim()} : {}
+  });
+  const data = await response.json();
+  if (response.status === 503) {
+    capabilities.innerHTML = "<div class='card'>Capability registry is not connected. Configure the authenticated control plane.</div>";
+    return;
+  }
+  if (response.status === 401) {
+    capabilities.innerHTML = "<div class='card'>Capability registry requires the control token.</div>";
+    return;
+  }
+  if (!response.ok) throw new Error(data.error || "Failed to load capabilities");
+  capabilities.innerHTML = "";
+  for (const capability of data.capabilities || []) {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML =
+      "<div><span class='badge'>" + esc(capability.riskClass) + "</span> <span class='badge'>" + esc(capability.version) + "</span></div>" +
+      "<h3>" + esc(capability.name) + "</h3>" +
+      "<small>" + capability.operations.length + " operation(s)</small>" +
+      "<pre>" + esc(JSON.stringify({operations: capability.operations}, null, 2)) + "</pre>";
+    capabilities.appendChild(card);
+  }
+  if (!data.capabilities?.length) capabilities.innerHTML = "<div class='card'>No capabilities are registered.</div>";
+}
+
+async function loadWorkers() {
+  workers.innerHTML = "<div class='card'>Loading worker status…</div>";
+  const workerHeaders = token.value.trim() ? {"authorization":"Bearer " + token.value.trim()} : {};
+  const response = await fetch("/api/workers", {cache:"no-store", headers: workerHeaders});
+  const data = await response.json();
+  if (response.status === 503) {
+    workers.innerHTML = "<div class='card'>Worker visibility is not configured.</div>";
+    return;
+  }
+  if (!response.ok) throw new Error(data.error || "Failed to load workers");
+  workers.innerHTML = "";
+  for (const worker of data.workers) {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML =
+      "<div><span class='badge'>" + esc(worker.liveness) + "</span> " +
+      "<span class='badge'>" + esc(worker.state) + "</span> " +
+      "<span class='badge'>" + (worker.reassignmentEligible ? "reassignment-eligible" : "lease-protected") + "</span></div>" +
+      "<h3>" + esc(worker.workerId) + "</h3>" +
+      "<small>heartbeat age " + Number(worker.heartbeatAgeMs) + "ms · stale after " + Number(worker.staleAfterMs) + "ms</small>" +
+      "<pre>" + esc(JSON.stringify({capabilities: worker.capabilities}, null, 2)) + "</pre>";
+    workers.appendChild(card);
+  }
+  if (!data.workers.length) workers.innerHTML = "<div class='card'>No registered workers.</div>";
+}
+
+async function loadLeases() {
+  leases.innerHTML = "<div class='card'>Loading lease status…</div>";
+  const response = await fetch("/api/leases", {cache:"no-store", headers: token.value.trim() ? {"authorization":"Bearer " + token.value.trim()} : {}});
+  const data = await response.json();
+  if (response.status === 503) {
+    leases.innerHTML = "<div class='card'>Lease visibility is not configured.</div>";
+    return;
+  }
+  if (response.status === 401) {
+    leases.innerHTML = "<div class='card'>Lease visibility requires the control token.</div>";
+    return;
+  }
+  if (!response.ok) throw new Error(data.error || "Failed to load leases");
+  leases.innerHTML = "";
+  for (const lease of data.leases) {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML =
+      "<div><span class='badge'>" + esc(lease.active ? "active" : "expired") + "</span></div>" +
+      "<h3>" + esc(lease.resourceId) + "</h3>" +
+      "<small>owner " + esc(lease.ownerId) + " · revision " + Number(lease.revision) + "</small>" +
+      "<pre>" + esc(JSON.stringify({leaseId: lease.leaseId, acquiredAt: lease.acquiredAt, renewedAt: lease.renewedAt, expiresAt: lease.expiresAt}, null, 2)) + "</pre>";
+    leases.appendChild(card);
+  }
+  if (!data.leases.length) leases.innerHTML = "<div class='card'>No active execution leases.</div>";
+}
+async function load() {
+  await loadCapabilities().catch(error => { capabilities.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
+  await loadOverview().catch(error => { overview.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; attention.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
+  await loadWorkers().catch(error => { workers.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
+  await loadLeases().catch(error => { leases.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
+  detail.hidden = true;
+  selectedId = null;
+  list.innerHTML = "<div class='card'>Loading…</div>";
+  const params = new URLSearchParams();
+  if (workQuery.value.trim()) params.set("q", workQuery.value.trim());
+  if (workStatus.value) params.set("status", workStatus.value);
+  if (workRisk.value) params.set("risk", workRisk.value);
+  const limit = Number(workLimit.value);
+  if (Number.isInteger(limit) && limit > 0) params.set("limit", String(Math.min(limit, 1000)));
+  const response = await fetch("/api/work" + (params.toString() ? "?" + params.toString() : ""), {cache:"no-store"});
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || "Failed to load work");
+  summary.innerHTML =
+    "<article class='card'><small>Total matching</small><h3>" + Number(data.total) + "</h3></article>" +
+    "<article class='card'><small>Verified</small><h3>" + Number(data.byStatus?.verified || 0) + "</h3></article>" +
+    "<article class='card'><small>Active</small><h3>" + Number((data.byStatus?.running || 0) + (data.byStatus?.waiting_verification || 0) + (data.byStatus?.waiting_lease || 0)) + "</h3></article>" +
+    "<article class='card'><small>Risk: external write</small><h3>" + Number(data.byRisk?.external_write || 0) + "</h3></article>";
+  list.innerHTML = "";
+  for (const item of data.work) {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML = "<div><span class='badge'>" + esc(item.status) + "</span> <span class='badge'>" + esc(item.riskClass) + "</span></div>" +
+      "<h3>" + esc(item.objective) + "</h3>" +
+      "<small>" + esc(item.id) + " · effects " + item.effectCount + " · artifacts " + item.artifactCount + "</small>";
+    card.onclick = () => show(item.id);
+    list.appendChild(card);
+  }
+  if (!data.work.length) list.innerHTML = "<div class='card'>No Work Objects match the current filters.</div>";
+}
+
+async function show(id) {
+  selectedId = id;
+  const response = await fetch("/api/work/" + encodeURIComponent(id), {cache:"no-store"});
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || "Failed to load work");
+  title.textContent = data.work.objective || data.work.id;
+  meta.textContent = data.work.status + " · " + data.work.id;
+  payload.textContent = JSON.stringify(data.work, null, 2);
+  const guidance = data.work.operatorGuidance || { level: "warning", title: "No operator guidance available", detail: "The runtime did not provide a known state mapping.", action: "Inspect the raw Work Object before acting." };
+  operatorGuidanceBox.className = "card guidance-" + String(guidance.level);
+  operatorGuidanceBox.innerHTML = "<small>Operator guidance</small><h3>" + esc(guidance.title) + "</h3><div>" + esc(guidance.detail) + "</div><p><strong>Next action:</strong> " + esc(guidance.action) + "</p>";
+  const effects = data.work.effectsSummary || { total: 0, verified: 0, unknown: 0, unresolved: 0, failed: 0, attempts: 0 };
+  effectsSummaryBox.innerHTML = "<small>Effect summary</small><h3>" + Number(effects.total) + " effect(s)</h3><div>verified " + Number(effects.verified) + " · unknown " + Number(effects.unknown) + " · unresolved " + Number(effects.unresolved) + " · failed " + Number(effects.failed) + " · attempts " + Number(effects.attempts) + "</div>";
+  const chain = Array.isArray(data.work.capabilityChain) ? data.work.capabilityChain : [];
+  capabilityChainBox.innerHTML = "<small>Capability chain</small>" + (chain.length ? "<ol>" + chain.map(item => "<li><strong>" + esc(item.operation) + "</strong> → " + esc(item.capability) + " · " + esc(item.status) + " · attempts " + Number(item.attempts) + "</li>").join("") + "</ol>" : "<div>No executed capabilities recorded.</div>");
+  const events = Array.isArray(data.work.events) ? data.work.events.slice(-50).reverse() : [];
+  timelineBox.innerHTML = "<small>Operational timeline</small>" + (events.length
+    ? "<ol>" + events.map(event => "<li><strong>" + esc(event.type) + "</strong> · " + esc(event.at) + "<br>" + esc(event.message) + "</li>").join("") + "</ol>"
+    : "<div>No runtime events recorded.</div>");
+  const resumeButton = document.getElementById("resume");
+  resumeButton.disabled = data.work.status === "verified" || data.work.status === "cancelled";
+  resumeButton.title = data.work.status === "verified" ? "Verified work should not be resumed." : data.work.status === "cancelled" ? "Cancelled work requires an approved control path." : "Resume this Work Object through the control plane.";
+  detail.hidden = false;
+  await loadProofs(id).catch(error => { proofSection.hidden = false; proofs.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
+  window.scrollTo({top: document.body.scrollHeight, behavior:"smooth"});
+}
+
+document.getElementById("refresh").onclick = () => load().catch(error => { list.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
+document.getElementById("clearFilters").onclick = () => { workQuery.value = ""; workStatus.value = ""; workRisk.value = ""; workLimit.value = "100"; load().catch(error => { list.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; }); };
+[workQuery, workStatus, workRisk, workLimit].forEach((element) => {
+  element.addEventListener("change", () => load().catch(error => { list.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; }));
+  if (element === workQuery) element.addEventListener("keydown", (event) => { if (event.key === "Enter") load().catch(error => { list.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; }); });
+});
+document.getElementById("dispatch").onclick = () => control("/api/control/dispatch", {objective: dispatchObjective.value.trim()});
+document.getElementById("resume").onclick = () => control("/api/control/work/" + encodeURIComponent(selectedId) + "/resume", {});
+document.getElementById("cancel").onclick = () => control("/api/control/work/" + encodeURIComponent(selectedId) + "/cancel", {});
+load().catch(error => { list.innerHTML = "<div class='card'>" + esc(error.message) + "</div>"; });
+</script>
+</body>
+</html>`;
+}
+
+export async function startStudio(options: StudioOptions): Promise<RunningStudio> {
+  const host = options.host ?? "127.0.0.1";
+  const port = options.port ?? 0;
+  const loopbackHosts = new Set(["127.0.0.1", "localhost", "::1"]);
+  if (!loopbackHosts.has(host) && !options.allowNonLoopback) {
+    throw new Error("Refusing non-loopback Studio binding; expose localhost through an authenticated TLS reverse proxy");
+  }
+  const workDirectory = path.resolve(options.workDirectory);
+  const repository = new JsonWorkRepository(workDirectory);
+  const configuredControlPlane = options.controlPlaneUrl ? controlBaseUrl(options.controlPlaneUrl) : undefined;
+  const vaultDirectory = options.vaultDirectory ? path.resolve(options.vaultDirectory) : undefined;
+  const workerStaleAfterMs = options.workerStaleAfterMs ?? 30_000;
+  if (!Number.isSafeInteger(workerStaleAfterMs) || workerStaleAfterMs <= 0) {
+    throw new Error("Worker stale threshold must be a positive safe integer");
+  }
+
+  const server = http.createServer(async (req: any, res: any) => {
+    try {
+      const method = String(req.method ?? "GET").toUpperCase();
+      const url = new URL(String(req.url ?? "/"), `http://${host}`);
+
+      if (method === "GET" && url.pathname === "/health") {
+        sendJson(res, 200, {
+          status: "ok",
+          version: RUNTIME_VERSION,
+          mode: configuredControlPlane ? "authenticated-control" : "read-only",
+          proofVault: Boolean(vaultDirectory)
+        });
+        return;
+      }
+
+      if (method === "GET" && url.pathname === "/") {
+        sendHtml(res, studioHtml(Boolean(configuredControlPlane)));
+        return;
+      }
+
+      if (method === "GET" && url.pathname === "/api/leases") {
+        if (configuredControlPlane) {
+          const remote = await fetchRemoteLeases(configuredControlPlane, req);
+          sendJson(res, remote.status, remote.payload);
+          return;
+        }
+        if (!options.leaseStatusSource) {
+          sendJson(res, 503, { error: "lease-status-not-configured" });
+          return;
+        }
+        const leaseList = options.leaseStatusSource.listLeaseStatuses();
+        sendJson(res, 200, {
+          version: "2.8",
+          source: "local",
+          leases: leaseList.map(sanitizeLeaseStatus)
+        });
+        return;
+      }
+      if (method === "GET" && url.pathname === "/api/capabilities") {
+        const remote = await fetchRemoteCapabilities(configuredControlPlane, req);
+        sendJson(res, remote.status, remote.payload);
+        return;
+      }
+
+      if (method === "GET" && url.pathname === "/api/workers") {
+        if (configuredControlPlane) {
+          const remote = await fetchRemoteWorkers(configuredControlPlane, req);
+          sendJson(res, remote.status, remote.payload);
+          return;
+        }
+        if (!options.workerStatusSource) {
+          sendJson(res, 503, { error: "worker-status-not-configured" });
+          return;
+        }
+        const workerList = options.workerStatusSource.listWorkerStatuses(workerStaleAfterMs);
+        sendJson(res, 200, {
+          version: "2.6",
+          source: "local",
+          staleAfterMs: workerStaleAfterMs,
+          workers: workerList.map(sanitizeWorkerStatus)
+        });
+        return;
+      }
+
+      if (method === "GET" && url.pathname === "/api/operations/overview") {
+        const overview = buildOperationalOverview(repository, options);
+        sendJson(res, 200, overview);
+        return;
+      }
+
+      if (method === "GET" && url.pathname === "/api/work") {
+        const query = (url.searchParams.get("q") ?? "").trim().toLowerCase();
+        if (query.length > 200) {
+          sendJson(res, 400, { error: "query-too-long" });
+          return;
+        }
+        const status = (url.searchParams.get("status") ?? "").trim();
+        const risk = (url.searchParams.get("risk") ?? "").trim();
+        const limitRaw = url.searchParams.get("limit");
+        const limit = limitRaw === null ? 100 : Number(limitRaw);
+        const validStatuses = new Set([
+          "new", "planned", "running", "waiting_verification", "verified", "partial",
+          "waiting_lease", "failed", "unresolved", "unverifiable", "cancelled"
+        ]);
+        const validRisks = new Set(["read", "local_write", "external_write", "destructive", "financial"]);
+        if (!Number.isSafeInteger(limit) || limit < 1 || limit > MAX_WORKS) {
+          sendJson(res, 400, { error: "invalid-limit" });
+          return;
+        }
+        if (status && !validStatuses.has(status)) {
+          sendJson(res, 400, { error: "invalid-status" });
+          return;
+        }
+        if (risk && !validRisks.has(risk)) {
+          sendJson(res, 400, { error: "invalid-risk" });
+          return;
+        }
+
+        const files = repository.list().filter((file: string) => file.endsWith(".json"));
+        const matched = [];
+        for (const file of files) {
+          const id = file.slice(0, -".json".length);
+          if (!isWorkId(id)) continue;
+          try {
+            const value = sanitizeWork(repository.load(id));
+            if (status && value.status !== status) continue;
+            if (risk && value.riskClass !== risk) continue;
+            if (query && !String(value.id).toLowerCase().includes(query) && !String(value.objective).toLowerCase().includes(query)) continue;
+            matched.push({
+              id: value.id,
+              objective: value.objective,
+              status: String(value.status),
+              riskClass: String(value.riskClass),
+              updatedAt: value.updatedAt,
+              effectCount: Array.isArray(value.effects) ? value.effects.length : 0,
+              artifactCount: Array.isArray(value.artifacts) ? value.artifacts.length : 0
+            });
+          } catch {
+            // A corrupt individual Work Object is omitted from the dashboard list.
+          }
+        }
+        matched.sort((a: any, b: any) => {
+          const byUpdated = String(b.updatedAt).localeCompare(String(a.updatedAt));
+          return byUpdated || String(a.id).localeCompare(String(b.id));
+        });
+        const byStatus: Record<string, number> = {};
+        const byRisk: Record<string, number> = {};
+        for (const item of matched) {
+          byStatus[item.status] = (byStatus[item.status] ?? 0) + 1;
+          byRisk[item.riskClass] = (byRisk[item.riskClass] ?? 0) + 1;
+        }
+        sendJson(res, 200, {
+          version: "2.9",
+          filters: { q: query, status: status || null, risk: risk || null, limit },
+          total: matched.length,
+          byStatus,
+          byRisk,
+          work: matched.slice(0, limit)
+        });
+        return;
+      }
+
+      const match = /^\/api\/work\/([A-Za-z0-9._-]+)$/.exec(url.pathname);
+      if (method === "GET" && match) {
+        const id = match[1];
+        if (!isWorkId(id)) {
+          sendJson(res, 400, { error: "invalid-work-id" });
+          return;
+        }
+        const work = sanitizeWork(repository.load(id));
+        sendJson(res, 200, { version: "2.1", work });
+        return;
+      }
+
+      if (method === "POST" && url.pathname === "/api/control/dispatch") {
+        const raw = await readBody(req);
+        let input: Record<string, unknown>;
+        try { input = JSON.parse(raw); } catch {
+          sendJson(res, 400, { error: "invalid-json" });
+          return;
+        }
+        if (!input || typeof input !== "object" || Array.isArray(input) || typeof input.objective !== "string" || !input.objective.trim()) {
+          sendJson(res, 400, { error: "dispatch-objective-required" });
+          return;
+        }
+        const forwarded = await forwardControl(configuredControlPlane, req, "/v1/work/dispatch", input);
+        sendJson(res, forwarded.status, forwarded.payload, forwarded.headers);
+        return;
+      }
+
+      if (method === "GET" && url.pathname === "/api/proofs") {
+        if (!vaultDirectory) {
+          sendJson(res, 503, { error: "proof-vault-not-configured" });
+          return;
+        }
+        const workId = url.searchParams.get("workId");
+        if (workId !== null && !isWorkId(workId)) {
+          sendJson(res, 400, { error: "invalid-work-id" });
+          return;
+        }
+        const records = listProofs(vaultDirectory)
+          .filter((record: any) => workId === null || record.workId === workId)
+          .slice(0, 100);
+        const proofs = records.map((record: any) => {
+          try {
+            return proofAuditSummary(record, vaultDirectory, options.trustPolicyPath);
+          } catch {
+            return {
+              digest: record.digest,
+              workId: record.workId,
+              signerKeyId: record.signerKeyId ?? null,
+              createdAt: record.createdAt,
+              publishedAt: record.publishedAt,
+              artifactCount: Object.keys(record.artifacts ?? {}).length,
+              integrity: "invalid",
+              signature: "invalid",
+              trust: "unknown",
+              verification: null
+            };
+          }
+        }).map((proof: any) => {
+          const { _vaultDirectory, ...publicProof } = proof;
+          return publicProof;
+        });
+        sendJson(res, 200, { version: "2.2", proofs });
+        return;
+      }
+
+      const proofMatch = /^\/api\/proof\/([0-9a-f]{64})$/.exec(url.pathname);
+      if (method === "GET" && proofMatch) {
+        if (!vaultDirectory) {
+          sendJson(res, 503, { error: "proof-vault-not-configured" });
+          return;
+        }
+        const digest = proofMatch[1];
+        const record = listProofs(vaultDirectory).find((item: any) => item.digest === digest);
+        if (!record) {
+          sendJson(res, 404, { error: "unknown-proof" });
+          return;
+        }
+        const proof = proofAuditSummary(record, vaultDirectory, options.trustPolicyPath);
+        const { _vaultDirectory, ...publicProof } = proof;
+        sendJson(res, 200, { version: "2.2", proof: publicProof });
+        return;
+      }
+
+      const controlMatch = /^\/api\/control\/work\/([A-Za-z0-9._-]+)\/(cancel|resume)$/.exec(url.pathname);
+      if (method === "POST" && controlMatch) {
+        const workId = controlMatch[1];
+        const action = controlMatch[2];
+        const forwarded = await forwardControl(
+          configuredControlPlane,
+          req,
+          `/v1/work/${encodeURIComponent(workId)}/${action}`,
+          {}
+        );
+        sendJson(res, forwarded.status, forwarded.payload, forwarded.headers);
+        return;
+      }
+
+      sendJson(res, 404, { error: "not-found" });
+    } catch (error) {
+      const message = String(error);
+      const status = /ENOENT|Unknown work/i.test(message) ? 404 : 500;
+      sendJson(res, status, { error: message });
+    }
+  });
+
+  const actualPort = await new Promise<number>((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(port, host, () => {
+      const address = server.address();
+      if (!address || typeof address === "string") {
+        reject(new Error("Studio did not expose a TCP address"));
+        return;
+      }
+      resolve(address.port);
+    });
+  });
+
+  return {
+    host,
+    port: actualPort,
+    server,
+    close: () => new Promise((resolve, reject) => {
+      server.closeAllConnections?.();
+      server.close((error: unknown) => error ? reject(error) : resolve());
+    })
+  };
+}
+
+const runtimeProcess = require("process");
+
+if (runtimeProcess.argv[1] && path.resolve(runtimeProcess.argv[1]) === path.resolve(__filename)) {
+  const [, , workDirectoryArg, portArg, hostArg, controlPlaneUrlArg, vaultDirectoryArg, trustPolicyPathArg] = process.argv;
+  const workDirectory = workDirectoryArg ?? "./work-runs";
+  const port = portArg ? Number(portArg) : 8788;
+  const host = hostArg ?? "127.0.0.1";
+  const allowNonLoopback = process.env.WORKPROOF_ALLOW_NON_LOOPBACK === "1";
+  if (!Number.isInteger(port) || port < 0 || port > 65535) {
+    process.stderr.write("Invalid Studio port\n");
+    process.exitCode = 1;
+  } else {
+    const controlPlaneUrl = controlPlaneUrlArg ?? process.env.WORKPROOF_CONTROL_PLANE_URL;
+    const vaultDirectory = vaultDirectoryArg ?? process.env.WORKPROOF_VAULT_DIRECTORY;
+    const trustPolicyPath = trustPolicyPathArg ?? process.env.WORKPROOF_TRUST_POLICY_PATH;
+    startStudio({
+      workDirectory,
+      port,
+      host,
+      allowNonLoopback,
+      controlPlaneUrl,
+      vaultDirectory,
+      trustPolicyPath
+    })
+      .then((running) => {
+        process.stdout.write(JSON.stringify({
+          studio: `http://${running.host}:${running.port}`,
+          workDirectory: path.resolve(workDirectory),
+          version: RUNTIME_VERSION,
+          mode: controlPlaneUrl ? "authenticated-control" : "read-only",
+          proofVault: Boolean(vaultDirectory)
+        }, null, 2) + "\n");
+      })
+      .catch((error) => {
+        process.stderr.write(String(error) + "\n");
+        process.exitCode = 1;
+      });
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"WorkPack",
+  "type":"object",
+  "required":["name","version","capabilities","verifiers"],
+  "properties":{
+    "name":{"type":"string"},
+    "version":{"type":"string"},
+    "capabilities":{"type":"array","items":{"type":"string"}},
+    "verifiers":{"type":"array","items":{"type":"string"}},
+    "policies":{"type":"array","items":{"type":"string"}},
+    "fixtures":{"type":"array","items":{"type":"string"}}
+  }
+}

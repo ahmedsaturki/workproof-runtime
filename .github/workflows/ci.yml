@@ -1,0 +1,149 @@
+name: CI
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+      - "feature/**"
+      - fix/**
+  pull_request:
+
+concurrency:
+  group: workproof-runtime-ci-${{ github.workflow }}-${{ github.event.pull_request.number || format('push-{0}', github.ref_name) }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      WORKPROOF_BROWSER_BINARY: google-chrome
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Verify Chromium for browser acceptance tests
+        run: |
+          command -v "$WORKPROOF_BROWSER_BINARY"
+          "$WORKPROOF_BROWSER_BINARY" --version
+      - name: Chromium CDP preflight
+        run: node scripts/chromium-cdp-smoke.js
+      - run: npm ci
+      - name: Dependency security audit
+        run: npm audit --audit-level=high
+      - name: Secret scan
+        run: node scripts/secret-scan.js
+      - run: node scripts/verify-source-tree.js
+      - name: Verify container base image is immutable
+        run: node scripts/verify-container-base.js
+      - name: Build TypeScript
+        run: npm run build
+        timeout-minutes: 2
+      - name: Packed CLI install smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          PACK_DIR="${RUNNER_TEMP}/workproof-pack"
+          SMOKE_DIR="${RUNNER_TEMP}/workproof-cli-smoke"
+          mkdir -p "${PACK_DIR}" "${SMOKE_DIR}"
+          PACKAGE_FILE="$(npm pack --silent --pack-destination "${PACK_DIR}")"
+          test -s "${PACK_DIR}/${PACKAGE_FILE}"
+          npm install --prefix "${SMOKE_DIR}" "${PACK_DIR}/${PACKAGE_FILE}"
+          "${SMOKE_DIR}/node_modules/.bin/workctl" --help
+          "${SMOKE_DIR}/node_modules/.bin/workctl" keygen "${SMOKE_DIR}/private.pem" "${SMOKE_DIR}/public.pem"
+          test -s "${SMOKE_DIR}/private.pem"
+          test -s "${SMOKE_DIR}/public.pem"
+          cat > "${SMOKE_DIR}/suppliers.json" <<'EOF'
+          [{"name":"Alpha","website":"https://alpha.example","phone":"0100000001","source":"fixture"},{"name":"Beta","website":"https://beta.example","phone":"0100000002","source":"fixture"},{"name":"Gamma","website":"https://gamma.example","phone":"0100000003","source":"fixture"},{"name":"Delta","website":"https://delta.example","phone":"0100000004","source":"fixture"}]
+          EOF
+          cat > "${SMOKE_DIR}/mission.json" <<EOF
+          {
+            "objective": "Packaged CLI product smoke",
+            "inputs": { "dataPath": "${SMOKE_DIR}/suppliers.json", "outputPath": "${SMOKE_DIR}/research.json", "minRecords": 4 },
+            "success": [{ "id": "artifact", "description": "At least four unique supplier records with required fields", "verifier": "pack.research.artifact", "required": true }],
+            "deliverables": ["${SMOKE_DIR}/research.json"],
+            "riskClass": "read",
+            "steps": [{ "id": "research", "operation": "research_suppliers", "capability": "pack.research.local", "input": { "dataPath": "${SMOKE_DIR}/suppliers.json", "outputPath": "${SMOKE_DIR}/research.json", "minRecords": 4 }, "idempotencyKey": "packed-cli:research", "riskClass": "read" }],
+            "proofPath": "${SMOKE_DIR}/proof.json",
+            "workDirectory": "${SMOKE_DIR}/work-runs"
+          }
+          EOF
+          RESULT="$("${SMOKE_DIR}/node_modules/.bin/workctl" run "${SMOKE_DIR}/mission.json")"
+          printf "%s\n" "$RESULT"
+          node -e 'const x=JSON.parse(process.argv[1]); if (x.status !== "verified") process.exit(1)' "$RESULT"
+          test -s "${SMOKE_DIR}/proof.json"
+          test -s "${SMOKE_DIR}/research.json"
+          node scripts/packed-control-plane-smoke.js "${SMOKE_DIR}/node_modules/operational-reality-core"
+          echo "packed CLI and control-plane product smoke passed"
+          node scripts/packed-mcp-smoke.js "${SMOKE_DIR}/node_modules/operational-reality-core"
+          echo "packed MCP product smoke passed"
+      - name: Operator doctor smoke
+        run: |
+          set -euo pipefail
+          REPORT="$(node dist/packages/cli/src/index.js doctor)"
+          printf '%s\n' "$REPORT"
+          node - <<'NODE' "$REPORT"
+          const report = JSON.parse(process.argv[2]);
+          if (!report || !["ready", "degraded"].includes(report.status)) {
+            process.exit(1);
+          }
+          const required = ["cli-entrypoint", "control-plane-entrypoint", "studio-entrypoint", "a2a-entrypoint"];
+          for (const id of required) {
+            const check = report.checks.find(item => item.id === id);
+            if (!check || check.state !== "ok") process.exit(1);
+          }
+          NODE
+      - name: Disposable external topology smoke
+        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          REF_NAME="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          if [[ "${REF_NAME}" == release/* ]]; then
+            export WORKPROOF_RELEASE_IMAGE="ghcr.io/${GITHUB_REPOSITORY}:${REF_NAME#release/}"
+            echo "Using release image ${WORKPROOF_RELEASE_IMAGE} for external topology smoke"
+          fi
+          node scripts/external-topology-smoke.js
+        timeout-minutes: 8
+      - name: Verify main release state
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: node scripts/verify-main-release-state.js
+        timeout-minutes: 3
+      - name: Run retention lifecycle suite
+        run: node --test dist/test/retention.test.js
+        timeout-minutes: 2
+      - name: Run full unit and integration suite
+        run: node scripts/run-test-files.js
+        timeout-minutes: 25
+      - name: Run benchmark
+        run: npm run benchmark
+        timeout-minutes: 2
+      - name: Run demo
+        run: npm run demo
+        timeout-minutes: 2
+      - name: Verify CLI proof
+        run: node dist/packages/cli/src/index.js verify mission-proof.json
+        timeout-minutes: 1
+      - name: Execute CLI mission
+        run: node dist/packages/cli/src/index.js run examples/missions/research-local.json
+        timeout-minutes: 2
+      - name: Execute multi-capability mission
+        run: node dist/packages/cli/src/index.js run examples/missions/research-transform-chain.json
+        timeout-minutes: 3
+      - name: Live GitHub integration smoke
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: npm run live-github-smoke
+      - name: Upload benchmark result
+        if: ${{ success() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: workproof-benchmark-${{ github.sha }}
+          path: benchmark-result.json
+          retention-days: 14

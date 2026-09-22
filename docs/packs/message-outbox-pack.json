@@ -1,0 +1,18 @@
+{
+  "$schema": "../schemas/pack.schema.json",
+  "name": "pack.messaging.outbox",
+  "version": "0.1.0",
+  "capabilities": [
+    "pack.messaging.outbox@0.1.0"
+  ],
+  "verifiers": [
+    "pack.messaging.outbox"
+  ],
+  "policies": [
+    "local_write"
+  ],
+  "fixtures": [
+    "lab/fixtures/message-outbox-pack.json",
+    "test/message-outbox.test.ts"
+  ]
+}

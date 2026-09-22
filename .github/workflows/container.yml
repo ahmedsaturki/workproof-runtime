@@ -1,0 +1,199 @@
+name: Container
+
+on:
+  push:
+    branches:
+      - "release/**"
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: workproof-runtime-container-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    if: startsWith(github.ref, 'refs/heads/release/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Verify container base image is immutable
+        run: node scripts/verify-container-base.js
+
+      - name: Determine image tag
+        id: image
+        shell: bash
+        run: echo "tag=${GITHUB_REF_NAME#release/}" >> "$GITHUB_OUTPUT"
+
+      - name: Read package version
+        id: version
+        shell: bash
+        run: echo "version=$(node -p 'require("./package.json").version')" >> "$GITHUB_OUTPUT"
+
+      - name: Verify release branch version
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+        run: test "${IMAGE_TAG}" = "${PACKAGE_VERSION}"
+
+      - name: Verify release branch immutability
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if git rev-parse -q --verify "refs/tags/v${IMAGE_TAG}^{commit}" >/dev/null 2>&1; then
+            TAG_COMMIT="$(git rev-list -n 1 "refs/tags/v${IMAGE_TAG}")"
+            if [ "${TAG_COMMIT}" != "${GITHUB_SHA}" ]; then
+              echo "Release tag v${IMAGE_TAG} already points to ${TAG_COMMIT}; refusing to build from moved release branch ${GITHUB_SHA}."
+              exit 1
+            fi
+          fi
+      - name: Resolve release commit
+        id: source
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          set -euo pipefail
+          RELEASE_COMMIT="${GITHUB_SHA}"
+          echo "commit=${RELEASE_COMMIT}" >> "$GITHUB_OUTPUT"
+
+      - name: Login to GHCR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "${GH_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
+
+      - name: Prepare canonical published image
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          set -euo pipefail
+          IMAGE="${GITHUB_REPOSITORY,,}"
+          RELEASE_COMMIT="${{ steps.source.outputs.commit }}"
+          VERSION_IMAGE="ghcr.io/${IMAGE}:${IMAGE_TAG}"
+          COMMIT_IMAGE="ghcr.io/${IMAGE}:${RELEASE_COMMIT}"
+
+          if docker pull "${COMMIT_IMAGE}"; then
+            echo "Canonical immutable commit image exists; it is the source of truth for this release."
+          elif docker pull "${VERSION_IMAGE}"; then
+            VERSION_LABEL="$(docker image inspect "${VERSION_IMAGE}" --format='{{index .Config.Labels "org.opencontainers.image.revision"}}')"
+            if [ "${VERSION_LABEL}" = "${RELEASE_COMMIT}" ]; then
+              docker tag "${VERSION_IMAGE}" "${COMMIT_IMAGE}"
+              docker push "${COMMIT_IMAGE}"
+            else
+              echo "Existing version tag points to revision ${VERSION_LABEL}; rebuilding the canonical release image for ${RELEASE_COMMIT}."
+              BUILD_CONTEXT="${RUNNER_TEMP}/workproof-image-context"
+              rm -rf "${BUILD_CONTEXT}"
+              mkdir -p "${BUILD_CONTEXT}"
+              git archive "${RELEASE_COMMIT}" | tar -x -C "${BUILD_CONTEXT}"
+              docker build --pull               --build-arg VERSION="${IMAGE_TAG}"               --build-arg VCS_REF="${RELEASE_COMMIT}"               -t "${VERSION_IMAGE}"               -t "${COMMIT_IMAGE}" "${BUILD_CONTEXT}"
+              docker push "${COMMIT_IMAGE}"
+            fi
+          else
+            BUILD_CONTEXT="${RUNNER_TEMP}/workproof-image-context"
+            rm -rf "${BUILD_CONTEXT}"
+            mkdir -p "${BUILD_CONTEXT}"
+            git archive "${RELEASE_COMMIT}" | tar -x -C "${BUILD_CONTEXT}"
+            docker build --pull               --build-arg VERSION="${IMAGE_TAG}"               --build-arg VCS_REF="${RELEASE_COMMIT}"               -t "${VERSION_IMAGE}"               -t "${COMMIT_IMAGE}" "${BUILD_CONTEXT}"
+            docker push "${COMMIT_IMAGE}"
+          fi
+
+          COMMIT_DIGEST="$(docker image inspect "${COMMIT_IMAGE}" --format='{{index .RepoDigests 0}}')"
+          COMMIT_LABEL="$(docker image inspect "${COMMIT_IMAGE}" --format='{{index .Config.Labels "org.opencontainers.image.revision"}}')"
+          test "${COMMIT_LABEL}" = "${RELEASE_COMMIT}"
+
+          CURRENT_VERSION_DIGEST=""
+          if docker pull "${VERSION_IMAGE}"; then
+            CURRENT_VERSION_DIGEST="$(docker image inspect "${VERSION_IMAGE}" --format='{{index .RepoDigests 0}}')"
+          fi
+
+          if [ "${CURRENT_VERSION_DIGEST}" != "${COMMIT_DIGEST}" ]; then
+            echo "Repairing version tag to canonical immutable commit image."
+            docker tag "${COMMIT_IMAGE}" "${VERSION_IMAGE}"
+            docker push "${VERSION_IMAGE}"
+          fi
+
+          FINAL_VERSION_DIGEST="$(docker image inspect "${VERSION_IMAGE}" --format='{{index .RepoDigests 0}}')"
+          test "${FINAL_VERSION_DIGEST}" = "${COMMIT_DIGEST}"
+
+      - name: Runtime container smoke
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          set -euo pipefail
+          IMAGE="${GITHUB_REPOSITORY,,}"
+          NAME="workproof-runtime-smoke"
+          DATA_DIR="${RUNNER_TEMP}/workproof-runtime-data"
+          mkdir -p "${DATA_DIR}"
+          docker run -d --rm --name "${NAME}"             -e WORKPROOF_ALLOW_NON_LOOPBACK=1             -p 127.0.0.1:8788:8788             -v "${DATA_DIR}:/data/work-runs"             "ghcr.io/${IMAGE}:${IMAGE_TAG}"
+
+          cleanup() {
+            docker logs "${NAME}" || true
+            docker stop "${NAME}" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8788/health | grep -q '"status":"ok"'; then
+              echo "container health verified"
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "container health check failed"
+          exit 1
+
+      - name: Production compose restart and persistence smoke
+        run: node scripts/container-compose-smoke.js
+        timeout-minutes: 5
+
+      - name: Disposable external topology smoke
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          set -euo pipefail
+          export WORKPROOF_RELEASE_IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}:${IMAGE_TAG}"
+          node scripts/external-topology-smoke.js
+        timeout-minutes: 10
+
+      - name: Verify anonymous GHCR pull
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          set -euo pipefail
+          IMAGE="${GITHUB_REPOSITORY,,}"
+          TOKEN_JSON="$(curl -fsS "https://ghcr.io/token?scope=repository:${IMAGE}:pull")"
+          TOKEN="$(printf '%s' "${TOKEN_JSON}" | node -pe 'JSON.parse(require("fs").readFileSync(0, "utf8")).token')"
+          test -n "${TOKEN}"
+          STATUS="$(curl -sS -o /dev/null -w '%{http_code}'             -H "Authorization: Bearer ${TOKEN}"             -H "Accept: application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json"             "https://ghcr.io/v2/${IMAGE}/manifests/${IMAGE_TAG}")"
+          test "${STATUS}" = "200"
+          echo "anonymous GHCR manifest pull verified"
+
+      - name: Record image digest and provenance
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          set -euo pipefail
+          IMAGE="${GITHUB_REPOSITORY,,}"
+          RELEASE_COMMIT="${{ steps.source.outputs.commit }}"
+          VERSION_REFDIGEST="$(docker image inspect "ghcr.io/${IMAGE}:${IMAGE_TAG}" --format='{{index .RepoDigests 0}}')"
+          COMMIT_REFDIGEST="$(docker image inspect "ghcr.io/${IMAGE}:${RELEASE_COMMIT}" --format='{{index .RepoDigests 0}}')"
+          test "${VERSION_REFDIGEST}" = "${COMMIT_REFDIGEST}"
+
+          VERSION_LABEL="$(docker image inspect "ghcr.io/${IMAGE}:${IMAGE_TAG}" --format='{{index .Config.Labels "org.opencontainers.image.version"}}')"
+          REVISION_LABEL="$(docker image inspect "ghcr.io/${IMAGE}:${IMAGE_TAG}" --format='{{index .Config.Labels "org.opencontainers.image.revision"}}')"
+          test "${VERSION_LABEL}" = "${IMAGE_TAG}"
+          test "${REVISION_LABEL}" = "${RELEASE_COMMIT}"
+
+          printf 'image=%s\nversion=%s\nrevision=%s\n' "${VERSION_REFDIGEST}" "${VERSION_LABEL}" "${REVISION_LABEL}" >> "${GITHUB_STEP_SUMMARY}"

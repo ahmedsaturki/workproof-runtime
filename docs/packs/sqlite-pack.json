@@ -1,0 +1,20 @@
+{
+  "$schema": "../schemas/pack.schema.json",
+  "name": "pack.database.sqlite",
+  "version": "0.1.0",
+  "capabilities": [
+    "pack.database.sqlite.query@0.1.0",
+    "pack.database.sqlite.upsert@0.1.0"
+  ],
+  "verifiers": [
+    "pack.database.sqlite.query",
+    "pack.database.sqlite.upsert"
+  ],
+  "policies": [
+    "local_write"
+  ],
+  "fixtures": [
+    "lab/fixtures/database-pack.json",
+    "test/sqlite.test.ts"
+  ]
+}

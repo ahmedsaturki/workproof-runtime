@@ -1,0 +1,3 @@
+# Default ownership for repository changes.
+# GitHub branch protection must require code-owner review for this file to enforce it.
+* @ahmedsaturki

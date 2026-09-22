@@ -1,0 +1,54 @@
+{
+  "name": "operational-reality-core",
+  "version": "3.8.10",
+  "private": true,
+  "description": "WorkProof Runtime — outcome-first digital work kernel and local-first operator",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ahmedsaturki/workproof-runtime.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ahmedsaturki/workproof-runtime/issues"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test dist/test/*.test.js",
+    "demo": "npm run build && node dist/apps/demo.js",
+    "cli": "npm run build && node dist/packages/cli/src/index.js",
+    "benchmark": "npm run build && node dist/apps/benchmark.js",
+    "check": "npm test && npm run benchmark && npm run demo && node dist/packages/cli/src/index.js doctor && node dist/packages/cli/src/index.js verify mission-proof.json && node dist/packages/cli/src/index.js run examples/missions/research-local.json && node dist/packages/cli/src/index.js run examples/missions/research-transform-chain.json && node dist/packages/cli/src/index.js run examples/missions/research-a2a-ready.json",
+    "live-github-smoke": "npm run build && node dist/apps/github-smoke.js",
+    "registry-server": "npm run build && node dist/apps/registry-server.js",
+    "control-plane": "npm run build && node dist/apps/control-plane.js",
+    "studio": "npm run build && node dist/apps/studio.js",
+    "mcp-server": "npm run build && node dist/apps/mcp-server.js",
+    "a2a-server": "npm run build && node dist/apps/a2a-server.js",
+    "doctor": "npm run build && node dist/packages/cli/src/index.js doctor"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "@modelcontextprotocol/client": "2.0.0"
+  },
+  "engines": {
+    "node": ">=24.15.0"
+  },
+  "bin": {
+    "workctl": "dist/packages/cli/src/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "SPEC.md",
+    "ARCHITECTURE.md",
+    "docs/EXTENSION-CONTRACT.md",
+    "docs/schemas",
+    "docs",
+    "examples"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.0.0",
+    "zod": "4.6.5"
+  }
+}
