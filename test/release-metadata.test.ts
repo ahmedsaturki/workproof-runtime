@@ -7,6 +7,7 @@ const root = require("process").cwd();
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const lockJson = JSON.parse(fs.readFileSync(path.join(root, "package-lock.json"), "utf8"));
 const licenseText = fs.readFileSync(path.join(root, "LICENSE"), "utf8");
+const releaseStateScript = fs.readFileSync(path.join(root, "scripts", "verify-main-release-state.js"), "utf8");
 
 test("release metadata is explicit and reproducible", () => {
   assert.strictEqual(packageJson.license, "Apache-2.0");
@@ -20,6 +21,12 @@ test("release metadata is explicit and reproducible", () => {
   assert.ok(Array.isArray(packageJson.files) && packageJson.files.includes("LICENSE"));
   assert.ok(licenseText.includes("Apache License") && licenseText.includes("Version 2.0"));
   assert.ok(licenseText.includes("WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND"));
+});
+
+test("published-lineage verifier exit code is propagated without truthiness coercion", () => {
+  assert.match(releaseStateScript, /if \(child\.error\) throw child\.error;/);
+  assert.match(releaseStateScript, /process\.exit\(child\.status === null \? 1 : child\.status\);/);
+  assert.doesNotMatch(releaseStateScript, /process\.exit\(child\.status \|\| 1\);/);
 });
 
 export {};
