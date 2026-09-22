@@ -70,9 +70,14 @@ jobs:
             echo "Canonical immutable commit image exists; it is the source of truth for this release."
           elif docker pull "${VERSION_IMAGE}"; then
             VERSION_LABEL="$(docker image inspect "${VERSION_IMAGE}" --format='{{index .Config.Labels "org.opencontainers.image.revision"}}')"
-            test "${VERSION_LABEL}" = "${RELEASE_COMMIT}"
-            docker tag "${VERSION_IMAGE}" "${COMMIT_IMAGE}"
-            docker push "${COMMIT_IMAGE}"
+            if [ "${VERSION_LABEL}" = "${RELEASE_COMMIT}" ]; then
+              docker tag "${VERSION_IMAGE}" "${COMMIT_IMAGE}"
+              docker push "${COMMIT_IMAGE}"
+            else
+              echo "Existing version tag points to revision ${VERSION_LABEL}; rebuilding the canonical release image for ${RELEASE_COMMIT}."
+              docker build --pull               --build-arg VERSION="${IMAGE_TAG}"               --build-arg VCS_REF="${RELEASE_COMMIT}"               -t "${VERSION_IMAGE}"               -t "${COMMIT_IMAGE}" .
+              docker push "${COMMIT_IMAGE}"
+            fi
           else
             docker build --pull               --build-arg VERSION="${IMAGE_TAG}"               --build-arg VCS_REF="${RELEASE_COMMIT}"               -t "${VERSION_IMAGE}"               -t "${COMMIT_IMAGE}" .
             docker push "${COMMIT_IMAGE}"
