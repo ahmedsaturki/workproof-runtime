@@ -13,7 +13,7 @@ Date: 2026-09-22
 - GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.10`
 - GHCR digest: `sha256:cad9c467db8fe82abd1b15d30d90dbf7e87ad6683f44a8c7c8763c327af6a1c8`
 - immutable image tag: `9daac7a926ce1631ac708a6c234379d622c56c19`
-- purpose: corrective distribution release built from the reconciled main lineage
+- purpose: corrective stable runtime distribution; published assets are anchored to the immutable release commit, with subsequent operator-facing lineage reconciliation recorded on `main`
 
 ## Main verified baseline
 
@@ -34,10 +34,14 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - immutable image tag: `9daac7a926ce1631ac708a6c234379d622c56c19`
 - prior stable rollback: `v3.8.1` / `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 
+## Published snapshot vs current main
+
+The `v3.8.10` GitHub Release and source/container assets are immutable snapshots of release commit `9daac7a926ce1631ac708a6c234379d622c56c19`. After publication, `main` received a documentation/lineage reconciliation so the current repository state matches the published GitHub Release and GHCR evidence. The reconciliation did not rewrite or retag the published release and did not change runtime semantics.
+
 ## Current main closeout
 
 - v3.8.10 stable release: published and fully Container-verified
-- v3.8.10 published lineage: reconciled to exact GitHub Release target and GHCR digest
+- current main lineage: reconciled to the exact GitHub Release target and GHCR digest
 - production Compose: pinned to exact v3.8.10 tag@digest
 - container base: immutable Node 24.21.0 Trixie slim digest enforced by CI/Release/Container
 - production resource envelope: init, 10s stop grace, 1 CPU, 1 GiB RAM, 512 PIDs, 10 MiB × 3 JSON log rotation

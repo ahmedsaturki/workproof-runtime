@@ -6,7 +6,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 **v3.8.10 is the current stable release.**
 
-v3.8.10 is the corrective stable distribution built from the fully reconciled v3.8.9 main lineage; the runtime contract remains unchanged.
+v3.8.10 is the corrective stable runtime release; the runtime contract remains unchanged. The immutable release tag and published source snapshot are anchored to release commit `9daac7a926ce1631ac708a6c234379d622c56c19`. After publication, `main` received an operator-facing lineage reconciliation to match the published GitHub/GHCR evidence without changing runtime semantics.
 
 The v3.4 line established the executable operator benchmark across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution. Later releases added local product surfaces, proof compatibility, recovery, Control Plane safety, MCP/A2A interoperability, OTLP audit export, diagnostics, network-boundary hardening, and reproducible distribution.
 
@@ -80,7 +80,7 @@ The v3.8.10 release publishes:
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
-The release pipeline re-downloads published assets, verifies SHA256 sums, verifies tag/commit lineage, validates benchmark semantics, and verifies the publication state.
+The release pipeline re-downloads published assets, verifies SHA256 sums, verifies tag/commit lineage, validates benchmark semantics, and verifies the publication state. The published assets remain immutable snapshots of release commit `9daac7a926ce1631ac708a6c234379d622c56c19`; subsequent documentation reconciliation on `main` does not rewrite that historical release snapshot.
 
 ### GHCR container
 
