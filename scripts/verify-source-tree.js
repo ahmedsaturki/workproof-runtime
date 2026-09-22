@@ -181,6 +181,7 @@ const required = [
   "test/recovery.test.ts",
   "test/saga-recovery.test.ts",
   "test/studio.test.ts",
+  "test/secret-scan.test.ts",
   "test/retention.test.ts",
   "test/two-system.test.ts",
   "tsconfig.json",
