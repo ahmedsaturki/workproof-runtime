@@ -92,6 +92,8 @@ jobs:
           test -s "${SMOKE_DIR}/trust.json"
           node scripts/packed-control-plane-smoke.js "${SMOKE_DIR}/node_modules/operational-reality-core"
           echo "packed CLI and control-plane execution verified"
+          node scripts/packed-mcp-smoke.js "${SMOKE_DIR}/node_modules/operational-reality-core"
+          echo "packed MCP execution verified"
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}

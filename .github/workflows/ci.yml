@@ -78,7 +78,10 @@ jobs:
           test -s "${SMOKE_DIR}/research.json"
           node scripts/packed-control-plane-smoke.js "${SMOKE_DIR}/node_modules/operational-reality-core"
           echo "packed CLI and control-plane product smoke passed"
+          node scripts/packed-mcp-smoke.js "${SMOKE_DIR}/node_modules/operational-reality-core"
+          echo "packed MCP product smoke passed"
       - name: Disposable external topology smoke
+        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/') }}
         shell: bash
         run: |
           set -euo pipefail
@@ -90,7 +93,7 @@ jobs:
           node scripts/external-topology-smoke.js
         timeout-minutes: 8
       - name: Verify published release lineage
-        if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+        if: ${{ github.ref == 'refs/heads/main' }}
         run: node scripts/verify-published-lineage.js
         timeout-minutes: 3
       - name: Run retention lifecycle suite

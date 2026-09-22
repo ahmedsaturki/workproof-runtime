@@ -36,7 +36,7 @@ The default deployment is local/self-hosted. Remote infrastructure is an optiona
 
 ### P2 — Interoperability adapters
 
-- MCP adapter: expose approved capabilities without replacing WorkProof semantics.
+- MCP adapter: expose approved capabilities without replacing WorkProof semantics. **Implemented:** v3.6 adds the official MCP v2 stdio adapter, authenticated Control Plane forwarding, explicit mutation idempotency, protocol acceptance tests, and packed-package verification.
 - A2A adapter: connect external agents as planners/requesters while WorkProof remains the execution/proof boundary.
 - OpenTelemetry adapter: correlate external telemetry with work/evidence without making telemetry authoritative.
 
@@ -106,7 +106,7 @@ Completed:
 Remaining:
 
 8. Broader mission composition and operational visualization beyond the current representative multi-capability chain.
-9. Additional adapters and wider mission coverage beyond the current prerelease acceptance set.
+9. A2A/OpenTelemetry adapters and wider mission coverage beyond the current prerelease acceptance set.
 
 ## Stop conditions
 
@@ -185,3 +185,10 @@ Completed and verified on the current release lineage:
 - Hardened Chromium/CDP startup preflight.
 
 These are additive product surfaces; they do not replace the Work Contract, risk/policy, effect, verification, reconciliation, recovery, or proof invariants.
+
+
+## v3.6 MCP adapter readiness
+
+The MCP interoperability layer is executable and testable. It uses the official MCP TypeScript SDK v2, which targets the current `2026-07-28` specification revision. The adapter is intentionally thin: authentication and authorization stay at the WorkProof Control Plane, and tool mutations carry explicit idempotency keys.
+
+Acceptance evidence includes modern protocol discovery through the SDK, capability listing, Work Object reads, dispatch replay/conflict handling, packed artifact startup from a separate working directory, and the same security/release gates as the runtime.

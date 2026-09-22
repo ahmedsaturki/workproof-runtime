@@ -222,6 +222,18 @@ The npm package remains intentionally private; source and container distribution
 
 
 ### Control-plane product surface
+### MCP adapter
+
+An optional MCP v2 stdio adapter is included for AI hosts. It forwards all reads and mutations through the authenticated WorkProof Control Plane rather than creating a parallel execution authority.
+
+```bash
+npm run mcp-server
+```
+
+Configure `WORKPROOF_MCP_CONTROL_PLANE_URL` and, when the Control Plane requires authentication, `WORKPROOF_MCP_TOKEN`. Mutation tools require explicit idempotency keys.
+
+See `docs/MCP-ADAPTER.md`. The adapter targets the MCP `2026-07-28` revision through the official TypeScript SDK v2.
+
 
 The current prerelease also exposes `GET /v1/capabilities` for authenticated runtime discovery. The SDK exposes `listCapabilities()`, and Studio renders the connected capability registry. See `docs/CONTROL-PLANE-API.md` for the API contract.
 
