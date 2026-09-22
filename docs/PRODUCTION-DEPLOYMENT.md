@@ -4,7 +4,7 @@ Supported distribution target: the Node 24 GHCR container.
 
 - image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.8`
 - pinned digest: `sha256:0c31c571480d45d5f46f5ae6f8b8a4b1328094a7561f76aee7016c99e586eb10`
-- immutable image tag: `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`
+- immutable image tag: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
 - bind: `127.0.0.1:8788`
 - persistent data: `./work-runs -> /data/work-runs`
 
@@ -51,11 +51,11 @@ Back up `work-runs` and any configured proof vault. Roll back by pinning Compose
 ## Verified v3.8.8 stable release
 
 - GitHub Release: `v3.8.8`
-- release commit: `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.6`
-- GHCR digest: `sha256:953bab56b734434885bf74022e9b0260f64369c4a9c968e1792ce49874f6058d`
+- release commit: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.8`
+- GHCR digest: `sha256:0c31c571480d45d5f46f5ae6f8b8a4b1328094a7561f76aee7016c99e586eb10`
 - immutable image tag: `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`
-- GitHub Release ID: `393990944`
+- GitHub Release ID: `394017508`
 - Release workflow: #239
 - Container workflow: #236
 - rollback release: `3.8.1`
