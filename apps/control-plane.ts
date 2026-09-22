@@ -154,9 +154,8 @@ async function executeMission(input: Record<string, unknown>): Promise<WorkObjec
   const riskClass = validateRisk(input.riskClass, "read");
   const steps = validateSteps(input.steps, riskClass);
   const store = new WorkStore();
-  const registry = controlCapabilityRegistry;
+  const registry = createRuntimeRegistry();
   const verification = new VerificationEngine();
-  registerRuntimePacks(registry, verification);
   const work = store.create({
     objective: input.objective,
     inputs: input.inputs && typeof input.inputs === "object" && !Array.isArray(input.inputs) ? input.inputs as Record<string, unknown> : {},
@@ -177,9 +176,8 @@ async function resumeMission(work: WorkObject): Promise<WorkObject> {
   const steps = loadMission(work);
   const store = new WorkStore();
   store.register(work);
-  const registry = new CapabilityRegistry();
+  const registry = createRuntimeRegistry();
   const verification = new VerificationEngine();
-  registerRuntimePacks(registry, verification);
   const engine = new WorkEngine(store, registry, verification, async () => false, undefined, repository);
   await engine.run(work, steps);
   persistProof(work);
