@@ -168,7 +168,10 @@ async function executeMission(input: Record<string, unknown>): Promise<WorkObjec
     success: Array.isArray(input.success) ? input.success as any : [],
     deliverables: Array.isArray(input.deliverables) ? input.deliverables.filter((v): v is string => typeof v === "string") : [],
     riskClass,
-    approvalRequired: Boolean(input.approvalRequired)
+    approvalRequired: Boolean(input.approvalRequired),
+    metadata: input.metadata && typeof input.metadata === "object" && !Array.isArray(input.metadata)
+      ? input.metadata as Record<string, unknown>
+      : undefined
   });
   saveMission(work, steps);
   const engine = new WorkEngine(store, registry, verification, async () => false, undefined, repository);
