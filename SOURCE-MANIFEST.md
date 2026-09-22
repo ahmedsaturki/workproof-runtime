@@ -50,15 +50,15 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 
 ## v3.8.8 distribution evidence
 
-- release reconciliation baseline: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
-- release workflow #239: success
-- container workflow #236: success
+- release reconciliation baseline: `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`
+- release workflow #245: success
+- container workflow #242: success
 - package version: `3.8.8`
-- stable release: `v3.8.8`
+- stable release: `v3.8.9`
 - stable release commit: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
-- GitHub Release ID: `394017508`
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.8`
-- GHCR digest: `sha256:0c31c571480d45d5f46f5ae6f8b8a4b1328094a7561f76aee7016c99e586eb10`
+- GitHub Release ID: `394031450`
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.9`
+- GHCR digest: `sha256:ccde8ada2227b016968328f9eec1849e7424d12c2acc89081c30ca191bb6df66`
 - immutable image tag: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
 - reproducible-install hardening PR #97: merged
 - release-metadata/source-manifest PR #98: merged
