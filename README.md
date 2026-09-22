@@ -4,7 +4,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.4 benchmark foundations remain verified; v3.8.1 is the current release line.**
+**v3.4 benchmark foundations remain verified; v3.8.1 is the current stable release.**
 
 The v3.4 line is the first executable operator benchmark with controlled failure injection across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution.
 
@@ -97,7 +97,7 @@ Feature CI #1179 and post-merge main CI #1189 passed the complete v3.7 repositor
 
 ### GitHub Release
 
-`v3.8.0` is the current stable release. Release and container workflows publish from the same release-branch lineage.
+`v3.8.1` is the current stable release. Release and container workflows publish from the same release-branch lineage.
 
 Published assets:
 
@@ -113,13 +113,13 @@ The release pipeline re-downloads published assets, verifies SHA256 sums, verifi
 
 Published image:
 
-`ghcr.io/ahmedsaturki/workproof-runtime:3.8.0`
+`ghcr.io/ahmedsaturki/workproof-runtime:3.8.1`
 
 Verified digest:
 
-`sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
+`sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 
-The same digest is exposed by the immutable release commit tag `2b02d22e897d5fe736f93267c72036d951f74082`. Container verification runs #186/#187 proved:
+The same digest is exposed by the immutable release commit tag `2b02d22e897d5fe736f93267c72036d951f74082`. Container verification run #189 proved:
 
 - package version matches release tag;
 - OCI version matches `3.8.0`;

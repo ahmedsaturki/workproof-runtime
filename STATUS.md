@@ -6,13 +6,19 @@ Date: 2026-09-22
 
 Main contains the v3.4 executable benchmark, restart/resume safety, portable proof, explicit proof compatibility, operator guidance, packaged operator docs/examples, multi-capability execution, external-topology validation, and distribution hardening.
 
-## Release 3.8.1 preparation
+## Current stable v3.8.1
 
 - package version: `3.8.1`
-- release branch: `release/3.8.1`
-- source baseline: `e3588fb1b489987a0f656d9e9acb1fad6e410082`
-- purpose: patch release for Control Plane execution-policy enforcement, non-loopback binding defense-in-depth, and terminal idempotency failure replay
-- GitHub Release and GHCR publication are performed by the release/container workflows and must be independently verified before this patch is called released.
+- stable release tag: `v3.8.1`
+- stable release commit: `f8af30bf69391db22863c432df5c452a73ebaa05`
+- GitHub Release ID: `393805901`
+- Release workflow #192: success
+- Container workflow #189: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.1`
+- GHCR digest: `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
+- immutable image tag: `f8af30bf69391db22863c432df5c452a73ebaa05`
+- prior stable rollback: `v3.8.0` / `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
+- Control Plane execution-policy and terminal-idempotency safety fixes: merged in PR #102
 
 ## Main verification basis
 
@@ -26,21 +32,19 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - post-release hardening PR #98: merged; release metadata/license/source-manifest reconciliation
 - repository hardening PR #101: pins workflow actions to immutable commits, adds CODEOWNERS coverage, reconciles the source manifest, and clarifies security reporting
 
-The prior stable v3.8.0 release remains bound to its published release commit and container digest. The current `main` adds metadata/distribution hardening after that stable release without changing runtime semantics.
+The prior stable v3.8.0 release remains retained as rollback provenance to its published release commit and container digest. The current `main` adds metadata/distribution hardening after that stable release without changing runtime semantics.
 
 ## Current verified release
 
-- version: `3.8.0`
-- tag: `v3.8.0`
-- release commit: `2b02d22e897d5fe736f93267c72036d951f74082`
-- GitHub Release ID: 393558255
-- release creation/verification run #189: success
-- final stable release-state reconciliation run #190: success
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.0`
-- GHCR digest: `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
-- immutable image tag: `2b02d22e897d5fe736f93267c72036d951f74082`
-- initial Container verification run #186: success
-- final Container verification run #187: success
+- version: `3.8.1`
+- tag: `v3.8.1`
+- release commit: `f8af30bf69391db22863c432df5c452a73ebaa05`
+- GitHub Release ID: 393805901
+- release verification run #192: success
+- Container verification run #189: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.1`
+- GHCR digest: `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
+- immutable image tag: `f8af30bf69391db22863c432df5c452a73ebaa05`
 - five release assets published and verified
 
 ## Product gates
@@ -123,7 +127,8 @@ A capability receipt is not independent proof. Work is verified only when indepe
 - PR #97: merged; `npm ci` enforced by CI, release, and Docker build paths
 - PR #98: merged; explicit Apache-2.0 package metadata, complete license text, current contributor baseline, duplicate-free source manifest, `package-lock.json` source-tree coverage, and release metadata regression test
 - PR #99: merged; status wording normalization
-- main CI #1260: success on the pre-#101 main baseline
+- PR #102: merged; Control Plane execution and terminal idempotency safety
+- v3.8.1 release publication and container verification: complete
 
 ## v3.8 stable main closeout
 

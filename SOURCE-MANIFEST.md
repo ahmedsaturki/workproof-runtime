@@ -50,15 +50,17 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 
 ## Current v3.8.0 distribution state
 
-- verified main hardening baseline: `f391ae4ce60f0fd102c731c78551d258fbde1f12`
-- main CI #1260: success on that baseline
+- release reconciliation baseline: `f8af30bf69391db22863c432df5c452a73ebaa05`
+- release workflow #192: success
+- container workflow #189: success
 - current package version: `3.8.1`
-- stable release: `v3.8.0`
-- stable release commit: `2b02d22e897d5fe736f93267c72036d951f74082`
-- GitHub Release: `393558255`
-- GHCR digest: `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
+- stable release: `v3.8.1`
+- stable release commit: `f8af30bf69391db22863c432df5c452a73ebaa05`
+- GitHub Release: `393805901`
+- GHCR digest: `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 - reproducible-install hardening PR #97: merged
 - release-metadata/source-manifest PR #98: merged
+- Control Plane safety PR #102: merged
 - `npm ci` is enforced by CI, release, and Docker build paths
 - package metadata declares `Apache-2.0`; the repository license file contains the complete Apache License 2.0 text
 - executable source-tree gate currently verifies 223 required paths

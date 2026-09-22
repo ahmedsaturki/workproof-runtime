@@ -2,9 +2,9 @@
 
 Supported distribution target: the Node 24 GHCR container.
 
-- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.0`
-- pinned digest: `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
-- immutable image tag: `2b02d22e897d5fe736f93267c72036d951f74082`
+- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.1`
+- pinned digest: `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
+- immutable image tag: `f8af30bf69391db22863c432df5c452a73ebaa05`
 - bind: `127.0.0.1:8788`
 - persistent data: `./work-runs -> /data/work-runs`
 
@@ -50,13 +50,13 @@ Back up `work-runs` and any configured proof vault. Roll back by pinning Compose
 
 ## Verified v3.8.0 stable release
 
-- GitHub Release: `v3.8.0`
-- release commit: `2b02d22e897d5fe736f93267c72036d951f74082`
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.0`
-- GHCR digest: `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
+- GitHub Release: `v3.8.1`
+- release commit: `f8af30bf69391db22863c432df5c452a73ebaa05`
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.1`
+- GHCR digest: `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 - immutable image tag: `2b02d22e897d5fe736f93267c72036d951f74082`
-- rollback release: `3.8.0-dev.1`
-- rollback immutable tag: `bba39f385ab042344f4fc2ebe04aeef7ef3c98b9`
-- rollback digest: `sha256:acafde09bd74d535fb706acde68f7e6279283ac49f6d1863585d672fb691ac02`
+- rollback release: `3.8.0`
+- rollback immutable tag: `2b02d22e897d5fe736f93267c72036d951f74082`
+- rollback digest: `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
 
 The disposable external topology gate verifies TLS termination, authentication, secret non-leakage, persistence, backup/restore, rollback, and deny-by-default network exposure. The repository does not claim a public host, public DNS, public certificate, external production secrets, or third-party hosted control plane are provisioned.
