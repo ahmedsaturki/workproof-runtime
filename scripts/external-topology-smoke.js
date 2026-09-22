@@ -89,7 +89,7 @@ async function main() {
 
   run("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", path.join(tlsDir, "tls.key"), "-out", path.join(tlsDir, "tls.crt"), "-days", "1", "-subj", "/CN=localhost", "-addext", "subjectAltName=DNS:localhost,IP:127.0.0.1"]);
 
-  const nginxConfig = ["events {}", "http {", "  server {", "    listen 8443 ssl;", "    server_name localhost;", "    ssl_certificate /etc/nginx/tls/tls.crt;", "    ssl_certificate_key /etc/nginx/tls/tls.key;", "    auth_basic \"WorkProof\";", "    auth_basic_user_file /etc/nginx/auth/.htpasswd;", "    location / {", "      proxy_pass http://workproof-app:8788;", "      proxy_set_header Host $host;", "      proxy_set_header X-Forwarded-Proto https;", "    }", "  }", "}"].join("\n") + "\n";
+  const nginxConfig = ["events {}", "http {", "  server {", "    listen 8443 ssl;", "    server_name localhost;", "    ssl_certificate /etc/nginx/tls/tls.crt;", "    ssl_certificate_key /etc/nginx/tls/tls.key;", "    auth_basic \"WorkProof\";", "    auth_basic_user_file /etc/nginx/auth/.htpasswd;", "    location / {", "      proxy_pass http://" + appName + ":8788;", "      proxy_set_header Host $host;", "      proxy_set_header X-Forwarded-Proto https;", "    }", "  }", "}"].join("\n") + "\n";
   fs.writeFileSync(nginxPath, nginxConfig, "utf8");
 
   const cleanup = [];
