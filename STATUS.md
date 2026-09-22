@@ -13,7 +13,7 @@ Date: 2026-09-22
 - GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.10`
 - GHCR digest: `sha256:cad9c467db8fe82abd1b15d30d90dbf7e87ad6683f44a8c7c8763c327af6a1c8`
 - commit-addressed image tag: `9daac7a926ce1631ac708a6c234379d622c56c19`
-- purpose: corrective stable runtime distribution; published assets are anchored to the immutable release commit, with subsequent operator-facing lineage reconciliation recorded on `main`
+- purpose: corrective stable runtime distribution; published assets are anchored to release commit, with subsequent operator-facing lineage reconciliation recorded on `main`
 
 ## Main verified baseline
 
