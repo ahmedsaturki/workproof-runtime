@@ -74,6 +74,9 @@ jobs:
           test -s "${SMOKE_DIR}/proof.json"
           test -s "${SMOKE_DIR}/research.json"
           echo "packed CLI install, mission execution, and proof verification smoke passed"
+      - name: Disposable external topology smoke
+        run: node scripts/external-topology-smoke.js
+        timeout-minutes: 8
       - name: Run retention lifecycle suite
         run: node --test dist/test/retention.test.js
         timeout-minutes: 2
