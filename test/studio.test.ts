@@ -73,7 +73,7 @@ test("Studio serves an operational dashboard and sanitized Work Object APIs", as
     assert.match(html, /Operator guidance/);
     assert.match(html, /Effect summary/);
     assert.match(html, /Capability chain/);
-    assert.match(html, /pack.research.local/);
+    assert.match(html, /pack.local.read/);
     assert.match(page.headers.get("content-security-policy") ?? "", /default-src 'self'/i);
     assert.equal(page.headers.get("x-content-type-options"), "nosniff");
     assert.equal(page.headers.get("cache-control"), "no-store");
