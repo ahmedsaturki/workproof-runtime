@@ -3,7 +3,7 @@ const test = require("node:test");
 const fs = require("fs");
 const path = require("path");
 
-const root = process.cwd();
+const root = require("process").cwd();
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const lockJson = JSON.parse(fs.readFileSync(path.join(root, "package-lock.json"), "utf8"));
 const licenseText = fs.readFileSync(path.join(root, "LICENSE"), "utf8");
@@ -21,3 +21,5 @@ test("release metadata is explicit and reproducible", () => {
   assert.ok(licenseText.includes("Apache License") && licenseText.includes("Version 2.0"));
   assert.ok(licenseText.includes("WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND"));
 });
+
+export {};
