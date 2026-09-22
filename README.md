@@ -125,7 +125,7 @@ The repository includes:
 - `docs/CONTAINER-RUNTIME.md`
 - `docs/PRODUCTION-DEPLOYMENT.md`
 
-The production compose targets the verified v3.5.0-dev.1 image digest, binds Studio to localhost, and persists `./work-runs`. The separate control-plane process is the authenticated mutation boundary and can be connected to Studio with `WORKPROOF_CONTROL_PLANE_URL` plus a matching auth policy. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
+The production compose targets the verified v3.6.0-dev.1 image digest, binds Studio to localhost, and persists `./work-runs`. The separate control-plane process is the authenticated mutation boundary and can be connected to Studio with `WORKPROOF_CONTROL_PLANE_URL` plus a matching auth policy. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
 
 `package.json` remains `private: true`; no npm registry publication is claimed.
 
@@ -136,6 +136,19 @@ The messaging capability is intentionally local-only. A capability receipt is no
 ## Product boundary
 
 WorkProof Runtime is not a replacement for agents, browsers, workflow engines, MCP registries, memory systems, observability backends, or OSINT graphs. Those systems can integrate as capabilities or adapters while Work Object, effect, verification, recovery, and proof semantics remain invariant.
+
+## v3.7 interoperability and observability
+
+The v3.7 development line adds:
+- an A2A 1.0 HTTP/JSON-RPC interoperability adapter backed by the authenticated WorkProof Control Plane;
+- deterministic mutation idempotency for A2A message/task mutations;
+- Work Object listing through the Control Plane and SDK;
+- allowlisted OTLP/HTTP JSON export of Control Plane audit events;
+- a packed A2A artifact smoke and A2A-ready representative mission.
+
+A2A and telemetry are adapters only. WorkProof remains the sole authority for execution, risk policy, effects, verification, reconciliation, recovery, and proof.
+
+See `docs/A2A-ADAPTER.md` and `docs/OPENTELEMETRY.md`.
 
 ## Current product-validation state
 
