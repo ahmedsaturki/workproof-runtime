@@ -68,6 +68,21 @@ test("local product smoke boots Studio, reports release version, serves work, an
   const compiledCli = fs.readFileSync(path.resolve(path.dirname(__filename), "../packages/cli/src/index.js"), "utf8");
   assert.match(compiledCli, /^#!\/usr\/bin\/env node\n/);
 
+  const cliEntry = path.resolve(path.dirname(__filename), "../packages/cli/src/index.js");
+  const cliHelp = childProcess.spawnSync(process.execPath, [cliEntry, "--help"], {
+    cwd: require("process").cwd(),
+    encoding: "utf8"
+  });
+  assert.equal(cliHelp.status, 0, cliHelp.stderr || cliHelp.stdout);
+  assert.match(cliHelp.stdout, /resume <work-id> <mission.json>/);
+
+  const cliVersion = childProcess.spawnSync(process.execPath, [cliEntry, "--version"], {
+    cwd: require("process").cwd(),
+    encoding: "utf8"
+  });
+  assert.equal(cliVersion.status, 0, cliVersion.stderr || cliVersion.stdout);
+  assert.equal(cliVersion.stdout.trim(), packageJson.version);
+
   const first = await startStudio({ workDirectory: root, host: "127.0.0.1", port: 0 });
   try {
     const base = "http://" + first.host + ":" + first.port;
