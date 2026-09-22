@@ -137,6 +137,10 @@ export function createOtlpLogExporterFromEnv(args: {
   const env = args.env ?? process.env;
   const signalEndpoint = env.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT;
   const baseEndpoint = env.OTEL_EXPORTER_OTLP_ENDPOINT;
+  const protocol = (env.OTEL_EXPORTER_OTLP_LOGS_PROTOCOL ?? env.OTEL_EXPORTER_OTLP_PROTOCOL ?? "http/json").trim().toLowerCase();
+  if (protocol !== "http/json") {
+    throw new Error("WorkProof OTLP exporter currently supports only http/json");
+  }
   const rawEndpoint = signalEndpoint ?? baseEndpoint;
   if (!rawEndpoint?.trim()) return undefined;
 
