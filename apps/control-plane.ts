@@ -60,6 +60,15 @@ function registerRuntimePacks(registry: CapabilityRegistry, verification: Verifi
   registerGitLocalPack(registry, verification);
 }
 
+function createRuntimeRegistry(): CapabilityRegistry {
+  const registry = controlCapabilityRegistry;
+  const verification = new VerificationEngine();
+  registerRuntimePacks(registry, verification);
+  return registry;
+}
+
+const controlCapabilityRegistry = createRuntimeRegistry();
+
 function safeWorkId(value: unknown): string {
   if (typeof value !== "string" || !/^[A-Za-z0-9._-]+$/.test(value)) throw new Error("Invalid work id");
   return value;
@@ -134,7 +143,7 @@ async function executeMission(input: Record<string, unknown>): Promise<WorkObjec
   const riskClass = validateRisk(input.riskClass, "read");
   const steps = validateSteps(input.steps, riskClass);
   const store = new WorkStore();
-  const registry = new CapabilityRegistry();
+  const registry = controlCapabilityRegistry;
   const verification = new VerificationEngine();
   registerRuntimePacks(registry, verification);
   const work = store.create({
@@ -175,7 +184,16 @@ async function main(): Promise<void> {
     auditPath,
     idempotencyDbPath,
     dispatch: executeMission,
-    resume: resumeMission
+    resume: resumeMission,
+    capabilitySource: {
+      listCapabilities: () => controlCapabilityRegistry.list().map((capability) => ({
+        name: capability.name,
+        version: capability.version,
+        operations: capability.operations,
+        riskClass: capability.riskClass
+      }))
+    },
+    runtimeVersion: runtimeVersion()
   });
 
   process.stdout.write(JSON.stringify({
