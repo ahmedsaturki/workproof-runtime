@@ -85,7 +85,7 @@ A product release must not be called production-ready solely because CI is green
 
 ## Current verified baseline — 2026-09-22
 
-The repository currently records v3.4 benchmark verification and the coherent `v3.4.0-dev.5` distribution path. Main CI, release verification, and container publication are integrity-verified. Localhost-bound production compose and a deployment runbook are pinned to the verified dev.4 image.
+The repository currently records v3.4 benchmark verification and the coherent `v3.4.0-dev.9` distribution path. Main CI, release verification, and container publication are integrity-verified. Localhost-bound production compose and a deployment runbook are pinned to the verified dev.4 image.
 
 These facts establish a strong verified foundation, but they do **not** by themselves establish a public production deployment. Public host/DNS/TLS/auth/secrets provisioning remains an external infrastructure gate.
 
@@ -160,4 +160,4 @@ Remaining gates are external deployment validation, broader multi-capability UX,
 
 ## Dev.8 release target
 
-The current release target is `v3.4.0-dev.8`, carrying the completed local-first P0/P1 gates: operator guidance, production Compose restart/persistence validation, portable proof, proof compatibility, resume safety, and packaged docs/examples.
+The current release target is `v3.4.0-dev.9`, carrying the completed local-first P0/P1 gates: operator guidance, production Compose restart/persistence validation, portable proof, proof compatibility, resume safety, and packaged docs/examples.
