@@ -17,4 +17,4 @@ This prerelease remains private to the repository/package ecosystem and is not a
 
 ## Verification
 
-The release and container workflows must pass full repository checks, package/mission smoke, external topology smoke, published lineage verification, release asset re-download verification, container runtime health, anonymous GHCR pull, image provenance, and rollback/persistence checks.
+Release verification run #124 and Container verification run #121 completed the required checks. The release and container workflows must pass full repository checks, package/mission smoke, external topology smoke, published lineage verification, release asset re-download verification, container runtime health, anonymous GHCR pull, image provenance, and rollback/persistence checks.

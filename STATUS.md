@@ -17,11 +17,11 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - tag: `v3.4.0-dev.11`
 - release commit: `aeaaac3d9224b7eac297ac8f63207bf97b532e4d`
 - GitHub Release id: 393476961
-- release verification run #118: success
+- release verification run #124: success
 - GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.11`
 - GHCR digest: `sha256:d0c4a8134e0b73d68dc6a0489bbc058b90e633a01171df980aebd1e7b47affff`
 - immutable image tag: `aeaaac3d9224b7eac297ac8f63207bf97b532e4d`
-- Container verification run #115: success
+- Container verification run #121: success
 - five release assets present, re-downloaded, and SHA256-verified
 
 ## Product gates

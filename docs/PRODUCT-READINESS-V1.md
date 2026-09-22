@@ -161,4 +161,4 @@ Remaining product-validation work is expansion beyond the current prerelease sco
 
 ## Dev.11 release state
 
-The current shipped prerelease is `v3.4.0-dev.11`. Release verification run #118 and Container verification run #115 both completed their required gates, including the disposable external-topology validation and published digest lineage.
+The current shipped prerelease is `v3.4.0-dev.11`. Release verification run #124 and Container verification run #121 both completed their required gates, including the disposable external-topology validation and published digest lineage.
