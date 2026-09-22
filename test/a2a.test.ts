@@ -110,8 +110,8 @@ export {};
 test("A2A ListTasks projects Work Object summaries into tasks", async () => {
   const token = "a2a-list-test-token-123456";
   const works = [
-    { id: "work_one", status: "verified", contract: { objective: "one", riskClass: "read" }, createdAt: "2026-09-22T00:00:00.000Z", updatedAt: "2026-09-22T00:00:03.000Z" },
-    { id: "work_two", status: "failed", contract: { objective: "two", riskClass: "read" }, createdAt: "2026-09-22T00:00:00.000Z", updatedAt: "2026-09-22T00:00:02.000Z" }
+    { id: "work_one", status: "verified", contract: { objective: "one", riskClass: "read", metadata: { a2aContextId: "ctx-one" } }, createdAt: "2026-09-22T00:00:00.000Z", updatedAt: "2026-09-22T00:00:03.000Z" },
+    { id: "work_two", status: "failed", contract: { objective: "two", riskClass: "read", metadata: { a2aContextId: "ctx-two" } }, createdAt: "2026-09-22T00:00:00.000Z", updatedAt: "2026-09-22T00:00:02.000Z" }
   ];
   const controlServer = http.createServer((req: any, res: any) => {
     const url = new URL(String(req.url ?? "/"), "http://127.0.0.1");
@@ -124,7 +124,19 @@ test("A2A ListTasks projects Work Object summaries into tasks", async () => {
       const status = url.searchParams.get("status");
       const filtered = status ? works.filter(w => w.status === status) : works;
       res.writeHead(200, { "content-type": "application/json" });
-      res.end(JSON.stringify({ work: filtered, total: filtered.length }));
+      res.end(JSON.stringify({
+        work: filtered.map(w => ({
+          id: w.id,
+          status: w.status,
+          objective: w.contract.objective,
+          riskClass: w.contract.riskClass,
+          approvalRequired: false,
+          createdAt: w.createdAt,
+          updatedAt: w.updatedAt,
+          a2aContextId: w.contract.metadata.a2aContextId
+        })),
+        total: filtered.length
+      }));
       return;
     }
     res.writeHead(404);
@@ -158,6 +170,7 @@ test("A2A ListTasks projects Work Object summaries into tasks", async () => {
     const body = await response.json();
     assert.equal(body.result.tasks.length, 1);
     assert.equal(body.result.tasks[0].id, "work_one");
+    assert.equal(body.result.tasks[0].contextId, "ctx-one");
     assert.equal(body.result.nextPageToken, "");
     assert.equal(body.result.pageSize, 1);
   } finally {
