@@ -1159,7 +1159,17 @@ if (runtimeProcess.argv[1] && path.resolve(runtimeProcess.argv[1]) === path.reso
     process.stderr.write("Invalid Studio port\n");
     process.exitCode = 1;
   } else {
-    startStudio({ workDirectory, port, host })
+    const controlPlaneUrl = controlPlaneUrlArg ?? process.env.WORKPROOF_CONTROL_PLANE_URL;
+    const vaultDirectory = vaultDirectoryArg ?? process.env.WORKPROOF_VAULT_DIRECTORY;
+    const trustPolicyPath = trustPolicyPathArg ?? process.env.WORKPROOF_TRUST_POLICY_PATH;
+    startStudio({
+      workDirectory,
+      port,
+      host,
+      controlPlaneUrl,
+      vaultDirectory,
+      trustPolicyPath
+    })
       .then((running) => {
         process.stdout.write(JSON.stringify({
           studio: `http://${running.host}:${running.port}`,
