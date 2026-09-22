@@ -884,6 +884,24 @@ test("Studio refuses non-loopback binding because read-only Work Objects and pro
   fs.rmSync(root, { recursive: true, force: true });
 });
 
+test("Studio permits explicit non-loopback binding for container-internal listening", async () => {
+  const root = tempDir("workproof-studio-bind-allowed-");
+  const studio = await startStudio({
+    workDirectory: root,
+    host: "0.0.0.0",
+    port: 0,
+    allowNonLoopback: true
+  });
+  try {
+    const response = await fetch(`http://127.0.0.1:${studio.port}/health`);
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).status, "ok");
+  } finally {
+    await studio.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 export {};
 
 

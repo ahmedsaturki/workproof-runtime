@@ -4,58 +4,61 @@ Date: 2026-09-22
 
 ## Main verified baseline
 
-The current stable release line is v3.8.1; main CI is required to verify every post-release reconciliation.
+The current stable release line is v3.8.3; main CI is required to verify every post-release reconciliation.
 
 Main contains the v3.4 executable benchmark, restart/resume safety, portable proof, explicit proof compatibility, operator guidance, packaged operator docs/examples, multi-capability execution, external-topology validation, distribution hardening, Control Plane policy/idempotency safety, and network-boundary hardening.
 
-## Current stable v3.8.1
+## Current stable v3.8.3
 
-- package version: `3.8.1`
-- stable release tag: `v3.8.1`
-- stable release commit: `f8af30bf69391db22863c432df5c452a73ebaa05`
-- GitHub Release ID: `393805901`
-- Release workflow #192: success
-- Container workflow #189: success
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.1`
-- GHCR digest: `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
-- immutable image tag: `f8af30bf69391db22863c432df5c452a73ebaa05`
-- prior stable rollback: `v3.8.0` / `sha256:f057384da7a5789aa71ffcec0ea4589ec8c10e7a9e1b37f8cabcabd303d38fcc`
+- package version: `3.8.3`
+- stable release tag: `v3.8.3`
+- stable release commit: `772a5a16b34e94b62bbc6564474736ef2e4da11b`
+- GitHub Release ID: `393862783`
+- Release workflow #210: success
+- Container workflow #207: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.3`
+- GHCR digest: `sha256:ec6f891f8e3fc427937f904eb039d95d58387b1d06261cd91c8c9a886bc7cf67`
+- immutable image tag: `772a5a16b34e94b62bbc6564474736ef2e4da11b`
+- prior stable rollback: `v3.8.1` / `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 - Control Plane execution-policy and terminal-idempotency safety fixes: merged in PR #102
 - network-boundary hardening: merged in PR #104
 
 ## Main verification basis
 
-- package version: `3.8.1`
-- verified main state: `9ef0f74f4356f6f237a66422116fb064eacddcd5`
-- main CI #1280: success on that exact state
-- stable release source commit: `f8af30bf69391db22863c432df5c452a73ebaa05`
+- package version: `3.8.3`
+- verified release reconciliation target: `772a5a16b34e94b62bbc6564474736ef2e4da11b`
+- release workflow #210: success
+- container workflow #207: success
+- stable release source commit: `772a5a16b34e94b62bbc6564474736ef2e4da11b`
 - post-release hardening PR #97: merged; reproducible `npm ci` install tree
 - post-release hardening PR #98: merged; release metadata/license/source-manifest reconciliation
 - repository hardening PR #101: merged; immutable workflow pins, CODEOWNERS coverage, source-manifest reconciliation, and security reporting boundary
 - Control Plane safety PR #102: merged; execution policy, non-loopback auth boundary, terminal idempotency failure replay
 - network-boundary PR #104: merged; Studio loopback boundary, Registry non-loopback auth requirement, and regression coverage
 
-The v3.8.0 release remains retained as rollback provenance. The current main line includes the v3.8.1 safety release plus Control Plane and network-boundary hardening.
+The v3.8.0 release remains historical provenance. v3.8.1 is the verified rollback target. v3.8.2 is retained as superseded release history and is not a rollback target. Current main carries the v3.8.3 corrective stable distribution.
 
 ## Current verified release
 
-- version: `3.8.1`
-- tag: `v3.8.1`
-- release commit: `f8af30bf69391db22863c432df5c452a73ebaa05`
-- GitHub Release ID: 393805901
-- release verification run #192: success
-- Container verification run #189: success
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.1`
-- GHCR digest: `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
-- immutable image tag: `f8af30bf69391db22863c432df5c452a73ebaa05`
+- version: `3.8.3`
+- tag: `v3.8.3`
+- release commit: `772a5a16b34e94b62bbc6564474736ef2e4da11b`
+- GitHub Release ID: 393862783
+- release verification run #210: success
+- Container verification run #207: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.3`
+- GHCR digest: `sha256:ec6f891f8e3fc427937f904eb039d95d58387b1d06261cd91c8c9a886bc7cf67`
+- immutable image tag: `772a5a16b34e94b62bbc6564474736ef2e4da11b`
 - five release assets published and verified
 
 ## Current main closeout
 
 - PR #103: merged; v3.8.1 stable distribution reconciliation
+- v3.8.3 corrective stable release: published and fully Container-verified
+- v3.8.2: superseded after Container runtime smoke failure
 - PR #104: merged; network-boundary and status hardening
-- main CI #1280: success on the current `main` state `9ef0f74f4356f6f237a66422116fb064eacddcd5`
-- the current main hardening changes are verified after merge; the published v3.8.1 release remains the stable distribution artifact
+- post-release reconciliation is subject to its own main CI verification
+- the v3.8.3 stable release is the current distribution artifact; v3.8.1 remains the verified rollback target
 
 ## Product gates
 
@@ -111,4 +114,4 @@ A capability receipt is not independent proof. Work is verified only when indepe
 
 ## Historical release records
 
-The historical v3.8.0 and earlier closeout records are retained below for provenance. They are not the current main status.
+The historical v3.8.0, v3.8.1, and v3.8.2 closeout records are retained below for provenance. v3.8.2 is explicitly superseded and not a rollback target.
