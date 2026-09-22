@@ -4,9 +4,9 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.8.5 is the current stable release.**
+**v3.8.6 is the current stable release.**
 
-v3.8.5 preserves the verified v3.8.4 runtime contract and adds immutable container-base provenance plus an explicit production resource/log envelope.
+v3.8.6 preserves the verified v3.8.5 runtime contract and hardens Dockerfile metadata validation plus post-release source/version lineage enforcement.
 
 The v3.4 line established the executable operator benchmark across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution. Later releases added local product surfaces, proof compatibility, recovery, Control Plane safety, MCP/A2A interoperability, OTLP audit export, diagnostics, network-boundary hardening, and reproducible distribution.
 
@@ -14,15 +14,15 @@ The v3.4 line established the executable operator benchmark across research, HTT
 
 Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify -> Recover/Substitute -> Deliver -> Proof -> Retain -> Control -> Compensate
 
-## v3.8.5 release evidence
+## v3.8.6 release evidence
 
-- GitHub Release: `v3.8.5` (ID `393990944`)
-- release commit: `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`
-- Release workflow #218: success
-- Container workflow #215: success
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.5`
-- GHCR digest: `sha256:0efe2ff7d2a2b97707c32d91523d38a0932e796ea417d38b0d4a1fdb8d1315a5`
-- immutable image tag: `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`
+- GitHub Release: `v3.8.6` (ID `394008890`)
+- release commit: `f8deba828ca0f206714e3b2acc7e12ed774f5816`
+- Release workflow #222: success
+- Container workflow #219: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.6`
+- GHCR digest: `sha256:953bab56b734434885bf74022e9b0260f64369c4a9c968e1792ce49874f6058d`
+- immutable image tag: `f8deba828ca0f206714e3b2acc7e12ed774f5816`
 - rollback: v3.8.1 / `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 - five release assets published and SHA256-verified
 - anonymous GHCR pull: verified
@@ -30,7 +30,7 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - production Compose restart/persistence: verified
 - disposable external TLS/auth/backup/restore/rollback topology: verified
 
-### v3.8.5 hardening
+### v3.8.6 hardening
 
 - Docker build/runtime stages use immutable `node:24.21.0-trixie-slim` digest `sha256:8ec5d7557396cfe32d21c3f9c13072355ceab22b584578ca4bb28af31120cffe`.
 - CI, Release, and Container workflows reject mutable Docker base references.
@@ -72,11 +72,11 @@ The runtime remains the authority for execution, risk policy, effects, verificat
 
 ### GitHub Release
 
-The v3.8.5 release publishes:
+The v3.8.6 release publishes:
 
-- `operational-reality-core-3.8.5.tgz`
-- `workproof-runtime-v3.8.5.tar.gz`
-- `workproof-benchmark-v3.8.5.json`
+- `operational-reality-core-3.8.6.tgz`
+- `workproof-runtime-v3.8.6.tar.gz`
+- `workproof-benchmark-v3.8.6.json`
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
@@ -84,7 +84,7 @@ The release pipeline re-downloads published assets, verifies SHA256 sums, verifi
 
 ### GHCR container
 
-`ghcr.io/ahmedsaturki/workproof-runtime:3.8.5@sha256:0efe2ff7d2a2b97707c32d91523d38a0932e796ea417d38b0d4a1fdb8d1315a5`
+`ghcr.io/ahmedsaturki/workproof-runtime:3.8.6@sha256:953bab56b734434885bf74022e9b0260f64369c4a9c968e1792ce49874f6058d`
 
 The immutable commit tag is `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`.
 
@@ -97,7 +97,7 @@ The repository includes:
 - `docs/CONTAINER-RUNTIME.md`
 - `docs/PRODUCTION-DEPLOYMENT.md`
 
-Production Compose pins the exact verified v3.8.5 image digest, binds the host port to localhost, persists `./work-runs`, and applies bounded resources/logs. The Control Plane is the authenticated mutation boundary.
+Production Compose pins the exact verified v3.8.6 image digest, binds the host port to localhost, persists `./work-runs`, and applies bounded resources/logs. The Control Plane is the authenticated mutation boundary.
 
 A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets. Those external resources are intentionally not claimed as provisioned by this repository.
 
@@ -153,6 +153,6 @@ WorkProof Runtime is not a replacement for agents, browsers, workflow engines, m
 
 ## Historical release provenance
 
-v3.8.4 was the preceding verified stable distribution. v3.8.2 is retained as superseded history and is not a rollback target. v3.8.1 remains the verified rollback release.
+v3.8.5 was the preceding verified stable distribution. v3.8.2 is retained as superseded history and is not a rollback target. v3.8.1 remains the verified rollback release.
 
 See `STATUS.md`, `SOURCE-MANIFEST.md`, `docs/release-lineage.json`, and `docs/PRODUCT-READINESS-V1.md` for the current verification and product-readiness records.
