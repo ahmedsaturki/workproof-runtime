@@ -46,7 +46,7 @@ jobs:
           PACK_DIR="${RUNNER_TEMP}/workproof-pack"
           SMOKE_DIR="${RUNNER_TEMP}/workproof-cli-smoke"
           mkdir -p "${PACK_DIR}" "${SMOKE_DIR}"
-          PACKAGE_FILE="$(npm pack --pack-destination "${PACK_DIR}" | tail -n 1)"
+          PACKAGE_FILE="$(npm pack --silent --pack-destination "${PACK_DIR}")"
           test -s "${PACK_DIR}/${PACKAGE_FILE}"
           npm install --prefix "${SMOKE_DIR}" "${PACK_DIR}/${PACKAGE_FILE}"
           "${SMOKE_DIR}/node_modules/.bin/workctl" --help
