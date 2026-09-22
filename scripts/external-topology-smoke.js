@@ -142,7 +142,7 @@ async function main() {
     run("docker", ["network", "create", network]);
     cleanup.push(() => run("docker", ["network", "rm", network], true));
 
-    run("docker", ["run", "-d", "--name", appName, "--network", network, "-v", dataDir + ":/data/work-runs", runtimeImage, "sh", "-c", "node dist/apps/studio.js /data/work-runs 8788 0.0.0.0"]);
+    run("docker", ["run", "-d", "--name", appName, "--network", network, "-e", "WORKPROOF_ALLOW_NON_LOOPBACK=1", "-v", dataDir + ":/data/work-runs", runtimeImage, "sh", "-c", "node dist/apps/studio.js /data/work-runs 8788 0.0.0.0"]);
     cleanup.push(() => remove(appName));
 
     const directHealth = run("docker", ["exec", appName, "node", "-e", "fetch('http://127.0.0.1:8788/health').then(async r => { const t=await r.text(); if(!r.ok) process.exit(1); process.stdout.write(t); }).catch(() => process.exit(1))"]);
@@ -171,13 +171,13 @@ async function main() {
     fs.mkdirSync(dataDir, { recursive: true });
     run("tar", ["-C", dataDir, "-xzf", backupPath]);
 
-    run("docker", ["run", "-d", "--name", appName, "--network", network, "-v", dataDir + ":/data/work-runs", productionImage, "sh", "-c", "node dist/apps/studio.js /data/work-runs 8788 0.0.0.0"]);
+    run("docker", ["run", "-d", "--name", appName, "--network", network, "-e", "WORKPROOF_ALLOW_NON_LOOPBACK=1", "-v", dataDir + ":/data/work-runs", productionImage, "sh", "-c", "node dist/apps/studio.js /data/work-runs 8788 0.0.0.0"]);
     waitHealthy(baseUrl, packageJson.version, "smoke", password);
     const restored = curlJson(baseUrl + "/api/work/" + work.id, "smoke", password);
     if (restored.work?.status !== "verified") throw new Error("Backup/restore did not preserve authoritative work");
 
     remove(appName);
-    run("docker", ["run", "-d", "--name", appName, "--network", network, "-v", dataDir + ":/data/work-runs", rollbackImage, "sh", "-c", "node dist/apps/studio.js /data/work-runs 8788 0.0.0.0"]);
+    run("docker", ["run", "-d", "--name", appName, "--network", network, "-e", "WORKPROOF_ALLOW_NON_LOOPBACK=1", "-v", dataDir + ":/data/work-runs", rollbackImage, "sh", "-c", "node dist/apps/studio.js /data/work-runs 8788 0.0.0.0"]);
     waitHealthy(baseUrl, lineage.rollback.version, "smoke", password);
     const rolled = curlJson(baseUrl + "/api/work/" + work.id, "smoke", password);
     if (rolled.work?.status !== "verified") throw new Error("Rollback image did not preserve readable authoritative work");
