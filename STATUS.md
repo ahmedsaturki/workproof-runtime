@@ -10,7 +10,7 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 
 - package version: `3.8.0`
 - latest verified main state: `f1fffafd415af41c4b4a12ffb6418d2d5850fd7c`
-- latest main CI #1257: success
+- verification basis: main CI #1257 succeeded on that main state
 - stable release source commit: `2b02d22e897d5fe736f93267c72036d951f74082`
 - promotion branch: `promote/v3.8.0-main`
 - stable main promotion: complete in `5b74c2f98f5f46ce75371bcf8301857da75a0947`
