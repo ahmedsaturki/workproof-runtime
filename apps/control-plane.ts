@@ -61,7 +61,7 @@ function registerRuntimePacks(registry: CapabilityRegistry, verification: Verifi
 }
 
 function createRuntimeRegistry(): CapabilityRegistry {
-  const registry = controlCapabilityRegistry;
+  const registry = new CapabilityRegistry();
   const verification = new VerificationEngine();
   registerRuntimePacks(registry, verification);
   return registry;
