@@ -230,7 +230,9 @@ async function main(): Promise<void> {
   }, null, 2) + "\n");
 }
 
-main().catch((error) => {
-  process.stderr.write(String(error) + "\n");
-  process.exitCode = 1;
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename)) {
+  main().catch((error) => {
+    process.stderr.write(String(error) + "\n");
+    process.exitCode = 1;
+  });
+}
