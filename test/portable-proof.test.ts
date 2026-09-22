@@ -71,7 +71,7 @@ function createProof(dir: string): { proofPath: string; artifactPath: string; ke
 }
 
 test("portable proof export/import preserves integrity, signature, and sidecar artifacts", () => {
-  const root = fs.mkdtempSync("/tmp/workproof-portable-v1-");
+  const root = fs.mkdtempSync(require("path").join(require("os").tmpdir(), "workproof-portable-v1-"));
   const sourceDir = path.join(root, "source");
   const bundleDir = path.join(root, "bundle");
   const importedDir = path.join(root, "imported");
@@ -116,7 +116,7 @@ test("portable proof export/import preserves integrity, signature, and sidecar a
 });
 
 test("CLI portable proof workflow exports, verifies, and imports a proof bundle", () => {
-  const root = fs.mkdtempSync("/tmp/workproof-portable-cli-");
+  const root = fs.mkdtempSync(require("path").join(require("os").tmpdir(), "workproof-portable-cli-"));
   try {
     const created = createProof(path.join(root, "source"));
     const bundleDir = path.join(root, "bundle");
@@ -143,7 +143,7 @@ test("CLI portable proof workflow exports, verifies, and imports a proof bundle"
 });
 
 test("portable proof verification rejects bundle path traversal", () => {
-  const root = fs.mkdtempSync("/tmp/workproof-portable-traversal-");
+  const root = fs.mkdtempSync(require("path").join(require("os").tmpdir(), "workproof-portable-traversal-"));
   try {
     const manifest = {
       version: "0.1",
@@ -162,7 +162,7 @@ test("portable proof verification rejects bundle path traversal", () => {
 });
 
 test("portable verifier rejects manifest omissions and sidecar symlinks", () => {
-  const root = fs.mkdtempSync("/tmp/workproof-portable-manifest-");
+  const root = fs.mkdtempSync(require("path").join(require("os").tmpdir(), "workproof-portable-manifest-"));
   try {
     const created = createProof(path.join(root, "source"));
     const bundleDir = path.join(root, "bundle");
@@ -187,7 +187,7 @@ test("portable verifier rejects manifest omissions and sidecar symlinks", () => 
 });
 
 test("portable export rejects a symlinked bundle directory", () => {
-  const root = fs.mkdtempSync("/tmp/workproof-portable-root-");
+  const root = fs.mkdtempSync(require("path").join(require("os").tmpdir(), "workproof-portable-root-"));
   try {
     const created = createProof(path.join(root, "source"));
     const outside = path.join(root, "outside");
