@@ -4,7 +4,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { startRegistryServer } = require("../packages/registry/src/http.js");
-const { createAuthPolicy, issueCredential, addIssuedCredential, revokeCredential, hashToken } = require("../packages/registry/src/auth.js");
+const { createAuthPolicy, issueCredential, addIssuedCredential, revokeCredential, hashToken, hardenPrivateFile } = require("../packages/registry/src/auth.js");
 const { buildProofBundle } = require("../packages/evidence/src/bundle.js");
 const { buildIntegrityManifest } = require("../packages/evidence/src/integrity.js");
 import type { RegistryAuthPolicy, IssuedCredential, RegistryPermission } from "../packages/registry/src/auth";
@@ -62,6 +62,40 @@ function withCredential(policy: RegistryAuthPolicy, args: { id: string; permissi
   return { issued, policy: addIssuedCredential(policy, issued) };
 }
 
+test("private file hardening uses platform-appropriate permissions", () => {
+  const root = tempDir("workproof-private-file-");
+  const file = path.join(root, "secret.json");
+  fs.writeFileSync(file, "secret\n", "utf8");
+  try {
+    hardenPrivateFile(file);
+    if (require("process").platform !== "win32") {
+      assert.equal(fs.statSync(file).mode & 0o777, 0o600);
+      return;
+    }
+
+    const systemRoot = require("process").env.SystemRoot;
+    const whoami = path.join(systemRoot, "System32", "whoami.exe");
+    const icacls = path.join(systemRoot, "System32", "icacls.exe");
+    const childProcess = require("child_process");
+    const identity = childProcess.spawnSync(whoami, ["/user", "/fo", "csv", "/nh"], { encoding: "utf8", windowsHide: true });
+    assert.equal(identity.status, 0, identity.stderr || identity.stdout);
+    const sid = /"[^"]*","(S-[0-9-]+)"/.exec(String(identity.stdout ?? "").trim())?.[1];
+    assert.ok(sid);
+
+    const verify = childProcess.spawnSync(icacls, [file, "/verify"], { encoding: "utf8", windowsHide: true });
+    assert.equal(verify.status, 0, verify.stderr || verify.stdout);
+
+    const userMatch = childProcess.spawnSync(icacls, [file, "/findsid", `*\${sid}`], { encoding: "utf8", windowsHide: true });
+    assert.equal(userMatch.status, 0, userMatch.stderr || userMatch.stdout);
+    assert.match(String(userMatch.stdout ?? ""), /secret\.json/i);
+
+    const systemMatch = childProcess.spawnSync(icacls, [file, "/findsid", "*S-1-5-18"], { encoding: "utf8", windowsHide: true });
+    assert.equal(systemMatch.status, 0, systemMatch.stderr || systemMatch.stdout);
+    assert.match(String(systemMatch.stdout ?? ""), /secret\.json/i);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
 test("authenticated registry separates public health from protected proof operations", async () => {
   const root = tempDir("workproof-auth-");
   const base = createAuthPolicy();
@@ -113,7 +147,7 @@ test("namespace credentials isolate proof storage and retain no plaintext token 
     assert.equal(aList.body.records.length, 1);
 
     const auditPath = path.join(root, "auth-events.jsonl");
-    assert.equal(fs.statSync(auditPath).mode & 0o777, 0o600);
+    if (require("process").platform !== "win32") assert.equal(fs.statSync(auditPath).mode & 0o777, 0o600);
     const audit = fs.readFileSync(auditPath, "utf8");
     assert.ok(audit.includes('"credentialId":"team-a-writer"'));
     assert.ok(audit.includes('"credentialId":"team-b-reader"'));
