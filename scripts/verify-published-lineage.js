@@ -52,7 +52,7 @@ async function main() {
     "operational-reality-core-" + release.version + ".tgz",
     "RELEASE-MANIFEST.txt",
     "SHA256SUMS.txt",
-    "workproof-benchmark-" + release.version + ".json",
+    "workproof-benchmark-" + release.tag + ".json",
     "workproof-runtime-" + release.version + ".tar.gz"
   ];
   for (const name of expectedAssets) if (!assetNames.includes(name)) throw new Error("Published release is missing asset " + name);
