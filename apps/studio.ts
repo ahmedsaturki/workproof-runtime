@@ -10,6 +10,26 @@ const { loadTrustPolicy, evaluateProofTrust } = require("../packages/evidence/sr
 const { verifyProofIntegrity } = require("../packages/evidence/src/integrity.js");
 const { verifyProofSignature } = require("../packages/evidence/src/signature.js");
 
+function readRuntimeVersion(): string {
+  const candidates = [
+    path.resolve(__dirname, "../../package.json"),
+    path.resolve(process.cwd(), "package.json")
+  ];
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(candidate, "utf8"));
+      if (typeof parsed?.version === "string" && parsed.version.trim()) return parsed.version.trim();
+    } catch {
+      // Try the next known package location.
+    }
+  }
+  const environmentVersion = process.env.npm_package_version;
+  if (environmentVersion && environmentVersion.trim()) return environmentVersion.trim();
+  throw new Error("Unable to determine WorkProof Runtime version");
+}
+
+const RUNTIME_VERSION = readRuntimeVersion();
+
 const MAX_WORKS = 1000;
 const MAX_BODY_BYTES = 1024 * 1024;
 
@@ -871,7 +891,7 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
       if (method === "GET" && url.pathname === "/health") {
         sendJson(res, 200, {
           status: "ok",
-          version: "3.0",
+          version: RUNTIME_VERSION,
           mode: configuredControlPlane ? "authenticated-control" : "read-only",
           proofVault: Boolean(vaultDirectory)
         });
@@ -1144,7 +1164,7 @@ if (runtimeProcess.argv[1] && path.resolve(runtimeProcess.argv[1]) === path.reso
         process.stdout.write(JSON.stringify({
           studio: `http://${running.host}:${running.port}`,
           workDirectory: path.resolve(workDirectory),
-          version: "2.9",
+          version: RUNTIME_VERSION,
           mode: controlPlaneUrlArg ? "authenticated-control" : "read-only",
           proofVault: Boolean(vaultDirectoryArg)
         }, null, 2) + "\n");
