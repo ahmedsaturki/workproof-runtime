@@ -54,7 +54,7 @@ WORKPROOF_A2A_TOKEN=replace-me \
 npm run a2a-server
 ```
 
-The adapter defaults to loopback. Non-loopback/public deployment should use HTTPS at the edge and explicit authentication.
+The adapter defaults to loopback. Non-loopback startup is refused unless `WORKPROOF_A2A_PUBLIC_URL` is an explicit `https://` URL; bearer authentication remains required, and TLS should terminate at an authenticated edge.
 
 ## Product boundary
 

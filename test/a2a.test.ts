@@ -178,3 +178,10 @@ test("A2A ListTasks projects Work Object summaries into tasks", async () => {
     await new Promise<void>(resolve => controlServer.close(() => resolve()));
   }
 });
+
+test("A2A refuses non-loopback plaintext binding", async () => {
+  await assert.rejects(
+    () => startA2AServer({ host: "0.0.0.0", port: 0, token: "a2a-plaintext-rejection-token" }),
+    /HTTPS publicUrl/
+  );
+});

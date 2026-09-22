@@ -2,6 +2,9 @@ import { Capability, CapabilityReceipt, EvidenceRef, Verifier } from "../../core
 const { spawn } = require("child_process");
 const { request: httpRequest } = require("http");
 const { randomBytes } = require("crypto");
+const fs = require("fs");
+const path = require("path");
+const platform = require("process").platform;
 
 interface BrowserAction { type: "navigate" | "fill" | "click" | "get_text"; selector?: string; value?: string; url?: string; }
 export interface BrowserWorkflowInput { startUrl: string; actions: BrowserAction[]; expectedText?: string; html?: string; cdpPort?: number; }
@@ -68,7 +71,7 @@ async function waitFor(ws: WebSocket & { call?: (m: string, p?: any) => Promise<
 }
 
 function ensureBrowser(port = 0): any {
-  const profile = `/tmp/workproof-chromium-${process.pid}-${randomBytes(4).toString("hex")}`;
+  const profile = fs.mkdtempSync(path.join(require("os").tmpdir(), `workproof-chromium-${process.pid}-${randomBytes(4).toString("hex")}-`));
   const browserBinary = process.env.WORKPROOF_BROWSER_BINARY || "chromium";
   const browser = spawn(browserBinary, [
     "--headless",
@@ -82,7 +85,8 @@ function ensureBrowser(port = 0): any {
     `--remote-debugging-port=${port}`,
     `--user-data-dir=${profile}`,
     "about:blank"
-  ], { stdio: ["ignore", "pipe", "pipe"], detached: true });
+  ], { stdio: ["ignore", "pipe", "pipe"], detached: platform !== "win32" });
+  browser.workproofProfile = profile;
   try { browser.unref?.(); } catch {}
   return browser;
 }
@@ -133,10 +137,11 @@ function killBrowser(browser: any): void {
   if (!browser) return;
   try {
     const browserPid = (browser as any).pid as number | undefined;
-    if (browserPid) process.kill(-browserPid, "SIGKILL");
+    if (browserPid && platform !== "win32") process.kill(-browserPid, "SIGKILL");
   } catch {
     try { browser.kill("SIGKILL"); } catch {}
   }
+  try { if (browser.workproofProfile) fs.rmSync(browser.workproofProfile, { recursive: true, force: true }); } catch {}
 }
 
 class LocalBrowserCapability implements Capability {
