@@ -16,6 +16,17 @@ export interface DoctorReport {
   checks: DoctorCheck[];
 }
 
+function compareVersions(a: string, b: string): number {
+  const left = a.replace(/^[^0-9]*/, "").split(".").map(Number);
+  const right = b.replace(/^[^0-9]*/, "").split(".").map(Number);
+  for (let index = 0; index < Math.max(left.length, right.length); index += 1) {
+    const l = Number.isFinite(left[index]) ? left[index] : 0;
+    const r = Number.isFinite(right[index]) ? right[index] : 0;
+    if (l !== r) return l - r;
+  }
+  return 0;
+}
+
 function runtimeVersion(): string {
   const cwd = require("process").cwd();
   const candidates = [
@@ -76,10 +87,24 @@ export async function runDoctor(env: Record<string, string | undefined> = proces
   const version = runtimeVersion();
   const checks: DoctorCheck[] = [];
 
+  checks.push({
+    id: "node-version",
+    state: compareVersions(process.version, "v24.15.0") >= 0 ? "ok" : "failed",
+    detail: process.version
+  });
+
   const workDirectory = path.resolve(env.WORKPROOF_WORK_DIRECTORY ?? "./work-runs");
   try {
     const stat = fs.statSync(workDirectory);
     checks.push({ id: "work-directory", state: stat.isDirectory() ? "ok" : "failed", detail: stat.isDirectory() ? workDirectory : "configured work directory is not a directory" });
+    if (stat.isDirectory()) {
+      try {
+        fs.accessSync(workDirectory, fs.constants.R_OK | fs.constants.W_OK);
+        checks.push({ id: "work-directory-access", state: "ok", detail: "read/write access available" });
+      } catch (error) {
+        checks.push({ id: "work-directory-access", state: "failed", detail: String((error as any)?.message ?? error) });
+      }
+    }
   } catch {
     checks.push({ id: "work-directory", state: "warn", detail: workDirectory + " does not exist yet" });
   }
@@ -92,10 +117,10 @@ export async function runDoctor(env: Record<string, string | undefined> = proces
   const controlPlaneUrl = env.WORKPROOF_CONTROL_PLANE_URL;
   if (controlPlaneUrl) {
     await probe(checks, "control-plane-health", controlPlaneUrl, "/health", {
-      expected: (body) => body?.status === "ok" && typeof body?.version === "string"
+      expected: (body) => body?.status === "ok" && body?.version === version
     });
     await probe(checks, "control-plane-readiness", controlPlaneUrl, "/ready", {
-      expected: (body) => body?.status === "ready"
+      expected: (body) => body?.status === "ready" && body?.version === version
     });
   } else {
     checks.push({ id: "control-plane-health", state: "skipped", detail: "WORKPROOF_CONTROL_PLANE_URL is not configured" });
@@ -107,7 +132,7 @@ export async function runDoctor(env: Record<string, string | undefined> = proces
     const token = env.WORKPROOF_STUDIO_TOKEN;
     await probe(checks, "studio-health", studioUrl, "/api/operations/overview", {
       ...(token ? { token } : {}),
-      expected: (body) => body && typeof body === "object" && typeof body.work === "object"
+      expected: (body) => body && typeof body === "object" && body.version === "3.0" && typeof body.work === "object"
     });
   } else {
     checks.push({ id: "studio-health", state: "skipped", detail: "WORKPROOF_STUDIO_URL is not configured" });
@@ -116,7 +141,7 @@ export async function runDoctor(env: Record<string, string | undefined> = proces
   const a2aUrl = env.WORKPROOF_A2A_URL;
   if (a2aUrl) {
     await probe(checks, "a2a-agent-card", a2aUrl, "/.well-known/agent-card.json", {
-      expected: (body) => body?.name === "WorkProof Runtime" && Array.isArray(body?.supportedInterfaces)
+      expected: (body) => body?.name === "WorkProof Runtime" && body?.version === version && Array.isArray(body?.supportedInterfaces)
     });
   } else {
     checks.push({ id: "a2a-agent-card", state: "skipped", detail: "WORKPROOF_A2A_URL is not configured" });
