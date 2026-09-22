@@ -126,7 +126,7 @@ WorkProof Runtime is not required to become a generic agent framework, browser a
 
 ## Implemented local-first product baseline
 
-The following gates are executable and CI-verified on the current v3.4.0-dev.9 lineage and its published distribution:
+The following gates are executable and CI-verified on the current v3.4.0-dev.10 lineage and its published distribution:
 
 - [x] Runtime version is sourced from package metadata instead of stale hard-coded product versions.
 - [x] Studio process startup honors control-plane, proof-vault, and trust-policy configuration from arguments/environment.
@@ -159,6 +159,6 @@ The local-first P0 foundations are complete and executable:
 Remaining product-validation work is expansion beyond the current prerelease scope: broader multi-capability mission composition, additional adapters, and wider operational visualization. The required local-first/external-topology acceptance gates for this prerelease are complete.
 
 
-## Dev.9 release state
+## Dev.10 release state
 
-The current shipped prerelease is `v3.4.0-dev.9`. Its Release and Container workflows both completed their required verification gates. The current main branch is the post-release closeout line.
+The current shipped prerelease is `v3.4.0-dev.10`. Release verification run #113 and Container verification run #110 both completed their required gates, including the disposable external-topology validation.
