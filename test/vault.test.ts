@@ -34,7 +34,7 @@ function writeFixture(dir: string, withArtifact = true) {
 }
 
 test("vault publication is content-addressed and idempotent", () => {
-  const dir = "/tmp/workproof-vault";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-vault");
   const { proofPath, artifactPath } = writeFixture(dir);
   const vault = path.join(dir, "vault");
 
@@ -49,7 +49,7 @@ test("vault publication is content-addressed and idempotent", () => {
 });
 
 test("vault restore verifies proof and retained artifact integrity", () => {
-  const dir = "/tmp/workproof-vault-restore";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-vault-restore");
   const { proofPath } = writeFixture(dir, false);
   const vault = path.join(dir, "vault");
   const record = publishProof(proofPath, vault);
@@ -66,7 +66,7 @@ test("vault restore verifies proof and retained artifact integrity", () => {
 
 
 test("vault rejects a corrupted retained artifact during publish and restore", () => {
-  const dir = "/tmp/workproof-vault-artifact-corruption";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-vault-artifact-corruption");
   const { proofPath, artifactPath } = writeFixture(dir);
   const vault = path.join(dir, "vault");
   const record = publishProof(proofPath, vault);
@@ -84,7 +84,7 @@ test("vault rejects a corrupted retained artifact during publish and restore", (
 });
 
 test("vault rejects malformed or duplicated index records", () => {
-  const dir = "/tmp/workproof-vault-index";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-vault-index");
   const { proofPath } = writeFixture(dir, false);
   const vault = path.join(dir, "vault");
   const record = publishProof(proofPath, vault);
@@ -97,7 +97,7 @@ test("vault rejects malformed or duplicated index records", () => {
 
 
 test("vault rejects index artifact references that are absent from the proof", () => {
-  const dir = "/tmp/workproof-vault-reference";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-vault-reference");
   const { proofPath } = writeFixture(dir, true);
   const vault = path.join(dir, "vault");
   const record = publishProof(proofPath, vault);
@@ -110,7 +110,7 @@ test("vault rejects index artifact references that are absent from the proof", (
 
 
 test("vault rejects proof and artifact paths that escape the vault", () => {
-  const dir = "/tmp/workproof-vault-paths";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-vault-paths");
   const { proofPath } = writeFixture(dir, true);
   const vault = path.join(dir, "vault");
   const record = publishProof(proofPath, vault);
@@ -135,7 +135,7 @@ test("vault rejects proof and artifact paths that escape the vault", () => {
 
 
 test("vault does not silently collapse the same proof under different signer identities", () => {
-  const dir = "/tmp/workproof-vault-signers";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-vault-signers");
   const { proofPath } = writeFixture(dir, false);
   const vault = path.join(dir, "vault");
   const first = publishProof(proofPath, vault);
@@ -154,7 +154,7 @@ test("vault does not silently collapse the same proof under different signer ide
 
 
 test("vault retains artifacts addressed by file URIs", () => {
-  const dir = "/tmp/workproof-vault-file-uri";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-vault-file-uri");
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const artifactPath = path.join(dir, "artifact.txt");
