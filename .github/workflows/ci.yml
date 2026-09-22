@@ -36,6 +36,21 @@ jobs:
       - name: Build TypeScript
         run: npm run build
         timeout-minutes: 2
+      - name: Packed CLI install smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          PACK_DIR="${RUNNER_TEMP}/workproof-pack"
+          SMOKE_DIR="${RUNNER_TEMP}/workproof-cli-smoke"
+          mkdir -p "${PACK_DIR}" "${SMOKE_DIR}"
+          PACKAGE_FILE="$(npm pack --pack-destination "${PACK_DIR}" | tail -n 1)"
+          test -s "${PACK_DIR}/${PACKAGE_FILE}"
+          npm install --prefix "${SMOKE_DIR}" "${PACK_DIR}/${PACKAGE_FILE}"
+          "${SMOKE_DIR}/node_modules/.bin/workctl" --help
+          "${SMOKE_DIR}/node_modules/.bin/workctl" keygen "${SMOKE_DIR}/private.pem" "${SMOKE_DIR}/public.pem"
+          test -s "${SMOKE_DIR}/private.pem"
+          test -s "${SMOKE_DIR}/public.pem"
+          echo "packed CLI install and execution verified"
       - name: Run retention lifecycle suite
         run: node --test dist/test/retention.test.js
         timeout-minutes: 2
