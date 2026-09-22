@@ -24,6 +24,7 @@ test("release metadata is explicit and reproducible", () => {
 });
 
 test("main release-state guard keeps release-control allowlist explicit", () => {
+  assert.match(releaseStateScript, /SPEC\.md/);
   assert.match(releaseStateScript, /\.github\/workflows\/release\.yml/);
   assert.match(releaseStateScript, /scripts\/verify-main-release-state\.js/);
   assert.match(releaseStateScript, /test\/release-metadata\.test\.ts/);
