@@ -177,8 +177,7 @@ test("portable verifier rejects manifest omissions and sidecar symlinks", () => 
     const artifact = manifest.artifacts[0];
     const sidecar = path.join(bundleDir, artifact.path as string);
     const outside = path.join(root, "outside.txt");
-    fs.writeFileSync(outside, "outside
-", "utf8");
+    fs.writeFileSync(outside, "outside\n", "utf8");
     fs.unlinkSync(sidecar);
     fs.symlinkSync(outside, sidecar);
     assert.throws(() => verifyPortableProof(bundleDir), /must be a regular file/);
