@@ -90,7 +90,8 @@ jobs:
           test -s "${SMOKE_DIR}/public.pem"
           "${SMOKE_DIR}/node_modules/.bin/workctl" trust-add "${SMOKE_DIR}/public.pem" "${SMOKE_DIR}/trust.json" "packed-cli-smoke"
           test -s "${SMOKE_DIR}/trust.json"
-          echo "packed CLI install and execution verified"
+          node scripts/packed-control-plane-smoke.js "${SMOKE_DIR}/node_modules/operational-reality-core"
+          echo "packed CLI and control-plane execution verified"
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
