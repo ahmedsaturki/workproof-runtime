@@ -85,9 +85,9 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 
 - current verified release lineage: v3.8.10
 - current stable release commit: `9daac7a926ce1631ac708a6c234379d622c56c19`
-- release workflow #239: success
-- container workflow #236: success
-- GHCR digest: `sha256:0c31c571480d45d5f46f5ae6f8b8a4b1328094a7561f76aee7016c99e586eb10`
+- release workflow #261: success
+- container workflow #258: success
+- GHCR digest: `sha256:cad9c467db8fe82abd1b15d30d90dbf7e87ad6683f44a8c7c8763c327af6a1c8`
 - v3.3 implementation merge: `c5e951056461c37f45bed8bb8406d119880d63df`
 - v3.3 closeout correction: `0c92a8c86950776243646de4bb40b0c0f2fe5876`
 - v3.4 implementation merge: `fe662d5bb5337bde18772f22864434935d59f66f`
