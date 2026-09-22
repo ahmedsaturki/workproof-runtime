@@ -85,7 +85,7 @@ A product release must not be called production-ready solely because CI is green
 
 ## Current verified baseline — 2026-09-22
 
-The repository currently records v3.4 benchmark verification and the `v3.4.0-dev.2` distribution path. Main CI is green on the latest main checkpoint. The published release and GHCR image are integrity-verified. Localhost-bound production compose and a deployment runbook exist.
+The repository currently records v3.4 benchmark verification and the coherent `v3.4.0-dev.4` distribution path. Main CI, release verification, and container publication are integrity-verified. Localhost-bound production compose and a deployment runbook are pinned to the verified dev.4 image.
 
 These facts establish a strong verified foundation, but they do **not** by themselves establish a public production deployment. Public host/DNS/TLS/auth/secrets provisioning remains an external infrastructure gate.
 
@@ -93,10 +93,15 @@ These facts establish a strong verified foundation, but they do **not** by thems
 
 The next work must prioritize executable product value over additional abstract architecture:
 
-1. Fresh-checkout local install and operator smoke.
-2. Stable product-facing mission format and example missions.
+Completed in the dev.4 product-readiness line:
+
+1. Fresh-checkout package install and operator smoke.
+2. Stable product-facing mission format and runnable example mission.
 3. Persistent restart/recovery acceptance test.
 4. Security negative-path coverage for authenticated control and capability policy.
+
+Remaining product-validation gates:
+
 5. Portable export/import of mission proof as a first-class user workflow.
 6. Operator UX for failure, ambiguity, recovery, and proof—not only success paths.
 7. Versioned compatibility policy for capabilities and proof bundles.
@@ -118,9 +123,9 @@ Do not claim completion if any of these are true:
 
 WorkProof Runtime is not required to become a generic agent framework, browser automation product, workflow engine, memory database, observability backend, or OSINT graph. Those systems may integrate as capabilities/adapters. The durable Work Object, outcome contract, effect, verification, recovery, and proof semantics remain the product's invariant boundary.
 
-## Implemented in product-readiness-v1
+## Implemented in product-readiness-v1 / dev.4
 
-The following gates are now executable and CI-verified on this branch:
+The following gates are executable and CI-verified on the current dev.4 release branch and published distribution:
 
 - [x] Runtime version is sourced from package metadata instead of stale hard-coded product versions.
 - [x] Studio process startup honors control-plane, proof-vault, and trust-policy configuration from arguments/environment.
