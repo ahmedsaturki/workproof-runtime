@@ -180,12 +180,12 @@ jobs:
         run: |
           $x86 = [System.Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
           $candidates = @(
-            (Join-Path $env:ProgramFiles 'GoogleChromeApplicationchrome.exe'),
-            (Join-Path $x86 'GoogleChromeApplicationchrome.exe'),
-            (Join-Path $env:LOCALAPPDATA 'GoogleChromeApplicationchrome.exe'),
-            (Join-Path $env:ProgramFiles 'MicrosoftEdgeApplicationmsedge.exe'),
-            (Join-Path $x86 'MicrosoftEdgeApplicationmsedge.exe'),
-            (Join-Path $env:LOCALAPPDATA 'MicrosoftEdgeApplicationmsedge.exe')
+            (Join-Path $env:ProgramFiles 'Google\\Chrome\\Application\\chrome.exe'),
+            (Join-Path $x86 'Google\\Chrome\\Application\\chrome.exe'),
+            (Join-Path $env:LOCALAPPDATA 'Google\\Chrome\\Application\\chrome.exe'),
+            (Join-Path $env:ProgramFiles 'Microsoft\\Edge\\Application\\msedge.exe'),
+            (Join-Path $x86 'Microsoft\\Edge\\Application\\msedge.exe'),
+            (Join-Path $env:LOCALAPPDATA 'Microsoft\\Edge\\Application\\msedge.exe')
           ) | Where-Object { $_ -and (Test-Path $_) }
           $browser = $candidates | Select-Object -First 1
           if (-not $browser) { throw 'No Chromium-based browser was found on windows-latest' }
