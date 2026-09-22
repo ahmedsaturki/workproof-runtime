@@ -18,6 +18,12 @@ async function server(handler: any): Promise<{ base: string; close(): Promise<vo
   };
 }
 
+function checkState(report: any, id: string): string {
+  const item = report.checks.find((check: any) => check.id === id);
+  assert.ok(item, "missing doctor check: " + id);
+  return item.state;
+}
+
 test("doctor reports a healthy local installation and connected services", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "workproof-doctor-"));
   fs.mkdirSync(path.join(root, "work-runs"), { recursive: true });
@@ -41,22 +47,17 @@ test("doctor reports a healthy local installation and connected services", async
   try {
     const report = await runDoctor({
       WORKPROOF_WORK_DIRECTORY: path.join(root, "work-runs"),
-      WORKPROOF_PACKAGE_ROOT: process.cwd(),
+      WORKPROOF_PACKAGE_ROOT: require("process").cwd(),
       WORKPROOF_CONTROL_PLANE_URL: control.base,
       WORKPROOF_STUDIO_URL: studio.base,
       WORKPROOF_A2A_URL: a2a.base
     });
     assert.equal(report.status, "ready");
-    const state = (id: string) => {
-      const item = report.checks.find((check: any) => check.id === id);
-      assert.ok(item);
-      return item.state;
-    };
-    assert.equal(state("work-directory"), "ok");
-    assert.equal(state("control-plane-health"), "ok");
-    assert.equal(state("control-plane-readiness"), "ok");
-    assert.equal(state("studio-health"), "ok");
-    assert.equal(state("a2a-agent-card"), "ok");
+    assert.equal(checkState(report, "work-directory"), "ok");
+    assert.equal(checkState(report, "control-plane-health"), "ok");
+    assert.equal(checkState(report, "control-plane-readiness"), "ok");
+    assert.equal(checkState(report, "studio-health"), "ok");
+    assert.equal(checkState(report, "a2a-agent-card"), "ok");
   } finally {
     await control.close();
     await studio.close();
@@ -70,15 +71,10 @@ test("doctor fails when a configured service is unavailable", async () => {
     WORKPROOF_CONTROL_PLANE_URL: "http://127.0.0.1:1"
   });
   assert.equal(report.status, "failed");
-  const state = (id: string) => {
-    const item = report.checks.find((check: any) => check.id === id);
-    assert.ok(item);
-    return item.state;
-  };
-  assert.equal(state("control-plane-health"), "failed");
-  assert.equal(state("control-plane-readiness"), "failed");
-  assert.equal(state("studio-health"), "skipped");
-  assert.equal(state("a2a-agent-card"), "skipped");
+  assert.equal(checkState(report, "control-plane-health"), "failed");
+  assert.equal(checkState(report, "control-plane-readiness"), "failed");
+  assert.equal(checkState(report, "studio-health"), "skipped");
+  assert.equal(checkState(report, "a2a-agent-card"), "skipped");
 });
 
 export {};
