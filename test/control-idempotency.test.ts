@@ -348,4 +348,115 @@ test("Studio forwards idempotency keys to the authenticated control plane", asyn
   }
 });
 
+
+test("failed dispatch finalizes the idempotency key and replays without retrying execution", async () => {
+  const root = tempDir("workproof-idempotency-failed-dispatch-");
+  const repoPath = path.join(root, "work");
+  const repo = new JsonWorkRepository(repoPath);
+  const ledgerPath = path.join(root, "control.sqlite");
+  const credential = issueCredential({ id: "writer-failed-dispatch", permissions: ["write"] });
+  const policy = addIssuedCredential(createAuthPolicy(), credential);
+  let calls = 0;
+
+  const dispatch = async () => {
+    calls += 1;
+    throw new Error("synthetic internal failure must not become the replay payload");
+  };
+
+  const server = await startControlPlane({
+    repository: repo,
+    authPolicy: policy,
+    idempotencyDbPath: ledgerPath,
+    dispatch
+  });
+
+  const url = `http://${server.host}:${server.port}/v1/work/dispatch`;
+  const headers = {
+    authorization: `Bearer ${credential.token}`,
+    "idempotency-key": "dispatch-failed-001",
+    "content-type": "application/json"
+  };
+
+  try {
+    const first = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ objective: "fails once" })
+    });
+    assert.equal(first.status, 500);
+    const firstBody = await first.json();
+    assert.equal(firstBody.error, "mutation-execution-failed");
+    assert.equal(String(JSON.stringify(firstBody)).includes("synthetic internal failure"), false);
+    assert.equal(calls, 1);
+
+    const second = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ objective: "fails once" })
+    });
+    assert.equal(second.status, 500);
+    assert.equal(second.headers.get("x-idempotency-replayed"), "true");
+    const secondBody = await second.json();
+    assert.equal(secondBody.error, "mutation-execution-failed");
+    assert.equal(calls, 1);
+  } finally {
+    await server.close();
+  }
+
+  const ledger = new (require("../packages/control-plane/src/idempotency.js").ControlIdempotencyLedger)(ledgerPath);
+  try {
+    const record = ledger.get("dispatch-failed-001");
+    assert.ok(record);
+    assert.equal(record.state, "failed");
+    assert.equal(record.statusCode, 500);
+  } finally {
+    ledger.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("failed resume finalizes the idempotency key and prevents duplicate resume execution", async () => {
+  const root = tempDir("workproof-idempotency-failed-resume-");
+  const repo = new JsonWorkRepository(path.join(root, "work"));
+  const credential = issueCredential({ id: "writer-failed-resume", permissions: ["write"] });
+  const policy = addIssuedCredential(createAuthPolicy(), credential);
+  const work = sampleWork("resume failure");
+  work.status = "running";
+  repo.save(work);
+  let calls = 0;
+
+  const server = await startControlPlane({
+    repository: repo,
+    authPolicy: policy,
+    idempotencyDbPath: path.join(root, "control.sqlite"),
+    resume: async () => {
+      calls += 1;
+      throw new Error("synthetic resume failure");
+    }
+  });
+
+  const url = `http://${server.host}:${server.port}/v1/work/${work.id}/resume`;
+  const headers = {
+    authorization: `Bearer ${credential.token}`,
+    "idempotency-key": "resume-failed-001"
+  };
+
+  try {
+    const first = await fetch(url, { method: "POST", headers });
+    assert.equal(first.status, 500);
+    assert.equal((await first.json()).error, "mutation-execution-failed");
+    assert.equal(calls, 1);
+
+    const replay = await fetch(url, { method: "POST", headers });
+    assert.equal(replay.status, 500);
+    assert.equal(replay.headers.get("x-idempotency-replayed"), "true");
+    assert.equal((await replay.json()).error, "mutation-execution-failed");
+    assert.equal(calls, 1);
+  } finally {
+    await server.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+
 export {};

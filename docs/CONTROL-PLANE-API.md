@@ -31,7 +31,7 @@ Returns runtime and API protocol identity without requiring authentication:
 
 Requires the configured `read` permission. Returns the capabilities registered by the running runtime, including version, supported operations, and risk classification. The list is sorted deterministically by capability name and operations.
 
-The inventory is descriptive metadata; it does not authorize an operation by itself. Actual execution still passes through WorkProof risk ceilings, policy, idempotency, effect tracking, independent verification, reconciliation, recovery, and proof.
+The inventory is descriptive metadata; it does not authorize an operation by itself. Actual execution still passes through WorkProof risk ceilings, the control-plane execution policy, idempotency, effect tracking, independent verification, reconciliation, recovery, and proof. The default control-plane execution ceiling is `external_write`; `destructive` and `financial` work are not executable through this default boundary, and a Work Contract marked `approvalRequired` is blocked until an explicit approval mechanism is provided by the host application.
 
 ## Work
 
@@ -69,7 +69,7 @@ Returns sanitized execution lease data when a lease-status source is configured.
 
 The control plane does not treat a capability receipt as proof. The runtime persists Work Objects, effects, events, and proof artifacts, and the verifier independently establishes requested outcomes.
 
-An idempotency key is bound to the operation and a canonical request fingerprint. Reusing a key with a different operation or input is rejected as a conflict. A request already in progress is rejected rather than executed concurrently through the same key.
+An idempotency key is bound to the operation and a canonical request fingerprint. Reusing a key with a different operation or input is rejected as a conflict. A request already in progress is rejected rather than executed concurrently through the same key. If mutation execution throws after the key is claimed, the ledger records a terminal `failed` result and replays the safe failure response on reuse; the same key is never executed again.
 
 The capability inventory is intended for Studio, SDKs, operators, and future adapters. It is a read-only discovery surface and is not a replacement for policy authorization.
 

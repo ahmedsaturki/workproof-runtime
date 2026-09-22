@@ -20,7 +20,7 @@ export interface ControlIdempotencyRecord {
   key: string;
   operation: string;
   fingerprint: string;
-  state: "pending" | "completed";
+  state: "pending" | "completed" | "failed";
   statusCode?: number;
   responseJson?: string;
   requestId: string;
@@ -73,7 +73,7 @@ export class ControlIdempotencyLedger {
         key TEXT PRIMARY KEY,
         operation TEXT NOT NULL,
         fingerprint TEXT NOT NULL,
-        state TEXT NOT NULL CHECK (state IN ('pending', 'completed')),
+        state TEXT NOT NULL CHECK (state IN ('pending', 'completed', 'failed')),
         status_code INTEGER,
         response_json TEXT,
         request_id TEXT NOT NULL,
@@ -81,6 +81,32 @@ export class ControlIdempotencyLedger {
         updated_at INTEGER NOT NULL
       );
     `);
+
+    const schema = this.db.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'control_requests'").get() as any;
+    const schemaSql = typeof schema?.sql === "string" ? schema.sql : "";
+    if (!schemaSql.includes("'failed'")) {
+      this.db.exec("ALTER TABLE control_requests RENAME TO control_requests_legacy");
+      this.db.exec(`
+        CREATE TABLE control_requests (
+          key TEXT PRIMARY KEY,
+          operation TEXT NOT NULL,
+          fingerprint TEXT NOT NULL,
+          state TEXT NOT NULL CHECK (state IN ('pending', 'completed', 'failed')),
+          status_code INTEGER,
+          response_json TEXT,
+          request_id TEXT NOT NULL,
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        );
+      `);
+      this.db.exec(`
+        INSERT INTO control_requests
+          (key, operation, fingerprint, state, status_code, response_json, request_id, created_at, updated_at)
+        SELECT key, operation, fingerprint, state, status_code, response_json, request_id, created_at, updated_at
+        FROM control_requests_legacy
+      `);
+      this.db.exec("DROP TABLE control_requests_legacy");
+    }
   }
 
   close(): void {
@@ -110,7 +136,7 @@ export class ControlIdempotencyLedger {
       if (existing) {
         const record = rowToRecord(existing);
         if (record.operation !== operation || record.fingerprint !== fingerprint) return { status: "conflict", record };
-        if (record.state === "completed") return { status: "replay", record };
+        if (record.state === "completed" || record.state === "failed") return { status: "replay", record };
         return { status: "pending", record };
       }
       const now = Date.now();
@@ -153,6 +179,26 @@ export class ControlIdempotencyLedger {
     });
   }
 
+
+  fail(key: string, statusCode: number, response: Record<string, unknown>): ControlIdempotencyRecord {
+    requireKey(key);
+    if (!Number.isInteger(statusCode) || statusCode < 400 || statusCode > 599) throw new Error("Invalid idempotency failure status code");
+    const payload = JSON.stringify(response);
+    return this.transact(() => {
+      const row = this.db.prepare("SELECT * FROM control_requests WHERE key = ?").get(key) as any;
+      if (!row) throw new Error("Unknown idempotency key");
+      if (row.state !== "pending") return rowToRecord(row);
+      const now = Date.now();
+      this.db.prepare(`
+        UPDATE control_requests
+        SET state = 'failed', status_code = ?, response_json = ?, updated_at = ?
+        WHERE key = ? AND state = 'pending'
+      `).run(statusCode, payload, now, key);
+      const saved = this.db.prepare("SELECT * FROM control_requests WHERE key = ?").get(key) as any;
+      return rowToRecord(saved);
+    });
+  }
+
   get(key: string): ControlIdempotencyRecord | null {
     requireKey(key);
     const row = this.db.prepare("SELECT * FROM control_requests WHERE key = ?").get(key) as any;
@@ -161,8 +207,8 @@ export class ControlIdempotencyLedger {
 }
 
 export function parseIdempotencyResponse(record: ControlIdempotencyRecord): Record<string, unknown> {
-  if (record.state !== "completed" || typeof record.responseJson !== "string") {
-    throw new Error("Idempotency record is not completed");
+  if ((record.state !== "completed" && record.state !== "failed") || typeof record.responseJson !== "string") {
+    throw new Error("Idempotency record is not terminal");
   }
   const value = JSON.parse(record.responseJson);
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Stored idempotency response is corrupt");

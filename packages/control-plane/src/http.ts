@@ -4,7 +4,7 @@ const http = require("http");
 const fs = require("fs");
 const crypto = require("crypto");
 const { URL } = require("url");
-const { authorize } = require("../../registry/src/auth.js");
+const { authorize, validateAuthPolicy } = require("../../registry/src/auth.js");
 const {
   ControlIdempotencyLedger,
   fingerprintControlRequest,
@@ -105,6 +105,11 @@ function requireIdempotencyKey(req: any): string {
 export async function startControlPlane(options: ControlPlaneOptions): Promise<RunningControlPlane> {
   const host = options.host ?? "127.0.0.1";
   const port = options.port ?? 0;
+  const loopbackHosts = new Set(["127.0.0.1", "localhost", "::1"]);
+  if (!loopbackHosts.has(host) && !options.authPolicy) {
+    throw new Error("Refusing non-loopback control-plane binding without auth policy");
+  }
+  if (options.authPolicy) validateAuthPolicy(options.authPolicy);
   const auditPath = options.auditPath;
   const workerStaleAfterMs = options.workerStaleAfterMs ?? 30_000;
   if (!Number.isSafeInteger(workerStaleAfterMs) || workerStaleAfterMs <= 0) {
@@ -176,6 +181,8 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
 
   const server = http.createServer(async (req: any, res: any) => {
     const id = requestId();
+    let activeIdempotencyKey: string | undefined;
+    let activeIdempotencyOperation: string | undefined;
 
     try {
       const method = String(req.method ?? "GET").toUpperCase();
@@ -388,6 +395,8 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
 
         const mutation = beginIdempotentMutation(req, res, "dispatch", input, id);
         if (mutation.handled) return;
+        activeIdempotencyKey = mutation.key;
+        activeIdempotencyOperation = mutation.key ? "dispatch" : undefined;
 
         const work = await options.dispatch(input);
         const response = { version: "1.0", requestId: id, work };
@@ -417,6 +426,8 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
 
         const mutation = beginIdempotentMutation(req, res, action, { workId }, id);
         if (mutation.handled) return;
+        activeIdempotencyKey = mutation.key;
+        activeIdempotencyOperation = mutation.key ? action : undefined;
 
         if (action === "cancel") {
           if (work.status === "verified" || work.status === "failed") {
@@ -489,18 +500,32 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
       sendJson(res, 404, { error: "not-found", requestId: id });
     } catch (error) {
       const message = String(error);
-      audit({
-        version: "0.1",
-        requestId: id,
-        action: "error",
-        error: message,
-        at: new Date().toISOString()
-      });
-
       const status =
         /Unknown work|ENOENT|no such file/i.test(message)
           ? 404
           : (/Invalid work id|Invalid JSON|Idempotency-Key/i.test(message) ? 400 : 500);
+
+      audit({
+        version: "0.1",
+        requestId: id,
+        action: "error",
+        operation: activeIdempotencyOperation,
+        error: message,
+        ...(activeIdempotencyKey ? { idempotencyKey: activeIdempotencyKey } : {}),
+        at: new Date().toISOString()
+      });
+
+      if (activeIdempotencyKey && idempotency && status >= 500) {
+        const safeFailure = {
+          error: "mutation-execution-failed",
+          requestId: id
+        };
+        try {
+          idempotency.fail(activeIdempotencyKey, status, safeFailure);
+        } catch {}
+        sendJson(res, status, safeFailure);
+        return;
+      }
 
       sendJson(res, status, { error: message, requestId: id });
     }
