@@ -192,6 +192,7 @@ const required = [
   "docs/PRODUCTION-DEPLOYMENT.md",
   "docs/RELEASE-3.4.0-dev.2.md",
   "docs/RELEASE-3.4.0-dev.9.md",
+  "docs/RELEASE-3.4.0-dev.10.md",
   "types/globals.d.ts"
 ];
 
