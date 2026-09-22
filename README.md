@@ -4,9 +4,9 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.8.8 is the current stable release.**
+**v3.8.9 is the current stable release.**
 
-v3.8.8 preserves the verified v3.8.7 runtime contract and carries the shallow-checkout-safe release-lineage verifier into the main source of truth.
+v3.8.9 preserves the verified v3.8.8 runtime contract and promotes the current specification and GitHub governance baseline.
 
 The v3.4 line established the executable operator benchmark across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution. Later releases added local product surfaces, proof compatibility, recovery, Control Plane safety, MCP/A2A interoperability, OTLP audit export, diagnostics, network-boundary hardening, and reproducible distribution.
 
@@ -14,14 +14,14 @@ The v3.4 line established the executable operator benchmark across research, HTT
 
 Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify -> Recover/Substitute -> Deliver -> Proof -> Retain -> Control -> Compensate
 
-## v3.8.8 release evidence
+## v3.8.9 release evidence
 
-- GitHub Release: `v3.8.8` (ID `394017508`)
-- release commit: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
-- Release workflow #239: success
-- Container workflow #236: success
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.8`
-- GHCR digest: `sha256:0c31c571480d45d5f46f5ae6f8b8a4b1328094a7561f76aee7016c99e586eb10`
+- GitHub Release: `v3.8.9` (ID `394031450`)
+- release commit: `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`
+- Release workflow #245: success
+- Container workflow #242: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.9`
+- GHCR digest: `sha256:ccde8ada2227b016968328f9eec1849e7424d12c2acc89081c30ca191bb6df66`
 - immutable image tag: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
 - rollback: v3.8.1 / `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 - five release assets published and SHA256-verified
@@ -30,7 +30,7 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - production Compose restart/persistence: verified
 - disposable external TLS/auth/backup/restore/rollback topology: verified
 
-### v3.8.8 hardening
+### v3.8.9 closeout hardening
 
 - Dockerfile OCI metadata is emitted as real Dockerfile `LABEL` instructions rather than embedded escaped-newline text.
 - Container-base validation rejects literal escaped-newline instruction sequences.
@@ -76,11 +76,11 @@ The runtime remains the authority for execution, risk policy, effects, verificat
 
 ### GitHub Release
 
-The v3.8.8 release publishes:
+The v3.8.9 release publishes:
 
-- `operational-reality-core-3.8.8.tgz`
-- `workproof-runtime-v3.8.8.tar.gz`
-- `workproof-benchmark-v3.8.8.json`
+- `operational-reality-core-3.8.9.tgz`
+- `workproof-runtime-v3.8.9.tar.gz`
+- `workproof-benchmark-v3.8.9.json`
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
@@ -88,9 +88,9 @@ The release pipeline re-downloads published assets, verifies SHA256 sums, verifi
 
 ### GHCR container
 
-`ghcr.io/ahmedsaturki/workproof-runtime:3.8.8@sha256:0c31c571480d45d5f46f5ae6f8b8a4b1328094a7561f76aee7016c99e586eb10`
+`ghcr.io/ahmedsaturki/workproof-runtime:3.8.9@sha256:ccde8ada2227b016968328f9eec1849e7424d12c2acc89081c30ca191bb6df66`
 
-The immutable commit tag is `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`.
+The immutable commit tag is `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`.
 
 ### Self-hosted runtime
 
@@ -101,7 +101,7 @@ The repository includes:
 - `docs/CONTAINER-RUNTIME.md`
 - `docs/PRODUCTION-DEPLOYMENT.md`
 
-Production Compose pins the exact verified v3.8.8 image digest, binds the host port to localhost, persists `./work-runs`, and applies bounded resources/logs. The Control Plane is the authenticated mutation boundary.
+Production Compose pins the exact verified v3.8.9 image digest, binds the host port to localhost, persists `./work-runs`, and applies bounded resources/logs. The Control Plane is the authenticated mutation boundary.
 
 A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets. Those external resources are intentionally not claimed as provisioned by this repository.
 

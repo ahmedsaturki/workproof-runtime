@@ -48,18 +48,18 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 - GHCR digest: `sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`
 - product readiness PR #74: local-first product gate and restart smoke
 
-## v3.8.8 distribution evidence
+## v3.8.9 distribution evidence
 
-- release reconciliation baseline: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
-- release workflow #239: success
-- container workflow #236: success
-- package version: `3.8.8`
-- stable release: `v3.8.8`
-- stable release commit: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
-- GitHub Release ID: `394017508`
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.8`
-- GHCR digest: `sha256:0c31c571480d45d5f46f5ae6f8b8a4b1328094a7561f76aee7016c99e586eb10`
-- immutable image tag: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
+- release reconciliation baseline: `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`
+- release workflow #245: success
+- container workflow #242: success
+- package version: `3.8.9`
+- stable release: `v3.8.9`
+- stable release commit: `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`
+- GitHub Release ID: `394031450`
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.9`
+- GHCR digest: `sha256:ccde8ada2227b016968328f9eec1849e7424d12c2acc89081c30ca191bb6df66`
+- immutable image tag: `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`
 - reproducible-install hardening PR #97: merged
 - release-metadata/source-manifest PR #98: merged
 - Control Plane safety PR #102: merged
@@ -71,7 +71,7 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 
 ## Verified main lineage
 
-- current verified release lineage: v3.8.8
+- current verified release lineage: v3.8.9
 - current stable release commit: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
 - release workflow #239: success
 - container workflow #236: success

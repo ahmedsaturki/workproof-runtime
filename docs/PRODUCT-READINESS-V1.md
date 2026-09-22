@@ -58,23 +58,23 @@ The repository's disposable external-topology gate now verifies the technical to
 
 A **public production host is not claimed as provisioned**. Public host/DNS/certificate/secret/control-plane infrastructure remains an external deployment-resource boundary and must be supplied by the operator of the target environment.
 
-## Current verified baseline — v3.8.8
+## Current verified baseline — v3.8.9
 
-The current stable product baseline is **v3.8.8**.
+The current stable product baseline is **v3.8.9**.
 
-- GitHub Release ID: `394017508`
-- release commit: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
-- Release workflow #239: success
-- Container workflow #236: success
-- GHCR digest: `sha256:0c31c571480d45d5f46f5ae6f8b8a4b1328094a7561f76aee7016c99e586eb10`
+- GitHub Release ID: `394031450`
+- release commit: `54570624e0a3c2c35605cf3e17b7a48c6c5758c6`
+- Release workflow #245: success
+- Container workflow #242: success
+- GHCR digest: `sha256:ccde8ada2227b016968328f9eec1849e7424d12c2acc89081c30ca191bb6df66`
 - immutable image tag: `9f5c04505d0396312eb1b44fa08d5e2f8dd1aebd`
 - rollback: v3.8.1
 
-The v3.8.8 distribution additionally enforces an immutable Node 24.21.0 Trixie slim base digest and a bounded production resource/log envelope.
+The v3.8.9 distribution additionally enforces an immutable Node 24.21.0 Trixie slim base digest and a bounded production resource/log envelope.
 
 ## Release acceptance gates
 
-| Gate | v3.8.8 evidence |
+| Gate | v3.8.9 evidence |
 | --- | --- |
 | Build | CI/Release/Container builds succeed from clean checkout |
 | Tests | Full unit/integration suite succeeds |

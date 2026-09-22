@@ -1,4 +1,12 @@
-# WorkProof Runtime Specification - v3.4-dev
+# WorkProof Runtime Specification - v3.8.9
+
+## Current v3.8.9 baseline
+
+The current stable product specification is maintained at v3.8.9. The v3.4 sections below remain historical acceptance records and are not the current release status.
+
+Current verified product surfaces include the local WorkProof Studio, `workctl` CLI, durable Work Objects with restart/resume, portable proof export/verify/import, authenticated Control Plane with idempotency safety, capability inventory/registry, MCP v2, A2A 1.0, OTLP/HTTP JSON audit export, operator diagnostics, persistent local storage, reproducible source/container distributions, immutable container-base provenance, and bounded production resource/log controls.
+
+Current release evidence is recorded in `STATUS.md`, `SOURCE-MANIFEST.md`, `docs/release-lineage.json`, and `docs/PRODUCT-READINESS-V1.md`.
 
 ## 1. Purpose
 
