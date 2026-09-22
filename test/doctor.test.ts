@@ -41,16 +41,22 @@ test("doctor reports a healthy local installation and connected services", async
   try {
     const report = await runDoctor({
       WORKPROOF_WORK_DIRECTORY: path.join(root, "work-runs"),
+      WORKPROOF_PACKAGE_ROOT: process.cwd(),
       WORKPROOF_CONTROL_PLANE_URL: control.base,
       WORKPROOF_STUDIO_URL: studio.base,
       WORKPROOF_A2A_URL: a2a.base
     });
     assert.equal(report.status, "ready");
-    assert.equal(report.checks.find((item: any) => item.id === "work-directory").state, "ok");
-    assert.equal(report.checks.find((item: any) => item.id === "control-plane-health").state, "ok");
-    assert.equal(report.checks.find((item: any) => item.id === "control-plane-readiness").state, "ok");
-    assert.equal(report.checks.find((item: any) => item.id === "studio-health").state, "ok");
-    assert.equal(report.checks.find((item: any) => item.id === "a2a-agent-card").state, "ok");
+    const state = (id: string) => {
+      const item = report.checks.find((check: any) => check.id === id);
+      assert.ok(item);
+      return item.state;
+    };
+    assert.equal(state("work-directory"), "ok");
+    assert.equal(state("control-plane-health"), "ok");
+    assert.equal(state("control-plane-readiness"), "ok");
+    assert.equal(state("studio-health"), "ok");
+    assert.equal(state("a2a-agent-card"), "ok");
   } finally {
     await control.close();
     await studio.close();
@@ -64,10 +70,15 @@ test("doctor fails when a configured service is unavailable", async () => {
     WORKPROOF_CONTROL_PLANE_URL: "http://127.0.0.1:1"
   });
   assert.equal(report.status, "failed");
-  assert.equal(report.checks.find((item: any) => item.id === "control-plane-health").state, "failed");
-  assert.equal(report.checks.find((item: any) => item.id === "control-plane-readiness").state, "failed");
-  assert.equal(report.checks.find((item: any) => item.id === "studio-health").state, "skipped");
-  assert.equal(report.checks.find((item: any) => item.id === "a2a-agent-card").state, "skipped");
+  const state = (id: string) => {
+    const item = report.checks.find((check: any) => check.id === id);
+    assert.ok(item);
+    return item.state;
+  };
+  assert.equal(state("control-plane-health"), "failed");
+  assert.equal(state("control-plane-readiness"), "failed");
+  assert.equal(state("studio-health"), "skipped");
+  assert.equal(state("a2a-agent-card"), "skipped");
 });
 
 export {};
