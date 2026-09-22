@@ -68,6 +68,8 @@ async function main() {
     const status = fs.readFileSync(path.resolve("STATUS.md"), "utf8");
     const sourceManifest = fs.readFileSync(path.resolve("SOURCE-MANIFEST.md"), "utf8");
     const productReadiness = fs.readFileSync(path.resolve("docs/PRODUCT-READINESS-V1.md"), "utf8");
+  const productionDeployment = fs.readFileSync(path.resolve("docs/PRODUCTION-DEPLOYMENT.md"), "utf8");
+  const containerRuntime = fs.readFileSync(path.resolve("docs/CONTAINER-RUNTIME.md"), "utf8");
     const expectedVersion = "v" + packageVersion;
     if (!readme.includes("**" + expectedVersion + " is the current stable release.**")) {
       throw new Error("README current stable release does not match package version " + expectedVersion);
@@ -86,6 +88,27 @@ async function main() {
     }
     if (!productReadiness.includes("immutable image tag: `" + lineage.container.immutableTag + "`")) {
       throw new Error("PRODUCT-READINESS immutable image tag does not match release lineage");
+    }
+    if (!productionDeployment.includes("- image: `" + lineage.container.image + "`")) {
+      throw new Error("PRODUCTION-DEPLOYMENT image does not match release lineage");
+    }
+    if (!productionDeployment.includes("- pinned digest: `" + lineage.container.digest + "`")) {
+      throw new Error("PRODUCTION-DEPLOYMENT digest does not match release lineage");
+    }
+    if (!productionDeployment.includes("- immutable image tag: `" + lineage.container.immutableTag + "`")) {
+      throw new Error("PRODUCTION-DEPLOYMENT immutable image tag does not match release lineage");
+    }
+    if (!productionDeployment.includes("- release commit: `" + lineage.release.commit + "`")) {
+      throw new Error("PRODUCTION-DEPLOYMENT release commit does not match release lineage");
+    }
+    if (!containerRuntime.includes("- GHCR image: `" + lineage.container.image + "`")) {
+      throw new Error("CONTAINER-RUNTIME image does not match release lineage");
+    }
+    if (!containerRuntime.includes("- published digest: `" + lineage.container.digest + "`")) {
+      throw new Error("CONTAINER-RUNTIME digest does not match release lineage");
+    }
+    if (!containerRuntime.includes("- immutable image tag: `" + lineage.container.immutableTag + "`")) {
+      throw new Error("CONTAINER-RUNTIME immutable image tag does not match release lineage");
     }
     if (unexpectedDrift.length) {
       throw new Error(
