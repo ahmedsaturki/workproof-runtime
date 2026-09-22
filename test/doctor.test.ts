@@ -41,7 +41,7 @@ test("doctor reports a healthy local installation and connected services", async
   });
   const a2a = await server((req: any, res: any) => {
     res.writeHead(200, { "content-type": "application/json" });
-    res.end(JSON.stringify({ name: "WorkProof Runtime", supportedInterfaces: [{ url: "http://127.0.0.1/rpc" }] }));
+    res.end(JSON.stringify({ name: "WorkProof Runtime", version: "3.8.0-dev.1", supportedInterfaces: [{ url: "http://127.0.0.1/rpc" }] }));
   });
 
   try {
