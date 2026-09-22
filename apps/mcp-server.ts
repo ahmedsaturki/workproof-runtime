@@ -149,4 +149,4 @@ export function runMcpServer(): void {
   console.error("WorkProof MCP server running on stdio");
 }
 
-if (require.main === module) runMcpServer();
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename)) runMcpServer();
