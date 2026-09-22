@@ -1,6 +1,7 @@
 import { Capability, CapabilityReceipt, EvidenceRef, Verifier } from "../../core/src/types";
 const { spawn, spawnSync } = require("child_process");
 const { request: httpRequest } = require("http");
+const net = require("net");
 const { randomBytes } = require("crypto");
 const fs = require("fs");
 const path = require("path");
@@ -100,6 +101,21 @@ export function resolveBrowserBinary(): string {
   );
 }
 
+async function findFreeLoopbackPort(): Promise<number> {
+  const server = net.createServer();
+  await new Promise<void>((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", () => resolve());
+  });
+  const address = server.address();
+  const port = address && typeof address === "object" ? address.port : 0;
+  await new Promise<void>((resolve, reject) => {
+    server.close((error: any) => error ? reject(error) : resolve());
+  });
+  if (!port) throw new Error("Unable to allocate a loopback port for Chromium CDP");
+  return port;
+}
+
 function ensureBrowser(port = 0): any {
   const profile = fs.mkdtempSync(path.join(require("os").tmpdir(), `workproof-chromium-${process.pid}-${randomBytes(4).toString("hex")}-`));
   const browserBinary = resolveBrowserBinary();
@@ -191,8 +207,9 @@ class LocalBrowserCapability implements Capability {
     for (let launchAttempt = 1; launchAttempt <= 3; launchAttempt++) {
       let browser: any;
       try {
-        browser = ensureBrowser(requestedPort);
-        const port = await waitForCdp(browser, requestedPort);
+        const launchPort = requestedPort > 0 ? requestedPort : await findFreeLoopbackPort();
+        browser = ensureBrowser(launchPort);
+        const port = await waitForCdp(browser, launchPort);
         const session = await connectCdp(port);
         const ws = session.ws as WebSocket & { call?: (m: string, p?: any) => Promise<any> };
         try {
