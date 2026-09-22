@@ -27,6 +27,8 @@ test("published-lineage verifier exit code is propagated without truthiness coer
   assert.match(releaseStateScript, /if \(child\.error\) throw child\.error;/);
   assert.match(releaseStateScript, /process\.exit\(child\.status === null \? 1 : child\.status\);/);
   assert.doesNotMatch(releaseStateScript, /process\.exit\(child\.status \|\| 1\);/);
+  assert.match(releaseStateScript, /git.*cat-file.*lineage\.release\.commit/s);
+  assert.match(releaseStateScript, /git.*fetch.*--depth=1.*origin.*lineage\.release\.commit/s);
 });
 
 export {};
