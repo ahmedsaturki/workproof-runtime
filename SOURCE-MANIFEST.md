@@ -48,18 +48,18 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 - GHCR digest: `sha256:2df71bf775272b9227979687de0c93d80f08814b83d7eb19e37e14dd63d8740b`
 - product readiness PR #74: local-first product gate and restart smoke
 
-## v3.8.4 distribution evidence
+## v3.8.5 distribution evidence
 
-- release reconciliation baseline: `a232ed61ec5c5307c5ae3edc40f4c157d3f69432`
-- release workflow #214: success
-- container workflow #211: success
-- package version: `3.8.4`
-- stable release: `v3.8.4`
-- stable release commit: `a232ed61ec5c5307c5ae3edc40f4c157d3f69432`
-- GitHub Release ID: `393951969`
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.4`
-- GHCR digest: `sha256:0a756db6683db2bcdc2664dd35458e181782ed557b8dbb84f4f878f5b358bb50`
-- immutable image tag: `a232ed61ec5c5307c5ae3edc40f4c157d3f69432`
+- release reconciliation baseline: `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`
+- release workflow #218: success
+- container workflow #215: success
+- package version: `3.8.5`
+- stable release: `v3.8.5`
+- stable release commit: `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`
+- GitHub Release ID: `393990944`
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.5`
+- GHCR digest: `sha256:0efe2ff7d2a2b97707c32d91523d38a0932e796ea417d38b0d4a1fdb8d1315a5`
+- immutable image tag: `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`
 - reproducible-install hardening PR #97: merged
 - release-metadata/source-manifest PR #98: merged
 - Control Plane safety PR #102: merged
@@ -71,11 +71,11 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 
 ## Verified main lineage
 
-- current verified release lineage: v3.8.4
-- current stable release commit: `a232ed61ec5c5307c5ae3edc40f4c157d3f69432`
-- release workflow #214: success
-- container workflow #211: success
-- GHCR digest: `sha256:0a756db6683db2bcdc2664dd35458e181782ed557b8dbb84f4f878f5b358bb50`
+- current verified release lineage: v3.8.5
+- current stable release commit: `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`
+- release workflow #218: success
+- container workflow #215: success
+- GHCR digest: `sha256:0efe2ff7d2a2b97707c32d91523d38a0932e796ea417d38b0d4a1fdb8d1315a5`
 - v3.3 implementation merge: `c5e951056461c37f45bed8bb8406d119880d63df`
 - v3.3 closeout correction: `0c92a8c86950776243646de4bb40b0c0f2fe5876`
 - v3.4 implementation merge: `fe662d5bb5337bde18772f22864434935d59f66f`

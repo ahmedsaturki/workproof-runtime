@@ -58,23 +58,23 @@ The repository's disposable external-topology gate now verifies the technical to
 
 A **public production host is not claimed as provisioned**. Public host/DNS/certificate/secret/control-plane infrastructure remains an external deployment-resource boundary and must be supplied by the operator of the target environment.
 
-## Current verified baseline — v3.8.4
+## Current verified baseline — v3.8.5
 
-The current stable product baseline is **v3.8.4**.
+The current stable product baseline is **v3.8.5**.
 
-- GitHub Release ID: `393951969`
-- release commit: `a232ed61ec5c5307c5ae3edc40f4c157d3f69432`
-- Release workflow #214: success
-- Container workflow #211: success
-- GHCR digest: `sha256:0a756db6683db2bcdc2664dd35458e181782ed557b8dbb84f4f878f5b358bb50`
-- immutable image tag: `a232ed61ec5c5307c5ae3edc40f4c157d3f69432`
+- GitHub Release ID: `393990944`
+- release commit: `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`
+- Release workflow #218: success
+- Container workflow #215: success
+- GHCR digest: `sha256:0efe2ff7d2a2b97707c32d91523d38a0932e796ea417d38b0d4a1fdb8d1315a5`
+- immutable image tag: `bcf951fdf772ae8aa843671e3bf7ae1ba765471b`
 - rollback: v3.8.1
 
-The v3.8.4 distribution additionally enforces an immutable Node 24.21.0 Trixie slim base digest and a bounded production resource/log envelope.
+The v3.8.5 distribution additionally enforces an immutable Node 24.21.0 Trixie slim base digest and a bounded production resource/log envelope.
 
 ## Release acceptance gates
 
-| Gate | v3.8.4 evidence |
+| Gate | v3.8.5 evidence |
 | --- | --- |
 | Build | CI/Release/Container builds succeed from clean checkout |
 | Tests | Full unit/integration suite succeeds |
@@ -142,4 +142,4 @@ WorkProof Runtime is not required to become a generic agent framework, browser a
 
 ## Historical provenance
 
-v3.8.3 was the preceding verified stable distribution. v3.8.2 is retained as superseded release history and is not a rollback target. v3.8.1 remains the verified rollback release.
+v3.8.4 was the preceding verified stable distribution. v3.8.2 is retained as superseded release history and is not a rollback target. v3.8.1 remains the verified rollback release.
