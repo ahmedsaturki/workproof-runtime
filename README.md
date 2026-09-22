@@ -81,7 +81,7 @@ M004 accepted an external effect whose acknowledgement was lost, reconciled exis
 
 M005 retried the primary capability under bounded ambiguity, selected a compatible fallback, and independently verified the stored outcome.
 
-## v3.7 release candidate
+## v3.7 release
 
 The v3.7 candidate adds:
 - A2A 1.0 JSON-RPC interoperability over the authenticated WorkProof Control Plane.
@@ -91,7 +91,7 @@ The v3.7 candidate adds:
 - An expanded Studio operational timeline.
 - A2A-ready representative mission and packed A2A artifact smoke.
 
-Feature CI #1179 passed the complete repository gate on the candidate commit. Release publication, GHCR digest pinning, and main promotion are still separate final release gates.
+Feature CI #1179 and post-merge main CI #1185 passed the complete repository gates. Release publication, GHCR digest pinning, production Compose pinning, and main promotion are complete.
 
 ## Distribution and operation
 
