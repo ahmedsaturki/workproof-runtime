@@ -1,3 +1,4 @@
+# Candidate release branch intentionally keeps the last published stable image until the v3.8.10 container digest is published and reconciled into main.
 services:
   workproof-studio:
     image: ghcr.io/ahmedsaturki/workproof-runtime:3.8.9@sha256:ccde8ada2227b016968328f9eec1849e7424d12c2acc89081c30ca191bb6df66
