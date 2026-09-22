@@ -13,24 +13,6 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - promotion branch: `promote/v3.7.0-dev.1-main`
 - main closeout commit: pending promotion merge
 
-## v3.7.0-dev.1 release branch
-
-- branch: `release/3.7.0-dev.1`
-- source candidate: `5ebf4dccfab702f58e20e2b544becc706ee921a8`
-- publication workflows are expected to validate this exact release branch before distribution.
-
-## v3.7.0-dev.1 candidate
-
-- branch: `feature/v3.7-a2a-otel-completion`
-- candidate commit: `197a2598d3d338bd15b9a8b7678fce090fa689f9`
-- feature CI #1179: success
-- A2A 1.0 interoperability adapter: implemented and tested
-- OTLP/HTTP JSON audit export: implemented and tested
-- paged/context-aware Work listing: implemented and tested
-- expanded Studio operational timeline: implemented and tested
-- packed A2A artifact smoke: implemented and tested
-- release status: candidate; publication gate not yet closed
-
 ## Current verified release
 
 - version: `3.7.0-dev.1`
@@ -45,6 +27,7 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - five release assets published and post-publication integrity verified
 
 ## Product gates
+
 
 - [x] local WorkProof Studio
 - [x] packaged `workctl`
