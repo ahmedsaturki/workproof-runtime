@@ -44,6 +44,16 @@ export interface CapabilityInfo {
   riskClass: string;
 }
 
+export interface WorkSummary {
+  id: string;
+  objective: string;
+  status: string;
+  riskClass?: string;
+  approvalRequired: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 function normalizeBaseUrl(value: string): string {
   const url = new URL(value);
   if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("Control plane URL must use HTTP or HTTPS");
@@ -110,6 +120,24 @@ export class ControlPlaneClient {
   constructor(options: ControlPlaneClientOptions) {
     this.baseUrl = normalizeBaseUrl(options.baseUrl);
     this.token = options.token;
+  }
+
+  async listWork(options: { limit?: number; status?: string } = {}): Promise<WorkSummary[]> {
+    const limit = options.limit ?? 100;
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100) throw new Error("Invalid work list limit");
+    const query = new URLSearchParams({ limit: String(limit) });
+    if (options.status) query.set("status", options.status);
+    const data = await request(this.baseUrl, this.token, "GET", "/v1/work?" + query.toString());
+    if (!Array.isArray(data?.work)) throw new Error("Control plane returned an invalid work list");
+    return data.work.map((item: any) => ({
+      id: String(item?.id ?? ""),
+      objective: String(item?.objective ?? ""),
+      status: String(item?.status ?? ""),
+      ...(item?.riskClass === undefined ? {} : { riskClass: String(item.riskClass) }),
+      approvalRequired: Boolean(item?.approvalRequired),
+      createdAt: String(item?.createdAt ?? ""),
+      updatedAt: String(item?.updatedAt ?? "")
+    }));
   }
 
   async getWork(workId: string): Promise<WorkObject> {
