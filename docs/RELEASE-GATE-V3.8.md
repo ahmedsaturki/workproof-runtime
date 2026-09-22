@@ -43,7 +43,7 @@ Do not call v3.8 verified if:
 - `workctl doctor` healthy/failure paths are tested.
 - Module import safety is tested without starting a server or creating runtime state.
 
-Release publication, GHCR digest capture, and production Compose pinning are verified. Main promotion is the remaining integration gate.
+Release publication, GHCR digest capture, and production Compose pinning are verified. Main promotion and post-merge verification are complete.
 
 
 ## Feature evidence
@@ -68,7 +68,7 @@ Release publication, GHCR digest capture, and production Compose pinning are ver
 - Rollback lineage: `v3.7.0-dev.1` / `sha256:28e8d9af0ab71442b33df8b72308089f520b5ba23128401c0a05675809ba1748`
 
 ## Main promotion
-- [ ] post-merge main CI
+- [x] post-merge main CI
 
 
 ## Final closeout evidence
@@ -82,3 +82,13 @@ Release publication, GHCR digest capture, and production Compose pinning are ver
 - Production Compose pinned to the published digest.
 - Main merge commit: `0e7e8050a98a4c4863fe81f49a69ab4bc8a646b8`.
 - Main CI #1236: success.
+
+
+## Main closeout
+
+- PR #95: merged.
+- Main merge commit: `0e7e8050a98a4c4863fe81f49a69ab4bc8a646b8`.
+- Final documentation closeout commit: `2efc6ddb5bfe0ea0689533b805a59b6c9396930c`.
+- Main CI #1236: success on the merge commit.
+- Main CI #1238: success on the final closeout.
+- No open pull requests or repository issues.
