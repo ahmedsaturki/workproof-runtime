@@ -11,7 +11,7 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - package version: `3.7.0-dev.1`
 - release source tag commit: `f776ed9f5fcbb055f7da41ca69714c19b20f9aad`
 - promotion branch: `promote/v3.7.0-dev.1-main`
-- main closeout commit: `a7a6dfcc6b7a6a4b5a7280ad3123431d738ff3ac`
+- main closeout commit: `c744c3d4f3dd6f54e1ce1d656cfb92e820f13f98`
 
 ## Current verified release
 
@@ -85,4 +85,4 @@ A capability receipt is not independent proof. Work is verified only when indepe
 - [x] packed A2A artifact smoke
 - [x] release publication and GHCR digest verification
 - [x] production Compose digest pin
-- [x] post-merge main CI closeout (CI #1185)
+- [x] post-merge main CI closeout (CI #1189)
