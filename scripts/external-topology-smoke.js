@@ -17,25 +17,28 @@ function requireCommand(command) {
   if (result.status !== 0) throw new Error("Required host command is unavailable: " + command);
 }
 
-async function fetchJson(url, headers) {
-  const response = await fetch(url, { headers });
-  const raw = await response.text();
-  let value = {};
-  try { value = raw ? JSON.parse(raw) : {}; } catch { throw new Error("Invalid JSON from " + url); }
-  return { response, value };
+function curlJson(url, user, password) {
+  const result = run("curl", ["-ksS", "--user", user + ":" + password, url]);
+  try { return JSON.parse(result.stdout); } catch { throw new Error("Invalid JSON from " + url + ": " + result.stdout); }
 }
 
-async function waitHealthy(baseUrl, version, headers) {
+function curlStatus(url, user, password) {
+  return Number(run("curl", ["-ksS", "-o", "/dev/null", "-w", "%{http_code}", "--user", user + ":" + password, url]).stdout.trim());
+}
+
+function waitHealthy(baseUrl, version, user, password) {
   for (let attempt = 1; attempt <= 45; attempt += 1) {
     try {
-      const result = await fetchJson(baseUrl + "/health", headers);
-      if (result.response.status === 200 && result.value.status === "ok" && result.value.version === version) return result.value;
+      const status = curlStatus(baseUrl + "/health", user, password);
+      if (status === 200) {
+        const body = curlJson(baseUrl + "/health", user, password);
+        if (body.status === "ok" && body.version === version) return body;
+      }
     } catch {}
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    run("sleep", ["1"]);
   }
   throw new Error("External topology did not become healthy with expected version " + version);
 }
-
 function imageFromCompose(composePath) {
   const text = fs.readFileSync(composePath, "utf8");
   const match = text.match(/image:\s+([\w./:-]+@sha256:[0-9a-f]{64})/);
@@ -103,13 +106,13 @@ async function main() {
 
     const baseUrl = "https://127.0.0.1:9443";
     const basic = "Basic " + Buffer.from("smoke:" + password).toString("base64");
-    const unauthorized = await fetch(baseUrl + "/health");
-    if (unauthorized.status !== 401) throw new Error("Expected unauthenticated edge request to return 401, got " + unauthorized.status);
-    await waitHealthy(baseUrl, packageJson.version, { authorization: basic });
+    const unauthorizedStatus = Number(run("curl", ["-ksS", "-o", "/dev/null", "-w", "%{http_code}", baseUrl + "/health"]).stdout.trim());
+    if (unauthorizedStatus !== 401) throw new Error("Expected unauthenticated edge request to return 401, got " + unauthorizedStatus);
+    waitHealthy(baseUrl, packageJson.version, "smoke", password);
 
-    const workResult = await fetchJson(baseUrl + "/api/work/" + work.id, { authorization: basic });
-    if (workResult.response.status !== 200 || workResult.value.work?.status !== "verified") throw new Error("Authenticated Work Object was not readable through TLS/auth edge");
-    if (JSON.stringify(workResult.value).includes(password)) throw new Error("Raw secret leaked into Work Object response");
+    const workValue = curlJson(baseUrl + "/api/work/" + work.id, "smoke", password);
+    if (workValue.work?.status !== "verified") throw new Error("Authenticated Work Object was not readable through TLS/auth edge");
+    if (JSON.stringify(workValue).includes(password)) throw new Error("Raw secret leaked into Work Object response");
 
     run("tar", ["-C", dataDir, "-czf", backupPath, "."]);
     if (!fs.existsSync(backupPath) || fs.statSync(backupPath).size === 0) throw new Error("Backup archive was not created");
@@ -120,15 +123,15 @@ async function main() {
     run("tar", ["-C", dataDir, "-xzf", backupPath]);
 
     run("docker", ["run", "-d", "--name", appName, "--network", network, "-v", dataDir + ":/data/work-runs", productionImage, "sh", "-c", "node dist/apps/studio.js /data/work-runs 8788 0.0.0.0"]);
-    await waitHealthy(baseUrl, packageJson.version, { authorization: basic });
-    const restored = await fetchJson(baseUrl + "/api/work/" + work.id, { authorization: basic });
-    if (restored.response.status !== 200 || restored.value.work?.status !== "verified") throw new Error("Backup/restore did not preserve authoritative work");
+    waitHealthy(baseUrl, packageJson.version, "smoke", password);
+    const restored = curlJson(baseUrl + "/api/work/" + work.id, "smoke", password);
+    if (restored.work?.status !== "verified") throw new Error("Backup/restore did not preserve authoritative work");
 
     remove(appName);
     run("docker", ["run", "-d", "--name", appName, "--network", network, "-v", dataDir + ":/data/work-runs", rollbackImage, "sh", "-c", "node dist/apps/studio.js /data/work-runs 8788 0.0.0.0"]);
-    await waitHealthy(baseUrl, lineage.rollback.version, { authorization: basic });
-    const rolled = await fetchJson(baseUrl + "/api/work/" + work.id, { authorization: basic });
-    if (rolled.response.status !== 200 || rolled.value.work?.status !== "verified") throw new Error("Rollback image did not preserve readable authoritative work");
+    waitHealthy(baseUrl, lineage.rollback.version, "smoke", password);
+    const rolled = curlJson(baseUrl + "/api/work/" + work.id, "smoke", password);
+    if (rolled.work?.status !== "verified") throw new Error("Rollback image did not preserve readable authoritative work");
 
     process.stdout.write(JSON.stringify({ status: "verified", releaseVersion: packageJson.version, releaseCommit: lineage.release.commit, image: productionImage, rollbackImage, tls: true, authentication: true, secretNonLeakage: true, persistence: true, backupRestore: true, rollback: true, denyByDefaultEdge: true, workId: work.id }, null, 2) + "\n");
   } finally {
