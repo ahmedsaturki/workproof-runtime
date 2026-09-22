@@ -47,10 +47,12 @@ function waitHealthy(baseUrl, version, user, password) {
   for (let attempt = 1; attempt <= 45; attempt += 1) {
     try {
       lastStatus = String(curlStatus(baseUrl + "/health", user, password));
-      if (lastStatus === "200") {
+      try {
         const body = curlJson(baseUrl + "/health", user, password);
         lastBody = JSON.stringify(body);
-        if (body.status === "ok" && body.version === version) return body;
+        if (lastStatus === "200" && body.status === "ok" && body.version === version) return body;
+      } catch (error) {
+        lastError = String(error);
       }
     } catch (error) {
       lastError = String(error);
