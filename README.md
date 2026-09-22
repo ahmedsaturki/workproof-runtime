@@ -4,11 +4,13 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.4 executable operator benchmark is fully verified; v3.4.0-dev.9 is the current shipped prerelease.**
+**v3.4 executable operator benchmark is fully verified; v3.4.0-dev.10 is the current shipped prerelease.**
 
 The v3.4 line is the first executable operator benchmark with controlled failure injection across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution.
 
-The v3.4.0-dev.9 release is built from the current main lineage and carries the local-first product-readiness, packaged CLI, restart/resume, Studio configuration, persistence hardening, and idempotent-resume safety hardening.
+The v3.4.0-dev.10 product baseline adds a representative multi-capability Research → Transform mission, Studio capability-chain visibility, and a disposable external-topology gate covering TLS, authentication, persistence, backup/restore, and rollback.
+
+The v3.4.0-dev.10 release is the current verified distribution and carries the local-first product-readiness, packaged CLI, restart/resume, Studio configuration, persistence hardening, multi-capability execution, and disposable external-topology validation.
 
 ## Core loop
 
@@ -83,13 +85,13 @@ M005 retried the primary capability under bounded ambiguity, selected a compatib
 
 ### GitHub Release
 
-`v3.4.0-dev.9` is the current shipped prerelease. Release and container workflows publish from the same release-branch lineage.
+`v3.4.0-dev.10` is the current shipped prerelease. Release and container workflows publish from the same release-branch lineage.
 
 Published assets:
 
-- `operational-reality-core-3.4.0-dev.9.tgz
-- `workproof-runtime-v3.4.0-dev.9.tar.gz
-- `workproof-benchmark-v3.4.0-dev.9.json
+- `operational-reality-core-3.4.0-dev.10.tgz
+- `workproof-runtime-v3.4.0-dev.10.tar.gz
+- `workproof-benchmark-v3.4.0-dev.10.json
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
@@ -99,13 +101,13 @@ The release pipeline re-downloads published assets, verifies SHA256 sums, verifi
 
 Published image:
 
-`ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.9`
+`ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.10`
 
 Verified digest:
 
-`sha256:3acde2ee0e82c0d7bf1e9bd8217aa774e1ceb5cdafd64150b87b7581aa0ea04d`
+`sha256:3fa81f645ccb0c13e0dbfd5da13c089e982f5ed85a0c79b5ec49e021820315fa`
 
-The same digest is exposed by the immutable release commit tag `78932bba20b48bf1ebc0c3d873d0e716b2ca296c`. Container verification run #55 proved:
+The same digest is exposed by the immutable release commit tag `78932bba20b48bf1ebc0c3d873d0e716b2ca296c`. Container verification run #110 proved:
 
 - package version matches release tag;
 - OCI version matches `3.4.0-dev.9`;
@@ -123,7 +125,7 @@ The repository includes:
 - `docs/CONTAINER-RUNTIME.md`
 - `docs/PRODUCTION-DEPLOYMENT.md`
 
-The production compose targets the verified v3.4.0-dev.9 image digest, binds Studio to localhost, and persists `./work-runs`. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
+The production compose targets the verified v3.4.0-dev.10 image digest, binds Studio to localhost, and persists `./work-runs`. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
 
 `package.json` remains `private: true`; no npm registry publication is claimed.
 
@@ -135,9 +137,9 @@ The messaging capability is intentionally local-only. A capability receipt is no
 
 WorkProof Runtime is not a replacement for agents, browsers, workflow engines, MCP registries, memory systems, observability backends, or OSINT graphs. Those systems can integrate as capabilities or adapters while Work Object, effect, verification, recovery, and proof semantics remain invariant.
 
-## Next engineering gates
+## Current product-validation state
 
-The next product-validation line is broader real digital work: multi-capability missions, richer induced failure modes, and operational visualization. The existing benchmark establishes verified behavior for the current scope; it does not establish a universal production guarantee or a global novelty claim.
+The local-first P0/P1 product gate is executable and verified. The repository now demonstrates multi-capability mission execution, capability-chain visibility, restart/resume safety, and disposable external-topology behavior. Broader adapter ecosystems and wider mission coverage remain future expansion rather than hidden prerequisites of the current prerelease.
 
 
 ## Local-first operator quick start
