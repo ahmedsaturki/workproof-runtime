@@ -206,7 +206,10 @@ function vaultRepair(vaultDir: string): void {
 }
 
 async function doctorCommand(): Promise<void> {
-  const report = await runDoctor();
+  const report = await runDoctor({
+    ...process.env,
+    WORKPROOF_PACKAGE_ROOT: path.resolve(path.dirname(__filename), "../../../")
+  });
   process.stdout.write(JSON.stringify(report, null, 2) + "\n");
   if (report.status === "failed") process.exitCode = 1;
 }
