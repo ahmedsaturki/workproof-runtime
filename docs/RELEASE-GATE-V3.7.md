@@ -8,18 +8,18 @@ Extend the verified WorkProof product with A2A interoperability and observationa
 
 ## Required acceptance
 
-- [ ] A2A Agent Card and JSON-RPC endpoint
-- [ ] A2A version negotiation
-- [ ] authenticated Control Plane forwarding
-- [ ] deterministic mutation idempotency
-- [ ] A2A task state/artifact mapping
-- [ ] A2A protocol acceptance
-- [ ] packed A2A smoke
-- [ ] OTLP/HTTP JSON log export
-- [ ] telemetry field allowlist / non-leakage coverage
-- [ ] broader mission composition example
-- [ ] expanded Studio operational timeline
-- [ ] source-tree/CI integration
+- [x] A2A Agent Card and JSON-RPC endpoint
+- [x] A2A version negotiation
+- [x] authenticated Control Plane forwarding
+- [x] deterministic mutation idempotency
+- [x] A2A task state/artifact mapping
+- [x] A2A protocol acceptance
+- [x] packed A2A smoke
+- [x] OTLP/HTTP JSON log export
+- [x] telemetry field allowlist / non-leakage coverage
+- [x] broader mission composition example
+- [x] expanded Studio operational timeline
+- [x] source-tree/CI integration
 - [ ] GitHub Release publication and post-publication verification
 - [ ] GHCR publication and digest lineage
 - [ ] production Compose pin
@@ -28,3 +28,14 @@ Extend the verified WorkProof product with A2A interoperability and observationa
 ## Stop conditions
 
 Do not call v3.7 verified if A2A can bypass WorkProof authorization/execution, mutation can occur without an idempotency key, telemetry can be mistaken for proof, or packaged adapters differ from the tested source artifacts.
+
+
+## Candidate verification
+
+- [x] Feature CI #1179 passed on commit `197a2598d3d338bd15b9a8b7678fce090fa689f9`
+- [x] TypeScript build and packed artifact verification passed
+- [x] Full unit/integration suite passed, including A2A and OTLP tests
+- [x] Benchmark, demo, CLI proof, representative missions, and live GitHub smoke passed
+- [x] Source-tree gate reports 213 required files with no missing entries
+
+Publication and main promotion remain intentionally open until the exact release branch artifacts are generated and independently rechecked.
