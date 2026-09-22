@@ -182,7 +182,8 @@ async function executeMission(input: Record<string, unknown>): Promise<WorkObjec
       ? input.metadata as Record<string, unknown>
       : undefined
   });
-  saveMission(work, steps);
+  saveMission(work, steps, config);
+  const repository = new JsonWorkRepository(config.workDirectory);
   const engine = new WorkEngine(store, registry, verification, async () => false, undefined, repository);
   await engine.run(work, steps);
   persistProof(work, config);
