@@ -31,4 +31,4 @@ Keep the core independent of any specific LLM, cloud provider, browser vendor, o
 
 ## Distribution rule
 
-The supported release channels are GitHub source/release artifacts and GHCR. Container base images must be pinned by immutable digest in `Dockerfile`; changes to the base digest require the container verification gates to pass. The npm package is intentionally marked private and is used as a package artifact rather than a public npm registry distribution.
+The supported release channels are GitHub source/release artifacts and GHCR. Container base images must be pinned by immutable digest in `Dockerfile`; changes to the base digest require the container verification gates to pass. Dependabot is configured for weekly npm and GitHub Actions maintenance; dependency changes still require the normal CI/security gates. The npm package is intentionally marked private and is used as a package artifact rather than a public npm registry distribution.
