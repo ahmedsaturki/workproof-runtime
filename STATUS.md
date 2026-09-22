@@ -4,24 +4,24 @@ Date: 2026-09-22
 
 ## Main verified baseline
 
-Main contains the v3.4 executable benchmark, restart/resume safety, portable proof, explicit proof compatibility, operator guidance, packaged operator docs/examples, and distribution hardening.
+Main contains the v3.4 executable benchmark, restart/resume safety, portable proof, explicit proof compatibility, operator guidance, packaged operator docs/examples, multi-capability execution, external-topology validation, and distribution hardening.
 
 ## Current main
 
-- package version: `3.4.0-dev.10`
-- current main closeout CI is the final gate for this merge
+- package version: `3.4.0-dev.11`
+- release target commit: `aeaaac3d9224b7eac297ac8f63207bf97b532e4d`
 
 ## Current verified release
 
-- version: `3.4.0-dev.10`
-- tag: `v3.4.0-dev.10`
-- release commit: `620ae90f396319630ef6913b66a664634d695039`
-- GitHub Release id: 393463668
-- release verification run #113: success
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.10`
-- GHCR digest: `sha256:3fa81f645ccb0c13e0dbfd5da13c089e982f5ed85a0c79b5ec49e021820315fa`
-- immutable image tag: `620ae90f396319630ef6913b66a664634d695039`
-- Container verification run #110: success
+- version: `3.4.0-dev.11`
+- tag: `v3.4.0-dev.11`
+- release commit: `aeaaac3d9224b7eac297ac8f63207bf97b532e4d`
+- GitHub Release id: 393476961
+- release verification run #118: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.4.0-dev.11`
+- GHCR digest: `sha256:d0c4a8134e0b73d68dc6a0489bbc058b90e633a01171df980aebd1e7b47affff`
+- immutable image tag: `aeaaac3d9224b7eac297ac8f63207bf97b532e4d`
+- Container verification run #115: success
 - five release assets present, re-downloaded, and SHA256-verified
 
 ## Product gates
@@ -64,7 +64,7 @@ M001-M005: 5/5 verified.
 - [x] disposable external-topology smoke with TLS/auth/backup/restore/rollback
 - [ ] public production host/DNS/TLS/auth/secrets provisioning
 
-The disposable topology gate verifies TLS, authentication, secret non-leakage, persistent state, backup/restore, rollback to a previous immutable release, and deny-by-default network exposure. Public infrastructure remains a separate external resource.
+The disposable topology gate verifies TLS, authentication, secret non-leakage, persistent state, backup/restore, rollback to a previous immutable release, and deny-by-default network exposure. The release smoke additionally binds the published tag to the verified immutable digest. Public infrastructure remains a separate external resource.
 
 ## Verification rule
 
