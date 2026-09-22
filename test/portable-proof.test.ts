@@ -161,4 +161,30 @@ test("portable proof verification rejects bundle path traversal", () => {
   }
 });
 
+test("portable verifier rejects manifest omissions and sidecar symlinks", () => {
+  const root = fs.mkdtempSync("/tmp/workproof-portable-manifest-");
+  try {
+    const created = createProof(path.join(root, "source"));
+    const bundleDir = path.join(root, "bundle");
+    const manifest = exportPortableProof(created.proofPath, bundleDir);
+
+    const originalManifest = JSON.parse(fs.readFileSync(path.join(bundleDir, "manifest.json"), "utf8"));
+    originalManifest.artifacts = [];
+    fs.writeFileSync(path.join(bundleDir, "manifest.json"), JSON.stringify(originalManifest, null, 2), "utf8");
+    assert.throws(() => verifyPortableProof(bundleDir), /artifact manifest does not match/);
+
+    fs.writeFileSync(path.join(bundleDir, "manifest.json"), JSON.stringify(manifest, null, 2), "utf8");
+    const artifact = manifest.artifacts[0];
+    const sidecar = path.join(bundleDir, artifact.path as string);
+    const outside = path.join(root, "outside.txt");
+    fs.writeFileSync(outside, "outside
+", "utf8");
+    fs.unlinkSync(sidecar);
+    fs.symlinkSync(outside, sidecar);
+    assert.throws(() => verifyPortableProof(bundleDir), /must be a regular file/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 export {};
