@@ -101,9 +101,9 @@ Feature CI #1179 and post-merge main CI #1189 passed the complete v3.7 repositor
 
 Published assets:
 
-- `operational-reality-core-3.8.0.tgz`
-- `workproof-runtime-v3.8.0.tar.gz`
-- `workproof-benchmark-v3.8.0.json`
+- `operational-reality-core-3.8.1.tgz`
+- `workproof-runtime-v3.8.1.tar.gz`
+- `workproof-benchmark-v3.8.1.json`
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
@@ -119,10 +119,10 @@ Verified digest:
 
 `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 
-The same digest is exposed by the immutable release commit tag `2b02d22e897d5fe736f93267c72036d951f74082`. Container verification run #189 proved:
+The same digest is exposed by the immutable release commit tag `f8af30bf69391db22863c432df5c452a73ebaa05`. Container verification run #189 proved:
 
 - package version matches release tag;
-- OCI version matches `3.8.0`;
+- OCI version matches `3.8.1`;
 - OCI revision matches the release tag commit;
 - version and immutable commit tags resolve to the same digest;
 - the published image starts successfully;
@@ -137,7 +137,7 @@ The repository includes:
 - `docs/CONTAINER-RUNTIME.md`
 - `docs/PRODUCTION-DEPLOYMENT.md`
 
-The production compose targets the verified v3.8.0 image digest, binds Studio to localhost, and persists `./work-runs`. The separate control-plane process is the authenticated mutation boundary and can be connected to Studio with `WORKPROOF_CONTROL_PLANE_URL` plus a matching auth policy. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
+The production compose targets the verified v3.8.1 image digest, binds Studio to localhost, and persists `./work-runs`. The separate control-plane process is the authenticated mutation boundary and can be connected to Studio with `WORKPROOF_CONTROL_PLANE_URL` plus a matching auth policy. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
 
 `package.json` remains `private: true`; no npm registry publication is claimed.
 
