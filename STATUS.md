@@ -86,3 +86,12 @@ A capability receipt is not independent proof. Work is verified only when indepe
 - [x] release publication and GHCR digest verification
 - [x] production Compose digest pin
 - [x] post-merge main CI closeout (CI #1189)
+
+
+## v3.8 release branch
+
+- branch: `release/3.8.0-dev.1`
+- source feature evidence: CI #1232 success
+- release branch verification: in progress
+- publication: not yet closed
+- GHCR/Compose/main promotion: pending release verification
