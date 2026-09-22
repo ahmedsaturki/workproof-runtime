@@ -103,9 +103,9 @@ Published image:
 
 Verified digest:
 
-`<published-by-container-workflow>`
+`sha256:88be340ace01e1d6d48f62af41c806048c41d3f6e3a20741fba29cdc70b8bd4f`
 
-The same digest will be exposed by the immutable release commit tag after publication. Container verification is required to prove:
+The same digest is exposed by the immutable release commit tag `78932bba20b48bf1ebc0c3d873d0e716b2ca296c`. Container verification run #55 proved:
 
 - package version matches release tag;
 - OCI version matches `3.4.0-dev.5`;
