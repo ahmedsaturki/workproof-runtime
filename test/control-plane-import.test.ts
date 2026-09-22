@@ -9,7 +9,7 @@ test("Control Plane application import does not start a server or create runtime
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "workproof-control-import-"));
   const result = spawnSync(process.execPath, [
     "-e",
-    'require("./dist/apps/control-plane.js"); process.stdout.write("import-ok\n");'
+    'require("./dist/apps/control-plane.js"); process.stdout.write("import-ok");'
   ], {
     cwd: require("process").cwd(),
     env: {
