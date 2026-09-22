@@ -184,8 +184,8 @@ test("persisted idempotency keys reject changed operation or input before execut
     verify: async () => ({ id: "proof", criterion: "Exactly one publish occurred", passed: calls === 1, evidence: [] })
   });
   const beforeStatus = loaded.status;
-  assert.throws(
-    () => new WorkEngine(resumedStore, resumedRegistry, resumedVerification, async () => false, undefined, repo)
+  await assert.rejects(
+    new WorkEngine(resumedStore, resumedRegistry, resumedVerification, async () => false, undefined, repo)
       .run(loaded, [{
         ...firstStep,
         input: { record: "B" }
