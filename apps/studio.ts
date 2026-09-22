@@ -12,8 +12,8 @@ const { verifyProofSignature } = require("../packages/evidence/src/signature.js"
 
 function readRuntimeVersion(): string {
   const candidates = [
-    path.resolve(__dirname, "../../package.json"),
-    path.resolve(process.cwd(), "package.json")
+    path.resolve(path.dirname(__filename), "../../package.json"),
+    path.resolve(require("process").cwd(), "package.json")
   ];
   for (const candidate of candidates) {
     try {
