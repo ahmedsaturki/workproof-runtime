@@ -52,13 +52,18 @@ export function assessProofCompatibility(proof: Record<string, unknown>): Compat
     };
   }
 
-  if (
-    !integrity ||
-    !supported(integrity.version, CURRENT_COMPATIBILITY_POLICY.integrityManifest)
-  ) {
+  if (!integrity) {
+    return {
+      status: "compatible",
+      reason: "legacy 0.1 proof without integrity metadata remains readable but cannot provide integrity verification",
+      policy: CURRENT_COMPATIBILITY_POLICY
+    };
+  }
+
+  if (!supported(integrity.version, CURRENT_COMPATIBILITY_POLICY.integrityManifest)) {
     return {
       status: "unsupported",
-      reason: "integrity manifest version " + String(integrity?.version) + " is not supported",
+      reason: "integrity manifest version " + String(integrity.version) + " is not supported",
       policy: CURRENT_COMPATIBILITY_POLICY
     };
   }
