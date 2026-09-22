@@ -4,129 +4,89 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.4 benchmark foundations remain verified; v3.8.3 is the current stable release.**
+**v3.8.4 is the current stable release.**
 
-The v3.4 line is the first executable operator benchmark with controlled failure injection across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution.
+v3.8.4 preserves the verified v3.8.3 runtime contract and adds immutable container-base provenance plus an explicit production resource/log envelope.
 
-The v3.4.0-dev.10 product baseline adds a representative multi-capability Research → Transform mission, Studio capability-chain visibility, and a disposable external-topology gate covering TLS, authentication, persistence, backup/restore, and rollback.
-
-The v3.6.0-dev.1 release extended the verified v3.5 foundation with an optional MCP v2 stdio interoperability adapter, authenticated Control Plane forwarding, explicit mutation idempotency, protocol acceptance, and packed MCP artifact verification.
+The v3.4 line established the executable operator benchmark across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution. Later releases added local product surfaces, proof compatibility, recovery, Control Plane safety, MCP/A2A interoperability, OTLP audit export, diagnostics, network-boundary hardening, and reproducible distribution.
 
 ## Core loop
 
 Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify -> Recover/Substitute -> Deliver -> Proof -> Retain -> Control -> Compensate
 
-## Verified platform
+## v3.8.4 release evidence
 
-v1.0 through v3.2 remain verified foundations for proof registry/trust, retention, worker ownership/recovery, control-plane auth/idempotency/fencing, saga recovery, Studio control/audit, lease visibility, operational filtering/health, local SQLite work, and deterministic data transformation.
+- GitHub Release: `v3.8.4` (ID `393951969`)
+- release commit: `a232ed61ec5c5307c5ae3edc40f4c157d3f69432`
+- Release workflow #214: success
+- Container workflow #211: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.4`
+- GHCR digest: `sha256:0a756db6683db2bcdc2664dd35458e181782ed557b8dbb84f4f878f5b358bb50`
+- immutable image tag: `a232ed61ec5c5307c5ae3edc40f4c157d3f69432`
+- rollback: v3.8.1 / `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
+- five release assets published and SHA256-verified
+- anonymous GHCR pull: verified
+- runtime health: verified
+- production Compose restart/persistence: verified
+- disposable external TLS/auth/backup/restore/rollback topology: verified
 
-## v3.3 Local Message Outbox
+### v3.8.4 hardening
 
-- `pack.messaging.outbox` composes a local RFC-style text/plain message.
-- Message identity is deterministic from a canonical SHA-256 representation.
-- The Message-ID is content-derived and stable for identical payloads.
-- Messages are persisted as digest-addressed `.eml` files.
-- Repeated identical payloads resolve to the same artifact without duplicates.
-- Concurrent creation is race-safe through exclusive file creation and re-read reconciliation.
-- Addresses are strictly validated and bounded.
-- Header injection is rejected.
-- Subject, body, and final message sizes are bounded.
-- Only the explicit `compose` operation is registered.
-- Capability results include evidence.
-- The verifier independently re-reads the persisted artifact and compares the canonical representation.
-- The pack is classified `local_write`.
-- No external SMTP or remote message send is performed.
-- No new npm runtime dependency was introduced.
-- CLI mission registration includes the outbox pack.
+- Docker build/runtime stages use immutable `node:24.21.0-trixie-slim` digest `sha256:8ec5d7557396cfe32d21c3f9c13072355ceab22b584578ca4bb28af31120cffe`.
+- CI, Release, and Container workflows reject mutable Docker base references.
+- Production Compose uses init, 10s stop grace, 1 CPU, 1 GiB RAM, 512 PIDs, and 10 MiB × 3 JSON log rotation.
+- Compose smoke verifies the resource/log envelope in addition to restart and persistence.
 
-## v3.3 verification evidence
+## Benchmark
 
-- Feature CI #808: success.
-- PR #71: merged.
-- Merged-main CI #809: success on `c5e951056461c37f45bed8bb8406d119880d63df`.
-- Documentation/source-tree closeout CI #811: success.
-- Closeout record correction commit: `0c92a8c86950776243646de4bb40b0c0f2fe5876`.
-- Closeout record correction CI #812: success.
-- Dependency security audit: 0 vulnerabilities.
-- Chromium/CDP preflight: success.
-- Strict TypeScript build: success.
-- Retention lifecycle suite: success.
-- Full unit/integration suite: success.
-- Benchmark: success.
-- Demo: success.
-- CLI proof verification and mission execution: success.
-- Live GitHub smoke: success.
+M001-M005: **5/5 verified**.
 
-## v3.4 Executable Operator Benchmark
+- verifiedCompletionRate: 1.0
+- falseDoneCount: 0
+- duplicateExternalEffectCount: 0
+- ambiguousOutcomeResolvedCount: 1
+- capabilitySubstitutionCount: 1
+- evidenceCompleteRate: 1.0
+- humanInterventionCount: 0
 
-- PR #73 merged as `fe662d5bb5337bde18772f22864434935d59f66f`.
-- Feature CI #864: success.
-- Merged-main CI #866: success.
-- Documentation/source-tree closeout CI #872: success.
-- Final closeout record verification CI #875: success.
-- Main CI for the latest main commit: success.
+M004 reconciles an external effect whose acknowledgement was lost without duplicating the effect. M005 uses bounded capability substitution and independently verifies the stored outcome.
 
-### Benchmark result
+## Product surfaces
 
-- M001-M005: 5/5 verified.
-- verifiedCompletionRate: 1.0.
-- falseDoneCount: 0.
-- duplicateExternalEffectCount: 0.
-- ambiguousOutcomeResolvedCount: 1.
-- capabilitySubstitutionCount: 1.
-- evidenceCompleteRate: 1.0.
-- humanInterventionCount: 0.
+- Local WorkProof Studio
+- packaged `workctl` CLI
+- durable Work Objects with restart/resume
+- portable proof export/verify/import and explicit compatibility policy
+- authenticated Control Plane with execution-policy and idempotency safety
+- capability inventory and Studio registry visibility
+- MCP v2 stdio adapter
+- A2A 1.0 JSON-RPC adapter and Agent Card
+- dependency-free OTLP/HTTP JSON audit export
+- operator diagnostics via `workctl doctor` and `/ready`
+- local persistent work/proof storage
+- reproducible source and container distributions
 
-M004 accepted an external effect whose acknowledgement was lost, reconciled existing state, and avoided a duplicate POST.
-
-M005 retried the primary capability under bounded ambiguity, selected a compatible fallback, and independently verified the stored outcome.
-
-## v3.7 release
-
-The v3.7 release adds:
-- A2A 1.0 JSON-RPC interoperability over the authenticated WorkProof Control Plane.
-- A2A Agent Card discovery, task listing/filtering/paging, and deterministic mutation idempotency.
-- Work Object listing and paging in the Control Plane and SDK.
-- Dependency-free OTLP/HTTP JSON audit export with an explicit field allowlist.
-- An expanded Studio operational timeline.
-- A2A-ready representative mission and packed A2A artifact smoke.
-
-Feature CI #1179 and post-merge main CI #1189 passed the complete v3.7 repository gates. Release publication, GHCR digest pinning, production Compose pinning, and main promotion are complete.
+The runtime remains the authority for execution, risk policy, effects, verification, reconciliation, recovery, and proof. Adapters do not create a parallel execution authority.
 
 ## Distribution and operation
 
 ### GitHub Release
 
-`v3.8.3` is the current stable release. Release publication is gated on the matching Container workflow succeeding for the exact release commit.
+The v3.8.4 release publishes:
 
-Published assets:
-
-- `operational-reality-core-3.8.3.tgz`
-- `workproof-runtime-v3.8.3.tar.gz`
-- `workproof-benchmark-v3.8.3.json`
+- `operational-reality-core-3.8.4.tgz`
+- `workproof-runtime-v3.8.4.tar.gz`
+- `workproof-benchmark-v3.8.4.json`
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
-The release pipeline re-downloads published assets, verifies SHA256 sums, verifies the release target matches the tag, validates published benchmark semantics, and reconciles stable versus prerelease publication state.
+The release pipeline re-downloads published assets, verifies SHA256 sums, verifies tag/commit lineage, validates benchmark semantics, and verifies the publication state.
 
 ### GHCR container
 
-Published image:
+`ghcr.io/ahmedsaturki/workproof-runtime:3.8.4@sha256:0a756db6683db2bcdc2664dd35458e181782ed557b8dbb84f4f878f5b358bb50`
 
-`ghcr.io/ahmedsaturki/workproof-runtime:3.8.3`
-
-Verified digest:
-
-`sha256:ec6f891f8e3fc427937f904eb039d95d58387b1d06261cd91c8c9a886bc7cf67`
-
-The same digest is exposed by the immutable release commit tag `27bdec369b3e0664224054471656b3f736e763db` Container verification run #207 proved:
-
-- package version matches release tag;
-- OCI version matches `3.8.3`;
-- OCI revision matches the release tag commit;
-- version and immutable commit tags resolve to the same digest;
-- the published image starts successfully;
-- `/health` returns status ok.
+The immutable commit tag is `a232ed61ec5c5307c5ae3edc40f4c157d3f69432`.
 
 ### Self-hosted runtime
 
@@ -137,47 +97,11 @@ The repository includes:
 - `docs/CONTAINER-RUNTIME.md`
 - `docs/PRODUCTION-DEPLOYMENT.md`
 
-The production compose targets the verified v3.8.3 image digest, binds Studio to localhost, and persists `./work-runs`. The separate control-plane process is the authenticated mutation boundary and can be connected to Studio with `WORKPROOF_CONTROL_PLANE_URL` plus a matching auth policy. A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets; the repository does not pretend those external resources are provisioned.
+Production Compose pins the exact verified v3.8.4 image digest, binds the host port to localhost, persists `./work-runs`, and applies bounded resources/logs. The Control Plane is the authenticated mutation boundary.
 
-`package.json` remains `private: true`; no npm registry publication is claimed.
+A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets. Those external resources are intentionally not claimed as provisioned by this repository.
 
-## Safety boundary
-
-The messaging capability is intentionally local-only. A capability receipt is not independent proof; the persisted message is re-read and verified. Remote delivery, external acknowledgement, and third-party exactly-once semantics remain outside v3.3.
-
-## Product boundary
-
-WorkProof Runtime is not a replacement for agents, browsers, workflow engines, MCP registries, memory systems, observability backends, or OSINT graphs. Those systems can integrate as capabilities or adapters while Work Object, effect, verification, recovery, and proof semantics remain invariant.
-
-## v3.8 operator diagnostics
-
-The v3.8.0 stable release adds a local operator diagnostics layer:
-- `GET /ready` for explicit Control Plane readiness.
-- import-safe Control Plane module behavior with no runtime-state creation during import.
-- `workctl doctor` with machine-readable checks for local state, packaged entrypoints, Control Plane, Studio, and A2A.
-- CI coverage for diagnostics and readiness.
-
-The diagnostics surface is observational only. It never executes work, mutates authoritative state, marks proof verified, or replaces the Work Contract/verification/proof boundary.
-
-See `docs/OPERATOR-DOCTOR.md`.
-
-## v3.7 interoperability and observability
-
-The v3.7 development line adds:
-- an A2A 1.0 HTTP/JSON-RPC interoperability adapter backed by the authenticated WorkProof Control Plane;
-- deterministic mutation idempotency for A2A message/task mutations;
-- Work Object listing through the Control Plane and SDK;
-- allowlisted OTLP/HTTP JSON export of Control Plane audit events;
-- a packed A2A artifact smoke and A2A-ready representative mission.
-
-A2A and telemetry are adapters only. WorkProof remains the sole authority for execution, risk policy, effects, verification, reconciliation, recovery, and proof.
-
-See `docs/A2A-ADAPTER.md` and `docs/OPENTELEMETRY.md`.
-
-## Current product-validation state
-
-The local-first P0/P1 product gate is executable and verified. The repository now demonstrates multi-capability mission execution, capability-chain visibility, restart/resume safety, and disposable external-topology behavior. Broader adapter ecosystems and wider mission coverage remain future expansion rather than hidden prerequisites of the current stable release.
-
+`package.json` remains `private: true`; npm registry publication is intentionally not claimed. Source and container distributions are the supported release artifacts.
 
 ## Local-first operator quick start
 
@@ -191,21 +115,19 @@ npm run build
 node dist/packages/cli/src/index.js run examples/missions/research-local.json
 ```
 
-The run creates a durable Work Object under `./work-runs` and emits a portable proof file. A persisted Work Object can be resumed after a process or worker interruption:
+A durable Work Object is created under `./work-runs` and a portable proof file is emitted. A persisted Work Object can be resumed after interruption:
 
 ```bash
 node dist/packages/cli/src/index.js resume <work-id> examples/missions/research-local.json
 ```
 
-### Local-first control plane
-
-Run the authenticated control-plane process separately when mutation/control APIs are required:
+### Local Control Plane
 
 ```bash
 WORKPROOF_CONTROL_PLANE_PORT=8789 node dist/apps/control-plane.js
 ```
 
-The default bind is loopback. Non-loopback binding is refused unless `WORKPROOF_AUTH_POLICY` is configured. Mutating requests require an idempotency key when the durable control-plane ledger is enabled.
+The default bind is loopback. Non-loopback binding is refused unless an explicit auth policy is configured. Mutations require durable idempotency keys when the control-plane ledger is enabled.
 
 ### Local Studio
 
@@ -213,72 +135,24 @@ The default bind is loopback. Non-loopback binding is refused unless `WORKPROOF_
 node dist/apps/studio.js ./work-runs 8788 127.0.0.1
 ```
 
-Studio is localhost-bound by default. Optional runtime configuration is read from the command line or environment:
+Studio is localhost-bound by default. Container deployments explicitly opt the process into the container interface while the host port remains loopback-bound. Do not expose port 8788 directly to the public Internet; use an authenticated TLS edge.
 
-Container deployments set `WORKPROOF_ALLOW_NON_LOOPBACK=1` inside the container so Studio can listen on the container interface while the host port remains bound to `127.0.0.1`. This is an explicit container-topology opt-in, not permission to expose a direct host process publicly.
-
-- `WORKPROOF_CONTROL_PLANE_URL`
-- `WORKPROOF_VAULT_DIRECTORY`
-- `WORKPROOF_TRUST_POLICY_PATH`
-
-Do not expose port 8788 directly to the public Internet. Put an authenticated, TLS-terminating reverse proxy in front of WorkProof before external deployment.
-
-### Operator guidance UX
-
-Studio maps execution, verification, lease, partial, unresolved, failed, and unverifiable states to operator guidance and effect summaries. Terminal-state Resume is disabled in the UI.
-
-### Proof compatibility
-
-Proof formats are versioned explicitly. `workctl compatibility <proof.json>` reports the supported format policy, and `workctl verify` rejects unknown proof/integrity versions rather than silently interpreting them.
-
-See `docs/PROOF-COMPATIBILITY.md` for the compatibility contract.
-
-### Portable proof
-
-Portable proof bundles keep the original proof payload and optional signature unchanged while carrying local artifact sidecars with SHA-256 manifest entries.
-
-```bash
-workctl proof-export proof.json ./portable-bundle
-workctl proof-bundle-verify ./portable-bundle
-workctl proof-import ./portable-bundle ./imported-proof
-workctl verify ./imported-proof/proof.json
-```
-
-The bundle format is dependency-free and filesystem-based; external/non-local artifact references remain explicitly marked as non-portable in the manifest.
-
-### Packaged CLI
-
-The package exposes the `workctl` executable. For a local package smoke test:
-
-```bash
-npm pack
-mkdir -p /tmp/workproof-cli-smoke
-npm install --prefix /tmp/workproof-cli-smoke ./operational-reality-core-*.tgz
-/tmp/workproof-cli-smoke/node_modules/.bin/workctl --help
-```
-
-The npm package remains intentionally private; source and container distributions are the supported release artifacts.
-
-
-### Control-plane product surface
-### MCP adapter
-
-An optional MCP v2 stdio adapter is included for AI hosts. It forwards all reads and mutations through the authenticated WorkProof Control Plane rather than creating a parallel execution authority.
+### MCP
 
 ```bash
 npm run mcp-server
 ```
 
-Configure `WORKPROOF_MCP_CONTROL_PLANE_URL` and, when the Control Plane requires authentication, `WORKPROOF_MCP_TOKEN`. Mutation tools require explicit idempotency keys.
+Configure `WORKPROOF_MCP_CONTROL_PLANE_URL` and, when required, `WORKPROOF_MCP_TOKEN`. Mutation tools require explicit idempotency keys.
 
-See `docs/MCP-ADAPTER.md`. The adapter targets the MCP `2026-07-28` revision through the official TypeScript SDK v2.
+## Safety and product boundary
 
+A capability receipt is not independent proof. Persisted effects are re-read and verified. Ambiguous external effects cannot be blindly retried, old workers cannot cross fenced execution boundaries, and unauthenticated mutation cannot bypass authoritative policy.
 
-The current stable release also exposes `GET /v1/capabilities` for authenticated runtime discovery. The SDK exposes `listCapabilities()`, and Studio renders the connected capability registry. See `docs/CONTROL-PLANE-API.md` for the API contract.
+WorkProof Runtime is not a replacement for agents, browsers, workflow engines, memory systems, observability backends, or OSINT graphs. Those systems can integrate as capabilities or adapters while Work Object, outcome contract, effect, verification, recovery, and proof semantics remain invariant.
 
-Capability discovery is metadata only; it never authorizes execution. Risk ceilings, policy, idempotency, effects, verification, reconciliation, recovery, and portable proof remain authoritative.
+## Historical release provenance
 
+v3.8.3 was the preceding verified stable distribution. v3.8.2 is retained as superseded history and is not a rollback target. v3.8.1 remains the verified rollback release.
 
-## v3.8.2 supersession
-
-v3.8.2 remains retained for release-history provenance but is superseded because its Container runtime smoke exposed a conflict between the process-level Studio loopback guard and Docker's internal interface binding. v3.8.3 contains the corrective explicit container opt-in and is the verified rollback successor.
+See `STATUS.md`, `SOURCE-MANIFEST.md`, `docs/release-lineage.json`, and `docs/PRODUCT-READINESS-V1.md` for the current verification and product-readiness records.
