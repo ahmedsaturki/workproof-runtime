@@ -214,14 +214,26 @@ async function waitForCdp(browser: any, requestedPort = 0): Promise<number> {
 
 function killBrowser(browser: any): void {
   if (!browser) return;
-  try {
-    const browserPid = (browser as any).pid as number | undefined;
-    if (browserPid && platform !== "win32") process.kill(-browserPid, "SIGKILL");
-  } catch {
-    try { browser.kill("SIGKILL"); } catch {}
-  }
+  const browserPid = (browser as any).pid as number | undefined;
   try { browser.stdout?.removeAllListeners?.("data"); browser.stderr?.removeAllListeners?.("data"); } catch {}
-  try { if (browser.workproofProfile) fs.rmSync(browser.workproofProfile, { recursive: true, force: true }); } catch {}
+  try { browser.kill("SIGKILL"); } catch {}
+  if (browserPid && platform !== "win32") {
+    try { process.kill(-browserPid, "SIGKILL"); } catch {}
+  } else if (browserPid && platform === "win32") {
+    try {
+      const killer = spawn("taskkill", ["/PID", String(browserPid), "/T", "/F"], {
+        stdio: "ignore",
+        windowsHide: true,
+        detached: true
+      });
+      killer.unref?.();
+    } catch {}
+  }
+  try {
+    if (browser.workproofProfile) {
+      fs.rmSync(browser.workproofProfile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+    }
+  } catch {}
 }
 
 class LocalBrowserCapability implements Capability {
