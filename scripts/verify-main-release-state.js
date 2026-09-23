@@ -90,6 +90,7 @@ async function main() {
       ".github/workflows/container.yml",
       ".github/workflows/release.yml",
       "scripts/verify-main-release-state.js",
+      "scripts/verify-published-lineage.js",
       "test/release-metadata.test.ts"
     ]);
     const unexpectedDrift = changedFiles.filter((file) => !allowedPostReleaseFiles.has(file) && !file.startsWith("docs/"));

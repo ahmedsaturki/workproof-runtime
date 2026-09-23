@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { execFileSync } = require("child_process");
 
 async function json(url, options = {}) {
   const headers = { ...(options.headers || {}) };
@@ -18,18 +19,41 @@ const GHCR_REPOSITORY = GITHUB_REPOSITORY.toLowerCase();
 
 async function ghcrDigest(tag) {
   if (!/^[A-Za-z0-9._-]+$/.test(tag)) throw new Error("Unsupported GHCR tag: " + tag);
-  const tokenResult = await json("https://ghcr.io/token?scope=repository:" + GHCR_REPOSITORY + ":pull");
-  const token = tokenResult.value.token;
+
+  let tokenJson;
+  try {
+    tokenJson = execFileSync("curl", [
+      "-fsS",
+      "https://ghcr.io/token?scope=repository:" + GHCR_REPOSITORY + ":pull"
+    ], { encoding: "utf8" });
+  } catch (error) {
+    throw new Error("Unable to obtain GHCR pull token: " + String(error && error.message ? error.message : error));
+  }
+
+  let token;
+  try {
+    token = JSON.parse(tokenJson).token;
+  } catch {
+    throw new Error("Invalid GHCR token response");
+  }
   if (!token) throw new Error("GHCR pull token was not returned");
+
   const manifestUrl = "https://ghcr.io/v2/" + GHCR_REPOSITORY + "/manifests/" + encodeURIComponent(tag);
-  const response = await fetch(manifestUrl, {
-    headers: {
-      authorization: "Bearer " + token,
-      accept: "application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json"
-    }
-  });
-  if (!response.ok) throw new Error("GHCR manifest returned HTTP " + response.status);
-  const digest = response.headers.get("docker-content-digest");
+  const headers = execFileSync("curl", [
+    "-sS",
+    "-D", "-",
+    "-o", "/dev/null",
+    "-H", "Authorization: Bearer " + token,
+    "-H", "Accept: application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json",
+    manifestUrl
+  ], { encoding: "utf8" });
+
+  const statusLine = headers.split(/\r?\n/).find((line) => /^HTTP\/\d(?:\.\d)?\s+\d+/.test(line));
+  const status = statusLine ? Number(statusLine.match(/\s(\d{3})(?:\s|$)/)?.[1]) : 0;
+  if (status !== 200) throw new Error("GHCR manifest returned HTTP " + status);
+
+  const digestLine = headers.split(/\r?\n/).find((line) => /^docker-content-digest:/i.test(line));
+  const digest = digestLine ? digestLine.split(":", 2)[1].trim() : "";
   if (!digest) throw new Error("GHCR manifest did not expose Docker-Content-Digest");
   return digest;
 }

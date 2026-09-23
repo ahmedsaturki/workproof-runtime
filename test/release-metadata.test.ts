@@ -31,6 +31,7 @@ test("main release-state guard keeps release-control allowlist explicit", () => 
   assert.match(releaseStateScript, /\.github\/workflows\/container\.yml/);
   assert.match(releaseStateScript, /\.github\/workflows\/release\.yml/);
   assert.match(releaseStateScript, /scripts\/verify-main-release-state\.js/);
+  assert.match(releaseStateScript, /scripts\/verify-published-lineage\.js/);
   assert.match(releaseStateScript, /test\/release-metadata\.test\.ts/);
 });
 
@@ -44,6 +45,8 @@ test("external topology smoke uses compatible tool-specific version probes", () 
 test("solo governance verifier authenticates GitHub API calls when a token is available", () => {
   assert.match(soloGovernanceScript, /process\.env\.GITHUB_TOKEN/);
   assert.match(soloGovernanceScript, /headers\.authorization = "Bearer " \+ token/);
+  assert.match(soloGovernanceScript, /copilot_code_review/);
+  assert.match(soloGovernanceScript, /required_signatures/);
 });
 
 test("main release-state guard enforces current stable documentation coherence", () => {
@@ -59,6 +62,15 @@ test("main release-state guard enforces current stable documentation coherence",
   assert.match(releaseStateScript, /CONTAINER-RUNTIME image does not match release lineage/);
   assert.match(releaseStateScript, /CONTAINER-RUNTIME digest does not match release lineage/);
   assert.match(releaseStateScript, /CONTAINER-RUNTIME commit-addressed image tag does not match release lineage/);
+});
+
+test("published-lineage GHCR probe uses the same authenticated manifest contract as container verification", () => {
+  const lineageScript = fs.readFileSync(path.join(root, "scripts", "verify-published-lineage.js"), "utf8");
+  assert.match(lineageScript, /execFileSync\("curl"/);
+  assert.match(lineageScript, /ghcr\.io\/token\?scope=repository:/);
+  assert.match(lineageScript, /["\x27]Authorization: Bearer ["\x27] \+ token/);
+  assert.match(lineageScript, /Docker-Content-Digest/);
+  assert.match(lineageScript, /Accept: application\/vnd\.oci\.image\.index\.v1\+json/);
 });
 
 test("published-lineage verifier exit code is propagated without truthiness coercion", () => {
