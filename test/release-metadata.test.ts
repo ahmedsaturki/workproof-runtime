@@ -8,6 +8,7 @@ const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), 
 const lockJson = JSON.parse(fs.readFileSync(path.join(root, "package-lock.json"), "utf8"));
 const licenseText = fs.readFileSync(path.join(root, "LICENSE"), "utf8");
 const releaseStateScript = fs.readFileSync(path.join(root, "scripts", "verify-main-release-state.js"), "utf8");
+const soloGovernanceScript = fs.readFileSync(path.join(root, "scripts", "verify-solo-governance.js"), "utf8");
 
 test("release metadata is explicit and reproducible", () => {
   assert.strictEqual(packageJson.license, "Apache-2.0");
