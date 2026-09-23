@@ -9,6 +9,7 @@ const lockJson = JSON.parse(fs.readFileSync(path.join(root, "package-lock.json")
 const licenseText = fs.readFileSync(path.join(root, "LICENSE"), "utf8");
 const releaseStateScript = fs.readFileSync(path.join(root, "scripts", "verify-main-release-state.js"), "utf8");
 const soloGovernanceScript = fs.readFileSync(path.join(root, "scripts", "verify-solo-governance.js"), "utf8");
+const externalTopologySmoke = fs.readFileSync(path.join(root, "scripts", "external-topology-smoke.js"), "utf8");
 
 test("release metadata is explicit and reproducible", () => {
   assert.strictEqual(packageJson.license, "Apache-2.0");
@@ -29,6 +30,13 @@ test("main release-state guard keeps release-control allowlist explicit", () => 
   assert.match(releaseStateScript, /\.github\/workflows\/release\.yml/);
   assert.match(releaseStateScript, /scripts\/verify-main-release-state\.js/);
   assert.match(releaseStateScript, /test\/release-metadata\.test\.ts/);
+});
+
+test("external topology smoke uses compatible tool-specific version probes", () => {
+  assert.match(externalTopologySmoke, /openssl:\s*\["version"\]/);
+  assert.match(externalTopologySmoke, /docker:\s*\["--version"\]/);
+  assert.match(externalTopologySmoke, /curl:\s*\["--version"\]/);
+  assert.match(externalTopologySmoke, /tar:\s*\["--version"\]/);
 });
 
 test("solo governance verifier authenticates GitHub API calls when a token is available", () => {
