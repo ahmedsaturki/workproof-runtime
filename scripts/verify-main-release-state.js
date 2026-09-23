@@ -25,9 +25,13 @@ const GITHUB_API = "https://api.github.com/repos/" + GITHUB_REPOSITORY;
 
 async function fetchJson(pathname) {
   if (!pathname.startsWith("/")) throw new Error("GitHub API path must start with '/'");
-  const response = await fetch(GITHUB_API + pathname, {
-    headers: { accept: "application/vnd.github+json", "user-agent": "workproof-main-release-state-check" }
-  });
+  const headers = {
+    accept: "application/vnd.github+json",
+    "user-agent": "workproof-main-release-state-check"
+  };
+  const token = process.env.GITHUB_TOKEN;
+  if (token) headers.authorization = "Bearer " + token;
+  const response = await fetch(GITHUB_API + pathname, { headers });
   const raw = await response.text();
   let value;
   try { value = raw ? JSON.parse(raw) : null; } catch { throw new Error("GitHub API returned invalid JSON"); }
