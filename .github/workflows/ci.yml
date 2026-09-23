@@ -27,6 +27,10 @@ jobs:
         with:
           node-version: 24
           package-manager-cache: false
+      - name: Verify GitHub Solo Governance
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/verify-solo-governance.js
       - name: Verify Chromium for browser acceptance tests
         run: |
           command -v "$WORKPROOF_BROWSER_BINARY"
