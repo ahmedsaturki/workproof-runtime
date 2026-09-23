@@ -38,7 +38,7 @@ The intended Solo Governance settings are:
 - no bypass actors;
 - merge methods limited to merge, squash, and rebase.
 
-GitHub exposes the review and ruleset controls used here, including required approval count, Code Owner review, latest-push approval, stale-review dismissal, thread resolution, and status-check requirements. citeturn306351search0turn306351search4
+GitHub exposes the review and ruleset controls used here, including required approval count, Code Owner review, latest-push approval, stale-review dismissal, thread resolution, and status-check requirements.
 
 ## Governance drift verification
 
