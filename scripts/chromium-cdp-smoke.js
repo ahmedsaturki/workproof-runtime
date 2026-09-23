@@ -51,27 +51,31 @@ function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function fetchJson(port, requestPath) {
+function fetchJson(port, requestPath, timeoutMs = 1500) {
   return new Promise((resolve, reject) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const finish = fn => { clearTimeout(timer); fn(); };
     const req = request({
       hostname: "127.0.0.1",
       port,
       path: requestPath,
       method: "GET",
-      timeout: 1500
+      signal: controller.signal
     }, res => {
       let raw = "";
       res.on("data", chunk => { raw += chunk.toString(); });
       res.on("end", () => {
-        try {
-          resolve(JSON.parse(raw));
-        } catch (error) {
-          reject(error);
-        }
+        finish(() => {
+          try {
+            resolve(JSON.parse(raw));
+          } catch (error) {
+            reject(error);
+          }
+        });
       });
     });
-    req.on("timeout", () => req.destroy(new Error(`CDP HTTP timeout: ${requestPath}`)));
-    req.on("error", reject);
+    req.on("error", error => finish(() => reject(error)));
     req.end();
   });
 }
