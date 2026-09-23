@@ -59,6 +59,7 @@ const ciWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "ci.y
 const releaseWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "release.yml"), "utf8");
 const externalTopologySmoke = fs.readFileSync(path.join(root, "scripts", "external-topology-smoke.js"), "utf8");
 const composeSmoke = fs.readFileSync(path.join(root, "scripts", "container-compose-smoke.js"), "utf8");
+const containerWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "container.yml"), "utf8");
 
 test("external topology smoke uses the runtime UID for bind-mounted private data", () => {
   assert.match(externalTopologySmoke, /"--user", "0:0"/);
@@ -75,6 +76,14 @@ test("external topology backup operates through the private container boundary",
   assert.ok(externalTopologySmoke.includes("tar -C /data -czf /backup/"));
   assert.ok(!externalTopologySmoke.includes('tar", ["-C", dataDir, "-czf", backupPath'));
   assert.ok(!externalTopologySmoke.includes("fs.rmSync(dataDir, { recursive: true, force: true })"));
+});
+
+test("Container workflow prepares runtime smoke volume for UID 10001", () => {
+  assert.ok(containerWorkflow.includes("--user 0:0"));
+  assert.ok(containerWorkflow.includes('chown -R 10001:10001 /data'));
+  assert.ok(containerWorkflow.includes("chmod 700 /data"));
+  assert.ok(containerWorkflow.includes("stat -c '%u'"));
+  assert.ok(containerWorkflow.includes("stat -c '%a'"));
 });
 
 test("Compose smoke prepares bind-mounted private data for UID 10001", () => {
