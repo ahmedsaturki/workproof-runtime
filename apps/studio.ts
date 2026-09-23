@@ -1283,7 +1283,8 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
     } catch (error) {
       const message = String(error);
       const status = /ENOENT|Unknown work/i.test(message) ? 404 : 500;
-      sendJson(res, status, { error: message });
+      const publicError = status === 404 ? "not-found" : "internal-server-error";
+      sendJson(res, status, { error: publicError });
     }
   });
 

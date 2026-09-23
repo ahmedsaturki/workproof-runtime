@@ -59,6 +59,18 @@ export function verifyTrustPolicySnapshotSignature(snapshot: TrustPolicySnapshot
   }
 }
 
+export function serializeTrustPolicySnapshot(snapshot: TrustPolicySnapshot): string {
+  if (!verifyTrustPolicySnapshotSignature(snapshot)) throw new Error("Trust snapshot signature is invalid");
+  const output: TrustPolicySnapshot = {
+    version: "0.1",
+    epoch: snapshot.epoch,
+    policy: snapshot.policy,
+    digest: snapshot.digest,
+    ...(snapshot.signature ? { signature: snapshot.signature } : {})
+  };
+  return JSON.stringify(output, null, 2) + "\n";
+}
+
 export function verifyTrustPolicySnapshot(snapshot: TrustPolicySnapshot, trustedAdminKeyIds: Set<string>): TrustSnapshotDecision {
   if (!verifyTrustPolicySnapshotSignature(snapshot)) return "invalid";
   return trustedAdminKeyIds.has(snapshot.signature!.keyId) ? "accept" : "untrusted-signer";

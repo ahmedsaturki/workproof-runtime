@@ -4,7 +4,7 @@ const { WorkStore } = require('../packages/core/src/work.js');
 const { CapabilityRegistry } = require('../packages/capabilities/src/registry.js');
 const { VerificationEngine } = require('../packages/verification/src/engine.js');
 const { WorkEngine } = require('../packages/runtime/src/engine.js');
-const { registerLocalBrowserPack, resolveBrowserBinary } = require('../packages/packs/src/browser-local-pack.js');
+const { registerLocalBrowserPack, resolveBrowserBinary, escapeRuntimeEvaluateString } = require('../packages/packs/src/browser-local-pack.js');
 
 test('browser executable override is honored without process-shell expansion', () => {
   const previous = process.env.WORKPROOF_BROWSER_BINARY;
@@ -29,3 +29,14 @@ test('real Chromium browser executes an injected page workflow and verifies resu
 });
 
 export {};
+
+test("browser Runtime.evaluate strings escape code-delimiter characters without changing value", () => {
+  const malicious = "</script><img src=x>line\\nnext\\u2028end";
+  const escaped = escapeRuntimeEvaluateString(malicious);
+  assert.ok(escaped.includes("\\u003C\\u002Fscript\\u003E"));
+  assert.ok(escaped.includes("\\u003Cimg"));
+  assert.ok(escaped.includes("\\nnext\\u2028end"));
+  assert.equal(escaped.includes("</script>"), false);
+  const evaluated = Function("return " + escaped)();
+  assert.equal(evaluated, malicious);
+});

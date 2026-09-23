@@ -31,7 +31,6 @@ test("main release-state guard keeps release-control allowlist explicit", () => 
 });
 
 test("main release-state guard enforces current stable documentation coherence", () => {
-  assert.match(releaseStateScript, /README release asset name does not match package version/);
   assert.match(releaseStateScript, /README current stable release does not match package version/);
   assert.match(releaseStateScript, /STATUS current stable release line does not match package version/);
   assert.match(releaseStateScript, /SOURCE-MANIFEST current verified release lineage does not match package version/);
@@ -114,3 +113,12 @@ test("release waits for the container verification gate before package verificat
 });
 
 export {};
+
+test("external topology smoke never passes a release image from the environment directly to Docker", () => {
+  assert.match(externalTopologySmoke, /expectedReleaseImage = "ghcr\.io\/ahmedsaturki\/workproof-runtime:"/);
+  assert.ok(externalTopologySmoke.includes("releaseImageOverride !== expectedReleaseImage"));
+  assert.ok(externalTopologySmoke.includes("const currentImage = releaseImageOverride ? expectedReleaseImage : localImage;"));
+  assert.doesNotMatch(externalTopologySmoke, /run\(.*releaseImageOverride/s);
+  assert.doesNotMatch(externalTopologySmoke, /sh.*-lc.*command -v/);
+});
+

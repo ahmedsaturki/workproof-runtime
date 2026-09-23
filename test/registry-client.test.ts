@@ -85,3 +85,30 @@ test("registry client rejects corrupted proof returned by the registry", async (
 });
 
 export {};
+
+test("registry proof publishing sends only the validated proof transport shape", async () => {
+  let received;
+  const server = require("http").createServer((req: any, res: any) => {
+    const chunks: any[] = [];
+    req.on("data", (chunk: any) => chunks.push(chunk));
+    req.on("end", () => {
+      received = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+      const body = JSON.stringify({ digest: fixture().integrity.digest });
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(body);
+    });
+  });
+  await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
+  try {
+    const proof = fixture();
+    proof.untrustedTopLevelField = "must-not-transmit";
+    const published = await publishProofToRegistry(`http://127.0.0.1:${server.address().port}`, proof);
+    assert.equal(published.digest, proof.integrity.digest);
+    assert.ok(received);
+    assert.equal(received.untrustedTopLevelField, undefined);
+    assert.equal(received.integrity.digest, proof.integrity.digest);
+  } finally {
+    await new Promise<void>((resolve, reject) => server.close((error: any) => error ? reject(error) : resolve()));
+  }
+});
+

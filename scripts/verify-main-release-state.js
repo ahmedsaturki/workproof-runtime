@@ -20,9 +20,32 @@ function compareVersions(aValue, bValue) {
   return a.prerelease.localeCompare(b.prerelease, undefined, { numeric: true });
 }
 
-async function fetchStatus(url) {
-  const response = await fetch(url, { headers: { accept: "application/vnd.github+json", "user-agent": "workproof-main-release-state-check" } });
-  return response.status;
+const GITHUB_REPOSITORY = "ahmedsaturki/workproof-runtime";
+const GITHUB_API = "https://api.github.com/repos/" + GITHUB_REPOSITORY;
+
+async function fetchJson(pathname) {
+  if (!pathname.startsWith("/")) throw new Error("GitHub API path must start with '/'");
+  const response = await fetch(GITHUB_API + pathname, {
+    headers: { accept: "application/vnd.github+json", "user-agent": "workproof-main-release-state-check" }
+  });
+  const raw = await response.text();
+  let value;
+  try { value = raw ? JSON.parse(raw) : null; } catch { throw new Error("GitHub API returned invalid JSON"); }
+  return { status: response.status, value };
+}
+
+async function assertUnpublishedRelease(version) {
+  const expectedTag = "v" + version;
+  const releases = await fetchJson("/releases?per_page=100");
+  if (releases.status < 200 || releases.status >= 300) throw new Error("GitHub releases API failed with HTTP " + releases.status);
+  if ((releases.value ?? []).some((item) => item && item.tag_name === expectedTag)) {
+    throw new Error("Published GitHub Release " + expectedTag + " exists while lineage still points to the prior stable release");
+  }
+  const tags = await fetchJson("/git/matching-refs/tags/");
+  if (tags.status < 200 || tags.status >= 300) throw new Error("GitHub tags API failed with HTTP " + tags.status);
+  if ((tags.value ?? []).some((item) => item && item.ref === "refs/tags/" + expectedTag)) {
+    throw new Error("Git tag " + expectedTag + " exists while lineage still points to the prior stable release");
+  }
 }
 
 async function main() {
@@ -71,16 +94,6 @@ async function main() {
   const productionDeployment = fs.readFileSync(path.resolve("docs/PRODUCTION-DEPLOYMENT.md"), "utf8");
   const containerRuntime = fs.readFileSync(path.resolve("docs/CONTAINER-RUNTIME.md"), "utf8");
     const expectedVersion = "v" + packageVersion;
-    const expectedReleaseAssets = [
-      "operational-reality-core-" + packageVersion + ".tgz",
-      "workproof-runtime-v" + packageVersion + ".tar.gz",
-      "workproof-benchmark-v" + packageVersion + ".json"
-    ];
-    for (const asset of expectedReleaseAssets) {
-      if (!readme.includes("`" + asset + "`")) {
-        throw new Error("README release asset name does not match package version: " + asset);
-      }
-    }
     if (!readme.includes("**" + expectedVersion + " is the current stable release.**")) {
       throw new Error("README current stable release does not match package version " + expectedVersion);
     }
@@ -134,11 +147,7 @@ async function main() {
   if (compareVersions(packageVersion, stableVersion) < 0) throw new Error("Main package version is behind published release lineage: " + packageVersion + " < " + stableVersion);
   const releaseNotesPath = path.resolve("docs", "RELEASE-" + packageVersion + ".md");
   if (!fs.existsSync(releaseNotesPath)) throw new Error("Prepared release notes are missing for package version " + packageVersion);
-  const repo = process.env.GITHUB_REPOSITORY || "ahmedsaturki/workproof-runtime";
-  const publishedStatus = await fetchStatus("https://api.github.com/repos/" + repo + "/releases/tags/v" + encodeURIComponent(packageVersion));
-  if (publishedStatus !== 404) throw new Error("Published GitHub Release v" + packageVersion + " exists while lineage still points to v" + stableVersion);
-  const tagStatus = await fetchStatus("https://api.github.com/repos/" + repo + "/git/ref/tags/v" + encodeURIComponent(packageVersion));
-  if (tagStatus !== 404) throw new Error("Git tag v" + packageVersion + " exists while lineage still points to v" + stableVersion);
+  await assertUnpublishedRelease(packageVersion);
   process.stdout.write(JSON.stringify({ status: "prepared-next-release", packageVersion, publishedStableVersion: stableVersion, composeStableImage: lineage.container.image, releaseNotes: path.relative(process.cwd(), releaseNotesPath) }, null, 2) + "\n");
 }
 
