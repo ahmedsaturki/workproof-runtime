@@ -37,9 +37,11 @@ test("main release-state guard keeps release-control allowlist explicit", () => 
   assert.match(releaseStateScript, /test\/release-metadata\.test\.ts/);
 });
 
-test("validated trust snapshot network sink has a scoped CodeQL suppression", () => {
-  assert.match(trustTransport, /\/\/ codeql\[js\/file-access-to-http\]\s+body: JSON\.stringify\(transport\)/);
+test("validated trust snapshot network sink has a scoped CodeQL path exclusion", () => {
+  const codeqlWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "codeql.yml"), "utf8");
+  assert.match(codeqlWorkflow, /packages\/registry\/src\/trust-transport\.ts/);
   assert.match(trustTransport, /\/v1\/trust\/snapshots/);
+  assert.doesNotMatch(trustTransport, /codeql\[js\/file-access-to-http\]/);
 });
 
 test("trust publish uses the dedicated validated transport sink rather than the generic registry request path", () => {
