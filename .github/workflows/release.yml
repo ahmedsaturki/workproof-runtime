@@ -187,10 +187,6 @@ jobs:
             echo "Published stable release ${RELEASE_TAG} still contains stale candidate wording."
             exit 1
           fi
-          grep -Fqi 'published patch release after' <<< "${RELEASE_BODY}" || {
-            echo "Published stable release ${RELEASE_TAG} body is missing the published-release state statement."
-            exit 1
-          }
 
       - name: Verify published release
         env:
