@@ -32,10 +32,12 @@ test("namespace validation and mapping reject traversal-shaped identifiers", () 
     assert.throws(() => validateNamespace(value), /Invalid registry namespace/);
   }
 
-  const root = require("path").join(require("os").tmpdir(), "workproof-security-root");
+  const path = require("path");
+  const root = path.join(require("os").tmpdir(), "workproof-security-root");
   const mapped = namespaceVault(root, "team-a");
-  assert.equal(mapped, require("path").join(require("os").tmpdir(), "workproof-security-root/namespaces/team-a"));
-  assert.equal(mapped.startsWith(root + "/namespaces/"), true);
+  const expected = path.join(root, "namespaces", "team-a");
+  assert.equal(mapped, expected);
+  assert.equal(path.relative(root, mapped), path.join("namespaces", "team-a"));
 });
 
 test("auth policy validation rejects malformed or duplicate credentials", () => {
