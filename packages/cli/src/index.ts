@@ -261,6 +261,7 @@ async function registryTrustPull(digest: string, registryUrl: string, outputPath
   const snapshot = await getTrustSnapshotFromRegistry(registryUrl, digest, token);
   const { serializeTrustPolicySnapshot } = require("../../evidence/src/trust-sync.js");
   // lgtm[js/http-to-file-access]
+
   fs.writeFileSync(outputPath, serializeTrustPolicySnapshot(snapshot), "utf8");
   process.stdout.write(JSON.stringify({ status: "pulled", digest, outputPath, epoch: snapshot.epoch }, null, 2) + "\n");
 }
