@@ -161,6 +161,9 @@ jobs:
       - name: Build TypeScript
         run: npm run build
         timeout-minutes: 3
+      - name: Run Chromium CDP smoke on Windows
+        run: node scripts/chromium-cdp-smoke.js
+        timeout-minutes: 2
       - name: Run browser acceptance on Windows
         run: node --test dist/test/browser.test.js
         timeout-minutes: 8
