@@ -142,18 +142,17 @@ function assertControlPlaneCapabilityInputs(steps: WorkStep[], workDirectory: st
       ? normalized.replace(/[\\/]+/g, path.sep).toLowerCase()
       : normalized;
   };
-  const configuredRoots = (process.env.WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS ?? workDirectory)
+  const resolvedRoots = (process.env.WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS ?? workDirectory)
     .split(path.delimiter)
     .map(value => value.trim())
     .filter(Boolean)
-    .map(value => {
-      const resolved = path.resolve(value);
-      try { return fs.realpathSync.native(resolved); } catch { return resolved; }
-    })
-    .map(normalizeComparable);
-  const isWithinRoot = (candidate: string): boolean => {
+    .map(value => path.resolve(value));
+  const canonicalRoots = resolvedRoots.map(root => {
+    try { return normalizeComparable(fs.realpathSync.native(root)); } catch { return normalizeComparable(root); }
+  });
+  const isWithinRoots = (candidate: string, roots: string[]): boolean => {
     const comparable = normalizeComparable(path.resolve(candidate));
-    return configuredRoots.some(root => {
+    return roots.some(root => {
       const boundary = root.endsWith(path.sep) ? root : root + path.sep;
       return comparable === root || comparable.startsWith(boundary);
     });
@@ -173,11 +172,15 @@ function assertControlPlaneCapabilityInputs(steps: WorkStep[], workDirectory: st
       ? step.input as Record<string, unknown>
       : {};
     const rawPath = step.operation === "query" || step.operation === "upsert" ? input.databasePath : input.path;
-    if (typeof rawPath !== "string" || !isWithinRoot(rawPath)) {
+    if (typeof rawPath !== "string") {
       throw new Error(`Control Plane capability path is outside configured roots for operation ${step.operation}`);
     }
 
     const resolved = path.resolve(rawPath);
+    if (!isWithinRoots(resolved, resolvedRoots)) {
+      throw new Error(`Control Plane capability path is outside configured roots for operation ${step.operation}`);
+    }
+
     const existing = nearestExistingAncestor(resolved);
     if (!existing) continue;
 
@@ -190,7 +193,7 @@ function assertControlPlaneCapabilityInputs(steps: WorkStep[], workDirectory: st
 
     const remainder = path.relative(existing, resolved);
     const canonicalCandidate = path.resolve(realBase, remainder);
-    if (!isWithinRoot(canonicalCandidate)) {
+    if (!isWithinRoots(canonicalCandidate, canonicalRoots)) {
       throw new Error("Control Plane capability path resolves outside configured roots");
     }
   }
