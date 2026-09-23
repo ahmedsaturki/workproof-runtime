@@ -9,14 +9,17 @@ function trackedTextFiles() {
 }
 
 test("repository text files contain no ChatGPT-only citation markers", () => {
+  const start = "";
+  const middle = "";
+  const endMarker = "";
   const forbidden = [
-    /cite/,
-    /filecite/,
-    /memcite/,
-    /url/,
-    /entity/,
-    /message_reaction/
-  ];
+    new RegExp(start + "cite" + middle),
+    new RegExp(start + "filecite" + middle),
+    new RegExp(start + "memcite" + endMarker),
+    new RegExp(start + "url" + middle),
+    new RegExp(start + "entity" + middle),
+    new RegExp(start + "message_reaction" + middle)
+
   const findings = [];
   for (const file of trackedTextFiles()) {
     const data = fs.readFileSync(file);
