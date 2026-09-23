@@ -83,12 +83,12 @@ test("two authenticated registries publish, pull, apply, conflict, reject forged
 
     const forged = generateProofKeyPair();
     const forgedSnapshot = signTrustPolicySnapshot(buildTrustPolicySnapshot(createTrustPolicy(), 3), forged.privateKey);
-    await assert.rejects(() => publishTrustSnapshotToRegistry(urlA, forgedSnapshot, credA.token), /untrusted-signer/);
+    await assert.rejects(() => publishTrustSnapshotToRegistry(urlA, forgedSnapshot, credA.token), /forbidden/);
 
     const malformed = { ...snapshot2, signature: { ...snapshot2.signature, signature: "!" } };
     assert.notEqual(malformed.signature.signature, snapshot2.signature.signature);
     assert.equal(verifyTrustPolicySnapshotSignature(malformed), false);
-    await assert.rejects(() => publishTrustSnapshotToRegistry(urlA, malformed, credA.token), /invalid/);
+    await assert.rejects(() => publishTrustSnapshotToRegistry(urlA, malformed, credA.token), /invalid-request/);
 
     const rolledBack = await applyTrustSnapshotToRegistry(urlB, snapshot1.digest, credB.token, true);
     assert.equal(rolledBack.status, "accept");

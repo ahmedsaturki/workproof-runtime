@@ -285,12 +285,14 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
       audit({ version: "0.1", event: "request.error", at: new Date().toISOString(), requestId, error: message });
       const status = /Unknown (proof|trust snapshot) digest|no-current-trust-snapshot/i.test(message)
         ? 404
-        : (/untrusted-signer|trust snapshot (conflict|rollback-required)/i.test(message)
+        : (/untrusted-signer/i.test(message)
           ? 403
-          : (/invalid|integrity|digest|Invalid proof|Proof integrity/i.test(message) ? 422 : 500));
+          : (/trust snapshot (conflict|rollback-required)/i.test(message)
+            ? 409
+            : (/invalid|integrity|digest|Invalid proof|Proof integrity/i.test(message) ? 422 : 500)));
       const publicError = status === 404
         ? "not-found"
-        : (status === 403 ? "forbidden" : (status === 422 ? "invalid-request" : "internal-server-error"));
+        : (status === 403 ? "forbidden" : (status === 409 ? "conflict" : (status === 422 ? "invalid-request" : "internal-server-error")));
       sendJson(res, status, { error: publicError, requestId });
     }
   });
