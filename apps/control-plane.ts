@@ -6,6 +6,7 @@ import { CapabilityRegistry } from "../packages/capabilities/src/registry";
 import { VerificationEngine } from "../packages/verification/src/engine";
 import { WorkEngine, WorkStep } from "../packages/runtime/src/engine";
 import { JsonWorkRepository } from "../packages/storage/src/json";
+import { securePrivateDirectory, securePrivateFile } from "../packages/storage/src/private-files";
 import { startControlPlane } from "../packages/control-plane/src/http";
 import { loadAuthPolicy } from "../packages/registry/src/auth";
 import { registerLocalPack } from "../packages/packs/src/local-pack";
@@ -18,7 +19,6 @@ import { registerDataTransformPack } from "../packages/packs/src/data-transform-
 import { registerMessageOutboxPack } from "../packages/packs/src/message-outbox-pack";
 import { registerGitLocalPack } from "../packages/packs/src/git-local-pack";
 import { buildProofBundle } from "../packages/evidence/src/bundle";
-import { securePrivateDirectory, securePrivateFile } from "../packages/storage/src/private-files";
 import { buildIntegrityManifest } from "../packages/evidence/src/integrity";
 import { createOtlpLogExporterFromEnv } from "../packages/telemetry/src/otel";
 import { Policy } from "../packages/policy/src/guard";
@@ -135,6 +135,29 @@ function validateSteps(value: unknown, contractRisk: RiskClass): WorkStep[] {
   });
 }
 
+function assertControlPlaneCapabilityInputs(steps: WorkStep[], workDirectory: string): void {
+  const configuredRoots = (process.env.WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS ?? workDirectory)
+    .split(path.delimiter).map(value => value.trim()).filter(Boolean).map(value => path.resolve(value));
+  const isWithinRoot = (candidate: string): boolean => configuredRoots.some(root => {
+    const relative = path.relative(root, path.resolve(candidate));
+    return relative === "" || (relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative));
+  });
+  for (const step of steps) {
+    if (!["create_file", "read_file", "query", "upsert"].includes(step.operation)) continue;
+    const input = step.input && typeof step.input === "object" && !Array.isArray(step.input) ? step.input as Record<string, unknown> : {};
+    const rawPath = step.operation === "query" || step.operation === "upsert" ? input.databasePath : input.path;
+    if (typeof rawPath !== "string" || !isWithinRoot(rawPath)) throw new Error(`Control Plane capability path is outside configured roots for operation ${step.operation}`);
+    const resolved = path.resolve(rawPath);
+    if (fs.existsSync(resolved)) {
+      try {
+        if (!isWithinRoot(fs.realpathSync.native(resolved))) throw new Error("Control Plane capability path resolves outside configured roots");
+      } catch (error) {
+        throw new Error(`Control Plane capability path could not be resolved safely: ${String(error)}`);
+      }
+    }
+  }
+}
+
 function proofPath(work: WorkObject, config: RuntimeConfig): string {
   return path.join(config.proofDirectory, `${safeWorkId(work.id)}.json`);
 }
@@ -180,6 +203,7 @@ export async function executeMission(input: Record<string, unknown>): Promise<Wo
   if (typeof input.objective !== "string" || !input.objective.trim()) throw new Error("Dispatch objective is required");
   const riskClass = validateRisk(input.riskClass, "read");
   const steps = validateSteps(input.steps, riskClass);
+  assertControlPlaneCapabilityInputs(steps, config.workDirectory);
   const store = new WorkStore();
   const registry = createRuntimeRegistry();
   const verification = new VerificationEngine();
@@ -208,6 +232,7 @@ export async function resumeMission(work: WorkObject): Promise<WorkObject> {
   securePrivateDirectory(config.missionDirectory);
   securePrivateDirectory(config.proofDirectory);
   const steps = loadMission(work, config);
+  assertControlPlaneCapabilityInputs(steps, config.workDirectory);
   const store = new WorkStore();
   store.register(work);
   const registry = createRuntimeRegistry();
