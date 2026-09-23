@@ -136,7 +136,12 @@ function validateSteps(value: unknown, contractRisk: RiskClass): WorkStep[] {
 }
 
 function assertControlPlaneCapabilityInputs(steps: WorkStep[], workDirectory: string): void {
-  const comparisonPath = (value: string): string => require("process").platform === "win32" ? value.toLowerCase() : value;
+  const normalizeComparable = (value: string): string => {
+    const normalized = path.normalize(value);
+    return require("process").platform === "win32"
+      ? normalized.replace(/[\\/]+/g, path.sep).toLowerCase()
+      : normalized;
+  };
   const configuredRoots = (process.env.WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS ?? workDirectory)
     .split(path.delimiter)
     .map(value => value.trim())
@@ -145,12 +150,12 @@ function assertControlPlaneCapabilityInputs(steps: WorkStep[], workDirectory: st
       const resolved = path.resolve(value);
       try { return fs.realpathSync.native(resolved); } catch { return resolved; }
     })
-    .map(comparisonPath);
+    .map(normalizeComparable);
   const isWithinRoot = (candidate: string): boolean => {
-    const candidatePath = comparisonPath(path.resolve(candidate));
+    const comparable = normalizeComparable(path.resolve(candidate));
     return configuredRoots.some(root => {
-      const relative = path.relative(root, candidatePath);
-      return relative === "" || (relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative));
+      const boundary = root.endsWith(path.sep) ? root : root + path.sep;
+      return comparable === root || comparable.startsWith(boundary);
     });
   };
   const nearestExistingAncestor = (resolved: string): string | undefined => {
@@ -164,22 +169,27 @@ function assertControlPlaneCapabilityInputs(steps: WorkStep[], workDirectory: st
   };
   for (const step of steps) {
     if (!["create_file", "read_file", "query", "upsert"].includes(step.operation)) continue;
-    const input = step.input && typeof step.input === "object" && !Array.isArray(step.input) ? step.input as Record<string, unknown> : {};
+    const input = step.input && typeof step.input === "object" && !Array.isArray(step.input)
+      ? step.input as Record<string, unknown>
+      : {};
     const rawPath = step.operation === "query" || step.operation === "upsert" ? input.databasePath : input.path;
     if (typeof rawPath !== "string" || !isWithinRoot(rawPath)) {
       throw new Error(`Control Plane capability path is outside configured roots for operation ${step.operation}`);
     }
+
     const resolved = path.resolve(rawPath);
     const existing = nearestExistingAncestor(resolved);
     if (!existing) continue;
+
     let realBase: string;
     try {
       realBase = fs.realpathSync.native(existing);
     } catch (error) {
       throw new Error(`Control Plane capability path could not be resolved safely: ${String(error)}`);
     }
+
     const remainder = path.relative(existing, resolved);
-    const canonicalCandidate = comparisonPath(path.resolve(realBase, remainder));
+    const canonicalCandidate = path.resolve(realBase, remainder);
     if (!isWithinRoot(canonicalCandidate)) {
       throw new Error("Control Plane capability path resolves outside configured roots");
     }
