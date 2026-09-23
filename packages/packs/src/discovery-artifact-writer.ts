@@ -1,6 +1,5 @@
-import fs from "fs";
-import path from "path";
-import crypto from "crypto";
+const fs = require("fs");
+const crypto = require("crypto");
 
 export interface ValidatedDiscoveryRecord {
   name: string;
