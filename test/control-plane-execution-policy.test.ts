@@ -9,7 +9,9 @@ import { CONTROL_PLANE_EXECUTION_POLICY, executeMission } from "../apps/control-
 test("control-plane mission executor enforces approval and risk policy before capability execution", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "workproof-control-policy-"));
   const previousWorkDirectory = process.env.WORKPROOF_WORK_DIRECTORY;
+  const previousAllowedRoots = process.env.WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS;
   process.env.WORKPROOF_WORK_DIRECTORY = root;
+  process.env.WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS = root;
 
   try {
     assert.equal(CONTROL_PLANE_EXECUTION_POLICY.maxRisk, "external_write");
@@ -39,6 +41,8 @@ test("control-plane mission executor enforces approval and risk policy before ca
   } finally {
     if (previousWorkDirectory === undefined) delete process.env.WORKPROOF_WORK_DIRECTORY;
     else process.env.WORKPROOF_WORK_DIRECTORY = previousWorkDirectory;
+    if (previousAllowedRoots === undefined) delete process.env.WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS;
+    else process.env.WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS = previousAllowedRoots;
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
