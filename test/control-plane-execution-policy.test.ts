@@ -94,9 +94,8 @@ test("control-plane local capabilities reject paths outside the work root", asyn
   const previousWorkDirectory = process.env.WORKPROOF_WORK_DIRECTORY;
   process.env.WORKPROOF_WORK_DIRECTORY = root;
   try {
-    let caught: unknown;
-    try {
-      await executeMission({
+    const caught = await Promise.resolve()
+      .then(() => executeMission({
         objective: "reject outside-root read",
         success: [],
         deliverables: [],
@@ -109,10 +108,8 @@ test("control-plane local capabilities reject paths outside the work root", asyn
           idempotencyKey: "control-policy.outside-root",
           riskClass: "read"
         }]
-      });
-    } catch (error) {
-      caught = error;
-    }
+      }))
+      .then(() => undefined, (error: unknown) => error);
     assert.ok(caught, "Expected outside-root capability path rejection");
     assert.match(String(caught instanceof Error ? caught.message : caught), /outside configured roots/);
   } finally {
