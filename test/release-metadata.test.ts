@@ -117,6 +117,13 @@ test("external topology smoke runs on pull requests", () => {
   assert.match(ciWorkflow, /github.event_name == 'pull_request'/);
 });
 
+test("CI external topology smoke only selects GHCR images for semantic release branches", () => {
+  assert.ok(ciWorkflow.includes('RELEASE_REF="${REF_NAME#release/}"'));
+  assert.ok(ciWorkflow.includes('[[ "${REF_NAME}" =~ ^release/[0-9]+\\.[0-9]+\\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]'));
+  assert.ok(ciWorkflow.includes('Using local image for non-versioned release-like branch'));
+  assert.ok(ciWorkflow.includes('export WORKPROOF_RELEASE_IMAGE="ghcr.io/${GITHUB_REPOSITORY}:${RELEASE_REF}"'));
+});
+
 test("release waits for the container verification gate before package verification", () => {
   const waitIndex = releaseWorkflow.indexOf("name: Wait for container verification gate");
   const fullCheckIndex = releaseWorkflow.indexOf("name: Full release verification");
