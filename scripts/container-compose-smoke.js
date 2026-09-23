@@ -26,6 +26,23 @@ async function waitForHealthy(baseUrl, version) {
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
 }
+function preparePrivateDataDirectory(image, dataDirectory) {
+  run("docker", [
+    "run",
+    "--rm",
+    "--user", "0:0",
+    "--entrypoint", "sh",
+    "-v", dataDirectory + ":/data:rw",
+    image,
+    "-c",
+    "chown -R 10001:10001 /data && chmod 700 /data && find /data -type f -name '*.json' -exec chmod 600 {} +"
+  ]);
+  const state = fs.statSync(dataDirectory);
+  if (process.platform !== "win32" && typeof state.uid === "number" && state.uid !== 10001) {
+    throw new Error("Compose smoke data directory ownership was not prepared for UID 10001: uid=" + state.uid);
+  }
+}
+
 async function main() {
   const packageJson = JSON.parse(fs.readFileSync(path.resolve("package.json"), "utf8"));
   const project = "workproof-compose-smoke-" + String(process.env.GITHUB_RUN_ID || Date.now());
@@ -42,6 +59,7 @@ async function main() {
   };
   fs.writeFileSync(path.join(dataDir, "compose_smoke.json"), JSON.stringify(fixture, null, 2) + "\n", "utf8");
   const image = "ghcr.io/" + String(process.env.GITHUB_REPOSITORY || "ahmedsaturki/workproof-runtime").toLowerCase() + ":" + packageJson.version;
+  preparePrivateDataDirectory(image, dataDir);
   fs.writeFileSync(overridePath, [
     "services:",
     "  workproof-studio:",
