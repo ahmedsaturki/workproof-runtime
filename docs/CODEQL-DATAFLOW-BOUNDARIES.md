@@ -4,7 +4,7 @@
 
 This document records the two intentionally suppressed `js/http-to-file-access` findings in the v3.8.12 security hardening line.
 
-The repository excludes the single `js/http-to-file-access` query from the JavaScript/TypeScript CodeQL suite because these product-boundary sinks intentionally persist validated remote data. The exclusion is broader than the two current locations, so a repository-side regression contract is mandatory and must be maintained whenever this exception exists. All other CodeQL security-extended queries remain enabled, and the CI stores SARIF evidence for every run.
+The repository keeps the full JavaScript/TypeScript `security-extended` CodeQL suite enabled. The two current product-boundary findings are suppressed only at their exact validated filesystem sink statements with `// lgtm[js/http-to-file-access]`. This preserves the query everywhere else. A repository-side regression contract also locks the two intended validated artifact flows.
 
 ## Registry trust snapshot pull
 
@@ -45,7 +45,7 @@ CodeQL's `js/http-to-file-access` query is a generic taint/data-flow detector fo
 
 These two paths are intentionally local artifact materialization boundaries. Their safety depends on repository-specific validators/serializers that CodeQL's generic data-flow model does not recognize as complete sanitizers.
 
-The exception therefore records a reviewed product-boundary false-positive class rather than claiming a path-local CodeQL suppression. Because the query is excluded at the suite level, the regression test is the local control that constrains the exception to the intended two validated artifact flows.
+The suppressions record reviewed product-boundary false positives at the exact sinks rather than disabling the CodeQL query. The regression test is the local control that constrains these exceptions to the intended two validated artifact flows.
 
 Any future change that moves a raw HTTP response, arbitrary fields, executable content, or unvalidated data directly into either sink must remove the suppression and re-open the security review.
 
