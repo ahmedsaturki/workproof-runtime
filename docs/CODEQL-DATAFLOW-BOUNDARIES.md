@@ -64,4 +64,4 @@ The three path exclusions are reviewed product-boundary exceptions rather than a
 Any future change that moves a raw HTTP response, arbitrary fields, executable content, or unvalidated data directly into any of these sinks must remove the exception and re-open the security review.
 
 Reviewed: 2026-09-23
-Release lines: v3.8.12 and v3.8.13 candidate
+Release lines: v3.8.12 and v3.8.13

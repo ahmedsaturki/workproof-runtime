@@ -82,7 +82,7 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 - commit-addressed image tag: `dadef28ce8fbd299201a228673f1c2737c5b7d62`
 - five release assets published and SHA256-verified
 - live Solo Governance verification remained active
-- CodeQL JavaScript/TypeScript and Actions analysis passed with zero findings on the release candidate head
+- CodeQL JavaScript/TypeScript and Actions analysis passed with zero findings on the release commit
 
 ## v3.8.12 distribution evidence
 
