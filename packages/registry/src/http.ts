@@ -7,6 +7,7 @@ const { authorize, namespaceVault } = require("./auth");
 const { URL } = require("url");
 const { publishProof, listProofs, inspectProof } = require("../../evidence/src/vault.js");
 const { digestProofBundle, verifyProofIntegrity } = require("../../evidence/src/integrity.js");
+const { securePrivateDirectory, securePrivateFile } = require("../../storage/src/private-files");
 const {
   publishTrustSnapshot,
   getTrustSnapshot,
