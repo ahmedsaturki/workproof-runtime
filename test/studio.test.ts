@@ -791,7 +791,9 @@ test("Studio operational overview reports bounded scanning and explicit truncati
   for (let i = 0; i < 10001; i += 1) {
     const work = { ...fixture, id: `bound-${String(i).padStart(5, "0")}` };
     work.contract = { ...fixture.contract, objective: `Bounded work ${i}` };
-    repository.save(work);
+    // This test targets bounded read/scanning behavior; avoid invoking the
+    // per-file Windows ACL hardening 10,001 times while building the fixture.
+    fs.writeFileSync(path.join(root, `${work.id}.json`), JSON.stringify(work), "utf8");
   }
 
   const studio = await startStudio({ workDirectory: root, port: 0 });
