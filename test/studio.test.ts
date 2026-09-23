@@ -956,3 +956,21 @@ test("Studio exposes the connected control-plane capability registry", async () 
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("Studio error responses do not expose corrupt Work Object exception details", async () => {
+  const root = tempDir("workproof-studio-error-");
+  const studio = await startStudio({ workDirectory: root, port: 0 });
+  const corruptPath = path.join(root, "corrupt_work.json");
+  fs.writeFileSync(corruptPath, '{"secret":"do-not-return"', "utf8");
+  try {
+    const response = await fetch(`http://127.0.0.1:${studio.port}/api/work/corrupt_work`);
+    assert.equal(response.status, 500);
+    const body = await response.json();
+    assert.equal(body.error, "internal-server-error");
+    assert.doesNotMatch(JSON.stringify(body), /do-not-return|JSON|Unexpected token/);
+  } finally {
+    await studio.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
