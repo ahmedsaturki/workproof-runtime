@@ -149,10 +149,14 @@ function assertControlPlaneCapabilityInputs(steps: WorkStep[], workDirectory: st
     if (typeof rawPath !== "string" || !isWithinRoot(rawPath)) throw new Error(`Control Plane capability path is outside configured roots for operation ${step.operation}`);
     const resolved = path.resolve(rawPath);
     if (fs.existsSync(resolved)) {
+      let realPath: string;
       try {
-        if (!isWithinRoot(fs.realpathSync.native(resolved))) throw new Error("Control Plane capability path resolves outside configured roots");
+        realPath = fs.realpathSync.native(resolved);
       } catch (error) {
         throw new Error(`Control Plane capability path could not be resolved safely: ${String(error)}`);
+      }
+      if (!isWithinRoot(realPath)) {
+        throw new Error("Control Plane capability path resolves outside configured roots");
       }
     }
   }
