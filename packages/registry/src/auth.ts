@@ -1,5 +1,7 @@
 const crypto = require("crypto");
 const fs = require("fs");
+const path = require("path");
+const { securePrivateDirectory, securePrivateFile } = require("../../storage/src/private-files");
 
 export type RegistryPermission = "read" | "write" | "trust";
 
@@ -120,11 +122,13 @@ export function loadAuthPolicy(filePath: string): RegistryAuthPolicy {
 
 export function saveAuthPolicy(filePath: string, policy: RegistryAuthPolicy): void {
   const validated = validateAuthPolicy(policy);
-  fs.mkdirSync(require("path").dirname(filePath), { recursive: true });
+  const directory = path.dirname(filePath);
+  securePrivateDirectory(directory);
   const temporary = `${filePath}.tmp-${crypto.randomBytes(8).toString("hex")}`;
-  fs.writeFileSync(temporary, JSON.stringify(validated, null, 2) + "\n", { encoding: "utf8", mode: 0o600 });
-  fs.chmodSync(temporary, 0o600);
+  fs.writeFileSync(temporary, JSON.stringify(validated, null, 2) + "\n", { encoding: "utf8", flag: "wx" });
+  securePrivateFile(temporary);
   fs.renameSync(temporary, filePath);
+  securePrivateFile(filePath);
 }
 
 export function addIssuedCredential(policy: RegistryAuthPolicy, issued: IssuedCredential): RegistryAuthPolicy {

@@ -55,6 +55,10 @@ Resumes a persisted Work Object using its stored mission definition. When the du
 
 Cancels non-terminal work. Replays the completed idempotent result instead of duplicating the mutation.
 
+### Local capability path boundary
+
+Control Plane-dispatched `create_file`, `read_file`, `query`, and `upsert` steps are restricted to the configured local capability roots. By default, the roots contain `WORKPROOF_WORK_DIRECTORY` only. Hosts that intentionally expose additional local data must set `WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS` to an operating-system path-delimited list of explicitly approved roots. Existing symlink targets are resolved and must remain within those roots; paths outside them are rejected before capability execution.
+
 ## Workers and leases
 
 `GET /v1/workers`

@@ -27,6 +27,10 @@ jobs:
         with:
           node-version: 24
           package-manager-cache: false
+      - name: Verify GitHub Solo Governance
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/verify-solo-governance.js
       - name: Verify Chromium for browser acceptance tests
         run: |
           command -v "$WORKPROOF_BROWSER_BINARY"
@@ -147,3 +151,84 @@ jobs:
           name: workproof-benchmark-${{ github.sha }}
           path: benchmark-result.json
           retention-days: 14
+
+  windows-browser-compatibility:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - run: npm ci
+      - name: Build TypeScript
+        run: npm run build
+        timeout-minutes: 3
+      - name: Run Chromium CDP smoke on Windows
+        run: node scripts/chromium-cdp-smoke.js
+        timeout-minutes: 2
+      - name: Run browser acceptance on Windows
+        run: node --test dist/test/browser.test.js
+        timeout-minutes: 8
+
+  windows-compatibility:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Locate Chromium-based browser
+        shell: pwsh
+        run: |
+          $x86 = [System.Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
+          $candidates = @(
+            (Join-Path $env:ProgramFiles 'Google\Chrome\Application\chrome.exe'),
+            (Join-Path $x86 'Google\Chrome\Application\chrome.exe'),
+            (Join-Path $env:LOCALAPPDATA 'Google\Chrome\Application\chrome.exe'),
+            (Join-Path $env:ProgramFiles 'Microsoft\Edge\Application\msedge.exe'),
+            (Join-Path $x86 'Microsoft\Edge\Application\msedge.exe'),
+            (Join-Path $env:LOCALAPPDATA 'Microsoft\Edge\Application\msedge.exe')
+          ) | Where-Object { $_ -and (Test-Path $_) }
+          $browser = $candidates | Select-Object -First 1
+          if (-not $browser) { throw 'No Chromium-based browser was found on windows-latest' }
+          "WORKPROOF_BROWSER_BINARY=$browser" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - run: npm ci
+      - name: Dependency security audit
+        run: npm audit --audit-level=high
+      - name: Secret scan
+        run: node scripts/secret-scan.js
+      - run: node scripts/verify-source-tree.js
+      - name: Build TypeScript
+        run: npm run build
+        timeout-minutes: 3
+      - name: Run full Windows unit and integration suite
+        run: node scripts/run-test-files.js
+        timeout-minutes: 25
+      - name: Operator doctor smoke
+        run: node dist/packages/cli/src/index.js doctor
+      - name: Run benchmark
+        run: npm run benchmark
+        timeout-minutes: 3
+      - name: Run demo
+        run: npm run demo
+        timeout-minutes: 3
+
+  windows-filesystem-security:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - run: npm ci
+      - name: Build TypeScript
+        run: npm run build
+        timeout-minutes: 3
+      - name: Verify private filesystem security
+        run: node --test dist/test/private-files-security.test.js

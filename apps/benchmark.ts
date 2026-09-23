@@ -28,11 +28,17 @@ async function runResearch(): Promise<CaseResult> {
   const store = new WorkStore(); const registry = new CapabilityRegistry(); const verification = new VerificationEngine();
   registerResearchPack(registry, verification);
   const selected = selectCapability(registry, { operation: "research_suppliers", riskClass: "read", preferred: ["pack.research.local"] });
-  const output = "/tmp/benchmark-research.json"; try { fs.unlinkSync(output); } catch {}
+  const outputDir = benchmarkTempDir("workproof-m001-");
+  const output = path.join(outputDir, "benchmark-research.json");
+  try { fs.unlinkSync(output); } catch {}
   const work = store.create({ objective: "Research-to-artifact", inputs: { dataPath: "./lab/data/suppliers.json", outputPath: output, minRecords: 4 }, success: [{ id: "artifact", description: "Unique supplier artifact exists", verifier: "pack.research.artifact", required: true }], deliverables: [output], riskClass: "read" });
-  const engine = new WorkEngine(store, registry, verification, async (_work, effectId) => Boolean(work.effects.find((e: any) => e.effectId === effectId)?.receipt));
-  await engine.run(work, [{ id: "research", operation: "research_suppliers", capability: selected.name, input: { dataPath: "./lab/data/suppliers.json", outputPath: output, minRecords: 4 }, idempotencyKey: `benchmark:${output}`, riskClass: "read" }]);
-  return { id: "M001", status: work.status, effects: work.effects.length, artifacts: work.artifacts.length, events: work.events.length, details: { selectedCapability: selected.name, records: JSON.parse(fs.readFileSync(output, "utf8")).length } };
+  try {
+    const engine = new WorkEngine(store, registry, verification, async (_work, effectId) => Boolean(work.effects.find((e: any) => e.effectId === effectId)?.receipt));
+    await engine.run(work, [{ id: "research", operation: "research_suppliers", capability: selected.name, input: { dataPath: "./lab/data/suppliers.json", outputPath: output, minRecords: 4 }, idempotencyKey: `benchmark:${output}`, riskClass: "read" }]);
+    return { id: "M001", status: work.status, effects: work.effects.length, artifacts: work.artifacts.length, events: work.events.length, details: { selectedCapability: selected.name, records: JSON.parse(fs.readFileSync(output, "utf8")).length } };
+  } finally {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  }
 }
 
 async function runWebDiscovery(): Promise<CaseResult> {
@@ -45,14 +51,19 @@ async function runWebDiscovery(): Promise<CaseResult> {
   const server = http.createServer((_req: any, res: any) => { res.writeHead(200, { "content-type": "application/json" }); res.end(JSON.stringify({ results: rows })); });
   await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
   const base = `http://127.0.0.1:${(server.address() as any).port}/search`;
-  const output = "/tmp/benchmark-discovery.json"; try { fs.unlinkSync(output); } catch {}
+  const outputDir = benchmarkTempDir("workproof-m002-");
+  const output = path.join(outputDir, "benchmark-discovery.json");
+  try { fs.unlinkSync(output); } catch {}
   try {
     const store = new WorkStore(); const registry = new CapabilityRegistry(); const verification = new VerificationEngine(); registerWebDiscoveryPack(registry, verification);
     const work = store.create({ objective: "Discover records over HTTP", inputs: { searchUrl: base, query: "suppliers", minRecords: 3, outputPath: output }, success: [{ id: "artifact", description: "Unique sourced artifact exists", verifier: "pack.discovery.http", required: true }], deliverables: [output], riskClass: "read" });
     const engine = new WorkEngine(store, registry, verification, async () => false);
     await engine.run(work, [{ id: "discover", operation: "discover_records", capability: "pack.discovery.http", input: { searchUrl: base, query: "suppliers", minRecords: 3, outputPath: output }, idempotencyKey: "benchmark:discovery", riskClass: "read" }]);
     return { id: "M002", status: work.status, effects: work.effects.length, artifacts: work.artifacts.length, events: work.events.length, details: { selectedCapability: "pack.discovery.http", records: JSON.parse(fs.readFileSync(output, "utf8")).length } };
-  } finally { await new Promise<void>(resolve => server.close(() => resolve())); }
+  } finally {
+    await new Promise<void>(resolve => server.close(() => resolve()));
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  }
 }
 
 

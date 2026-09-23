@@ -6,7 +6,7 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 **v3.8.10 is the current stable release.**
 
-v3.8.10 is the corrective stable runtime release; the runtime contract remains unchanged. The immutable release tag and published source snapshot are anchored to release commit `9daac7a926ce1631ac708a6c234379d622c56c19`. After publication, `main` received an operator-facing lineage reconciliation to match the published GitHub/GHCR evidence without changing runtime semantics.
+v3.8.10 is the corrective stable runtime release; the runtime contract remains unchanged. The release tag and published source snapshot are anchored to release commit `9daac7a926ce1631ac708a6c234379d622c56c19`. After publication, `main` received an operator-facing lineage reconciliation to match the published GitHub/GHCR evidence without changing runtime semantics.
 
 The v3.4 line established the executable operator benchmark across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution. Later releases added local product surfaces, proof compatibility, recovery, Control Plane safety, MCP/A2A interoperability, OTLP audit export, diagnostics, network-boundary hardening, and reproducible distribution.
 
@@ -22,7 +22,7 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - Container workflow #258: success
 - GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.10`
 - GHCR digest: `sha256:cad9c467db8fe82abd1b15d30d90dbf7e87ad6683f44a8c7c8763c327af6a1c8`
-- immutable image tag: `9daac7a926ce1631ac708a6c234379d622c56c19`
+- commit-addressed image tag: `9daac7a926ce1631ac708a6c234379d622c56c19`
 - rollback: v3.8.1 / `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 - five release assets published and SHA256-verified
 
@@ -80,7 +80,7 @@ The v3.8.10 release publishes:
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
-The release pipeline re-downloads published assets, verifies SHA256 sums, verifies tag/commit lineage, validates benchmark semantics, and verifies the publication state. The published assets remain immutable snapshots of release commit `9daac7a926ce1631ac708a6c234379d622c56c19`; subsequent documentation reconciliation on `main` does not rewrite that historical release snapshot.
+The release pipeline re-downloads published assets, verifies SHA256 sums, verifies tag/commit lineage, validates benchmark semantics, and verifies the publication state. The published assets were verified as snapshots of release commit `9daac7a926ce1631ac708a6c234379d622c56c19`; subsequent documentation reconciliation on `main` does not change the historical release snapshot.
 
 ### GHCR container
 

@@ -2,19 +2,29 @@ import { Capability, VerificationCheck, Verifier, WorkObject } from "../packages
 import { CapabilityRegistry } from "../packages/capabilities/src/registry";
 import { WorkStore } from "../packages/core/src/work";
 import { LeaseAcquireResult, LeaseClock, LeaseRecord, LeaseStore } from "../packages/coordination/src/leases";
-import { ExecutionLeaseAuthority, WorkEngine, WorkStep } from "../packages/runtime/src/engine";
+import { ExecutionLeaseAuthority, ExecutionLeaseTimers, WorkEngine, WorkStep } from "../packages/runtime/src/engine";
 import { VerificationEngine } from "../packages/verification/src/engine";
 const assert = require("assert");
 const test = require("node:test");
-
-function delay(ms: number): Promise<void> {
-  return new Promise<void>((resolve) => setTimeout(resolve, ms));
-}
 
 class FakeClock implements LeaseClock {
   constructor(public value: number = 1_700_000_000_000) {}
   nowMs(): number { return this.value; }
   advance(ms: number): void { this.value += ms; }
+}
+
+class ManualTimerScheduler implements ExecutionLeaseTimers {
+  private callbacks = new Set<() => void>();
+  setInterval(handler: () => void): ReturnType<typeof setInterval> {
+    this.callbacks.add(handler);
+    return handler as unknown as ReturnType<typeof setInterval>;
+  }
+  clearInterval(handle: ReturnType<typeof setInterval>): void {
+    this.callbacks.delete(handle as unknown as () => void);
+  }
+  tick(): void {
+    for (const callback of [...this.callbacks]) callback();
+  }
 }
 
 function makeWork(store: WorkStore, idSuffix: string): WorkObject {
@@ -75,6 +85,7 @@ function makeEngine(
     ownerId: string;
     ttlMs: number;
     heartbeatIntervalMs?: number;
+    timers?: ExecutionLeaseTimers;
   }
 ): WorkEngine {
   return new WorkEngine(
@@ -124,28 +135,41 @@ test("WorkEngine refuses execution while another owner holds the execution lease
   assert.equal(authority.get(resourceId), null);
 });
 
-test("WorkEngine heartbeat renews a short execution lease during a long-running capability", async () => {
+test("WorkEngine heartbeat renews a lease without wall-clock timing", async () => {
   const store = new WorkStore();
   const registry = new CapabilityRegistry();
   const verification = new VerificationEngine();
   const authority = new LeaseStore();
+  const timers = new ManualTimerScheduler();
   const work = makeWork(store, "heartbeat");
   const step = makeStep("heartbeat");
 
   let executions = 0;
+  let markStarted!: () => void;
+  const started = new Promise<void>((resolve) => { markStarted = resolve; });
+  let releaseCapability!: () => void;
+  const capabilityGate = new Promise<void>((resolve) => { releaseCapability = resolve; });
   registerTestOperation(registry, verification, async () => {
     executions += 1;
-    await delay(150);
+    markStarted();
+    timers.tick();
+    await capabilityGate;
   });
 
   const engine = makeEngine(store, registry, verification, {
     authority,
     ownerId: "worker-heartbeat",
     ttlMs: 60,
-    heartbeatIntervalMs: 10
+    heartbeatIntervalMs: 10,
+    timers
   });
 
-  const result = await engine.run(work, [step]);
+  const running = engine.run(work, [step]);
+  await started;
+  assert.equal(executions, 1);
+  releaseCapability();
+
+  const result = await running;
   assert.equal(result.status, "verified");
   assert.equal(executions, 1);
   assert.ok(result.events.some((event) => event.type === "lease.heartbeat"));
@@ -153,10 +177,11 @@ test("WorkEngine heartbeat renews a short execution lease during a long-running 
   assert.equal(authority.get(resourceId), null);
 });
 
-test("WorkEngine does not declare success after losing ownership mid-step", async () => {
+test("WorkEngine does not declare success after a deterministic heartbeat lease loss", async () => {
   const store = new WorkStore();
   const registry = new CapabilityRegistry();
   const verification = new VerificationEngine();
+  const timers = new ManualTimerScheduler();
   const work = makeWork(store, "lost");
   const step = makeStep("lost");
 
@@ -191,19 +216,31 @@ test("WorkEngine does not declare success after losing ownership mid-step", asyn
   };
 
   let executions = 0;
+  let markStarted!: () => void;
+  const started = new Promise<void>((resolve) => { markStarted = resolve; });
+  let releaseCapability!: () => void;
+  const capabilityGate = new Promise<void>((resolve) => { releaseCapability = resolve; });
   registerTestOperation(registry, verification, async () => {
     executions += 1;
-    await delay(70);
+    markStarted();
+    await capabilityGate;
   });
 
   const engine = makeEngine(store, registry, verification, {
     authority,
     ownerId: "worker-lost",
     ttlMs: 40,
-    heartbeatIntervalMs: 10
+    heartbeatIntervalMs: 10,
+    timers
   });
 
-  const result = await engine.run(work, [step]);
+  const running = engine.run(work, [step]);
+  await started;
+  assert.equal(executions, 1);
+  timers.tick();
+  releaseCapability();
+
+  const result = await running;
   assert.equal(executions, 1);
   assert.equal(result.status, "unresolved");
   assert.ok(result.events.some((event) => event.type === "lease.lost"));

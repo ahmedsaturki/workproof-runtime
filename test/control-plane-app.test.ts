@@ -33,7 +33,7 @@ async function waitForPort(child: any): Promise<number> {
 
 test("packaged control-plane process serves health, executes work, persists proof, and replays idempotently", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "workproof-control-app-"));
-  const outputFile = path.join(root, "output.txt");
+  const outputFile = path.join(root, "work-runs", "output.txt");
   const child = spawn(process.execPath, [path.resolve("dist/apps/control-plane.js")], {
     env: {
       ...process.env,

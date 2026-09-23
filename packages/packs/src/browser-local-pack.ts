@@ -1,10 +1,20 @@
 import { Capability, CapabilityReceipt, EvidenceRef, Verifier } from "../../core/src/types";
 const { spawn } = require("child_process");
 const { request: httpRequest } = require("http");
+const net = require("net");
 const { randomBytes } = require("crypto");
+const fs = require("fs");
+const path = require("path");
+const platform = require("process").platform;
 
 interface BrowserAction { type: "navigate" | "fill" | "click" | "get_text"; selector?: string; value?: string; url?: string; }
 export interface BrowserWorkflowInput { startUrl: string; actions: BrowserAction[]; expectedText?: string; html?: string; cdpPort?: number; }
+
+function windowsSystemCommand(command: string): string {
+  const systemRoot = process.env.SystemRoot ?? process.env.WINDIR;
+  if (!systemRoot) throw new Error("SystemRoot/WINDIR is required for Windows process control");
+  return path.join(systemRoot, "System32", `${command}.exe`);
+}
 
 function isAllowedBrowserUrl(value: string): boolean {
   try {
@@ -14,16 +24,22 @@ function isAllowedBrowserUrl(value: string): boolean {
   } catch { return false; }
 }
 
-function cdpHttp(port: number, pathname: string, method = "GET"): Promise<any> {
+function cdpHttp(port: number, pathname: string, method = "GET", timeoutMs = 1500): Promise<any> {
   return new Promise((resolve, reject) => {
-    const req = httpRequest({ hostname: "127.0.0.1", port, path: pathname, method }, (res: any) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const finish = (fn: () => void) => { clearTimeout(timer); fn(); };
+    const req = httpRequest({ hostname: "127.0.0.1", port, path: pathname, method, signal: controller.signal }, (res: any) => {
       let raw = "";
       res.on("data", (c: any) => raw += c.toString());
       res.on("end", () => {
-        try { resolve(raw ? JSON.parse(raw) : {}); } catch (e) { reject(e); }
+        finish(() => {
+          try { resolve(raw ? JSON.parse(raw) : {}); } catch (e) { reject(e); }
+        });
       });
     });
-    req.on("error", reject); req.end();
+    req.on("error", (error: any) => finish(() => reject(error)));
+    req.end();
   });
 }
 
@@ -33,8 +49,12 @@ async function connectCdp(port: number): Promise<{ ws: WebSocket; close: () => v
   if (!target?.webSocketDebuggerUrl) throw new Error("No Chromium CDP page target available");
   const ws = new WebSocket(target.webSocketDebuggerUrl);
   await new Promise<void>((resolve, reject) => {
-    ws.addEventListener("open", () => resolve(), { once: true });
-    ws.addEventListener("error", () => reject(new Error("CDP websocket connection failed")), { once: true });
+    let settled = false;
+    const finish = (fn: () => void) => { if (settled) return; settled = true; fn(); };
+    const timer = setTimeout(() => finish(() => { try { ws.close(); } catch {} reject(new Error("CDP websocket connection timed out")); }), 10000);
+    ws.addEventListener("open", () => finish(() => { clearTimeout(timer); resolve(); }), { once: true });
+    ws.addEventListener("error", () => finish(() => { clearTimeout(timer); reject(new Error("CDP websocket connection failed")); }), { once: true });
+    ws.addEventListener("close", () => finish(() => { clearTimeout(timer); reject(new Error("CDP websocket closed before connection completed")); }), { once: true });
   });
   let nextId = 1;
   const pending = new Map<number, (value: any) => void>();
@@ -67,9 +87,58 @@ async function waitFor(ws: WebSocket & { call?: (m: string, p?: any) => Promise<
   return false;
 }
 
+export function resolveBrowserBinary(): string {
+  const explicit = process.env.WORKPROOF_BROWSER_BINARY?.trim();
+  if (explicit) return explicit;
+
+  const candidates: string[] = platform === "win32"
+    ? [
+        path.join(process.env.PROGRAMFILES ?? "C:\\Program Files", "Google", "Chrome", "Application", "chrome.exe"),
+        path.join(process.env["PROGRAMFILES(X86)"] ?? "C:\\Program Files (x86)", "Google", "Chrome", "Application", "chrome.exe"),
+        path.join(process.env.LOCALAPPDATA ?? "", "Google", "Chrome", "Application", "chrome.exe"),
+        path.join(process.env.PROGRAMFILES ?? "C:\\Program Files", "Microsoft", "Edge", "Application", "msedge.exe"),
+        path.join(process.env["PROGRAMFILES(X86)"] ?? "C:\\Program Files (x86)", "Microsoft", "Edge", "Application", "msedge.exe"),
+        path.join(process.env.LOCALAPPDATA ?? "", "Microsoft", "Edge", "Application", "msedge.exe"),
+        "chrome.exe",
+        "msedge.exe"
+      ]
+    : ["chromium", "chromium-browser", "google-chrome", "google-chrome-stable"];
+
+  const pathEntries = (process.env.PATH ?? "").split(path.delimiter).map(entry => entry.trim().replace(/^"|"$/g, "")).filter(Boolean);
+  for (const candidate of candidates) {
+    if (path.isAbsolute(candidate)) {
+      if (fs.existsSync(candidate)) return candidate;
+      continue;
+    }
+    for (const entry of pathEntries) {
+      const resolved = path.join(entry, candidate);
+      if (fs.existsSync(resolved)) return resolved;
+    }
+  }
+
+  throw new Error(
+    "No supported Chromium executable was found. Set WORKPROOF_BROWSER_BINARY to an absolute path or executable name."
+  );
+}
+
+async function findFreeLoopbackPort(): Promise<number> {
+  const server = net.createServer();
+  await new Promise<void>((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", () => resolve());
+  });
+  const address = server.address();
+  const port = address && typeof address === "object" ? address.port : 0;
+  await new Promise<void>((resolve, reject) => {
+    server.close((error: any) => error ? reject(error) : resolve());
+  });
+  if (!port) throw new Error("Unable to allocate a loopback port for Chromium CDP");
+  return port;
+}
+
 function ensureBrowser(port = 0): any {
-  const profile = `/tmp/workproof-chromium-${process.pid}-${randomBytes(4).toString("hex")}`;
-  const browserBinary = process.env.WORKPROOF_BROWSER_BINARY || "chromium";
+  const profile = fs.mkdtempSync(path.join(require("os").tmpdir(), `workproof-chromium-${process.pid}-${randomBytes(4).toString("hex")}-`));
+  const browserBinary = resolveBrowserBinary();
   const browser = spawn(browserBinary, [
     "--headless",
     "--no-sandbox",
@@ -78,18 +147,24 @@ function ensureBrowser(port = 0): any {
     "--no-first-run",
     "--no-default-browser-check",
     "--disable-background-networking",
+    "--remote-allow-origins=*",
     "--remote-debugging-address=127.0.0.1",
     `--remote-debugging-port=${port}`,
     `--user-data-dir=${profile}`,
     "about:blank"
-  ], { stdio: ["ignore", "pipe", "pipe"], detached: true });
+  ], { stdio: ["ignore", "pipe", "pipe"], detached: platform !== "win32" });
+  browser.workproofProfile = profile;
+  const drain = (chunk: any) => { browser.workproofOutput = String(browser.workproofOutput ?? "") + chunk.toString().slice(-4096); if (browser.workproofOutput.length > 16384) browser.workproofOutput = browser.workproofOutput.slice(-16384); };
+  browser.stdout?.on("data", drain);
+  browser.stderr?.on("data", drain);
   try { browser.unref?.(); } catch {}
   return browser;
 }
 
 async function waitForCdp(browser: any, requestedPort = 0): Promise<number> {
   if (requestedPort > 0) {
-    for (let i = 0; i < 80; i++) {
+    const deadline = Date.now() + 15000;
+    while (Date.now() < deadline) {
       try {
         await cdpHttp(requestedPort, "/json/version");
         return requestedPort;
@@ -101,15 +176,24 @@ async function waitForCdp(browser: any, requestedPort = 0): Promise<number> {
   }
 
   let output = "";
+  let exitCode: number | null = null;
+  let exitSignal: string | null = null;
   const append = (chunk: any) => { output += chunk.toString(); };
+  const onExit = (code: number | null, signal: string | null) => {
+    exitCode = code;
+    exitSignal = signal;
+  };
   browser.stdout?.on("data", append);
   browser.stderr?.on("data", append);
+  browser.once?.("exit", onExit);
   try {
-    for (let i = 0; i < 80; i++) {
+    const deadline = Date.now() + 15000;
+    while (Date.now() < deadline) {
       const match = /DevTools listening on ws:\/\/127\.0\.0\.1:(\d+)\//.exec(output);
       if (match) {
         const port = Number(match[1]);
-        for (let j = 0; j < 20; j++) {
+        const endpointDeadline = Date.now() + 5000;
+        while (Date.now() < endpointDeadline) {
           try {
             await cdpHttp(port, "/json/version");
             return port;
@@ -124,19 +208,38 @@ async function waitForCdp(browser: any, requestedPort = 0): Promise<number> {
   } finally {
     browser.stdout?.off?.("data", append);
     browser.stderr?.off?.("data", append);
+    browser.off?.("exit", onExit);
   }
 
-  throw new Error(output.trim() || "Chromium CDP did not announce an endpoint");
+  const detail = output.trim() || [
+    exitCode === null ? null : `Chromium exited with code ${exitCode}`,
+    exitSignal ? `signal ${exitSignal}` : null
+  ].filter(Boolean).join("; ");
+  throw new Error(detail || "Chromium CDP did not announce an endpoint");
 }
 
 function killBrowser(browser: any): void {
   if (!browser) return;
-  try {
-    const browserPid = (browser as any).pid as number | undefined;
-    if (browserPid) process.kill(-browserPid, "SIGKILL");
-  } catch {
-    try { browser.kill("SIGKILL"); } catch {}
+  const browserPid = (browser as any).pid as number | undefined;
+  try { browser.stdout?.removeAllListeners?.("data"); browser.stderr?.removeAllListeners?.("data"); } catch {}
+  try { browser.kill("SIGKILL"); } catch {}
+  if (browserPid && platform !== "win32") {
+    try { process.kill(-browserPid, "SIGKILL"); } catch {}
+  } else if (browserPid && platform === "win32") {
+    try {
+      const killer = spawn(windowsSystemCommand("taskkill"), ["/PID", String(browserPid), "/T", "/F"], {
+        stdio: "ignore",
+        windowsHide: true,
+        detached: true
+      });
+      killer.unref?.();
+    } catch {}
   }
+  try {
+    if (browser.workproofProfile) {
+      fs.rmSync(browser.workproofProfile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+    }
+  } catch {}
 }
 
 class LocalBrowserCapability implements Capability {
@@ -156,8 +259,9 @@ class LocalBrowserCapability implements Capability {
     for (let launchAttempt = 1; launchAttempt <= 3; launchAttempt++) {
       let browser: any;
       try {
-        browser = ensureBrowser(requestedPort);
-        const port = await waitForCdp(browser, requestedPort);
+        const launchPort = requestedPort > 0 ? requestedPort : await findFreeLoopbackPort();
+        browser = ensureBrowser(launchPort);
+        const port = await waitForCdp(browser, launchPort);
         const session = await connectCdp(port);
         const ws = session.ws as WebSocket & { call?: (m: string, p?: any) => Promise<any> };
         try {

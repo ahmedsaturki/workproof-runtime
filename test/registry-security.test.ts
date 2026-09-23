@@ -1,6 +1,6 @@
 const assert = require("assert");
 const test = require("node:test");
-const { authorize, createAuthPolicy, issueCredential, addIssuedCredential, namespaceVault, validateNamespace, validateAuthPolicy } = require("../packages/registry/src/auth.js");
+const { authorize, createAuthPolicy, issueCredential, addIssuedCredential, namespaceVault, validateNamespace, validateAuthPolicy, saveAuthPolicy } = require("../packages/registry/src/auth.js");
 const { startRegistryServer } = require("../packages/registry/src/http.js");
 const { createTrustPolicy, trustKey } = require("../packages/evidence/src/trust.js");
 const { generateProofKeyPair } = require("../packages/evidence/src/signature.js");
@@ -32,10 +32,12 @@ test("namespace validation and mapping reject traversal-shaped identifiers", () 
     assert.throws(() => validateNamespace(value), /Invalid registry namespace/);
   }
 
-  const root = "/tmp/workproof-security-root";
+  const path = require("path");
+  const root = path.join(require("os").tmpdir(), "workproof-security-root");
   const mapped = namespaceVault(root, "team-a");
-  assert.equal(mapped, "/tmp/workproof-security-root/namespaces/team-a");
-  assert.equal(mapped.startsWith(root + "/namespaces/"), true);
+  const expected = path.join(root, "namespaces", "team-a");
+  assert.equal(mapped, expected);
+  assert.equal(path.relative(root, mapped), path.join("namespaces", "team-a"));
 });
 
 test("auth policy validation rejects malformed or duplicate credentials", () => {
@@ -114,13 +116,44 @@ test("trusted administrative signer identities are namespace-scoped when configu
     });
     assert.equal(leaked.status, 403);
     const leakedBody = await leaked.json();
-    assert.match(String(leakedBody.error), /untrusted-signer/);
+    assert.equal(leakedBody.error, "forbidden");
+    assert.doesNotMatch(JSON.stringify(leakedBody), /untrusted-signer|\.js:\d+|packages[\\/]/);
   } finally {
     await server.close();
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
 
+
+test("registry auth policy persistence applies private filesystem security", () => {
+  const fs = require("fs");
+  const os = require("os");
+  const path = require("path");
+  const { spawnSync } = require("child_process");
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "workproof-registry-auth-security-"));
+  const policyPath = path.join(root, "nested", "registry-auth.json");
+  const issued = issueCredential({ id: "secure-persist", permissions: ["read"], namespace: "team-a" });
+  const policy = addIssuedCredential(createAuthPolicy(), issued);
+
+  try {
+    saveAuthPolicy(policyPath, policy);
+    const stored = fs.readFileSync(policyPath, "utf8");
+    assert.equal(stored.includes(issued.token), false);
+    assert.equal(stored.includes(issued.credential.secretHash), true);
+
+    if (require("process").platform === "win32") {
+      const acl = spawnSync("icacls", [policyPath], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], windowsHide: true });
+      assert.equal(acl.status, 0, String(acl.stderr ?? ""));
+      assert.doesNotMatch(String(acl.stdout ?? ""), /\\(I\\)/, String(acl.stdout ?? ""));
+      assert.match(String(acl.stdout ?? ""), /:\(F\)/, String(acl.stdout ?? ""));
+    } else {
+      assert.equal(fs.statSync(path.dirname(policyPath)).mode & 0o777, 0o700);
+      assert.equal(fs.statSync(policyPath).mode & 0o777, 0o600);
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
 
 test("registry refuses non-loopback binding without authentication policy", async () => {
   const fs = require("fs");

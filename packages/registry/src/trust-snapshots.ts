@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const { securePrivateDirectory, securePrivateFile } = require("../../storage/src/private-files");
 import {
   TrustPolicySnapshot,
   digestTrustPolicySnapshot,
@@ -41,7 +42,7 @@ function validateSnapshot(snapshot: TrustPolicySnapshot, trustedAdminKeyIds: Set
 }
 
 function ensureRoot(registryDir: string): void {
-  fs.mkdirSync(snapshotRoot(registryDir), { recursive: true });
+  securePrivateDirectory(snapshotRoot(registryDir));
   if (!fs.existsSync(snapshotIndexPath(registryDir))) {
     fs.writeFileSync(snapshotIndexPath(registryDir), JSON.stringify({ version: "0.1", records: [] }, null, 2) + "\n", { encoding: "utf8", mode: 0o600 });
   }
@@ -66,8 +67,10 @@ function loadIndex(registryDir: string): TrustSnapshotIndex {
 
 function saveIndex(registryDir: string, index: TrustSnapshotIndex): void {
   const temp = `${snapshotIndexPath(registryDir)}.tmp-${crypto.randomBytes(8).toString("hex")}`;
-  fs.writeFileSync(temp, JSON.stringify(index, null, 2) + "\n", { encoding: "utf8", mode: 0o600 });
+  fs.writeFileSync(temp, JSON.stringify(index, null, 2) + "\n", { encoding: "utf8", flag: "wx", mode: 0o600 });
+  securePrivateFile(temp);
   fs.renameSync(temp, snapshotIndexPath(registryDir));
+  securePrivateFile(snapshotIndexPath(registryDir));
 }
 
 function recordAudit(registryDir: string, entry: Record<string, unknown>): void {
@@ -78,8 +81,16 @@ export function publishTrustSnapshot(registryDir: string, snapshot: TrustPolicyS
   ensureRoot(registryDir);
   validateSnapshot(snapshot, trustedAdminKeyIds);
   const destination = snapshotFilePath(registryDir, snapshot.digest);
-  if (!fs.existsSync(destination)) fs.writeFileSync(destination, canonicalSnapshot(snapshot), { encoding: "utf8", mode: 0o600 });
-  else {
+  let created = false;
+  try {
+    const fd = fs.openSync(destination, "wx", 0o600);
+    try { fs.writeFileSync(fd, canonicalSnapshot(snapshot), "utf8"); } finally { fs.closeSync(fd); }
+    securePrivateFile(destination);
+    created = true;
+  } catch (error: any) {
+    if (error?.code !== "EEXIST") throw error;
+  }
+  if (!created) {
     const existing = JSON.parse(fs.readFileSync(destination, "utf8")) as TrustPolicySnapshot;
     validateSnapshot(existing, trustedAdminKeyIds);
     if (existing.digest !== snapshot.digest) throw new Error("Stored trust snapshot digest mismatch");
@@ -124,6 +135,7 @@ export function applyTrustSnapshot(registryDir: string, incoming: TrustPolicySna
   const current = getCurrentTrustSnapshot(registryDir, trustedAdminKeyIds);
   if (!current) {
     fs.writeFileSync(currentPath(registryDir), canonicalSnapshot(incoming), { encoding: "utf8", mode: 0o600 });
+    securePrivateFile(currentPath(registryDir));
     recordAudit(registryDir, { version: "0.1", event: "snapshot.accepted", at: now(), digest: incoming.digest, epoch: incoming.epoch, reason: "initial" });
     return { decision: "accept", current: incoming };
   }
@@ -131,6 +143,7 @@ export function applyTrustSnapshot(registryDir: string, incoming: TrustPolicySna
   if (decision !== "accept" && decision !== "noop") throw new Error(`Trust snapshot ${decision}`);
   if (decision === "accept" && incoming.digest !== current.digest) {
     fs.writeFileSync(currentPath(registryDir), canonicalSnapshot(incoming), { encoding: "utf8", mode: 0o600 });
+    securePrivateFile(currentPath(registryDir));
     recordAudit(registryDir, { version: "0.1", event: "snapshot.applied", at: now(), digest: incoming.digest, epoch: incoming.epoch, previousDigest: current.digest, previousEpoch: current.epoch, rollback: incoming.epoch < current.epoch });
     return { decision, current: incoming };
   }

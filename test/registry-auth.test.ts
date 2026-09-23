@@ -4,7 +4,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { startRegistryServer } = require("../packages/registry/src/http.js");
-const { createAuthPolicy, issueCredential, addIssuedCredential, revokeCredential, hashToken } = require("../packages/registry/src/auth.js");
+const { createAuthPolicy, issueCredential, addIssuedCredential, revokeCredential, hashToken, saveAuthPolicy } = require("../packages/registry/src/auth.js");
 const { buildProofBundle } = require("../packages/evidence/src/bundle.js");
 const { buildIntegrityManifest } = require("../packages/evidence/src/integrity.js");
 import type { RegistryAuthPolicy, IssuedCredential, RegistryPermission } from "../packages/registry/src/auth";
@@ -113,7 +113,7 @@ test("namespace credentials isolate proof storage and retain no plaintext token 
     assert.equal(aList.body.records.length, 1);
 
     const auditPath = path.join(root, "auth-events.jsonl");
-    assert.equal(fs.statSync(auditPath).mode & 0o777, 0o600);
+    if (require("process").platform !== "win32") assert.equal(fs.statSync(auditPath).mode & 0o777, 0o600);
     const audit = fs.readFileSync(auditPath, "utf8");
     assert.ok(audit.includes('"credentialId":"team-a-writer"'));
     assert.ok(audit.includes('"credentialId":"team-b-reader"'));
@@ -161,6 +161,38 @@ test("invalid bearer credentials are rejected without disclosing authorization d
     assert.equal(JSON.stringify(invalid.body).includes("reader"), false);
   } finally {
     await registry.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+
+test("saveAuthPolicy applies private filesystem security to registry credentials", () => {
+  const root = tempDir("workproof-auth-save-");
+  const policyPath = path.join(root, "nested", "registry-auth.json");
+  const issued = issueCredential({ id: "private-save", permissions: ["read"], namespace: "team-a" });
+  const policy = addIssuedCredential(createAuthPolicy(), issued);
+
+  try {
+    saveAuthPolicy(policyPath, policy);
+    assert.equal(fs.existsSync(policyPath), true);
+    const stored = fs.readFileSync(policyPath, "utf8");
+    assert.ok(stored.includes('"secretHash"'));
+    assert.equal(stored.includes(issued.token), false);
+
+    if (require("process").platform !== "win32") {
+      assert.equal(fs.statSync(path.dirname(policyPath)).mode & 0o777, 0o700);
+      assert.equal(fs.statSync(policyPath).mode & 0o777, 0o600);
+    } else {
+      const acl = require("child_process").spawnSync("icacls", [policyPath], {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "pipe"],
+        windowsHide: true
+      });
+      assert.equal(acl.status, 0, String(acl.stderr ?? ""));
+      assert.doesNotMatch(String(acl.stdout ?? ""), /\(I\)/, String(acl.stdout ?? ""));
+      assert.match(String(acl.stdout ?? ""), /:\(F\)/);
+    }
+  } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });

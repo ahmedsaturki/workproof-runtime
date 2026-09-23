@@ -7,6 +7,7 @@ const { authorize, namespaceVault } = require("./auth");
 const { URL } = require("url");
 const { publishProof, listProofs, inspectProof } = require("../../evidence/src/vault.js");
 const { digestProofBundle, verifyProofIntegrity } = require("../../evidence/src/integrity.js");
+const { securePrivateDirectory, securePrivateFile } = require("../../storage/src/private-files");
 const {
   publishTrustSnapshot,
   getTrustSnapshot,
@@ -125,7 +126,7 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
   if (!loopbackHosts.has(host) && !options.authPolicy) {
     throw new Error("Refusing non-loopback registry binding without auth policy");
   }
-  fs.mkdirSync(options.vaultDir, { recursive: true });
+  securePrivateDirectory(options.vaultDir);
 
   const trustedAdminKeyIds = new Set(options.trustedAdminKeyIds ?? []);
   const trustedAdminKeyIdsByNamespace = new Map<string, Set<string>>();
@@ -138,13 +139,15 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
       ? trustedAdminKeyIds
       : (trustedAdminKeyIdsByNamespace.get(namespace) ?? new Set<string>());
   const auditPath = path.join(options.vaultDir, "auth-events.jsonl");
-  if (!fs.existsSync(auditPath)) fs.writeFileSync(auditPath, "", { encoding: "utf8", mode: 0o600 });
-  fs.chmodSync(auditPath, 0o600);
+    const auditFd = fs.openSync(auditPath, "a", 0o600);
+    fs.closeSync(auditFd);
+  securePrivateFile(auditPath);
   const audit = (entry: Record<string, unknown>): void => {
     fs.appendFileSync(auditPath, JSON.stringify(entry) + "\n", "utf8");
   };
 
   const server = http.createServer(async (req: any, res: any) => {
+    const requestId = crypto.randomBytes(8).toString("hex");
     try {
       const method = String(req.method ?? "GET").toUpperCase();
       const url = new URL(String(req.url ?? "/"), `http://${host}`);
@@ -158,7 +161,6 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
       if (method === "POST" && url.pathname === "/v1/proofs") requiredPermission = "write";
       if (url.pathname.startsWith("/v1/trust/")) requiredPermission = "trust";
       const decision = authorize(options.authPolicy, req.headers, requiredPermission);
-      const requestId = crypto.randomBytes(8).toString("hex");
       audit({
         version: "0.1",
         requestId,
@@ -280,8 +282,18 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
       sendJson(res, 404, { error: "not-found" });
     } catch (error) {
       const message = String(error);
-      const status = /Unknown (proof|trust snapshot) digest|no-current-trust-snapshot/i.test(message) ? 404 : (/untrusted-signer|trust snapshot (conflict|rollback-required)/i.test(message) ? 403 : (/invalid|integrity|digest|Invalid proof|Proof integrity/i.test(message) ? 422 : 500));
-      sendJson(res, status, { error: message });
+      audit({ version: "0.1", event: "request.error", at: new Date().toISOString(), requestId, error: message });
+      const status = /Unknown (proof|trust snapshot) digest|no-current-trust-snapshot/i.test(message)
+        ? 404
+        : (/untrusted-signer/i.test(message)
+          ? 403
+          : (/trust snapshot (conflict|rollback-required)/i.test(message)
+            ? 409
+            : (/invalid|integrity|digest|Invalid proof|Proof integrity/i.test(message) ? 422 : 500)));
+      const publicError = status === 404
+        ? "not-found"
+        : (status === 403 ? "forbidden" : (status === 409 ? "conflict" : (status === 422 ? "invalid-request" : "internal-server-error")));
+      sendJson(res, status, { error: publicError, requestId });
     }
   });
 

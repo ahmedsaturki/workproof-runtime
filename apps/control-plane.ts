@@ -6,6 +6,7 @@ import { CapabilityRegistry } from "../packages/capabilities/src/registry";
 import { VerificationEngine } from "../packages/verification/src/engine";
 import { WorkEngine, WorkStep } from "../packages/runtime/src/engine";
 import { JsonWorkRepository } from "../packages/storage/src/json";
+import { securePrivateDirectory, securePrivateFile } from "../packages/storage/src/private-files";
 import { startControlPlane } from "../packages/control-plane/src/http";
 import { loadAuthPolicy } from "../packages/registry/src/auth";
 import { registerLocalPack } from "../packages/packs/src/local-pack";
@@ -134,6 +135,72 @@ function validateSteps(value: unknown, contractRisk: RiskClass): WorkStep[] {
   });
 }
 
+function assertControlPlaneCapabilityInputs(steps: WorkStep[], workDirectory: string): void {
+  const normalizeComparable = (value: string): string => {
+    const normalized = path.normalize(value);
+    return require("process").platform === "win32"
+      ? normalized.replace(/[\\/]+/g, path.sep).toLowerCase()
+      : normalized;
+  };
+  const resolvedRoots = (process.env.WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS ?? workDirectory)
+    .split(path.delimiter)
+    .map(value => value.trim())
+    .filter(Boolean)
+    .map(value => path.resolve(value));
+  const canonicalRoots = resolvedRoots.map(root => {
+    try { return normalizeComparable(fs.realpathSync.native(root)); } catch { return normalizeComparable(root); }
+  });
+  const isWithinRoots = (candidate: string, roots: string[]): boolean => {
+    const comparable = normalizeComparable(path.resolve(candidate));
+    const separator = require("process").platform === "win32" ? "\\" : path.sep;
+    return roots.some(rawRoot => {
+      const root = normalizeComparable(rawRoot);
+      const normalizedRoot = root.endsWith(separator) ? root : root + separator;
+      return comparable === root || comparable.startsWith(normalizedRoot);
+    });
+  };
+  const nearestExistingAncestor = (resolved: string): string | undefined => {
+    let current = resolved;
+    while (!fs.existsSync(current)) {
+      const parent = path.dirname(current);
+      if (parent === current) return undefined;
+      current = parent;
+    }
+    return current;
+  };
+  for (const step of steps) {
+    if (!["create_file", "read_file", "query", "upsert"].includes(step.operation)) continue;
+    const input = step.input && typeof step.input === "object" && !Array.isArray(step.input)
+      ? step.input as Record<string, unknown>
+      : {};
+    const rawPath = step.operation === "query" || step.operation === "upsert" ? input.databasePath : input.path;
+    if (typeof rawPath !== "string") {
+      throw new Error(`Control Plane capability path is outside configured roots for operation ${step.operation}`);
+    }
+
+    const resolved = path.resolve(rawPath);
+    if (!isWithinRoots(resolved, resolvedRoots)) {
+      throw new Error(`Control Plane capability path is outside configured roots for operation ${step.operation}: raw=${rawPath}; resolved=${resolved}; roots=${resolvedRoots.join(" | ")}`);
+    }
+
+    const existing = nearestExistingAncestor(resolved);
+    if (!existing) continue;
+
+    let realBase: string;
+    try {
+      realBase = fs.realpathSync.native(existing);
+    } catch (error) {
+      throw new Error(`Control Plane capability path could not be resolved safely: ${String(error)}`);
+    }
+
+    const remainder = path.relative(existing, resolved);
+    const canonicalCandidate = path.resolve(realBase, remainder);
+    if (!isWithinRoots(canonicalCandidate, canonicalRoots)) {
+      throw new Error("Control Plane capability path resolves outside configured roots");
+    }
+  }
+}
+
 function proofPath(work: WorkObject, config: RuntimeConfig): string {
   return path.join(config.proofDirectory, `${safeWorkId(work.id)}.json`);
 }
@@ -141,7 +208,9 @@ function proofPath(work: WorkObject, config: RuntimeConfig): string {
 function persistProof(work: WorkObject, config: RuntimeConfig): void {
   const proof = buildProofBundle(work);
   const integrity = buildIntegrityManifest(work);
-  fs.writeFileSync(proofPath(work, config), JSON.stringify({ ...proof, integrity }, null, 2) + "\n", { encoding: "utf8", mode: 0o600 });
+  const target = proofPath(work, config);
+  fs.writeFileSync(target, JSON.stringify({ ...proof, integrity }, null, 2) + "\n", { encoding: "utf8", mode: 0o600 });
+  securePrivateFile(target);
 }
 
 function missionPath(workId: string, config: RuntimeConfig): string {
@@ -149,7 +218,8 @@ function missionPath(workId: string, config: RuntimeConfig): string {
 }
 
 function saveMission(work: WorkObject, steps: WorkStep[], config: RuntimeConfig): void {
-  fs.writeFileSync(missionPath(work.id, config), JSON.stringify({
+  const target = missionPath(work.id, config);
+  fs.writeFileSync(target, JSON.stringify({
     objective: work.contract.objective,
     inputs: work.contract.inputs ?? {},
     constraints: work.contract.constraints ?? {},
@@ -159,6 +229,7 @@ function saveMission(work: WorkObject, steps: WorkStep[], config: RuntimeConfig)
     approvalRequired: Boolean(work.contract.approvalRequired),
     steps
   }, null, 2) + "\n", { encoding: "utf8", mode: 0o600 });
+  securePrivateFile(target);
 }
 
 function loadMission(work: WorkObject, config: RuntimeConfig): WorkStep[] {
@@ -170,11 +241,12 @@ function loadMission(work: WorkObject, config: RuntimeConfig): WorkStep[] {
 
 export async function executeMission(input: Record<string, unknown>): Promise<WorkObject> {
   const config = readRuntimeConfig();
-  fs.mkdirSync(config.missionDirectory, { recursive: true });
-  fs.mkdirSync(config.proofDirectory, { recursive: true });
+  securePrivateDirectory(config.missionDirectory);
+  securePrivateDirectory(config.proofDirectory);
   if (typeof input.objective !== "string" || !input.objective.trim()) throw new Error("Dispatch objective is required");
   const riskClass = validateRisk(input.riskClass, "read");
   const steps = validateSteps(input.steps, riskClass);
+  assertControlPlaneCapabilityInputs(steps, config.workDirectory);
   const store = new WorkStore();
   const registry = createRuntimeRegistry();
   const verification = new VerificationEngine();
@@ -200,9 +272,10 @@ export async function executeMission(input: Record<string, unknown>): Promise<Wo
 
 export async function resumeMission(work: WorkObject): Promise<WorkObject> {
   const config = readRuntimeConfig();
-  fs.mkdirSync(config.missionDirectory, { recursive: true });
-  fs.mkdirSync(config.proofDirectory, { recursive: true });
+  securePrivateDirectory(config.missionDirectory);
+  securePrivateDirectory(config.proofDirectory);
   const steps = loadMission(work, config);
+  assertControlPlaneCapabilityInputs(steps, config.workDirectory);
   const store = new WorkStore();
   store.register(work);
   const registry = createRuntimeRegistry();
@@ -217,8 +290,8 @@ export async function resumeMission(work: WorkObject): Promise<WorkObject> {
 async function main(): Promise<void> {
   const config = readRuntimeConfig();
   assertRuntimeConfig(config);
-  fs.mkdirSync(config.missionDirectory, { recursive: true });
-  fs.mkdirSync(config.proofDirectory, { recursive: true });
+  securePrivateDirectory(config.missionDirectory);
+  securePrivateDirectory(config.proofDirectory);
   const authPolicy = config.authPolicyPath ? loadAuthPolicy(config.authPolicyPath) : undefined;
   const repository = new JsonWorkRepository(config.workDirectory);
   const telemetry = createOtlpLogExporterFromEnv({

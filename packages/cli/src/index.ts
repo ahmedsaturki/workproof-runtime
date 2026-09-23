@@ -6,6 +6,7 @@ const { CapabilityRegistry } = require("../../capabilities/src/registry.js");
 const { VerificationEngine } = require("../../verification/src/engine.js");
 const { WorkEngine } = require("../../runtime/src/engine.js");
 const { JsonWorkRepository } = require("../../storage/src/json.js");
+const { securePrivateFile } = require("../../storage/src/private-files.js");
 const { registerLocalPack } = require("../../packs/src/local-pack.js");
 const { registerResearchPack } = require("../../packs/src/research-pack.js");
 const { registerWebDiscoveryPack } = require("../../packs/src/web-discovery-pack.js");
@@ -96,6 +97,10 @@ function proofBundleFromFile(data: any): Record<string, unknown> {
 
 function writeKey(path: string, content: string, mode: number): void {
   fs.writeFileSync(path, content, { encoding: "utf8", mode });
+  if (mode === 0o600) {
+    securePrivateFile(path);
+    return;
+  }
   fs.chmodSync(path, mode);
 }
 

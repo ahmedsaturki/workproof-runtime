@@ -160,8 +160,12 @@ export async function startA2AServer(options: A2AOptions): Promise<RunningA2A> {
   const controlPlaneUrl = options.controlPlaneUrl ?? "http://127.0.0.1:8789";
   const token = options.token;
   let publicUrl = options.publicUrl;
+  const loopbackHosts = new Set(["127.0.0.1", "localhost", "::1"]);
   if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error("A2A port must be a valid TCP port");
   if (!token || !/^[A-Za-z0-9._~-]{16,4096}$/.test(token)) throw new Error("A2A bearer token is required and must be a safe bearer token");
+  if (!loopbackHosts.has(host) && (!publicUrl || !publicUrl.startsWith("https://"))) {
+    throw new Error("Refusing non-loopback A2A binding without an HTTPS publicUrl; terminate TLS at an authenticated edge");
+  }
   const control = new ControlPlaneClient({ baseUrl: controlPlaneUrl, token });
   const server = http.createServer(async (req: any, res: any) => {
     const method = String(req.method ?? "GET").toUpperCase();
@@ -342,10 +346,6 @@ export async function startA2AServer(options: A2AOptions): Promise<RunningA2A> {
   });
 
   if (!publicUrl) publicUrl = "http://" + host + ":" + actualPort;
-  if (host !== "127.0.0.1" && host !== "localhost" && host !== "::1" && publicUrl.startsWith("http://")) {
-    process.stderr.write("Warning: non-loopback A2A deployments should use HTTPS at the edge.\n");
-  }
-
   return {
     host,
     port: actualPort,

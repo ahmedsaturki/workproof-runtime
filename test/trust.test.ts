@@ -7,7 +7,7 @@ const { createTrustPolicy, saveTrustPolicy, loadTrustPolicy, trustKey, revokeKey
 const { generateProofKeyPair, proofKeyId, signProof, verifyProofSignature } = require("../packages/evidence/src/signature.js");
 
 test("trust policy persists trusted and revoked identities", () => {
-  const dir = "/tmp/workproof-trust";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-trust");
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const policyPath = path.join(dir, "trust.json");

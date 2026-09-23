@@ -203,10 +203,19 @@ function startFencedWorker(dbPath: string, workerId: string, resourceId: string,
       child.once("error", onError);
     });
 
+  const waitForExit = new Promise<void>((resolve) => {
+    if (child.exitCode !== null || child.signalCode !== null) {
+      resolve();
+      return;
+    }
+    child.once("exit", () => resolve());
+  });
+
   return {
     child,
     ready: waitFor("ready"),
-    waitFor
+    waitFor,
+    waitForExit
   };
 }
 
@@ -241,9 +250,8 @@ test("two real processes enforce stale-worker fencing after lease takeover", asy
   } finally {
     if (oldWorker.child.connected) {
       oldWorker.child.send("close");
-      await new Promise<void>((resolve) => setTimeout(resolve, 20));
-      if (oldWorker.child.connected) oldWorker.child.kill("SIGKILL");
     }
+    await oldWorker.waitForExit;
     fs.rmSync(root, { recursive: true, force: true });
   }
 });

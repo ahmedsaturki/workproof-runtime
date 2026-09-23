@@ -39,7 +39,7 @@ function runCli(...args: string[]) {
 }
 
 test("CLI keygen, sign, and verify establish self-contained proof identity", () => {
-  const dir = "/tmp/workproof-cli-signature";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-cli-signature");
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const privatePath = path.join(dir, "proof-private.pem");
@@ -51,7 +51,36 @@ test("CLI keygen, sign, and verify establish self-contained proof identity", () 
   assert.equal(keygen.status, 0);
   assert.ok(fs.existsSync(privatePath));
   assert.ok(fs.existsSync(publicPath));
-  assert.equal(fs.statSync(privatePath).mode & 0o777, 0o600);
+  if (require("process").platform === "win32") {
+    const systemRoot = process.env.SystemRoot ?? process.env.WINDIR;
+    assert.ok(systemRoot, "Windows SystemRoot/WINDIR is required");
+    const whoami = spawnSync(path.join(systemRoot, "System32", "whoami.exe"), ["/user", "/fo", "csv", "/nh"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true
+    });
+    assert.equal(whoami.status, 0, String(whoami.stderr ?? ""));
+    const sidMatch = String(whoami.stdout ?? "").match(/S-\d-\d+(?:-\d+)+/);
+    if (!sidMatch) throw new Error(`Unable to determine current Windows user SID: ${String(whoami.stdout ?? "")}`);
+    const currentSid = sidMatch[0];
+    const icacls = path.join(systemRoot, "System32", "icacls.exe");
+    const acl = spawnSync(icacls, [privatePath], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true
+    });
+    assert.equal(acl.status, 0, String(acl.stderr ?? ""));
+    assert.doesNotMatch(String(acl.stdout ?? ""), /\(I\)/, String(acl.stdout ?? ""));
+    const ownerLookup = spawnSync(icacls, [privatePath, "/findsid", `*${currentSid}`], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true
+    });
+    assert.equal(ownerLookup.status, 0, String(ownerLookup.stderr ?? ""));
+    assert.notEqual(String(ownerLookup.stdout ?? "").trim(), "", String(ownerLookup.stdout ?? ""));
+  } else {
+    assert.equal(fs.statSync(privatePath).mode & 0o777, 0o600);
+  }
 
   const overwrite = runCli("keygen", privatePath, publicPath);
   assert.equal(overwrite.status, 1);
@@ -69,7 +98,7 @@ test("CLI keygen, sign, and verify establish self-contained proof identity", () 
 });
 
 test("CLI verify separates signature tampering from proof-integrity tampering", () => {
-  const dir = "/tmp/workproof-cli-signature-tamper";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-cli-signature-tamper");
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const privatePath = path.join(dir, "private.pem");

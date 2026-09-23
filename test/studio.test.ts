@@ -33,7 +33,7 @@ function workFixture() {
       attempts: 1,
       idempotencyKey: "internal-key-not-for-ui"
     }],
-    artifacts: [{ uri: "file:///tmp/report.json", mediaType: "application/json" }],
+    artifacts: [{ uri: require("url").pathToFileURL(require("path").join(require("os").tmpdir(), "report.json")).toString(), mediaType: "application/json" }],
     verification: {
       status: "verified",
       verifiedAt: "2026-09-21T00:00:00.000Z",
@@ -791,7 +791,9 @@ test("Studio operational overview reports bounded scanning and explicit truncati
   for (let i = 0; i < 10001; i += 1) {
     const work = { ...fixture, id: `bound-${String(i).padStart(5, "0")}` };
     work.contract = { ...fixture.contract, objective: `Bounded work ${i}` };
-    repository.save(work);
+    // This test targets bounded read/scanning behavior; avoid invoking the
+    // per-file Windows ACL hardening 10,001 times while building the fixture.
+    fs.writeFileSync(path.join(root, `${work.id}.json`), JSON.stringify(work), "utf8");
   }
 
   const studio = await startStudio({ workDirectory: root, port: 0 });
