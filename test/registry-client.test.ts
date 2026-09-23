@@ -104,7 +104,7 @@ test("registry proof publishing sends only the validated proof transport shape",
     proof.untrustedTopLevelField = "must-not-transmit";
     const published = await publishProofToRegistry(`http://127.0.0.1:${server.address().port}`, proof);
     assert.equal(published.digest, proof.integrity.digest);
-    assert.ok(received);
+    if (!received) throw new Error("registry server did not receive a request");
     assert.equal(received.untrustedTopLevelField, undefined);
     assert.equal(received.integrity.digest, proof.integrity.digest);
   } finally {
