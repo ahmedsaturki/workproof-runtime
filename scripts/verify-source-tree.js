@@ -12,6 +12,7 @@ const required = [
   "scripts/verify-published-lineage.js",
   "scripts/verify-main-release-state.js",
   "scripts/verify-container-base.js",
+  "scripts/verify-solo-governance.js",
   "scripts/secret-scan.js",
   "docs/release-lineage.json",
   ".gitignore",
