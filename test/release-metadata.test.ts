@@ -91,6 +91,11 @@ test("external topology backup operates through the private container boundary",
   assert.ok(!externalTopologySmoke.includes("fs.rmSync(dataDir, { recursive: true, force: true })"));
 });
 
+test("Container workflow does not expose the GHCR token through an environment variable", () => {
+  assert.doesNotMatch(containerWorkflow, /GH_TOKEN:\s*\$\{\{\s*github\.token\s*\}\}/);
+  assert.match(containerWorkflow, /echo "\$\{\{\s*github\.token\s*\}\}" \| docker login ghcr\.io .*--password-stdin/);
+});
+
 test("Container workflow prepares runtime smoke volume for UID 10001", () => {
   assert.ok(containerWorkflow.includes("--user 0:0"));
   assert.ok(containerWorkflow.includes('chown -R 10001:10001 /data'));
