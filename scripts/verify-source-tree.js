@@ -229,6 +229,7 @@ const required = [
   "docs/RELEASE-3.8.0.md",
   "docs/RELEASE-3.8.0-dev.1.md",
   "docs/RELEASE-3.8.12.md",
+  "docs/RELEASE-3.8.13.md",
   "docs/RELEASE-GATE-V3.7.md",
   "docs/RELEASE-GATE-V3.8.md",
   "docs/RELEASE-GATE-3.8.0.md",
