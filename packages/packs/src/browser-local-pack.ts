@@ -24,6 +24,30 @@ function isAllowedBrowserUrl(value: string): boolean {
   } catch { return false; }
 }
 
+const browserCodeCharMap: Record<string, string> = {
+  "<": "\\u003C",
+  ">": "\\u003E",
+  "/": "\\u002F",
+  "\b": "\\b",
+  "\f": "\\f",
+  "\n": "\\n",
+  "\r": "\\r",
+  "\t": "\\t",
+  "\0": "\\0",
+  "\u2028": "\\u2028",
+  "\u2029": "\\u2029"
+};
+
+function escapeUnsafeChars(str: string): string {
+  return str.replace(/[<>\b\f\n\r\t\0\u2028\u2029]/g, x => browserCodeCharMap[x]);
+}
+
+function runtimeEvaluateString(value: string): string {
+  const serialized = JSON.stringify(value);
+  if (typeof serialized !== "string") throw new Error("Unable to serialize browser evaluation string");
+  return escapeUnsafeChars(serialized);
+}
+
 function cdpHttp(port: number, pathname: string, method = "GET", timeoutMs = 1500): Promise<any> {
   return new Promise((resolve, reject) => {
     const controller = new AbortController();
