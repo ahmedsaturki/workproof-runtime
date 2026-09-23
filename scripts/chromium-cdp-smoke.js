@@ -88,6 +88,7 @@ async function main() {
     "--no-first-run",
     "--no-default-browser-check",
     "--disable-background-networking",
+    "--remote-allow-origins=*",
     "--remote-debugging-address=127.0.0.1",
     `--remote-debugging-port=${port}`,
     `--user-data-dir=${profile}`,
@@ -127,7 +128,7 @@ async function main() {
     try {
       const pid = browser.pid;
       if (pid && platform !== "win32") process.kill(-pid, "SIGKILL");
-      else browser.kill("SIGKILL");
+      else spawnSync("taskkill", ["/PID", String(pid), "/T", "/F"], { stdio: "ignore", windowsHide: true });
     } catch {
       try { browser.kill("SIGKILL"); } catch {}
     }
