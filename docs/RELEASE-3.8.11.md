@@ -26,7 +26,7 @@ The integrated hardening candidate immediately before release metadata preparati
 - benchmark M001-M005: 5/5 verified, falseDoneCount 0, duplicateExternalEffectCount 0, evidenceCompleteRate 1
 - representative demo, CLI, Studio, registry, proof, recovery, and interoperability tests in the full suite
 
-The subsequent `3.8.11` package/lock/release-note preparation is metadata-only and is currently awaiting its own CI verification run (#1558); it is not treated as published or fully release-verified yet.
+The subsequent `3.8.11` package/lock/release-note preparation is metadata-only and is was subsequently verified by CI run #1562 after the final Windows fencing cleanup fix; it is not treated as published until the release branch is cut from the final merged `main` and the dedicated release workflow completes.
 
 ### Release evidence requirements
 
