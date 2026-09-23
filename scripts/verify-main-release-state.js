@@ -86,8 +86,8 @@ async function main() {
     if (!productReadiness.includes("The current stable product baseline is **" + expectedVersion + "**.")) {
       throw new Error("PRODUCT-READINESS current stable baseline does not match package version " + expectedVersion);
     }
-    if (!productReadiness.includes("immutable image tag: `" + lineage.container.immutableTag + "`")) {
-      throw new Error("PRODUCT-READINESS immutable image tag does not match release lineage");
+    if (!productReadiness.includes("commit-addressed image tag: `" + lineage.container.immutableTag + "`")) {
+      throw new Error("PRODUCT-READINESS commit-addressed image tag does not match release lineage");
     }
     if (!productionDeployment.includes("- image: `" + lineage.container.image + "`")) {
       throw new Error("PRODUCTION-DEPLOYMENT image does not match release lineage");
@@ -95,8 +95,8 @@ async function main() {
     if (!productionDeployment.includes("- pinned digest: `" + lineage.container.digest + "`")) {
       throw new Error("PRODUCTION-DEPLOYMENT digest does not match release lineage");
     }
-    if (!productionDeployment.includes("- immutable image tag: `" + lineage.container.immutableTag + "`")) {
-      throw new Error("PRODUCTION-DEPLOYMENT immutable image tag does not match release lineage");
+    if (!productionDeployment.includes("- commit-addressed image tag: `" + lineage.container.immutableTag + "`")) {
+      throw new Error("PRODUCTION-DEPLOYMENT commit-addressed image tag does not match release lineage");
     }
     if (!productionDeployment.includes("- release commit: `" + lineage.release.commit + "`")) {
       throw new Error("PRODUCTION-DEPLOYMENT release commit does not match release lineage");
@@ -107,8 +107,8 @@ async function main() {
     if (!containerRuntime.includes("- published digest: `" + lineage.container.digest + "`")) {
       throw new Error("CONTAINER-RUNTIME digest does not match release lineage");
     }
-    if (!containerRuntime.includes("- immutable image tag: `" + lineage.container.immutableTag + "`")) {
-      throw new Error("CONTAINER-RUNTIME immutable image tag does not match release lineage");
+    if (!containerRuntime.includes("- commit-addressed image tag: `" + lineage.container.immutableTag + "`")) {
+      throw new Error("CONTAINER-RUNTIME commit-addressed image tag does not match release lineage");
     }
     if (unexpectedDrift.length) {
       throw new Error(
