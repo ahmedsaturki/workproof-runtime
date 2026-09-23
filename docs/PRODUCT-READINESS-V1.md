@@ -73,7 +73,7 @@ The current stable product baseline is **v3.8.11**.
 - previous stable: `v3.8.10`
 - cross-platform runtime hardening, filesystem security, browser runtime, Control Plane, A2A boundary, and release/verification hardening are included and verified
 
-The published `v3.8.11` artifacts were verified as snapshots of release commit `9568cb2daffdd2f142f6112b1a6bd2c9cdbc4298`. The current `main` lineage will be reconciled to the published GitHub/GHCR evidence; that reconciliation is documentation/distribution metadata only and does not rewrite the published snapshot.
+The published `v3.8.11` artifacts were verified as snapshots of release commit `9568cb2daffdd2f142f6112b1a6bd2c9cdbc4298`. The current `main` lineage is reconciled to the published GitHub/GHCR evidence; this reconciliation is documentation/distribution metadata only and does not rewrite the published snapshot.
 
 The v3.8.11 distribution enforces an immutable Node 24.21.0 Trixie slim base digest and a bounded production resource/log envelope.
 
