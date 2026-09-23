@@ -53,7 +53,7 @@ async function ghcrDigest(tag) {
   if (status !== 200) throw new Error("GHCR manifest returned HTTP " + status);
 
   const digestLine = headers.split(/\r?\n/).find((line) => /^docker-content-digest:/i.test(line));
-  const digest = digestLine ? digestLine.split(":", 2)[1].trim() : "";
+  const digest = digestLine ? digestLine.slice(digestLine.indexOf(":") + 1).trim() : "";
   if (!digest) throw new Error("GHCR manifest did not expose Docker-Content-Digest");
   return digest;
 }
