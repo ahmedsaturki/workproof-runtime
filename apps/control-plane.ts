@@ -178,7 +178,7 @@ function assertControlPlaneCapabilityInputs(steps: WorkStep[], workDirectory: st
 
     const resolved = path.resolve(rawPath);
     if (!isWithinRoots(resolved, resolvedRoots)) {
-      throw new Error(`Control Plane capability path is outside configured roots for operation ${step.operation}`);
+      throw new Error(`Control Plane capability path is outside configured roots for operation ${step.operation}: raw=${rawPath}; resolved=${resolved}; roots=${resolvedRoots.join(" | ")}`);
     }
 
     const existing = nearestExistingAncestor(resolved);
