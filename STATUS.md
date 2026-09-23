@@ -36,7 +36,7 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 
 ## Published snapshot vs current main
 
-The `v3.8.11` GitHub Release and source/container assets were verified against release commit `9568cb2daffdd2f142f6112b1a6bd2c9cdbc4298`. After publication, `main` will receive a documentation/lineage reconciliation so the current repository state matches the published GitHub Release and GHCR evidence. The reconciliation does not rewrite or retag the published release and does not change runtime semantics.
+The `v3.8.11` GitHub Release and source/container assets were verified against release commit `9568cb2daffdd2f142f6112b1a6bd2c9cdbc4298`. The current `main` reconciliation records the published GitHub Release and GHCR evidence without rewriting or retagging the published release and without changing runtime semantics.
 
 ## Current main closeout
 
