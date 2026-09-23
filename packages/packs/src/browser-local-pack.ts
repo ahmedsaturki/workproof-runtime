@@ -37,8 +37,12 @@ async function connectCdp(port: number): Promise<{ ws: WebSocket; close: () => v
   if (!target?.webSocketDebuggerUrl) throw new Error("No Chromium CDP page target available");
   const ws = new WebSocket(target.webSocketDebuggerUrl);
   await new Promise<void>((resolve, reject) => {
-    ws.addEventListener("open", () => resolve(), { once: true });
-    ws.addEventListener("error", () => reject(new Error("CDP websocket connection failed")), { once: true });
+    let settled = false;
+    const finish = (fn: () => void) => { if (settled) return; settled = true; fn(); };
+    const timer = setTimeout(() => finish(() => { try { ws.close(); } catch {} reject(new Error("CDP websocket connection timed out")); }), 10000);
+    ws.addEventListener("open", () => finish(() => { clearTimeout(timer); resolve(); }), { once: true });
+    ws.addEventListener("error", () => finish(() => { clearTimeout(timer); reject(new Error("CDP websocket connection failed")); }), { once: true });
+    ws.addEventListener("close", () => finish(() => { clearTimeout(timer); reject(new Error("CDP websocket closed before connection completed")); }), { once: true });
   });
   let nextId = 1;
   const pending = new Map<number, (value: any) => void>();
