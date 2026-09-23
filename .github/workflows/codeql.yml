@@ -45,6 +45,70 @@ jobs:
         uses: github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
         with:
           category: "/language:${{ matrix.language }}"
+          upload: never
+          output: sarif-results
+
+      - name: Summarize CodeQL SARIF findings
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require("fs");
+          const path = require("path");
+          const files = fs.existsSync("sarif-results") ? fs.readdirSync("sarif-results").filter((name) => name.endsWith(".sarif")).map((name) => path.join("sarif-results", name)) : [];
+          const findings = [];
+          for (const file of files) {
+            const sarif = JSON.parse(fs.readFileSync(file, "utf8"));
+            for (const run of sarif.runs ?? []) {
+              const rules = new Map((run.tool?.driver?.rules ?? []).map((r) => [r.id, r]));
+              for (const result of run.results ?? []) {
+                const loc = result.locations?.[0]?.physicalLocation;
+                const rule = rules.get(result.ruleId);
+                findings.push({
+                  tool: run.tool?.driver?.name ?? "?",
+                  ruleId: result.ruleId ?? "?",
+                  level: result.level ?? rule?.defaultConfiguration?.level ?? "?",
+                  file: loc?.artifactLocation?.uri ?? "?",
+                  line: loc?.region?.startLine ?? "?",
+                  message: String(result.message?.text ?? "").replace(/\s+/g, " ").trim()
+                });
+              }
+            }
+          }
+          findings.sort((a,b) => (a.ruleId + "\0" + a.file + "\0" + a.line).localeCompare(b.ruleId + "\0" + b.file + "\0" + b.line));
+          const counts = findings.reduce((m, x) => { m[x.ruleId] = (m[x.ruleId] ?? 0) + 1; return m; }, {});
+          console.log(JSON.stringify({ files, findingCount: findings.length, ruleCounts: counts, findings }, null, 2));
+          NODE
+
+      - name: Identify CodeQL SARIF file
+        id: sarif
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE="$(find sarif-results -maxdepth 1 -type f -name '*.sarif' -print -quit 2>/dev/null || true)"
+          if [[ -z "${FILE}" ]]; then
+            echo 'sarif file not found' >&2
+            exit 1
+          fi
+          echo "file=${FILE}" >> "${GITHUB_OUTPUT}"
+
+      - name: Archive CodeQL SARIF evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: codeql-sarif-${{ matrix.language }}
+          path: sarif-results/*.sarif
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload CodeQL SARIF results
+        if: steps.sarif.outcome == 'success'
+        uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
+        with:
+          sarif_file: ${{ steps.sarif.outputs.file }}
+          category: "/language:${{ matrix.language }}"
 
       - name: Summarize and archive CodeQL SARIF findings
         if: ${{ always() }}
