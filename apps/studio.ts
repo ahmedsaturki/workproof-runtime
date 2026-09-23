@@ -1313,8 +1313,23 @@ export async function startStudio(options: StudioOptions): Promise<RunningStudio
 
 const runtimeProcess = require("process");
 
+function studioUsage(): void {
+  process.stdout.write(`studio
+  [workDirectory] [port] [host] [controlPlaneUrl] [vaultDirectory] [trustPolicyPath]
+
+Defaults: workDirectory=./work-runs port=8788 host=127.0.0.1
+Env: WORKPROOF_ALLOW_NON_LOOPBACK=1 WORKPROOF_CONTROL_PLANE_URL WORKPROOF_VAULT_DIRECTORY WORKPROOF_TRUST_POLICY_PATH
+`);
+}
+
 if (runtimeProcess.argv[1] && path.resolve(runtimeProcess.argv[1]) === path.resolve(__filename)) {
   const [, , workDirectoryArg, portArg, hostArg, controlPlaneUrlArg, vaultDirectoryArg, trustPolicyPathArg] = process.argv;
+  if (workDirectoryArg === "--help" || workDirectoryArg === "-h" || workDirectoryArg === "help") {
+    studioUsage();
+    process.exitCode = 0;
+  } else if (workDirectoryArg === "--version" || workDirectoryArg === "-v" || workDirectoryArg === "version") {
+    process.stdout.write(RUNTIME_VERSION + "\n");
+  } else {
   const workDirectory = workDirectoryArg ?? "./work-runs";
   const port = portArg ? Number(portArg) : 8788;
   const host = hostArg ?? "127.0.0.1";
@@ -1348,5 +1363,6 @@ if (runtimeProcess.argv[1] && path.resolve(runtimeProcess.argv[1]) === path.reso
         process.stderr.write(String(error) + "\n");
         process.exitCode = 1;
       });
+  }
   }
 }

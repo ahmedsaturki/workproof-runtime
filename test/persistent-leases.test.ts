@@ -7,6 +7,20 @@ const path = require("path");
 function tempDir(prefix: string): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 }
+
+function removeTempDir(dir: string): void {
+  for (let attempt = 1; attempt <= 5; attempt += 1) {
+    try {
+      fs.rmSync(dir, { recursive: true, force: true });
+      return;
+    } catch (error: any) {
+      const retriable = error && (error.code === "EPERM" || error.code === "EBUSY" || error.code === "ENOTEMPTY");
+      if (!retriable || attempt === 5) throw error;
+      const end = Date.now() + 50;
+      while (Date.now() < end) { /* brief backoff for Windows handle release */ }
+    }
+  }
+}
 const { fork } = require("child_process");
 
 import type { LeaseAcquireResult, LeaseClock, LeaseRecord, WorkerRecord } from "../packages/coordination/src/leases";
@@ -190,7 +204,7 @@ test("persistent lease state survives reopening and preserves owner identity", (
   assert.equal(check.get("work-1"), null);
   assert.equal(check.acquire("work-1", "worker-b", 1000).status, "acquired");
   check.close();
-  fs.rmSync(dir, { recursive: true, force: true });
+  removeTempDir(dir);
 });
 
 test("six independent Node processes cannot both acquire the same persistent lease", async () => {
@@ -235,7 +249,7 @@ test("six independent Node processes cannot both acquire the same persistent lea
     for (const worker of workers) {
       if (worker.child.connected) worker.child.kill();
     }
-    fs.rmSync(dir, { recursive: true, force: true });
+    removeTempDir(dir);
   }
 });
 
@@ -265,7 +279,7 @@ test("persistent workers preserve metadata, heartbeat state, and deterministic l
   assert.equal((worker as WorkerRecord).metadata?.zone, "a");
 
   store.close();
-  fs.rmSync(dir, { recursive: true, force: true });
+  removeTempDir(dir);
 });
 
 export {};
@@ -288,6 +302,6 @@ test("PersistentLeaseStore exposes the same sanitized lease visibility contract 
     assert.equal((statuses[0] as any).fencingToken, undefined);
   } finally {
     leases.close();
-    fs.rmSync(root, { recursive: true, force: true });
+    removeTempDir(root);
   }
 });

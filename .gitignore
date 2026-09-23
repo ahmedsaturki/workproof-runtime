@@ -9,3 +9,11 @@ workctl-research-proof.json
 # Runtime-generated proof and benchmark outputs
 
 proof-vault/
+# Runtime private state and local proof artifacts (never commit)
+private.pem
+public.pem
+trust.json
+restored-proof.json
+vault/
+imported/
+portable-bundle/

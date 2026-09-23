@@ -67,6 +67,17 @@ test("external topology smoke uses compatible tool-specific version probes", () 
   assert.match(externalTopologySmoke, /tar:\s*\["--version"\]/);
 });
 
+test("external topology smoke is portable across Windows and POSIX hosts", () => {
+  assert.match(externalTopologySmoke, /process\.platform === "win32" \? "NUL" : "\/dev\/null"/);
+  assert.doesNotMatch(externalTopologySmoke, /-o", "\/dev\/null"/);
+  assert.match(externalTopologySmoke, /function sleepSeconds\(/);
+  assert.doesNotMatch(externalTopologySmoke, /run\("sleep"/);
+  assert.match(externalTopologySmoke, /WINDOWS_TOOL_CANDIDATES/);
+  assert.match(externalTopologySmoke, /function tool\(command\)/);
+  assert.match(externalTopologySmoke, /run\(tool\("openssl"\)/);
+  assert.match(externalTopologySmoke, /run\(tool\("curl"\)/);
+});
+
 test("solo governance verifier authenticates GitHub API calls when a token is available", () => {
   assert.match(soloGovernanceScript, /process\.env\.GITHUB_TOKEN/);
   assert.match(soloGovernanceScript, /headers\.authorization = "Bearer " \+ token/);
@@ -91,15 +102,50 @@ test("main release-state guard enforces current stable documentation coherence",
 
 test("published-lineage GHCR probe uses the same authenticated manifest contract as container verification", () => {
   const lineageScript = fs.readFileSync(path.join(root, "scripts", "verify-published-lineage.js"), "utf8");
-  assert.match(lineageScript, /execFileSync\("curl"/);
+  assert.doesNotMatch(lineageScript, /execFileSync\("curl"/);
+  assert.doesNotMatch(lineageScript, /\/dev\/null/);
   assert.match(lineageScript, /ghcr\.io\/token\?scope=repository:/);
-  assert.match(lineageScript, /["\x27]Authorization: Bearer ["\x27] \+ token/);
-  assert.match(lineageScript, /Docker-Content-Digest/);
-  assert.match(lineageScript, /digestLine\.slice\(digestLine\.indexOf\(":"\) \+ 1\)/);
-  assert.match(lineageScript, /Accept: application\/vnd\.oci\.image\.index\.v1\+json/);
+  assert.match(lineageScript, /Authorization: "Bearer " \+ token/);
+  assert.match(lineageScript, /docker-content-digest/);
+  assert.match(lineageScript, /application\/vnd\.oci\.image\.index\.v1\+json/);
   assert.match(lineageScript, /const digest = await ghcrDigest\(release\.version\)/);
   assert.doesNotMatch(lineageScript, /ghcrDigest\(published\.tag_name\)/);
+});
 
+test("runtime private-state artifacts are excluded from git and the container build context", () => {
+  const gitignore = fs.readFileSync(path.join(root, ".gitignore"), "utf8");
+  const dockerignore = fs.readFileSync(path.join(root, ".dockerignore"), "utf8");
+  for (const entry of ["private.pem", "public.pem", "trust.json", "restored-proof.json", "vault/", "imported/", "portable-bundle/"]) {
+    assert.ok(gitignore.includes(entry), ".gitignore must exclude " + entry);
+  }
+  for (const entry of ["private.pem", "public.pem", "trust.json", "restored-proof.json", "vault", "imported", "portable-bundle"]) {
+    assert.ok(dockerignore.includes(entry), ".dockerignore must exclude " + entry);
+  }
+});
+
+test("release-state allowlist covers ignore-file hardening without a version bump", () => {
+  assert.match(releaseStateScript, /"\.gitignore"/);
+  assert.match(releaseStateScript, /"\.dockerignore"/);
+  assert.match(releaseStateScript, /"scripts\/external-topology-smoke\.js"/);
+  assert.match(releaseStateScript, /"packages\/cli\/src\/index\.ts"/);
+  assert.match(releaseStateScript, /"apps\/studio\.ts"/);
+  assert.match(releaseStateScript, /"test\/product-smoke\.test\.ts"/);
+  assert.match(releaseStateScript, /"test\/persistent-leases\.test\.ts"/);
+});
+
+test("product readiness historical provenance names the immediately preceding stable release", () => {
+  const productReadiness = fs.readFileSync(path.join(root, "docs", "PRODUCT-READINESS-V1.md"), "utf8");
+  assert.match(productReadiness, /v3\.8\.12 was the preceding verified stable distribution/);
+  assert.doesNotMatch(productReadiness, /v3\.8\.11 was the preceding verified stable distribution/);
+});
+
+test("README distinguishes the immediate previous stable from the verified rollback release", () => {
+  const readme = fs.readFileSync(path.join(root, "README.md"), "utf8");
+  assert.match(readme, /immediate previous stable: v3\.8\.12/);
+  assert.match(readme, /verified rollback release: v3\.8\.1/);
+  assert.match(readme, /v3\.8\.1 remains the verified rollback release/);
+  const lineage = JSON.parse(fs.readFileSync(path.join(root, "docs", "release-lineage.json"), "utf8"));
+  assert.strictEqual(lineage.rollback.version, "3.8.1");
 });
 
 test("published-lineage verifier exit code is propagated without truthiness coercion", () => {

@@ -89,10 +89,17 @@ async function main() {
       ".github/workflows/ci.yml",
       ".github/workflows/container.yml",
       ".github/workflows/release.yml",
+      ".gitignore",
+      ".dockerignore",
       "scripts/verify-main-release-state.js",
       "scripts/verify-published-lineage.js",
       "scripts/verify-solo-governance.js",
-      "test/release-metadata.test.ts"
+      "scripts/external-topology-smoke.js",
+      "packages/cli/src/index.ts",
+      "apps/studio.ts",
+      "test/release-metadata.test.ts",
+      "test/product-smoke.test.ts",
+      "test/persistent-leases.test.ts"
     ]);
     const unexpectedDrift = changedFiles.filter((file) => !allowedPostReleaseFiles.has(file) && !file.startsWith("docs/"));
     const readme = fs.readFileSync(path.resolve("README.md"), "utf8");

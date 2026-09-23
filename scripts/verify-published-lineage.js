@@ -1,6 +1,5 @@
 const fs = require("fs");
 const path = require("path");
-const { execFileSync } = require("child_process");
 
 async function json(url, options = {}) {
   const headers = { ...(options.headers || {}) };
@@ -17,43 +16,38 @@ async function json(url, options = {}) {
 const GITHUB_REPOSITORY = "ahmedsaturki/workproof-runtime";
 const GHCR_REPOSITORY = GITHUB_REPOSITORY.toLowerCase();
 
+const GHCR_MANIFEST_ACCEPT =
+  "application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json";
+
 async function ghcrDigest(tag) {
   if (!/^[A-Za-z0-9._-]+$/.test(tag)) throw new Error("Unsupported GHCR tag: " + tag);
 
-  let tokenJson;
-  try {
-    tokenJson = execFileSync("curl", [
-      "-fsS",
-      "https://ghcr.io/token?scope=repository:" + GHCR_REPOSITORY + ":pull"
-    ], { encoding: "utf8" });
-  } catch (error) {
-    throw new Error("Unable to obtain GHCR pull token: " + String(error && error.message ? error.message : error));
+  const tokenResponse = await fetch(
+    "https://ghcr.io/token?scope=repository:" + GHCR_REPOSITORY + ":pull"
+  );
+  if (!tokenResponse.ok) {
+    throw new Error("Unable to obtain GHCR pull token: HTTP " + tokenResponse.status);
   }
-
   let token;
   try {
-    token = JSON.parse(tokenJson).token;
+    token = (await tokenResponse.json()).token;
   } catch {
     throw new Error("Invalid GHCR token response");
   }
   if (!token) throw new Error("GHCR pull token was not returned");
 
   const manifestUrl = "https://ghcr.io/v2/" + GHCR_REPOSITORY + "/manifests/" + encodeURIComponent(tag);
-  const headers = execFileSync("curl", [
-    "-sS",
-    "-D", "-",
-    "-o", "/dev/null",
-    "-H", "Authorization: Bearer " + token,
-    "-H", "Accept: application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json",
-    manifestUrl
-  ], { encoding: "utf8" });
-
-  const statusLine = headers.split(/\r?\n/).find((line) => /^HTTP\/\d(?:\.\d)?\s+\d+/.test(line));
-  const status = statusLine ? Number(statusLine.match(/\s(\d{3})(?:\s|$)/)?.[1]) : 0;
-  if (status !== 200) throw new Error("GHCR manifest returned HTTP " + status);
-
-  const digestLine = headers.split(/\r?\n/).find((line) => /^docker-content-digest:/i.test(line));
-  const digest = digestLine ? digestLine.slice(digestLine.indexOf(":") + 1).trim() : "";
+  const manifestResponse = await fetch(manifestUrl, {
+    method: "HEAD",
+    headers: {
+      Authorization: "Bearer " + token,
+      Accept: GHCR_MANIFEST_ACCEPT
+    }
+  });
+  if (manifestResponse.status !== 200) {
+    throw new Error("GHCR manifest returned HTTP " + manifestResponse.status);
+  }
+  const digest = (manifestResponse.headers.get("docker-content-digest") || "").trim();
   if (!digest) throw new Error("GHCR manifest did not expose Docker-Content-Digest");
   return digest;
 }

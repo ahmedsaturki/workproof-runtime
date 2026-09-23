@@ -23,7 +23,8 @@ Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify
 - GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.13`
 - GHCR digest: `sha256:c9a9f6f6f0fb111dc64d42b1a2746091f14366c389c1af6eb3b0683c6e3fe564`
 - commit-addressed image tag: `dadef28ce8fbd299201a228673f1c2737c5b7d62`
-- rollback: v3.8.12 / `sha256:5690c65d0425c743c4fa0ebc1a31f913497eb6b7d4e8fa11a129a833aa926d5d`
+- immediate previous stable: v3.8.12 / `sha256:5690c65d0425c743c4fa0ebc1a31f913497eb6b7d4e8fa11a129a833aa926d5d`
+- verified rollback release: v3.8.1 / `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 - five release assets published and SHA256-verified
 
 ### v3.8.13 closeout hardening
