@@ -70,7 +70,7 @@ test("published-lineage GHCR probe uses the same authenticated manifest contract
   assert.match(lineageScript, /ghcr\.io\/token\?scope=repository:/);
   assert.match(lineageScript, /["\x27]Authorization: Bearer ["\x27] \+ token/);
   assert.match(lineageScript, /Docker-Content-Digest/);
-  assert.match(lineageScript, /application\/vnd\.oci\.image\.index\+json/);
+  assert.match(lineageScript, /Accept: application\/vnd\.oci\.image\.index\+json/);
 });
 
 test("published-lineage verifier exit code is propagated without truthiness coercion", () => {
