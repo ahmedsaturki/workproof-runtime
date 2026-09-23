@@ -75,7 +75,7 @@ The current stable product baseline is **v3.8.12**.
 
 The published `v3.8.12` artifacts were verified as snapshots of release commit `19b1efbfbc5f6f2d14eae5538f339667bd9fbb92`. The current `main` lineage is reconciled to the published GitHub/GHCR evidence; this reconciliation is documentation/distribution metadata only and does not rewrite the published snapshot.
 
-The v3.8.11 distribution enforces an immutable Node 24.21.0 Trixie slim base digest and a bounded production resource/log envelope.
+The v3.8.12 distribution enforces an immutable Node 24.21.0 Trixie slim base digest and a bounded production resource/log envelope.
 
 ## Release acceptance gates
 
