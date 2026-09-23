@@ -1,5 +1,6 @@
 import { CapabilityRegistry } from "../../capabilities/src/registry";
 import { Capability, EvidenceRef, Verifier } from "../../core/src/types";
+const fs = require("fs");
 import { writeValidatedDiscoveryArtifact } from "./discovery-artifact-writer";
 
 export interface DiscoveryInput {
