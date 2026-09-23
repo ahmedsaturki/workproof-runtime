@@ -76,7 +76,7 @@ test("registry client rejects corrupted proof returned by the registry", async (
 
     await assert.rejects(
       getProofFromRegistry(url, published.digest),
-      /integrity|digest/i
+      /invalid-request/i
     );
   } finally {
     await registry.close();
