@@ -194,15 +194,16 @@ async function main() {
   const packageJson = JSON.parse(fs.readFileSync(path.resolve("package.json"), "utf8"));
   const lineage = JSON.parse(fs.readFileSync(path.resolve("docs/release-lineage.json"), "utf8"));
   const releaseImageOverride = process.env.WORKPROOF_RELEASE_IMAGE || null;
+  const expectedReleaseImage = "ghcr.io/ahmedsaturki/workproof-runtime:" + packageJson.version;
   const localImage = "workproof-runtime-external:" + packageJson.version + "-" + runId;
-  const currentImage = releaseImageOverride || localImage;
+  const currentImage = releaseImageOverride ? expectedReleaseImage : localImage;
   const composeImage = imageFromCompose(path.resolve("compose.production.yaml"));
   if (!composeImage.startsWith("ghcr.io/") || !composeImage.includes("@sha256:")) {
     throw new Error("Production compose must contain a pinned GHCR image reference");
   }
   if (releaseImageOverride) {
-    if (!currentImage.startsWith("ghcr.io/") || !currentImage.includes(":")) {
-      throw new Error("Release external smoke image must be a valid GHCR tag");
+    if (releaseImageOverride !== expectedReleaseImage) {
+      throw new Error("Release external smoke image must match the package version and official WorkProof GHCR repository");
     }
   } else if (!currentImage.startsWith("workproof-runtime-external:")) {
     throw new Error("Non-release external smoke must use its temporary local image tag");
