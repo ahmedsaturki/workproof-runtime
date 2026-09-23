@@ -95,7 +95,7 @@ test("control-plane local capabilities reject paths outside the work root", asyn
   process.env.WORKPROOF_WORK_DIRECTORY = root;
   try {
     await assert.rejects(
-      () => executeMission({
+      async () => executeMission({
         objective: "reject outside-root read",
         success: [],
         deliverables: [],
