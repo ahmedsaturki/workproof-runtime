@@ -51,7 +51,9 @@ test("control-plane mission executor enforces approval and risk policy before ca
 test("control-plane resume path keeps the same execution policy", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "workproof-control-policy-resume-"));
   const previousWorkDirectory = process.env.WORKPROOF_WORK_DIRECTORY;
+  const previousAllowedRoots = process.env.WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS;
   process.env.WORKPROOF_WORK_DIRECTORY = root;
+  process.env.WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS = root;
 
   try {
     const work = await executeMission({
@@ -89,6 +91,8 @@ test("control-plane resume path keeps the same execution policy", async () => {
   } finally {
     if (previousWorkDirectory === undefined) delete process.env.WORKPROOF_WORK_DIRECTORY;
     else process.env.WORKPROOF_WORK_DIRECTORY = previousWorkDirectory;
+    if (previousAllowedRoots === undefined) delete process.env.WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS;
+    else process.env.WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS = previousAllowedRoots;
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
@@ -96,7 +100,9 @@ test("control-plane resume path keeps the same execution policy", async () => {
 test("control-plane local capabilities reject paths outside the work root", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "workproof-control-path-"));
   const previousWorkDirectory = process.env.WORKPROOF_WORK_DIRECTORY;
+  const previousAllowedRoots = process.env.WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS;
   process.env.WORKPROOF_WORK_DIRECTORY = root;
+  process.env.WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS = root;
   try {
     const caught = await Promise.resolve()
       .then(() => executeMission({
@@ -119,6 +125,8 @@ test("control-plane local capabilities reject paths outside the work root", asyn
   } finally {
     if (previousWorkDirectory === undefined) delete process.env.WORKPROOF_WORK_DIRECTORY;
     else process.env.WORKPROOF_WORK_DIRECTORY = previousWorkDirectory;
+    if (previousAllowedRoots === undefined) delete process.env.WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS;
+    else process.env.WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS = previousAllowedRoots;
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
