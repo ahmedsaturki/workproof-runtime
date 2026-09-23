@@ -1,4 +1,5 @@
 import { LeaseStatus, WorkerStatus } from "../../coordination/src/leases";
+const { securePrivateDirectory, securePrivateFile } = require("../../storage/src/private-files");
 
 const http = require("http");
 const fs = require("fs");
@@ -117,9 +118,9 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
   }
 
   if (auditPath) {
-    fs.mkdirSync(require("path").dirname(require("path").resolve(auditPath)), { recursive: true });
-    if (!fs.existsSync(auditPath)) fs.writeFileSync(auditPath, "", { encoding: "utf8", mode: 0o600 });
-    fs.chmodSync(auditPath, 0o600);
+    securePrivateDirectory(require("path").dirname(require("path").resolve(auditPath)));
+    if (!fs.existsSync(auditPath)) fs.writeFileSync(auditPath, "", { encoding: "utf8", flag: "wx" });
+    securePrivateFile(auditPath);
   }
 
   const audit = (entry: Record<string, unknown>): void => {
