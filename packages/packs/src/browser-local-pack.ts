@@ -138,6 +138,9 @@ function ensureBrowser(port = 0): any {
     "about:blank"
   ], { stdio: ["ignore", "pipe", "pipe"], detached: platform !== "win32" });
   browser.workproofProfile = profile;
+  const drain = (chunk: any) => { browser.workproofOutput = String(browser.workproofOutput ?? "") + chunk.toString().slice(-4096); if (browser.workproofOutput.length > 16384) browser.workproofOutput = browser.workproofOutput.slice(-16384); };
+  browser.stdout?.on("data", drain);
+  browser.stderr?.on("data", drain);
   try { browser.unref?.(); } catch {}
   return browser;
 }
@@ -207,6 +210,7 @@ function killBrowser(browser: any): void {
   } catch {
     try { browser.kill("SIGKILL"); } catch {}
   }
+  try { browser.stdout?.removeAllListeners?.("data"); browser.stderr?.removeAllListeners?.("data"); } catch {}
   try { if (browser.workproofProfile) fs.rmSync(browser.workproofProfile, { recursive: true, force: true }); } catch {}
 }
 
