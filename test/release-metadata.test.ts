@@ -35,14 +35,14 @@ test("main release-state guard enforces current stable documentation coherence",
   assert.match(releaseStateScript, /STATUS current stable release line does not match package version/);
   assert.match(releaseStateScript, /SOURCE-MANIFEST current verified release lineage does not match package version/);
   assert.match(releaseStateScript, /PRODUCT-READINESS current stable baseline does not match package version/);
-  assert.match(releaseStateScript, /PRODUCT-READINESS immutable image tag does not match release lineage/);
+  assert.match(releaseStateScript, /PRODUCT-READINESS commit-addressed image tag does not match release lineage/);
   assert.match(releaseStateScript, /PRODUCTION-DEPLOYMENT image does not match release lineage/);
   assert.match(releaseStateScript, /PRODUCTION-DEPLOYMENT digest does not match release lineage/);
-  assert.match(releaseStateScript, /PRODUCTION-DEPLOYMENT immutable image tag does not match release lineage/);
+  assert.match(releaseStateScript, /PRODUCTION-DEPLOYMENT commit-addressed image tag does not match release lineage/);
   assert.match(releaseStateScript, /PRODUCTION-DEPLOYMENT release commit does not match release lineage/);
   assert.match(releaseStateScript, /CONTAINER-RUNTIME image does not match release lineage/);
   assert.match(releaseStateScript, /CONTAINER-RUNTIME digest does not match release lineage/);
-  assert.match(releaseStateScript, /CONTAINER-RUNTIME immutable image tag does not match release lineage/);
+  assert.match(releaseStateScript, /CONTAINER-RUNTIME commit-addressed image tag does not match release lineage/);
 });
 
 test("published-lineage verifier exit code is propagated without truthiness coercion", () => {
