@@ -92,6 +92,14 @@ test("Compose smoke prepares bind-mounted private data for UID 10001", () => {
   assert.match(composeSmoke, /chmod 700 \/data/);
 });
 
+test("Compose smoke cleans private bind mounts through the container root boundary", () => {
+  assert.match(composeSmoke, /function cleanupPrivateDataDirectory\(image, rootDirectory\)/);
+  assert.ok(composeSmoke.includes('"-v", rootDirectory + ":/cleanup:rw"'));
+  assert.ok(composeSmoke.includes('"find /cleanup -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +"'));
+  assert.ok(composeSmoke.includes("cleanupPrivateDataDirectory(image, root)"));
+  assert.match(composeSmoke, /try \{ fs\.rmSync\(root, \{ recursive: true, force: true \}\); \} catch \{\}/);
+});
+
 test("external topology smoke runs on pull requests", () => {
   assert.match(ciWorkflow, /github.event_name == 'pull_request'/);
 });
