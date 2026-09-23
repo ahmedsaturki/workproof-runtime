@@ -69,25 +69,25 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 - package metadata declares `Apache-2.0`; the repository license file contains the complete Apache License 2.0 text
 - executable source-tree gate currently verifies 226 required paths
 
-## v3.8.10 distribution evidence
+## v3.8.11 distribution evidence
 
-- package version: `3.8.10`
-- stable release: `v3.8.10`
-- release branch: `release/3.8.10`
-- release commit: `9daac7a926ce1631ac708a6c234379d622c56c19`
-- GitHub Release ID: `394046514`
-- release workflow #261: success
-- container workflow #258: success
-- GHCR digest: `sha256:cad9c467db8fe82abd1b15d30d90dbf7e87ad6683f44a8c7c8763c327af6a1c8`
-- immutable image tag: `9daac7a926ce1631ac708a6c234379d622c56c19`
+- package version: `3.8.11`
+- stable release: `v3.8.11`
+- release branch: `release/3.8.11`
+- release commit: `9568cb2daffdd2f142f6112b1a6bd2c9cdbc4298`
+- GitHub Release ID: `394667295`
+- release workflow #265: success
+- container workflow #262: success
+- GHCR digest: `sha256:9ad675ba540959c8ada0254f6c133c5fd51eaf02319fe8032b39738f34ea5088`
+- commit-addressed image tag: `9568cb2daffdd2f142f6112b1a6bd2c9cdbc4298`
 
 ## Verified main lineage
 
-- current verified release lineage: v3.8.10
-- current stable release commit: `9daac7a926ce1631ac708a6c234379d622c56c19`
-- release workflow #261: success
-- container workflow #258: success
-- GHCR digest: `sha256:cad9c467db8fe82abd1b15d30d90dbf7e87ad6683f44a8c7c8763c327af6a1c8`
+- current verified release lineage: v3.8.11
+- current stable release commit: `9568cb2daffdd2f142f6112b1a6bd2c9cdbc4298`
+- release workflow #265: success
+- container workflow #262: success
+- GHCR digest: `sha256:9ad675ba540959c8ada0254f6c133c5fd51eaf02319fe8032b39738f34ea5088`
 - v3.3 implementation merge: `c5e951056461c37f45bed8bb8406d119880d63df`
 - v3.3 closeout correction: `0c92a8c86950776243646de4bb40b0c0f2fe5876`
 - v3.4 implementation merge: `fe662d5bb5337bde18772f22864434935d59f66f`
