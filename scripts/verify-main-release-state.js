@@ -86,6 +86,8 @@ async function main() {
       "docs/PRODUCT-READINESS-V1.md",
       "docs/PRODUCTION-DEPLOYMENT.md",
       "docs/CONTAINER-RUNTIME.md",
+      ".github/workflows/ci.yml",
+      ".github/workflows/container.yml",
       ".github/workflows/release.yml",
       "scripts/verify-main-release-state.js",
       "test/release-metadata.test.ts"
