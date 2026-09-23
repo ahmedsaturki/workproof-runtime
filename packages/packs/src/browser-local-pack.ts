@@ -18,7 +18,7 @@ function isAllowedBrowserUrl(value: string): boolean {
   } catch { return false; }
 }
 
-function cdpHttp(port: number, pathname: string, method = "GET", timeoutMs = 5000): Promise<any> {
+function cdpHttp(port: number, pathname: string, method = "GET", timeoutMs = 1500): Promise<any> {
   return new Promise((resolve, reject) => {
     const req = httpRequest({ hostname: "127.0.0.1", port, path: pathname, method, timeout: timeoutMs }, (res: any) => {
       let raw = "";
@@ -144,7 +144,8 @@ function ensureBrowser(port = 0): any {
 
 async function waitForCdp(browser: any, requestedPort = 0): Promise<number> {
   if (requestedPort > 0) {
-    for (let i = 0; i < 80; i++) {
+    const deadline = Date.now() + 15000;
+    while (Date.now() < deadline) {
       try {
         await cdpHttp(requestedPort, "/json/version");
         return requestedPort;
@@ -167,11 +168,13 @@ async function waitForCdp(browser: any, requestedPort = 0): Promise<number> {
   browser.stderr?.on("data", append);
   browser.once?.("exit", onExit);
   try {
-    for (let i = 0; i < 80; i++) {
+    const deadline = Date.now() + 15000;
+    while (Date.now() < deadline) {
       const match = /DevTools listening on ws:\/\/127\.0\.0\.1:(\d+)\//.exec(output);
       if (match) {
         const port = Number(match[1]);
-        for (let j = 0; j < 20; j++) {
+        const endpointDeadline = Date.now() + 5000;
+        while (Date.now() < endpointDeadline) {
           try {
             await cdpHttp(port, "/json/version");
             return port;
