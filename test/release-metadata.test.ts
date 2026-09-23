@@ -50,6 +50,15 @@ test("trust publish uses the dedicated validated transport sink rather than the 
   assert.doesNotMatch(registryClient, /request\(registryUrl, "POST", "\/v1\/trust\/snapshots", transport, token\)/);
 });
 
+test("published v3.8.13 release note matches the implemented CodeQL boundary", () => {
+  const note = fs.readFileSync(path.join(root, "docs", "RELEASE-3.8.13.md"), "utf8");
+  assert.match(note, /published patch release after v3\.8\.12/);
+  assert.match(note, /paths-ignore/);
+  assert.match(note, /GitHub Release: `v3\.8\.13`/);
+  assert.match(note, /GHCR digest: `sha256:c9a9f6f6f0fb111dc64d42b1a2746091f14366c389c1af6eb3b0683c6e3fe564`/);
+  assert.doesNotMatch(note, /inline CodeQL suppression|Publication must not be claimed/);
+});
+
 test("external topology smoke uses compatible tool-specific version probes", () => {
   assert.match(externalTopologySmoke, /openssl:\s*\["version"\]/);
   assert.match(externalTopologySmoke, /docker:\s*\["--version"\]/);
