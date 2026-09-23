@@ -41,7 +41,12 @@ jobs:
             paths-ignore:
               - dist/**
 
-      - name: Summarize CodeQL findings for verification
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
+        with:
+          category: "/language:${{ matrix.language }}"
+
+      - name: Summarize and archive CodeQL SARIF findings
         if: ${{ always() }}
         shell: bash
         run: |
@@ -49,36 +54,35 @@ jobs:
           node <<'NODE'
           const fs = require("fs");
           const path = require("path");
-          const files = fs.existsSync("results")
-            ? fs.readdirSync("results").filter((name) => name.endsWith(".sarif")).map((name) => path.join("results", name))
-            : [];
+          const files = fs.existsSync("results") ? fs.readdirSync("results").filter((name) => name.endsWith(".sarif")).map((name) => path.join("results", name)) : [];
           const findings = [];
           for (const file of files) {
             const sarif = JSON.parse(fs.readFileSync(file, "utf8"));
             for (const run of sarif.runs ?? []) {
               const rules = new Map((run.tool?.driver?.rules ?? []).map((r) => [r.id, r]));
               for (const result of run.results ?? []) {
+                const loc = result.locations?.[0]?.physicalLocation;
                 const rule = rules.get(result.ruleId);
-                const location = result.locations?.[0]?.physicalLocation;
-                const artifact = location?.artifactLocation?.uri ?? "?";
-                const line = location?.region?.startLine ?? "?";
-                const level = result.level ?? rule?.defaultConfiguration?.level ?? "?";
                 findings.push({
                   tool: run.tool?.driver?.name ?? "?",
                   ruleId: result.ruleId ?? "?",
-                  level,
-                  file: artifact,
-                  line,
+                  level: result.level ?? rule?.defaultConfiguration?.level ?? "?",
+                  file: loc?.artifactLocation?.uri ?? "?",
+                  line: loc?.region?.startLine ?? "?",
                   message: String(result.message?.text ?? "").replace(/\s+/g, " ").trim()
                 });
               }
             }
           }
-          findings.sort((a,b) => (a.ruleId + "\0" + a.file + "\0" + a.line).localeCompare(b.ruleId + "\0" + b.file + "\0" + b.line));
-          console.log(JSON.stringify({sarifFiles: files, findingCount: findings.length, findings}, null, 2));
+          findings.sort((x,y) => (x.ruleId + "\0" + x.file + "\0" + x.line).localeCompare(y.ruleId + "\0" + y.file + "\0" + y.line));
+          console.log(JSON.stringify({ files, findingCount: findings.length, findings }, null, 2));
           NODE
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
+      - name: Upload CodeQL SARIF evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          category: "/language:${{ matrix.language }}"
+          name: codeql-sarif-${{ matrix.language }}
+          path: results/*.sarif
+          if-no-files-found: warn
+          retention-days: 7
