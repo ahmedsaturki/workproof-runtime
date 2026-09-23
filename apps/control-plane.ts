@@ -18,6 +18,7 @@ import { registerDataTransformPack } from "../packages/packs/src/data-transform-
 import { registerMessageOutboxPack } from "../packages/packs/src/message-outbox-pack";
 import { registerGitLocalPack } from "../packages/packs/src/git-local-pack";
 import { buildProofBundle } from "../packages/evidence/src/bundle";
+import { securePrivateDirectory, securePrivateFile } from "../packages/storage/src/private-files";
 import { buildIntegrityManifest } from "../packages/evidence/src/integrity";
 import { createOtlpLogExporterFromEnv } from "../packages/telemetry/src/otel";
 import { Policy } from "../packages/policy/src/guard";
@@ -203,8 +204,8 @@ export async function executeMission(input: Record<string, unknown>): Promise<Wo
 
 export async function resumeMission(work: WorkObject): Promise<WorkObject> {
   const config = readRuntimeConfig();
-  fs.mkdirSync(config.missionDirectory, { recursive: true });
-  fs.mkdirSync(config.proofDirectory, { recursive: true });
+  securePrivateDirectory(config.missionDirectory);
+  securePrivateDirectory(config.proofDirectory);
   const steps = loadMission(work, config);
   const store = new WorkStore();
   store.register(work);
@@ -220,8 +221,8 @@ export async function resumeMission(work: WorkObject): Promise<WorkObject> {
 async function main(): Promise<void> {
   const config = readRuntimeConfig();
   assertRuntimeConfig(config);
-  fs.mkdirSync(config.missionDirectory, { recursive: true });
-  fs.mkdirSync(config.proofDirectory, { recursive: true });
+  securePrivateDirectory(config.missionDirectory);
+  securePrivateDirectory(config.proofDirectory);
   const authPolicy = config.authPolicyPath ? loadAuthPolicy(config.authPolicyPath) : undefined;
   const repository = new JsonWorkRepository(config.workDirectory);
   const telemetry = createOtlpLogExporterFromEnv({
