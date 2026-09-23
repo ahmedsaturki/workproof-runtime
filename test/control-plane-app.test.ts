@@ -122,3 +122,34 @@ test("packaged control-plane process serves health, executes work, persists proo
 });
 
 export {};
+
+test("control-plane HTTP errors expose stable public codes, not exception details", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "workproof-control-error-"));
+  const repo = new (require("../packages/storage/src/json.js").JsonWorkRepository)(path.join(root, "work"));
+  const auditPath = path.join(root, "audit.jsonl");
+  const control = await require("../packages/control-plane/src/http.js").startControlPlane({
+    repository: repo,
+    auditPath,
+    dispatch: async () => {
+      throw new Error("sensitive stack /srv/workproof/private-secret.json");
+    }
+  });
+  try {
+    const response = await fetch(`http://127.0.0.1:${control.port}/v1/work/dispatch`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ objective: "error exposure test" })
+    });
+    assert.equal(response.status, 500);
+    const body = await response.json();
+    assert.equal(body.error, "internal-server-error");
+    assert.ok(typeof body.requestId === "string");
+    assert.doesNotMatch(JSON.stringify(body), /private-secret|srv|Error/);
+    const audit = fs.readFileSync(auditPath, "utf8");
+    assert.match(audit, /sensitive stack/);
+  } finally {
+    await control.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
