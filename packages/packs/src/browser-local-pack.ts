@@ -1,5 +1,5 @@
 import { Capability, CapabilityReceipt, EvidenceRef, Verifier } from "../../core/src/types";
-const { spawn, spawnSync } = require("child_process");
+const { spawn } = require("child_process");
 const { request: httpRequest } = require("http");
 const net = require("net");
 const { randomBytes } = require("crypto");
