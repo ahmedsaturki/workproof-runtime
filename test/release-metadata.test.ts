@@ -113,3 +113,12 @@ test("release waits for the container verification gate before package verificat
 });
 
 export {};
+
+test("external topology smoke never passes a release image from the environment directly to Docker", () => {
+  assert.match(externalTopologySmoke, /expectedReleaseImage = "ghcr\.io\/ahmedsaturki\/workproof-runtime:"/);
+  assert.ok(externalTopologySmoke.includes("releaseImageOverride !== expectedReleaseImage"));
+  assert.ok(externalTopologySmoke.includes("const currentImage = releaseImageOverride ? expectedReleaseImage : localImage;"));
+  assert.doesNotMatch(externalTopologySmoke, /run\(.*releaseImageOverride/s);
+  assert.doesNotMatch(externalTopologySmoke, /sh.*-lc.*command -v/);
+});
+
