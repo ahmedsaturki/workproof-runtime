@@ -19,6 +19,7 @@ test("repository text files contain no ChatGPT-only citation markers", () => {
     new RegExp(start + "url" + middle),
     new RegExp(start + "entity" + middle),
     new RegExp(start + "message_reaction" + middle)
+  ];
 
   const findings = [];
   for (const file of trackedTextFiles()) {
