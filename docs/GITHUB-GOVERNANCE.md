@@ -52,7 +52,7 @@ The required `verify` CI job executes this script against the live GitHub rulese
 
 This prevents a later GitHub Settings change from silently reintroducing an approval gate, bypass actor, missing `verify`, non-strict checks, or loss of branch protections.
 
-The ruleset is edited in GitHub under **Settings → Rulesets → main → Edit → Save changes**. GitHub documents that users with repository admin access can edit repository rulesets. citeturn306351search1turn306351search5
+The ruleset is edited in GitHub under **Settings → Rulesets → main → Edit → Save changes**. GitHub documents that users with repository admin access can edit repository rulesets.
 
 ## CODEOWNERS
 
