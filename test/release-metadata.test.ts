@@ -64,7 +64,8 @@ test("external topology smoke uses the runtime UID for bind-mounted private data
   assert.match(externalTopologySmoke, /"--user", "0:0"/);
   assert.match(externalTopologySmoke, /chown -R 10001:10001 \/data/);
   assert.match(externalTopologySmoke, /chmod 700 \/data/);
-  assert.match(externalTopologySmoke, /preparePrivateDataDirectory(productionImage, dataDir)/);
+  assert.ok(externalTopologySmoke.includes("preparePrivateDataDirectory(currentImage, dataDir)"));
+  assert.ok(externalTopologySmoke.includes("restorePrivateDataDirectory(productionImage, dataDir, backupPath)"));
 });
 
 test("external topology backup operates through the private container boundary", () => {
