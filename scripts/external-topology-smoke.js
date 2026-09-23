@@ -80,8 +80,6 @@ function backupPrivateDataDirectory(image, dataDirectory, backupFile) {
 }
 
 function restorePrivateDataDirectory(image, dataDirectory, backupFile) {
-  fs.rmSync(dataDirectory, { recursive: true, force: true });
-  fs.mkdirSync(dataDirectory, { recursive: true });
   const backupDir = path.dirname(backupFile);
   const backupName = path.basename(backupFile);
   run("docker", [
@@ -93,7 +91,7 @@ function restorePrivateDataDirectory(image, dataDirectory, backupFile) {
     "-v", backupDir + ":/backup:ro",
     image,
     "-c",
-    "chown 10001:10001 /data && chmod 700 /data && tar -C /data -xzf /backup/" + backupName + " && chown -R 10001:10001 /data && find /data -type f -name '*.json' -exec chmod 600 {} +"
+    "find /data -mindepth 1 -maxdepth 1 -exec rm -rf -- {} + && chown 10001:10001 /data && chmod 700 /data && tar -C /data -xzf /backup/" + backupName + " && chown -R 10001:10001 /data && chmod 700 /data && find /data -type f -name '*.json' -exec chmod 600 {} +"
   ]);
   const state = fs.statSync(dataDirectory);
   if (process.platform !== "win32" && typeof state.uid === "number" && state.uid !== 10001) {
