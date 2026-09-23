@@ -25,6 +25,7 @@ function isBinary(buffer) {
 
 function scanFile(relativePath) {
   const absolutePath = path.resolve(relativePath);
+  if (!fs.existsSync(absolutePath)) return [];
   const buffer = fs.readFileSync(absolutePath);
   if (isBinary(buffer)) return [];
   const content = buffer.toString("utf8");

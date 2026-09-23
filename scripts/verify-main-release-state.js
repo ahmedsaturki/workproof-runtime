@@ -94,6 +94,8 @@ async function main() {
       "scripts/verify-main-release-state.js",
       "scripts/verify-published-lineage.js",
       "scripts/verify-solo-governance.js",
+      "scripts/verify-source-tree.js",
+      "scripts/secret-scan.js",
       "scripts/external-topology-smoke.js",
       "packages/cli/src/index.ts",
       "apps/studio.ts",

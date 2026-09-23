@@ -29,12 +29,16 @@ const { createAuthPolicy, loadAuthPolicy, saveAuthPolicy, issueCredential, addIs
 const { publishTrustSnapshotToRegistry, getTrustSnapshotFromRegistry, listTrustSnapshotsFromRegistry, getCurrentTrustSnapshotFromRegistry, applyTrustSnapshotToRegistry } = require("../../registry/src/client.js");
 const { runDoctor } = require("../../doctor/src/index.js");
 
-function formatCliError(error: unknown): string {
+function formatCliError(error: unknown, file?: string): string {
   if (error instanceof Error) {
     const code = (error as { code?: string }).code;
-    if (code === "ENOENT" || code === "EISDIR") {
+    const fsPath = (error as { path?: string }).path || file || "";
+    if (code === "EISDIR") {
+      return "Expected a file, but found a directory: " + (fsPath || error.message);
+    }
+    if (code === "ENOENT") {
       const match = error.message.match(/'([^']+)'$/);
-      return match ? "File not found: " + match[1] : "File not found: " + error.message;
+      return "File not found: " + (fsPath || (match ? match[1] : error.message));
     }
     if (error.name === "SyntaxError") {
       return "Invalid JSON: " + error.message;
@@ -387,7 +391,7 @@ function readJsonFile(file: string): any {
   try {
     return JSON.parse(fs.readFileSync(file, "utf8"));
   } catch (error) {
-    throw new Error(formatCliError(error));
+    throw new Error(formatCliError(error, file));
   }
 }
 

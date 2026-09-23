@@ -109,6 +109,21 @@ test("local product smoke boots Studio, reports release version, serves work, an
   assert.match(cliRunMissing.stderr, /File not found:.*definitely-missing-mission\.json/);
   assert.doesNotMatch(cliRunMissing.stderr, /at Object\.(?:readFileSync|<anonymous>)/);
 
+  const dirProof = path.join(os.tmpdir(), "workproof-dir-as-proof");
+  fs.mkdirSync(dirProof, { recursive: true });
+  try {
+    const cliDir = childProcess.spawnSync(process.execPath, [cliEntry, "verify", dirProof], {
+      cwd: require("process").cwd(),
+      encoding: "utf8"
+    });
+    assert.equal(cliDir.status, 1, cliDir.stdout || cliDir.stderr);
+    assert.match(cliDir.stderr, /Expected a file, but found a directory:.*workproof-dir-as-proof/);
+    assert.doesNotMatch(cliDir.stderr, /at Object\.(?:readFileSync|<anonymous>)/);
+    assert.doesNotMatch(cliDir.stderr, /^File not found:/);
+  } finally {
+    fs.rmSync(dirProof, { recursive: true, force: true });
+  }
+
   const studioEntry = path.resolve(path.dirname(__filename), "../apps/studio.js");
   const studioHelp = childProcess.spawnSync(process.execPath, [studioEntry, "--help"], {
     cwd: require("process").cwd(),

@@ -54,7 +54,7 @@ const required = [
   "docs/FINAL-AUDIT-V3.2.md",
   "docs/FINAL-AUDIT-V3.3.md",
   "docs/FINAL-AUDIT-V3.4.md",
-  "docs/FINAL-AUDIT-V3.5.md",
+  "docs/FINAL-AUDIT-V3.8.13.md",
   "docs/OPERATING-MODEL.md",
   "docs/PORTABLE-PROOF.md",
   "docs/PROOF-COMPATIBILITY.md",

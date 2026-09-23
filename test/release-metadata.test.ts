@@ -34,6 +34,8 @@ test("main release-state guard keeps release-control allowlist explicit", () => 
   assert.match(releaseStateScript, /scripts\/verify-main-release-state\.js/);
   assert.match(releaseStateScript, /scripts\/verify-published-lineage\.js/);
   assert.match(releaseStateScript, /scripts\/verify-solo-governance\.js/);
+  assert.match(releaseStateScript, /scripts\/verify-source-tree\.js/);
+  assert.match(releaseStateScript, /scripts\/secret-scan\.js/);
   assert.match(releaseStateScript, /test\/release-metadata\.test\.ts/);
 });
 
@@ -127,6 +129,8 @@ test("release-state allowlist covers ignore-file hardening without a version bum
   assert.match(releaseStateScript, /"\.gitignore"/);
   assert.match(releaseStateScript, /"\.dockerignore"/);
   assert.match(releaseStateScript, /"scripts\/external-topology-smoke\.js"/);
+  assert.match(releaseStateScript, /"scripts\/verify-source-tree\.js"/);
+  assert.match(releaseStateScript, /"scripts\/secret-scan\.js"/);
   assert.match(releaseStateScript, /"packages\/cli\/src\/index\.ts"/);
   assert.match(releaseStateScript, /"apps\/studio\.ts"/);
   assert.match(releaseStateScript, /"test\/product-smoke\.test\.ts"/);
