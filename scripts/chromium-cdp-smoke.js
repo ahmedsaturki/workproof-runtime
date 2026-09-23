@@ -1,4 +1,4 @@
-const { spawn, spawnSync } = require("child_process");
+const { spawn } = require("child_process");
 const fs = require("fs");
 const { request } = require("http");
 const { randomBytes } = require("crypto");
