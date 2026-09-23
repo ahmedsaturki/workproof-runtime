@@ -71,6 +71,16 @@ async function main() {
   const productionDeployment = fs.readFileSync(path.resolve("docs/PRODUCTION-DEPLOYMENT.md"), "utf8");
   const containerRuntime = fs.readFileSync(path.resolve("docs/CONTAINER-RUNTIME.md"), "utf8");
     const expectedVersion = "v" + packageVersion;
+    const expectedReleaseAssets = [
+      "operational-reality-core-" + packageVersion + ".tgz",
+      "workproof-runtime-v" + packageVersion + ".tar.gz",
+      "workproof-benchmark-v" + packageVersion + ".json"
+    ];
+    for (const asset of expectedReleaseAssets) {
+      if (!readme.includes("`" + asset + "`")) {
+        throw new Error("README release asset name does not match package version: " + asset);
+      }
+    }
     if (!readme.includes("**" + expectedVersion + " is the current stable release.**")) {
       throw new Error("README current stable release does not match package version " + expectedVersion);
     }
