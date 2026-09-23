@@ -46,3 +46,45 @@ test("web discovery searches over HTTP, deduplicates, materializes an artifact, 
 });
 
 export {};
+
+test("web discovery rejects malformed network records before artifact materialization", async () => {
+  const server = http.createServer((_req: any, res: any) => {
+    const body = JSON.stringify({
+      results: [
+        { name: " Alpha ", website: "https://alpha.example", source: " catalog " },
+        { name: "", website: "https://ignored.example", source: "catalog" },
+        { name: "Bad Scheme", website: "file:///etc/passwd", source: "catalog" },
+        { name: "Bad Type", website: 123, source: "catalog" },
+        { name: "Beta", website: "https://beta.example", source: "catalog", injected: "<script>alert(1)</script>" }
+      ]
+    });
+    res.writeHead(200, { "content-type": "application/json", "content-length": Buffer.byteLength(body) });
+    res.end(body);
+  });
+  await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
+  const root = fs.mkdtempSync(require("path").join(require("os").tmpdir(), "workproof-discovery-validation-"));
+  const output = require("path").join(root, "records.json");
+  try {
+    const store = new WorkStore(); const registry = new CapabilityRegistry(); const verification = new VerificationEngine();
+    registerWebDiscoveryPack(registry, verification);
+    const work = store.create({
+      objective: "Validate discovered records",
+      inputs: { searchUrl: `http://127.0.0.1:${(server.address() as any).port}/search`, query: "suppliers", minRecords: 2, outputPath: output },
+      success: [{ id: "artifact", description: "Two valid records exist", verifier: "pack.discovery.http", required: true }],
+      deliverables: [output], riskClass: "read"
+    });
+    const engine = new WorkEngine(store, registry, verification, async () => false);
+    await engine.run(work, [{ id: "discover", operation: "discover_records", capability: "pack.discovery.http", input: { searchUrl: work.contract.inputs.searchUrl, query: "suppliers", minRecords: 2, outputPath: output }, idempotencyKey: "discover:validation", riskClass: "read" }]);
+    const rows = JSON.parse(fs.readFileSync(output, "utf8"));
+    assert.equal(work.status, "verified");
+    assert.deepEqual(rows, [
+      { name: "Alpha", website: "https://alpha.example", source: "catalog" },
+      { name: "Beta", website: "https://beta.example", source: "catalog" }
+    ]);
+    assert.equal(JSON.stringify(rows).includes("injected"), false);
+  } finally {
+    await new Promise<void>(resolve => server.close(() => resolve()));
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
