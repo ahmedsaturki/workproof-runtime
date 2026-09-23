@@ -73,6 +73,7 @@ test("external topology backup operates through the private container boundary",
   assert.ok(externalTopologySmoke.includes('dataDirectory + ":/data:ro"'));
   assert.ok(externalTopologySmoke.includes("tar -C /data -czf /backup/"));
   assert.ok(!externalTopologySmoke.includes('tar", ["-C", dataDir, "-czf", backupPath'));
+  assert.ok(!externalTopologySmoke.includes("fs.rmSync(dataDir, { recursive: true, force: true })"));
 });
 
 test("Compose smoke prepares bind-mounted private data for UID 10001", () => {
