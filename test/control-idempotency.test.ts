@@ -243,7 +243,7 @@ test("invalid idempotency keys are rejected at the control-plane boundary", asyn
       body: JSON.stringify({ objective: "invalid key" })
     });
     assert.equal(response.status, 400);
-    assert.match((await response.json()).error, /Idempotency-Key/);
+    assert.equal((await response.json()).error, "invalid-request");
     assert.equal(calls, 0);
   } finally {
     await server.close();
