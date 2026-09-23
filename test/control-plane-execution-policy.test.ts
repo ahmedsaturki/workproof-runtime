@@ -1,10 +1,12 @@
 const assert = require("assert");
-const test = require("node:test");
+const { describe, test } = require("node:test");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
 
 import { CONTROL_PLANE_EXECUTION_POLICY, executeMission } from "../apps/control-plane";
+
+describe("control-plane execution policy", { concurrency: false }, () => {
 
 test("control-plane mission executor enforces approval and risk policy before capability execution", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "workproof-control-policy-"));
@@ -129,6 +131,8 @@ test("control-plane local capabilities reject paths outside the work root", asyn
     else process.env.WORKPROOF_CONTROL_PLANE_ALLOWED_ROOTS = previousAllowedRoots;
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
 });
 
 export {};
