@@ -185,3 +185,37 @@ test("A2A refuses non-loopback plaintext binding", async () => {
     /HTTPS publicUrl/
   );
 });
+
+test("A2A errors expose stable messages without exception details", async () => {
+  const token = "a2a-error-test-token-123456";
+  const a2a = await startA2AServer({
+    host: "127.0.0.1",
+    port: 0,
+    controlPlaneUrl: "http://127.0.0.1:9",
+    token
+  });
+  try {
+    const response = await fetch(`http://127.0.0.1:${a2a.port}/rpc`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: "Bearer " + token,
+        "a2a-version": "1.0"
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 42,
+        method: "SendMessage",
+        params: { message: { role: "ROLE_USER", parts: [{ text: "missing message id" }] } }
+      })
+    });
+    assert.equal(response.status, 400);
+    const body = await response.json();
+    assert.equal(body.error.code, -32602);
+    assert.equal(body.error.message, "Invalid parameters");
+    assert.doesNotMatch(JSON.stringify(body), /stack|TypeError|a2a-server\.ts|packages[\\/]/i);
+  } finally {
+    await a2a.close();
+  }
+});
+
