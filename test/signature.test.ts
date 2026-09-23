@@ -61,7 +61,8 @@ test("CLI keygen, sign, and verify establish self-contained proof identity", () 
     });
     assert.equal(whoami.status, 0, String(whoami.stderr ?? ""));
     const sidMatch = String(whoami.stdout ?? "").match(/S-\d-\d+(?:-\d+)+/);
-    assert.ok(sidMatch, String(whoami.stdout ?? ""));
+    if (!sidMatch) throw new Error(`Unable to determine current Windows user SID: ${String(whoami.stdout ?? "")}`);
+    const currentSid = sidMatch[0];
     const icacls = path.join(systemRoot, "System32", "icacls.exe");
     const acl = spawnSync(icacls, [privatePath], {
       encoding: "utf8",
@@ -70,7 +71,7 @@ test("CLI keygen, sign, and verify establish self-contained proof identity", () 
     });
     assert.equal(acl.status, 0, String(acl.stderr ?? ""));
     assert.doesNotMatch(String(acl.stdout ?? ""), /\(I\)/, String(acl.stdout ?? ""));
-    const ownerLookup = spawnSync(icacls, [privatePath, "/findsid", `*${sidMatch[0]}`], {
+    const ownerLookup = spawnSync(icacls, [privatePath, "/findsid", `*${currentSid}`], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
       windowsHide: true
