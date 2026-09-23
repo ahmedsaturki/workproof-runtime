@@ -91,6 +91,11 @@ test("external topology backup operates through the private container boundary",
   assert.ok(!externalTopologySmoke.includes("fs.rmSync(dataDir, { recursive: true, force: true })"));
 });
 
+test("Container workflow does not expose the GHCR token through an environment variable", () => {
+  assert.doesNotMatch(containerWorkflow, /GH_TOKEN:\s*\$\{\{\s*github\.token\s*\}\}/);
+  assert.match(containerWorkflow, /echo "\$\{\{\s*github\.token\s*\}\}" \| docker login ghcr\.io .*--password-stdin/);
+});
+
 test("Container workflow prepares runtime smoke volume for UID 10001", () => {
   assert.ok(containerWorkflow.includes("--user 0:0"));
   assert.ok(containerWorkflow.includes('chown -R 10001:10001 /data'));
@@ -115,6 +120,13 @@ test("Compose smoke cleans private bind mounts through the container root bounda
 
 test("external topology smoke runs on pull requests", () => {
   assert.match(ciWorkflow, /github.event_name == 'pull_request'/);
+});
+
+test("CI external topology smoke only selects GHCR images for semantic release branches", () => {
+  assert.ok(ciWorkflow.includes('RELEASE_REF="${REF_NAME#release/}"'));
+  assert.ok(ciWorkflow.includes('[[ "${REF_NAME}" =~ ^release/[0-9]+\\.[0-9]+\\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]'));
+  assert.ok(ciWorkflow.includes('Using local image for non-versioned release-like branch'));
+  assert.ok(ciWorkflow.includes('export WORKPROOF_RELEASE_IMAGE="ghcr.io/${GITHUB_REPOSITORY}:${RELEASE_REF}"'));
 });
 
 test("release waits for the container verification gate before package verification", () => {

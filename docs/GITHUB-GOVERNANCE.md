@@ -71,7 +71,7 @@ Under Solo Governance this remains useful as ownership metadata and for future m
 The repository intentionally layers automated controls rather than pretending they are human reviewers:
 
 - CodeQL analyzes JavaScript/TypeScript and GitHub Actions;
-- Dependency Review checks dependency changes; the repository Dependency Graph is enabled and the v3.8.11 release branch passed Dependency Review;
+- Dependency Review checks dependency changes; the repository Dependency Graph is enabled and the v3.8.12 release branch passed Dependency Review;
 - OSSF Scorecard analyzes repository supply-chain practices;
 - Dependabot manages npm and GitHub Actions updates;
 - secret scanning is enforced in CI;
@@ -82,7 +82,7 @@ A Marketplace review application may add additional comments or analysis, but it
 
 ## Release and tag integrity
 
-The published `v3.8.11` tag resolves to the verified release commit `9568cb2daffdd2f142f6112b1a6bd2c9cdbc4298`. Release workflow #265 verified the five published assets and SHA256 manifest; Container workflow #262 verified the matching GHCR image and digest.
+The published `v3.8.12` tag resolves to the verified release commit `19b1efbfbc5f6f2d14eae5538f339667bd9fbb92`. Release workflow #284 verified the five published assets and SHA256 manifest; Container workflow #281 verified the matching GHCR image and digest.
 
 GitHub currently reports the release as non-immutable. The release workflow therefore provides publication-time digest/lineage verification, while GitHub-side release/tag immutability remains a separate governance hardening layer.
 

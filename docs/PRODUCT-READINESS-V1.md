@@ -58,28 +58,28 @@ The repository's disposable external-topology gate now verifies the technical to
 
 A **public production host is not claimed as provisioned**. Public host/DNS/certificate/secret/control-plane infrastructure remains an external deployment-resource boundary and must be supplied by the operator of the target environment.
 
-## Current verified baseline — v3.8.11
+## Current verified baseline — v3.8.12
 
-The current stable product baseline is **v3.8.11**.
+The current stable product baseline is **v3.8.12**.
 
-- package version: `3.8.11`
-- stable release: `v3.8.11`
-- release commit: `9568cb2daffdd2f142f6112b1a6bd2c9cdbc4298`
-- GitHub Release ID: `394667295`
-- Release workflow #265: success
-- Container workflow #262: success
-- GHCR digest: `sha256:9ad675ba540959c8ada0254f6c133c5fd51eaf02319fe8032b39738f34ea5088`
-- commit-addressed image tag: `9568cb2daffdd2f142f6112b1a6bd2c9cdbc4298`
+- package version: `3.8.12`
+- stable release: `v3.8.12`
+- release commit: `19b1efbfbc5f6f2d14eae5538f339667bd9fbb92`
+- GitHub Release ID: `394761988`
+- Release workflow #284: success
+- Container workflow #281: success
+- GHCR digest: `sha256:5690c65d0425c743c4fa0ebc1a31f913497eb6b7d4e8fa11a129a833aa926d5d`
+- commit-addressed image tag: `19b1efbfbc5f6f2d14eae5538f339667bd9fbb92`
 - previous stable: `v3.8.10`
 - cross-platform runtime hardening, filesystem security, browser runtime, Control Plane, A2A boundary, and release/verification hardening are included and verified
 
-The published `v3.8.11` artifacts were verified as snapshots of release commit `9568cb2daffdd2f142f6112b1a6bd2c9cdbc4298`. The current `main` lineage is reconciled to the published GitHub/GHCR evidence; this reconciliation is documentation/distribution metadata only and does not rewrite the published snapshot.
+The published `v3.8.12` artifacts were verified as snapshots of release commit `19b1efbfbc5f6f2d14eae5538f339667bd9fbb92`. The current `main` lineage is reconciled to the published GitHub/GHCR evidence; this reconciliation is documentation/distribution metadata only and does not rewrite the published snapshot.
 
 The v3.8.11 distribution enforces an immutable Node 24.21.0 Trixie slim base digest and a bounded production resource/log envelope.
 
 ## Release acceptance gates
 
-| Gate | v3.8.11 evidence |
+| Gate | v3.8.12 evidence |
 | --- | --- |
 | Build | CI/Release/Container builds succeed from clean checkout |
 | Tests | Full unit/integration suite succeeds |
@@ -147,4 +147,4 @@ WorkProof Runtime is not required to become a generic agent framework, browser a
 
 ## Historical provenance
 
-v3.8.10 was the preceding verified stable distribution. v3.8.2 is retained as superseded release history and is not a rollback target. v3.8.1 remains the verified rollback release.
+v3.8.11 was the preceding verified stable distribution. v3.8.2 is retained as superseded release history and is not a rollback target. v3.8.1 remains the verified rollback release.
