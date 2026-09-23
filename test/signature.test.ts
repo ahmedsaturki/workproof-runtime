@@ -51,7 +51,35 @@ test("CLI keygen, sign, and verify establish self-contained proof identity", () 
   assert.equal(keygen.status, 0);
   assert.ok(fs.existsSync(privatePath));
   assert.ok(fs.existsSync(publicPath));
-  assert.equal(fs.statSync(privatePath).mode & 0o777, 0o600);
+  if (require("process").platform === "win32") {
+    const systemRoot = process.env.SystemRoot ?? process.env.WINDIR;
+    assert.ok(systemRoot, "Windows SystemRoot/WINDIR is required");
+    const whoami = spawnSync(path.join(systemRoot, "System32", "whoami.exe"), ["/user", "/fo", "csv", "/nh"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true
+    });
+    assert.equal(whoami.status, 0, String(whoami.stderr ?? ""));
+    const sidMatch = String(whoami.stdout ?? "").match(/S-\d-\d+(?:-\d+)+/);
+    assert.ok(sidMatch, String(whoami.stdout ?? ""));
+    const icacls = path.join(systemRoot, "System32", "icacls.exe");
+    const acl = spawnSync(icacls, [privatePath], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true
+    });
+    assert.equal(acl.status, 0, String(acl.stderr ?? ""));
+    assert.doesNotMatch(String(acl.stdout ?? ""), /\(I\)/, String(acl.stdout ?? ""));
+    const ownerLookup = spawnSync(icacls, [privatePath, "/findsid", `*${sidMatch[0]}`], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true
+    });
+    assert.equal(ownerLookup.status, 0, String(ownerLookup.stderr ?? ""));
+    assert.notEqual(String(ownerLookup.stdout ?? "").trim(), "", String(ownerLookup.stdout ?? ""));
+  } else {
+    assert.equal(fs.statSync(privatePath).mode & 0o777, 0o600);
+  }
 
   const overwrite = runCli("keygen", privatePath, publicPath);
   assert.equal(overwrite.status, 1);
