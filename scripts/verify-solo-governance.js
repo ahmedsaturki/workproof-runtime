@@ -61,6 +61,14 @@ async function main() {
   assert(p.require_extra_approval_for_unattributed_changes === true,
     "Unattributed Copilot changes must retain the extra approval safety gate");
 
+  const signatures = requiredRule(ruleset, "required_signatures");
+  void signatures;
+
+  const copilotReview = requiredRule(ruleset, "copilot_code_review");
+  const copilot = copilotReview.parameters ?? {};
+  assert(copilot.review_on_push === true, "Copilot code review on push must remain enabled");
+  assert(copilot.review_draft_pull_requests === true, "Copilot review of draft pull requests must remain enabled");
+
   const statusChecks = requiredRule(ruleset, "required_status_checks");
   const s = statusChecks.parameters ?? {};
   assert(s.strict_required_status_checks_policy === true,
