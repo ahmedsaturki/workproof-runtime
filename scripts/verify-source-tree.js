@@ -148,6 +148,7 @@ const required = [
   "packages/policy/src/guard.ts",
   "packages/registry/src/auth.ts",
   "packages/registry/src/client.ts",
+  "packages/registry/src/trust-transport.ts",
   "packages/registry/src/trust-snapshots.ts",
   "packages/registry/src/http.ts",
   "packages/recovery/src/engine.ts",
