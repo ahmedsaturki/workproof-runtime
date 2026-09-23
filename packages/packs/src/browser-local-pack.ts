@@ -39,7 +39,7 @@ const browserCodeCharMap: Record<string, string> = {
 };
 
 function escapeUnsafeChars(str: string): string {
-  return str.replace(/[<>\b\f\n\r\t\0\u2028\u2029]/g, x => browserCodeCharMap[x]);
+  return str.replace(/[<>\/\b\f\n\r\t\0\u2028\u2029]/g, x => browserCodeCharMap[x]);
 }
 
 export function escapeRuntimeEvaluateString(value: string): string {
