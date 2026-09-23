@@ -255,6 +255,7 @@ async function main() {
     fs.rmSync(dataDir, { recursive: true, force: true });
     fs.mkdirSync(dataDir, { recursive: true });
     run("tar", ["-C", dataDir, "-xzf", backupPath]);
+    preparePrivateDataDirectory(productionImage, dataDir);
 
     run("docker", ["run", "-d", "--name", appName, "--network", network, "-e", "WORKPROOF_ALLOW_NON_LOOPBACK=1", "-v", dataDir + ":/data/work-runs", productionImage, "sh", "-c", "node dist/apps/studio.js /data/work-runs 8788 0.0.0.0"]);
     waitHealthy(baseUrl, packageJson.version, "smoke", password);
