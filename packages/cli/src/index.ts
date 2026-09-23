@@ -7,6 +7,7 @@ const { VerificationEngine } = require("../../verification/src/engine.js");
 const { WorkEngine } = require("../../runtime/src/engine.js");
 const { JsonWorkRepository } = require("../../storage/src/json.js");
 const { securePrivateFile } = require("../../storage/src/private-files.js");
+const { writeValidatedTrustSnapshot } = require("../../evidence/src/trust-snapshot-writer.js");
 const { registerLocalPack } = require("../../packs/src/local-pack.js");
 const { registerResearchPack } = require("../../packs/src/research-pack.js");
 const { registerWebDiscoveryPack } = require("../../packs/src/web-discovery-pack.js");
@@ -259,10 +260,7 @@ async function registryTrustPublish(snapshotPath: string, registryUrl: string, t
 
 async function registryTrustPull(digest: string, registryUrl: string, outputPath: string, token: string): Promise<void> {
   const snapshot = await getTrustSnapshotFromRegistry(registryUrl, digest, token);
-  const { serializeTrustPolicySnapshot } = require("../../evidence/src/trust-sync.js");
-  // lgtm[js/http-to-file-access]
-
-  fs.writeFileSync(outputPath, serializeTrustPolicySnapshot(snapshot), "utf8");
+  writeValidatedTrustSnapshot(outputPath, snapshot);
   process.stdout.write(JSON.stringify({ status: "pulled", digest, outputPath, epoch: snapshot.epoch }, null, 2) + "\n");
 }
 
