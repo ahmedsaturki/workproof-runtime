@@ -5,8 +5,14 @@ const platform = require("process").platform;
 
 const WINDOWS_SYSTEM_SID = "S-1-5-18";
 
+function windowsSystemCommand(command: string): string {
+  const systemRoot = process.env.SystemRoot ?? process.env.WINDIR;
+  if (!systemRoot) throw new Error("SystemRoot/WINDIR is required for Windows security operations");
+  return path.join(systemRoot, "System32", `${command}.exe`);
+}
+
 function runWindowsCommand(command: string, args: string[]): string {
-  const result = spawnSync(command, args, {
+  const result = spawnSync(windowsSystemCommand(command), args, {
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
     windowsHide: true
