@@ -71,6 +71,7 @@ test("published-lineage GHCR probe uses the same authenticated manifest contract
   assert.match(lineageScript, /ghcr\.io\/token\?scope=repository:/);
   assert.match(lineageScript, /["\x27]Authorization: Bearer ["\x27] \+ token/);
   assert.match(lineageScript, /Docker-Content-Digest/);
+  assert.match(lineageScript, /digestLine\.slice\(digestLine\.indexOf\(":"\) \+ 1\)/);
   assert.match(lineageScript, /Accept: application\/vnd\.oci\.image\.index\.v1\+json/);
   assert.match(lineageScript, /const digest = await ghcrDigest\(release\.version\)/);
   assert.doesNotMatch(lineageScript, /ghcrDigest\(published\.tag_name\)/);
