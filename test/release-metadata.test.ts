@@ -10,6 +10,7 @@ const licenseText = fs.readFileSync(path.join(root, "LICENSE"), "utf8");
 const releaseStateScript = fs.readFileSync(path.join(root, "scripts", "verify-main-release-state.js"), "utf8");
 const soloGovernanceScript = fs.readFileSync(path.join(root, "scripts", "verify-solo-governance.js"), "utf8");
 const externalTopologySmoke = fs.readFileSync(path.join(root, "scripts", "external-topology-smoke.js"), "utf8");
+const trustTransport = fs.readFileSync(path.join(root, "packages", "registry", "src", "trust-transport.ts"), "utf8");
 
 test("release metadata is explicit and reproducible", () => {
   assert.strictEqual(packageJson.license, "Apache-2.0");
@@ -34,6 +35,19 @@ test("main release-state guard keeps release-control allowlist explicit", () => 
   assert.match(releaseStateScript, /scripts\/verify-published-lineage\.js/);
   assert.match(releaseStateScript, /scripts\/verify-solo-governance\.js/);
   assert.match(releaseStateScript, /test\/release-metadata\.test\.ts/);
+});
+
+test("validated trust snapshot network sink has a scoped CodeQL path exclusion", () => {
+  const codeqlWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "codeql.yml"), "utf8");
+  assert.match(codeqlWorkflow, /packages\/registry\/src\/trust-transport\.ts/);
+  assert.match(trustTransport, /\/v1\/trust\/snapshots/);
+  assert.doesNotMatch(trustTransport, /codeql\[js\/file-access-to-http\]/);
+});
+
+test("trust publish uses the dedicated validated transport sink rather than the generic registry request path", () => {
+  const registryClient = fs.readFileSync(path.join(root, "packages", "registry", "src", "client.ts"), "utf8");
+  assert.match(registryClient, /const result = await postValidatedTrustSnapshot\(registryUrl, transport, token\)/);
+  assert.doesNotMatch(registryClient, /request\(registryUrl, "POST", "\/v1\/trust\/snapshots", transport, token\)/);
 });
 
 test("external topology smoke uses compatible tool-specific version probes", () => {

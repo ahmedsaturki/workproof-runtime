@@ -1,0 +1,57 @@
+# WorkProof Runtime v3.8.13
+
+## Security and CodeQL boundary hardening patch
+
+v3.8.13 is the next patch release candidate after the published v3.8.12 stable release. It contains a narrowly scoped registry trust-transport refactor required to keep the JavaScript/TypeScript security-extended CodeQL corpus honest: the validated trust snapshot HTTP sink is isolated from the generic registry request path and its single reviewed `js/file-access-to-http` flow is explicitly suppressed only at that sink.
+
+No intended WorkProof execution semantics, risk policy, reconciliation, recovery, proof semantics, or public registry API contract are changed.
+
+### Included changes
+
+- isolate validated TrustPolicySnapshot POST transport in `packages/registry/src/trust-transport.ts`;
+- preserve digest and Ed25519 signature validation before network transport;
+- project the trust snapshot into an explicit bounded transport object before POST;
+- keep the generic registry request path unsuppressed so unrelated file-to-network flows remain visible to CodeQL;
+- add regression tests that lock the exact suppression location and the dedicated transport path;
+- document the reviewed CodeQL data-flow boundary;
+- keep the Solo Governance live ruleset verifier and all repository protection controls unchanged.
+
+### Why this is a patch release
+
+The published v3.8.12 distribution remains unchanged and its tag/assets/GHCR image are not rewritten. The new source change is therefore prepared as v3.8.13 under the repository's post-release drift policy.
+
+### Verification target
+
+A v3.8.13 publication is valid only after the final merged `main` is the source of the release branch and all of the following are green:
+
+- Linux `verify`, including live Solo Governance verification and the main release-state gate;
+- full Linux unit/integration, benchmark, demo, CLI proof, mission, and live GitHub smoke;
+- Windows full compatibility;
+- Windows Chromium/CDP compatibility;
+- Windows private filesystem security;
+- CodeQL JavaScript/TypeScript security-extended analysis with the reviewed trust-transport boundary represented explicitly;
+- CodeQL GitHub Actions analysis;
+- Dependency Review;
+- OSSF Scorecard;
+- Debricked vulnerability analysis;
+- release asset SHA256 verification;
+- container build/runtime/persistence/external-topology/anonymous-pull/provenance verification;
+- GitHub Release/tag lineage verification;
+- GHCR version tag and commit-addressed tag resolve to the same verified digest.
+
+### Reviewed CodeQL boundary
+
+CodeQL's `js/file-access-to-http` query detects local file data reaching outbound network requests. The trust-publish CLI intentionally reads a local, operator-selected trust snapshot for an explicit publish operation. Before transport, the snapshot is cryptographically verified and reconstructed from the bounded trust-policy schema.
+
+The exception is therefore limited to the single network-body line in `packages/registry/src/trust-transport.ts`. The generic registry request path remains in the CodeQL corpus without suppression.
+
+### Rollback
+
+The immediate rollback baseline is the published v3.8.12 distribution:
+
+- GitHub Release: `v3.8.12`
+- release commit: `19b1efbfbc5f6f2d14eae5538f339667bd9fbb92`
+- GHCR digest: `sha256:5690c65d0425c743c4fa0ebc1a31f913497eb6b7d4e8fa11a129a833aa926d5d`
+- commit-addressed image tag: `19b1efbfbc5f6f2d14eae5538f339667bd9fbb92`
+
+Publication must not be claimed until the dedicated release and container workflows complete successfully.
