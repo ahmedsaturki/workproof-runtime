@@ -43,6 +43,19 @@ function preparePrivateDataDirectory(image, dataDirectory) {
   }
 }
 
+function cleanupPrivateComposeRoot(image, root) {
+  run("docker", [
+    "run",
+    "--rm",
+    "--user", "0:0",
+    "--entrypoint", "sh",
+    "-v", root + ":/cleanup:rw",
+    image,
+    "-c",
+    "rm -rf -- /cleanup/work-runs /cleanup/compose.override.yaml"
+  ]);
+}
+
 async function main() {
   const packageJson = JSON.parse(fs.readFileSync(path.resolve("package.json"), "utf8"));
   const project = "workproof-compose-smoke-" + String(process.env.GITHUB_RUN_ID || Date.now());
@@ -96,6 +109,7 @@ async function main() {
     process.stdout.write(JSON.stringify({ status: "verified", project, version: packageJson.version, workId: "compose_smoke", restartPersistence: true }, null, 2) + "\n");
   } finally {
     try { run("docker", compose.concat(["down", "--remove-orphans"])); } catch {}
+    try { cleanupPrivateComposeRoot(image, root); } catch {}
     fs.rmSync(root, { recursive: true, force: true });
   }
 }
