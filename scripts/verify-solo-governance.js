@@ -69,6 +69,15 @@ async function main() {
   assert(copilot.review_on_push === true, "Copilot code review on push must remain enabled");
   assert(copilot.review_draft_pull_requests === true, "Copilot review of draft pull requests must remain enabled");
 
+  const copilotRule = (ruleset.rules ?? []).find((item) => item.type === "copilot_code_review");
+  assert(copilotRule, "Solo governance expects Copilot code review automation to remain enabled");
+  const copilot = copilotRule.parameters ?? {};
+  assert(copilot.review_on_push === true, "Copilot review_on_push must remain enabled");
+  assert(copilot.review_draft_pull_requests === true, "Copilot review_draft_pull_requests must remain enabled");
+
+  assert((ruleset.rules ?? []).some((item) => item.type === "required_signatures"),
+    "Solo governance requires signed commits to remain enforced");
+
   const statusChecks = requiredRule(ruleset, "required_status_checks");
   const s = statusChecks.parameters ?? {};
   assert(s.strict_required_status_checks_policy === true,
