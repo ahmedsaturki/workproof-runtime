@@ -57,7 +57,8 @@ function fetchJson(port, requestPath) {
       hostname: "127.0.0.1",
       port,
       path: requestPath,
-      method: "GET"
+      method: "GET",
+      timeout: 1500
     }, res => {
       let raw = "";
       res.on("data", chunk => { raw += chunk.toString(); });
@@ -69,6 +70,7 @@ function fetchJson(port, requestPath) {
         }
       });
     });
+    req.on("timeout", () => req.destroy(new Error(`CDP HTTP timeout: ${requestPath}`)));
     req.on("error", reject);
     req.end();
   });
@@ -105,7 +107,8 @@ async function main() {
   browser.stderr?.on("data", append);
 
   try {
-    for (let i = 0; i < 300; i++) {
+    const deadline = Date.now() + 30000;
+    while (Date.now() < deadline) {
       try {
         const version = await fetchJson(port, "/json/version");
         if (version?.Browser && version?.webSocketDebuggerUrl) {
@@ -121,7 +124,13 @@ async function main() {
       if (browser.exitCode !== null) break;
       await wait(100);
     }
-    throw new Error(output.trim() || "Chromium DevTools endpoint did not become ready within 30 seconds");
+    const detail = [
+      `browser=${browserBinary}`,
+      `pid=${browser.pid ?? "unknown"}`,
+      `port=${port}`,
+      output.trim()
+    ].filter(Boolean).join("; ");
+    throw new Error(detail || "Chromium DevTools endpoint did not become ready within 30 seconds");
   } finally {
     browser.stdout?.off?.("data", append);
     browser.stderr?.off?.("data", append);
