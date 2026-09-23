@@ -37,7 +37,6 @@ export async function postValidatedTrustSnapshot(
       "content-type": "application/json",
       ...(token ? { authorization: `Bearer ${token}` } : {})
     },
-    // codeql[js/file-access-to-http]
     body: JSON.stringify(transport)
   });
   return parseRegistryResponse(response);
