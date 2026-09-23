@@ -45,6 +45,8 @@ test("external topology smoke uses compatible tool-specific version probes", () 
 test("solo governance verifier authenticates GitHub API calls when a token is available", () => {
   assert.match(soloGovernanceScript, /process\.env\.GITHUB_TOKEN/);
   assert.match(soloGovernanceScript, /headers\.authorization = "Bearer " \+ token/);
+  assert.match(soloGovernanceScript, /copilot_code_review/);
+  assert.match(soloGovernanceScript, /required_signatures/);
 });
 
 test("main release-state guard enforces current stable documentation coherence", () => {
