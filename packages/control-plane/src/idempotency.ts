@@ -1,4 +1,5 @@
 const { DatabaseSync } = require("node:sqlite");
+const { securePrivateDirectory, securePrivateFile } = require("../../storage/src/private-files");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
@@ -61,11 +62,16 @@ export class ControlIdempotencyLedger {
   constructor(dbPath: string) {
     if (typeof dbPath !== "string" || !dbPath.trim()) throw new Error("Idempotency database path is required");
     if (dbPath !== ":memory:") {
-      fs.mkdirSync(path.dirname(path.resolve(dbPath)), { recursive: true });
+      securePrivateDirectory(path.dirname(path.resolve(dbPath)));
     }
     this.db = new DatabaseSync(dbPath, { timeout: 1000 });
     if (dbPath !== ":memory:") {
-      try { fs.chmodSync(dbPath, 0o600); } catch {}
+      try {
+        securePrivateFile(dbPath);
+      } catch (error) {
+        this.db.close();
+        throw error;
+      }
     }
     this.db.exec(`
       PRAGMA journal_mode = WAL;

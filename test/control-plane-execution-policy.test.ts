@@ -89,4 +89,33 @@ test("control-plane resume path keeps the same execution policy", async () => {
   }
 });
 
+test("control-plane local capabilities reject paths outside the work root", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "workproof-control-path-"));
+  const previousWorkDirectory = process.env.WORKPROOF_WORK_DIRECTORY;
+  process.env.WORKPROOF_WORK_DIRECTORY = root;
+  try {
+    await assert.rejects(
+      () => executeMission({
+        objective: "reject outside-root read",
+        success: [],
+        deliverables: [],
+        riskClass: "read",
+        steps: [{
+          id: "read-outside-root",
+          operation: "read_file",
+          capability: "pack.local.file.read",
+          input: { path: "/etc/hostname" },
+          idempotencyKey: "control-policy.outside-root",
+          riskClass: "read"
+        }]
+      }),
+      /outside configured roots/
+    );
+  } finally {
+    if (previousWorkDirectory === undefined) delete process.env.WORKPROOF_WORK_DIRECTORY;
+    else process.env.WORKPROOF_WORK_DIRECTORY = previousWorkDirectory;
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 export {};

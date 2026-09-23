@@ -6,6 +6,8 @@ import { buildProofBundle } from "../packages/evidence/src/bundle";
 import { Capability, Verifier, EvidenceRef } from "../packages/core/src/types";
 
 const fs = require("fs");
+const os = require("os");
+const path = require("path");
 
 class LocalFileCreate implements Capability {
   name = "local.file.create";
@@ -31,7 +33,7 @@ class FileExistsVerifier implements Verifier {
 }
 
 async function main() {
-  const target = "/tmp/work-ecosystem-demo.txt";
+  const target = path.join(os.tmpdir(), "work-ecosystem-demo.txt");
   try { fs.unlinkSync(target); } catch {}
   const store = new WorkStore();
   const work = store.create({

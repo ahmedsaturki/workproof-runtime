@@ -12,7 +12,7 @@ const { canExecute } = require("../packages/policy/src/guard.js");
 const fs = require("fs");
 
 test("research work executes, deduplicates, and verifies artifact", async () => {
-  const output = "/tmp/research-output.json"; try { fs.unlinkSync(output); } catch {}
+  const output = require("path").join(require("os").tmpdir(), "research-output.json"); try { fs.unlinkSync(output); } catch {}
   const store = new WorkStore(); const registry = new CapabilityRegistry(); const verification = new VerificationEngine();
   registerResearchPack(registry, verification);
   const work = store.create({ objective: "Find verified suppliers", inputs: { dataPath: "./lab/data/suppliers.json", minRecords: 4, outputPath: output }, success: [{ id: "artifact", description: "At least four unique supplier records with required fields", verifier: "pack.research.artifact", required: true }], deliverables: [output], riskClass: "read" });
@@ -26,7 +26,7 @@ test("research work executes, deduplicates, and verifies artifact", async () => 
 test("local pack creates and repository persists work state", () => {
   const store = new WorkStore(); const registry = new CapabilityRegistry(); registerLocalPack(registry);
   const work = store.create({ objective: "persist", success: [], deliverables: [], riskClass: "local_write" });
-  const repo = new JsonWorkRepository("/tmp/work-repo-test"); const path = repo.save(work); const loaded = repo.load(work.id);
+  const repo = new JsonWorkRepository(require("path").join(require("os").tmpdir(), "work-repo-test")); const path = repo.save(work); const loaded = repo.load(work.id);
   assert.ok(fs.existsSync(path)); assert.equal(loaded.id, work.id);
 });
 
@@ -39,7 +39,7 @@ test("risk policy blocks high-risk operation without approval", () => {
 
 
 test("resume does not re-execute an already acknowledged external effect", async () => {
-  const path = "/tmp/work-resume-no-duplicate";
+  const path = require("path").join(require("os").tmpdir(), "work-resume-no-duplicate");
   fs.rmSync(path, { recursive: true, force: true });
 
   let calls = 0;
@@ -115,7 +115,7 @@ test("resume does not re-execute an already acknowledged external effect", async
 
 
 test("persisted idempotency keys reject changed operation or input before execution", async () => {
-  const path = "/tmp/work-idempotency-drift";
+  const path = require("path").join(require("os").tmpdir(), "work-idempotency-drift");
   fs.rmSync(path, { recursive: true, force: true });
 
   let calls = 0;
@@ -255,7 +255,7 @@ test("runtime substitutes a rejected primary capability with a compatible fallba
 });
 
 test("multi-step work chains local research into a verified artifact", async () => {
-  const output = "/tmp/multistep-research.json";
+  const output = require("path").join(require("os").tmpdir(), "multistep-research.json");
   try { fs.unlinkSync(output); } catch {}
   const store = new WorkStore(); const registry = new CapabilityRegistry(); const verification = new VerificationEngine();
   registerResearchPack(registry, verification);
@@ -303,7 +303,7 @@ test("runtime enforces approval policy before an external write capability execu
 
 test("persisted work can be reloaded as the same durable work object", () => {
   const fs = require("fs");
-  const path = "/tmp/work-resume-test";
+  const path = require("path").join(require("os").tmpdir(), "work-resume-test");
   fs.rmSync(path, { recursive: true, force: true });
   const store = new WorkStore(); const work = store.create({ objective: "resume me", success: [], deliverables: [], riskClass: "read" });
   const repo = new JsonWorkRepository(path); repo.save(work);

@@ -7,6 +7,7 @@ const { authorize, namespaceVault } = require("./auth");
 const { URL } = require("url");
 const { publishProof, listProofs, inspectProof } = require("../../evidence/src/vault.js");
 const { digestProofBundle, verifyProofIntegrity } = require("../../evidence/src/integrity.js");
+const { securePrivateDirectory, securePrivateFile } = require("../../storage/src/private-files");
 const {
   publishTrustSnapshot,
   getTrustSnapshot,
@@ -125,7 +126,7 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
   if (!loopbackHosts.has(host) && !options.authPolicy) {
     throw new Error("Refusing non-loopback registry binding without auth policy");
   }
-  fs.mkdirSync(options.vaultDir, { recursive: true });
+  securePrivateDirectory(options.vaultDir);
 
   const trustedAdminKeyIds = new Set(options.trustedAdminKeyIds ?? []);
   const trustedAdminKeyIdsByNamespace = new Map<string, Set<string>>();
@@ -138,8 +139,8 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
       ? trustedAdminKeyIds
       : (trustedAdminKeyIdsByNamespace.get(namespace) ?? new Set<string>());
   const auditPath = path.join(options.vaultDir, "auth-events.jsonl");
-  if (!fs.existsSync(auditPath)) fs.writeFileSync(auditPath, "", { encoding: "utf8", mode: 0o600 });
-  fs.chmodSync(auditPath, 0o600);
+  if (!fs.existsSync(auditPath)) fs.writeFileSync(auditPath, "", { encoding: "utf8", flag: "wx" });
+  securePrivateFile(auditPath);
   const audit = (entry: Record<string, unknown>): void => {
     fs.appendFileSync(auditPath, JSON.stringify(entry) + "\n", "utf8");
   };

@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const { digestProofBundle, verifyProofIntegrity } = require("./integrity");
+const { securePrivateDirectory, securePrivateFile } = require("../../storage/src/private-files");
 
 export interface VaultRecord {
   version: "0.1";
@@ -29,13 +30,16 @@ function randomSuffix(): string {
 
 function atomicWrite(filePath: string, content: string): void {
   const temporary = `${filePath}.tmp-${randomSuffix()}`;
-  fs.writeFileSync(temporary, content, "utf8");
+  fs.writeFileSync(temporary, content, { encoding: "utf8", flag: "wx" });
+  securePrivateFile(temporary);
   fs.renameSync(temporary, filePath);
+  securePrivateFile(filePath);
 }
 
 function ensureVault(vaultDir: string): void {
-  fs.mkdirSync(path.join(vaultDir, "proofs"), { recursive: true });
-  fs.mkdirSync(path.join(vaultDir, "artifacts"), { recursive: true });
+  securePrivateDirectory(vaultDir);
+  securePrivateDirectory(path.join(vaultDir, "proofs"));
+  securePrivateDirectory(path.join(vaultDir, "artifacts"));
 }
 
 function indexPath(vaultDir: string): string {
@@ -138,7 +142,9 @@ function localArtifactPath(uri: string): string | null {
 function copyFileAtomic(source: string, destination: string): void {
   const temporary = `${destination}.tmp-${randomSuffix()}`;
   fs.copyFileSync(source, temporary);
+  securePrivateFile(temporary);
   fs.renameSync(temporary, destination);
+  securePrivateFile(destination);
 }
 
 function assertVaultOwnedPath(vaultDir: string, kind: "proofs" | "artifacts", targetPath: string): void {

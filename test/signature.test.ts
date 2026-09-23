@@ -39,7 +39,7 @@ function runCli(...args: string[]) {
 }
 
 test("CLI keygen, sign, and verify establish self-contained proof identity", () => {
-  const dir = "/tmp/workproof-cli-signature";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-cli-signature");
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const privatePath = path.join(dir, "proof-private.pem");
@@ -69,7 +69,7 @@ test("CLI keygen, sign, and verify establish self-contained proof identity", () 
 });
 
 test("CLI verify separates signature tampering from proof-integrity tampering", () => {
-  const dir = "/tmp/workproof-cli-signature-tamper";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-cli-signature-tamper");
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const privatePath = path.join(dir, "private.pem");

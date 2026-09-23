@@ -12,8 +12,8 @@ Date: 2026-09-22
 - Container workflow #258: success
 - GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.10`
 - GHCR digest: `sha256:cad9c467db8fe82abd1b15d30d90dbf7e87ad6683f44a8c7c8763c327af6a1c8`
-- immutable image tag: `9daac7a926ce1631ac708a6c234379d622c56c19`
-- purpose: corrective stable runtime distribution; published assets are anchored to the immutable release commit, with subsequent operator-facing lineage reconciliation recorded on `main`
+- commit-addressed image tag: `9daac7a926ce1631ac708a6c234379d622c56c19`
+- purpose: corrective stable runtime distribution; published assets are anchored to release commit, with subsequent operator-facing lineage reconciliation recorded on `main`
 
 ## Main verified baseline
 
@@ -31,12 +31,12 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 - Container workflow #258: success
 - GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.10`
 - GHCR digest: `sha256:cad9c467db8fe82abd1b15d30d90dbf7e87ad6683f44a8c7c8763c327af6a1c8`
-- immutable image tag: `9daac7a926ce1631ac708a6c234379d622c56c19`
+- commit-addressed image tag: `9daac7a926ce1631ac708a6c234379d622c56c19`
 - prior stable rollback: `v3.8.1` / `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 
 ## Published snapshot vs current main
 
-The `v3.8.10` GitHub Release and source/container assets are immutable snapshots of release commit `9daac7a926ce1631ac708a6c234379d622c56c19`. After publication, `main` received a documentation/lineage reconciliation so the current repository state matches the published GitHub Release and GHCR evidence. The reconciliation did not rewrite or retag the published release and did not change runtime semantics.
+The `v3.8.10` GitHub Release and source/container assets were verified against release commit `9daac7a926ce1631ac708a6c234379d622c56c19`. After publication, `main` received a documentation/lineage reconciliation so the current repository state matches the published GitHub Release and GHCR evidence. The reconciliation did not rewrite or retag the published release and did not change runtime semantics.
 
 ## Current main closeout
 
@@ -94,9 +94,9 @@ M001-M005: 5/5 verified.
 - [x] disposable external-topology smoke with TLS/auth/backup/restore/rollback
 - [x] immutable container-base verification
 - [x] bounded production resource/log envelope
-- [external] public host/DNS/TLS/auth/secrets provisioning is intentionally outside the repository's provisioned resources
+- [external] public host/DNS/TLS/auth/secrets provisioning and GitHub Release/tag immutability controls are intentionally outside the repository's current provisioned resources
 
-The disposable topology gate verifies TLS, authentication, secret non-leakage, persistent state, backup/restore, rollback to a previous immutable release, and deny-by-default network exposure. Public infrastructure remains a separate external resource; the public-host portion is deployment provisioning, not a hidden runtime dependency.
+The disposable topology gate verifies TLS, authentication, secret non-leakage, persistent state, backup/restore, rollback to a previous verified digest-pinned release, and deny-by-default network exposure. Public infrastructure remains a separate external resource; the public-host portion is deployment provisioning, not a hidden runtime dependency.
 
 ## Verification rule
 

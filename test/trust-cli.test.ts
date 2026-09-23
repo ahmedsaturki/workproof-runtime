@@ -35,7 +35,7 @@ function createSignedProof(dir: string, privatePath: string): string {
 }
 
 test("CLI trust-add and require-trusted accept a trusted signed proof", () => {
-  const dir = "/tmp/workproof-trust-cli";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-trust-cli");
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const privatePath = path.join(dir, "private.pem");
@@ -72,7 +72,7 @@ test("CLI trust-add and require-trusted accept a trusted signed proof", () => {
 });
 
 test("CLI require-trusted rejects a cryptographically valid unknown or revoked identity", () => {
-  const dir = "/tmp/workproof-trust-cli-reject";
+  const dir = require("path").join(require("os").tmpdir(), "workproof-trust-cli-reject");
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const privatePath = path.join(dir, "private.pem");

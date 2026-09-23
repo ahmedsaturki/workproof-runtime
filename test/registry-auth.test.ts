@@ -113,7 +113,7 @@ test("namespace credentials isolate proof storage and retain no plaintext token 
     assert.equal(aList.body.records.length, 1);
 
     const auditPath = path.join(root, "auth-events.jsonl");
-    assert.equal(fs.statSync(auditPath).mode & 0o777, 0o600);
+    if (require("process").platform !== "win32") assert.equal(fs.statSync(auditPath).mode & 0o777, 0o600);
     const audit = fs.readFileSync(auditPath, "utf8");
     assert.ok(audit.includes('"credentialId":"team-a-writer"'));
     assert.ok(audit.includes('"credentialId":"team-b-reader"'));

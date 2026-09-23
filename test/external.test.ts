@@ -90,7 +90,7 @@ test("real local HTTP ambiguous effect is reconciled without duplicate POST", as
         return true;
       }
       return false;
-    }, undefined, new JsonWorkRepository("/tmp/external-work-repo"));
+    }, undefined, new JsonWorkRepository(require("path").join(require("os").tmpdir(), "external-work-repo")));
     await engine.run(work, [{ id: "create", operation: "create_order", capability: cap.name, input: { orderId: "ORD-1", email: "a@example.com" }, idempotencyKey: "order:ORD-1", riskClass: "external_write", maxAttempts: 3 }]);
     assert.equal(work.status, "verified");
     assert.equal(postCalls, 1);

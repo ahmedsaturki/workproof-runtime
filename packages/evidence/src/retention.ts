@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const { loadVaultIndex, saveVaultIndex } = require("./vault");
+import { securePrivateDirectory, securePrivateFile } from "../../storage/src/private-files";
 
 export type RetentionClass = "ephemeral" | "standard" | "long" | "permanent";
 
@@ -88,8 +89,10 @@ function now(): string { return new Date().toISOString(); }
 
 function atomicWrite(filePath: string, content: string): void {
   const temp = filePath + ".tmp-" + crypto.randomBytes(8).toString("hex");
-  fs.writeFileSync(temp, content, "utf8");
+  fs.writeFileSync(temp, content, { encoding: "utf8", flag: "wx" });
+  securePrivateFile(temp);
   fs.renameSync(temp, filePath);
+  securePrivateFile(filePath);
 }
 
 function indexPath(vaultDir: string): string { return path.join(vaultDir, "retention.json"); }
@@ -98,7 +101,7 @@ function auditPath(vaultDir: string): string { return path.join(vaultDir, "gc-ev
 function isDigest(value: string): boolean { return /^[0-9a-f]{64}$/.test(value); }
 
 function ensureRetentionIndex(vaultDir: string): RetentionIndex {
-  fs.mkdirSync(vaultDir, { recursive: true });
+  securePrivateDirectory(vaultDir);
   const file = indexPath(vaultDir);
   if (!fs.existsSync(file)) {
     const initial: RetentionIndex = { version: "0.1", policy: DEFAULT_RETENTION_POLICY, entries: [], pins: [] };
@@ -127,7 +130,9 @@ function saveRetentionIndex(vaultDir: string, index: RetentionIndex): void {
 }
 
 function audit(vaultDir: string, event: Record<string, unknown>): void {
-  fs.appendFileSync(auditPath(vaultDir), JSON.stringify(event) + "\n", "utf8");
+  const filePath = auditPath(vaultDir);
+  fs.appendFileSync(filePath, JSON.stringify(event) + "\n", "utf8");
+  securePrivateFile(filePath);
 }
 
 function namespaceAllowed(objectNamespace: string | undefined, targetNamespace: string | undefined): boolean {

@@ -4,7 +4,18 @@ const { WorkStore } = require('../packages/core/src/work.js');
 const { CapabilityRegistry } = require('../packages/capabilities/src/registry.js');
 const { VerificationEngine } = require('../packages/verification/src/engine.js');
 const { WorkEngine } = require('../packages/runtime/src/engine.js');
-const { registerLocalBrowserPack } = require('../packages/packs/src/browser-local-pack.js');
+const { registerLocalBrowserPack, resolveBrowserBinary } = require('../packages/packs/src/browser-local-pack.js');
+
+test('browser executable override is honored without process-shell expansion', () => {
+  const previous = process.env.WORKPROOF_BROWSER_BINARY;
+  try {
+    process.env.WORKPROOF_BROWSER_BINARY = 'custom-browser';
+    assert.equal(resolveBrowserBinary(), 'custom-browser');
+  } finally {
+    if (previous === undefined) delete process.env.WORKPROOF_BROWSER_BINARY;
+    else process.env.WORKPROOF_BROWSER_BINARY = previous;
+  }
+});
 
 test('real Chromium browser executes an injected page workflow and verifies resulting UI state', async () => {
   const store=new WorkStore(); const registry=new CapabilityRegistry(); const verification=new VerificationEngine(); registerLocalBrowserPack(registry, verification);
