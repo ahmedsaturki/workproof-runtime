@@ -173,6 +173,25 @@ jobs:
             fi
           fi
 
+      - name: Verify published release body coherence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if [[ "${RELEASE_TAG}" == *-dev.* ]]; then
+            exit 0
+          fi
+          RELEASE_BODY="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json body --jq '.body')"
+          if grep -Eiq '(^|[^[:alpha:]])release[[:space:]]+candidate([^[:alpha:]]|$)' <<< "${RELEASE_BODY}"; then
+            echo "Published stable release ${RELEASE_TAG} still contains stale candidate wording."
+            exit 1
+          fi
+          grep -Fqi 'published patch release after' <<< "${RELEASE_BODY}" || {
+            echo "Published stable release ${RELEASE_TAG} body is missing the published-release state statement."
+            exit 1
+          }
+
       - name: Verify published release
         env:
           GH_TOKEN: ${{ github.token }}
