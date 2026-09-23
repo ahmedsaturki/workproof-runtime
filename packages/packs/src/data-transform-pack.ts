@@ -52,15 +52,20 @@ function scan(value: unknown, depth = 0, seen = { items: 0 }): void {
 function loadRoot(inputPath: string): unknown[] {
   if (!validPath(inputPath)) throw new Error("inputPath is invalid");
   const resolved = path.resolve(inputPath);
-  if (!fs.existsSync(resolved) || !fs.statSync(resolved).isFile()) throw new Error("inputPath must reference a file");
-  const bytes = fs.statSync(resolved).size;
-  if (bytes > MAX_INPUT_BYTES) throw new Error(`input exceeds maximum size ${MAX_INPUT_BYTES}`);
-  const value = JSON.parse(fs.readFileSync(resolved, "utf8"));
-  scan(value);
-  if (!Array.isArray(value)) throw new Error("input JSON root must be an array");
-  if (value.length > MAX_INPUT_ITEMS) throw new Error(`input exceeds maximum row count ${MAX_INPUT_ITEMS}`);
-  if (!value.every(item => item && typeof item === "object" && !Array.isArray(item))) throw new Error("input rows must be JSON objects");
-  return value as Record<string, unknown>[];
+  const fd = fs.openSync(resolved, "r");
+  try {
+    const stat = fs.fstatSync(fd);
+    if (!stat.isFile()) throw new Error("inputPath must reference a file");
+    if (stat.size > MAX_INPUT_BYTES) throw new Error(`input exceeds maximum size ${MAX_INPUT_BYTES}`);
+    const value = JSON.parse(fs.readFileSync(fd, "utf8"));
+    scan(value);
+    if (!Array.isArray(value)) throw new Error("input JSON root must be an array");
+    if (value.length > MAX_INPUT_ITEMS) throw new Error(`input exceeds maximum row count ${MAX_INPUT_ITEMS}`);
+    if (!value.every(item => item && typeof item === "object" && !Array.isArray(item))) throw new Error("input rows must be JSON objects");
+    return value as Record<string, unknown>[];
+  } finally {
+    try { fs.closeSync(fd); } catch {}
+  }
 }
 
 function validateSpec(input: DataTransformInput): void {

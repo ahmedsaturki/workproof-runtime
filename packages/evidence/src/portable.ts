@@ -279,17 +279,26 @@ export function verifyPortableProof(bundleDir: string): PortableProofManifest {
   const manifest = loadManifest(bundleDir);
   const proofPath = safeRelativePath(bundleDir, manifest.proofFile.path, "proof");
 
-  if (!fs.existsSync(proofPath) || !fs.statSync(proofPath).isFile()) {
-    throw new Error("Portable proof file is missing");
+  let proofBytes: any;
+  const proofFd = fs.openSync(proofPath, "r");
+  try {
+    const stat = fs.fstatSync(proofFd);
+    if (!stat.isFile()) throw new Error("Portable proof file is missing");
+    const pathStat = fs.lstatSync(proofPath);
+    if (pathStat.isSymbolicLink()) throw new Error("Portable proof must be a regular file");
+    const realPath = fs.realpathSync(proofPath);
+    assertInside(bundleDir, realPath, "Portable proof");
+    proofBytes = fs.readFileSync(proofFd);
+  } finally {
+    try { fs.closeSync(proofFd); } catch {}
   }
 
-  assertRegularFileWithin(bundleDir, proofPath, "Portable proof");
-  const proofData = JSON.parse(fs.readFileSync(proofPath, "utf8"));
+  const proofData = JSON.parse(Buffer.from(proofBytes).toString("utf8"));
   const proof = requireIntegrityProof(proofData);
 
   if (
-    sha256File(proofPath) !== manifest.proofFile.sha256 ||
-    fs.statSync(proofPath).size !== manifest.proofFile.size
+    crypto.createHash("sha256").update(proofBytes).digest("hex") !== manifest.proofFile.sha256 ||
+    proofBytes.byteLength !== manifest.proofFile.size
   ) {
     throw new Error("Portable proof file digest or size mismatch");
   }

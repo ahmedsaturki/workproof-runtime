@@ -119,7 +119,8 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
 
   if (auditPath) {
     securePrivateDirectory(require("path").dirname(require("path").resolve(auditPath)));
-    if (!fs.existsSync(auditPath)) fs.writeFileSync(auditPath, "", { encoding: "utf8", flag: "wx" });
+    const auditFd = fs.openSync(auditPath, "a", 0o600);
+    fs.closeSync(auditFd);
     securePrivateFile(auditPath);
   }
 

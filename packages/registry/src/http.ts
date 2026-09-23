@@ -139,7 +139,8 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
       ? trustedAdminKeyIds
       : (trustedAdminKeyIdsByNamespace.get(namespace) ?? new Set<string>());
   const auditPath = path.join(options.vaultDir, "auth-events.jsonl");
-  if (!fs.existsSync(auditPath)) fs.writeFileSync(auditPath, "", { encoding: "utf8", flag: "wx" });
+    const auditFd = fs.openSync(auditPath, "a", 0o600);
+    fs.closeSync(auditFd);
   securePrivateFile(auditPath);
   const audit = (entry: Record<string, unknown>): void => {
     fs.appendFileSync(auditPath, JSON.stringify(entry) + "\n", "utf8");

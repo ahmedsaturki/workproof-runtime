@@ -1,6 +1,8 @@
 const fs = require("fs");
+const path = require("path");
 const crypto = require("crypto");
 const { proofKeyId } = require("./signature");
+const { securePrivateDirectory, securePrivateFile } = require("../../storage/src/private-files");
 
 export type TrustState = "trusted" | "revoked";
 
@@ -54,9 +56,24 @@ export function loadTrustPolicy(filePath: string): TrustPolicyDocument {
   return policy;
 }
 
+function atomicWrite(filePath: string, content: string): void {
+  const directory = path.dirname(path.resolve(filePath));
+  securePrivateDirectory(directory);
+  const temporary = `${filePath}.tmp-${crypto.randomBytes(8).toString("hex")}`;
+  try {
+    fs.writeFileSync(temporary, content, { encoding: "utf8", flag: "wx", mode: 0o600 });
+    securePrivateFile(temporary);
+    fs.renameSync(temporary, filePath);
+    securePrivateFile(filePath);
+  } catch (error) {
+    try { if (fs.existsSync(temporary)) fs.unlinkSync(temporary); } catch {}
+    throw error;
+  }
+}
+
 export function saveTrustPolicy(filePath: string, policy: TrustPolicyDocument): void {
   validateTrustPolicy(policy);
-  fs.writeFileSync(filePath, JSON.stringify(policy, null, 2) + "\n", "utf8");
+  atomicWrite(filePath, JSON.stringify(policy, null, 2) + "\n");
 }
 
 export function trustKey(policy: TrustPolicyDocument, publicKey: string, label?: string): TrustedKeyRecord {
