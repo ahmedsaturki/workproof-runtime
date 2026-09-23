@@ -142,7 +142,7 @@ function persistProof(work: WorkObject, config: RuntimeConfig): void {
   const proof = buildProofBundle(work);
   const integrity = buildIntegrityManifest(work);
   const target = proofPath(work, config);
-  fs.writeFileSync(target, JSON.stringify({ ...proof, integrity }, null, 2) + "\n", { encoding: "utf8", flag: "wx" });
+  fs.writeFileSync(target, JSON.stringify({ ...proof, integrity }, null, 2) + "\n", { encoding: "utf8", mode: 0o600 });
   securePrivateFile(target);
 }
 
