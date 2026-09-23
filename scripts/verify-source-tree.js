@@ -215,6 +215,7 @@ const required = [
   ".github/workflows/release.yml",
   ".github/workflows/container.yml",
   "docs/CONTAINER-RUNTIME.md",
+  "docs/CODEQL-DATAFLOW-BOUNDARIES.md",
   "docs/CONTROL-PLANE-API.md",
   "docs/MCP-ADAPTER.md",
   "docs/A2A-ADAPTER.md",
