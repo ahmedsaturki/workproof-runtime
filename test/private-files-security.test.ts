@@ -1,5 +1,5 @@
-import { test } from "node:test";
-import assert from "node:assert/strict";
+const test = require("node:test");
+const assert = require("assert");
 
 const fs = require("fs");
 const os = require("os");
@@ -15,7 +15,8 @@ test("private filesystem helper applies restrictive local permissions", () => {
     fs.writeFileSync(file, "secret", { encoding: "utf8", flag: "wx" });
     securePrivateFile(file);
 
-    if (process.platform === "win32") {
+    const platform = require("process").platform;
+    if (platform === "win32") {
       const whoami = spawnSync("whoami", ["/user", "/fo", "csv", "/nh"], {
         encoding: "utf8",
         stdio: ["ignore", "pipe", "pipe"],
@@ -38,7 +39,7 @@ test("private filesystem helper applies restrictive local permissions", () => {
         stdio: ["ignore", "pipe", "pipe"],
         windowsHide: true
       });
-      assert.doesNotMatch(String(everyoneLookup.stdout ?? ""), file.replace(/\\/g, "\\\\"), String(everyoneLookup.stdout ?? ""));
+      assert.equal(String(everyoneLookup.stdout ?? "").includes(file), false, String(everyoneLookup.stdout ?? ""));
     } else {
       assert.equal(fs.statSync(root).mode & 0o777, 0o700);
       assert.equal(fs.statSync(file).mode & 0o777, 0o600);
