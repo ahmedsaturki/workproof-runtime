@@ -205,6 +205,7 @@ const required = [
   "test/saga-recovery.test.ts",
   "test/studio.test.ts",
   "test/secret-scan.test.ts",
+  "test/repository-hygiene.test.ts",
   "test/retention.test.ts",
   "test/two-system.test.ts",
   "tsconfig.json",
