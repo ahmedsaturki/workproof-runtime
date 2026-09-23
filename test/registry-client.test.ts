@@ -87,28 +87,38 @@ test("registry client rejects corrupted proof returned by the registry", async (
 export {};
 
 test("registry proof publishing sends only the validated proof transport shape", async () => {
-  let received;
-  const server = require("http").createServer((req: any, res: any) => {
-    const chunks: any[] = [];
-    req.on("data", (chunk: any) => chunks.push(chunk));
-    req.on("end", () => {
-      received = JSON.parse(Buffer.concat(chunks).toString("utf8"));
-      const body = JSON.stringify({ digest: fixture().integrity.digest });
-      res.writeHead(200, { "content-type": "application/json" });
-      res.end(body);
-    });
+  const receivedPromise = new Promise<Record<string, any>>((resolve) => {
+    let settle: ((value: Record<string, any>) => void) | null = resolve;
+    // The promise is completed by the request handler after the full body is parsed.
+    serverHandler = (request, response) => {
+      const chunks: any[] = [];
+      request.on("data", (chunk: any) => chunks.push(chunk));
+      request.on("end", () => {
+        const body = JSON.parse(Buffer.concat(chunks).toString("utf8")) as Record<string, any>;
+        settle?.(body);
+        settle = null;
+        const responseBody = JSON.stringify({ digest: fixture().integrity.digest });
+        response.writeHead(200, { "content-type": "application/json" });
+        response.end(responseBody);
+      });
+    };
   });
+
+  let serverHandler: ((request: any, response: any) => void) | null = null;
+  const server = require("http").createServer((req: any, res: any) => {
+    if (serverHandler) serverHandler(req, res);
+  });
+
   await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
   try {
     const proof = fixture();
     proof.untrustedTopLevelField = "must-not-transmit";
     const published = await publishProofToRegistry(`http://127.0.0.1:${server.address().port}`, proof);
+    const received = await receivedPromise;
     assert.equal(published.digest, proof.integrity.digest);
-    if (!received) throw new Error("registry server did not receive a request");
     assert.equal(received.untrustedTopLevelField, undefined);
     assert.equal(received.integrity.digest, proof.integrity.digest);
   } finally {
     await new Promise<void>((resolve, reject) => server.close((error: any) => error ? reject(error) : resolve()));
   }
 });
-
