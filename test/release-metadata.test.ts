@@ -32,6 +32,7 @@ test("main release-state guard keeps release-control allowlist explicit", () => 
   assert.match(releaseStateScript, /\.github\/workflows\/release\.yml/);
   assert.match(releaseStateScript, /scripts\/verify-main-release-state\.js/);
   assert.match(releaseStateScript, /scripts\/verify-published-lineage\.js/);
+  assert.match(releaseStateScript, /scripts\/verify-solo-governance\.js/);
   assert.match(releaseStateScript, /test\/release-metadata\.test\.ts/);
 });
 
