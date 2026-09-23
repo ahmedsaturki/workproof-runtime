@@ -71,7 +71,6 @@ test("published-lineage verifier exit code is propagated without truthiness coer
 
 const ciWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "ci.yml"), "utf8");
 const releaseWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "release.yml"), "utf8");
-const externalTopologySmoke = fs.readFileSync(path.join(root, "scripts", "external-topology-smoke.js"), "utf8");
 const composeSmoke = fs.readFileSync(path.join(root, "scripts", "container-compose-smoke.js"), "utf8");
 const containerWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "container.yml"), "utf8");
 
