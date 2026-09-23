@@ -40,6 +40,37 @@ function waitForStatus(baseUrl, expectedStatus, user, password) {
   throw new Error("External topology did not return expected HTTP status " + expectedStatus);
 }
 
+function waitContainerHealth(containerName, version, attempts = 45) {
+  let lastStatus = "";
+  let lastBody = "";
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    const probe = run("docker", [
+      "exec",
+      containerName,
+      "node",
+      "-e",
+      "fetch('http://127.0.0.1:8788/health').then(async r => { const t=await r.text(); process.stdout.write(JSON.stringify({status:r.status,body:t})); process.exit(r.ok ? 0 : 1); }).catch(error => { process.stderr.write(String(error?.message || error)); process.exit(2); })"
+    ], true);
+    if (probe.stdout) {
+      try {
+        const parsed = JSON.parse(probe.stdout);
+        lastStatus = String(parsed.status ?? "");
+        lastBody = String(parsed.body ?? "");
+        if (lastStatus === "200") {
+          try {
+            const body = JSON.parse(lastBody);
+            if (body.status === "ok" && body.version === version) return body;
+          } catch {}
+        }
+      } catch {
+        lastBody = probe.stdout;
+      }
+    }
+    run("sleep", ["1"]);
+  }
+  throw new Error("Container did not become healthy with expected version " + version + "; lastStatus=" + lastStatus + "; lastBody=" + lastBody.slice(0, 500));
+}
+
 function waitHealthy(baseUrl, version, user, password) {
   let lastStatus = "unavailable";
   let lastBody = "";
@@ -166,8 +197,7 @@ async function main() {
     run("docker", ["run", "-d", "--name", appName, "--network", network, "-e", "WORKPROOF_ALLOW_NON_LOOPBACK=1", "-v", dataDir + ":/data/work-runs", runtimeImage, "sh", "-c", "node dist/apps/studio.js /data/work-runs 8788 0.0.0.0"]);
     cleanup.push(() => remove(appName));
 
-    const directHealth = run("docker", ["exec", appName, "node", "-e", "fetch('http://127.0.0.1:8788/health').then(async r => { const t=await r.text(); if(!r.ok) process.exit(1); process.stdout.write(t); }).catch(() => process.exit(1))"]);
-    if (!/"status"\s*:\s*"ok"/.test(directHealth.stdout)) throw new Error("Direct Studio health probe failed: " + directHealth.stdout);
+    waitContainerHealth(appName, packageJson.version);
 
     run("docker", ["run", "-d", "--name", edgeName, "--network", network, "-p", "127.0.0.1:9443:8443", "-v", tlsDir + ":/etc/nginx/tls:ro", "-v", authPath + ":/etc/nginx/auth/.htpasswd:ro", "-v", nginxPath + ":/etc/nginx/nginx.conf:ro", "nginx:1.27-alpine"]);
     cleanup.push(() => remove(edgeName));
