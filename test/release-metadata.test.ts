@@ -65,7 +65,7 @@ test("published-lineage GHCR probe uses the same authenticated manifest contract
   const lineageScript = fs.readFileSync(path.join(root, "scripts", "verify-published-lineage.js"), "utf8");
   assert.match(lineageScript, /execFileSync\("curl"/);
   assert.match(lineageScript, /ghcr\.io\/token\?scope=repository:/);
-  assert.match(lineageScript, /Authorization: Bearer \+ token/);
+  assert.match(lineageScript, /["\x27]Authorization: Bearer ["\x27] \+ token/);
   assert.match(lineageScript, /Docker-Content-Digest/);
   assert.match(lineageScript, /application\/vnd\.oci\.image\.index\+json/);
 });
