@@ -78,6 +78,13 @@ test("external topology backup operates through the private container boundary",
   assert.ok(!externalTopologySmoke.includes("fs.rmSync(dataDir, { recursive: true, force: true })"));
 });
 
+test("Compose smoke cleans private temporary data through the container boundary", () => {
+  assert.ok(composeSmoke.includes("function cleanupPrivateComposeRoot(image, root)"));
+  assert.ok(composeSmoke.includes('"-v", root + ":/cleanup:rw"'));
+  assert.ok(composeSmoke.includes("rm -rf -- /cleanup/work-runs /cleanup/compose.override.yaml"));
+  assert.ok(composeSmoke.includes("cleanupPrivateComposeRoot(image, root)"));
+});
+
 test("Container workflow prepares runtime smoke volume for UID 10001", () => {
   assert.ok(containerWorkflow.includes("--user 0:0"));
   assert.ok(containerWorkflow.includes('chown -R 10001:10001 /data'));
