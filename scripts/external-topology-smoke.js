@@ -63,6 +63,44 @@ function preparePrivateDataDirectory(image, dataDirectory) {
   }
 }
 
+function backupPrivateDataDirectory(image, dataDirectory, backupFile) {
+  const backupDir = path.dirname(backupFile);
+  const backupName = path.basename(backupFile);
+  run("docker", [
+    "run",
+    "--rm",
+    "--user", "0:0",
+    "--entrypoint", "sh",
+    "-v", dataDirectory + ":/data:ro",
+    "-v", backupDir + ":/backup:rw",
+    image,
+    "-c",
+    "tar -C /data -czf /backup/" + backupName + " ."
+  ]);
+}
+
+function restorePrivateDataDirectory(image, dataDirectory, backupFile) {
+  fs.rmSync(dataDirectory, { recursive: true, force: true });
+  fs.mkdirSync(dataDirectory, { recursive: true });
+  const backupDir = path.dirname(backupFile);
+  const backupName = path.basename(backupFile);
+  run("docker", [
+    "run",
+    "--rm",
+    "--user", "0:0",
+    "--entrypoint", "sh",
+    "-v", dataDirectory + ":/data:rw",
+    "-v", backupDir + ":/backup:ro",
+    image,
+    "-c",
+    "chown 10001:10001 /data && chmod 700 /data && tar -C /data -xzf /backup/" + backupName + " && chown -R 10001:10001 /data && find /data -type f -name '*.json' -exec chmod 600 {} +"
+  ]);
+  const state = fs.statSync(dataDirectory);
+  if (process.platform !== "win32" && typeof state.uid === "number" && state.uid !== 10001) {
+    throw new Error("Restored container data directory ownership is not UID 10001: uid=" + state.uid);
+  }
+}
+
 function waitContainerHealth(containerName, version, attempts = 45) {
   let lastStatus = "";
   let lastBody = "";
@@ -248,14 +286,11 @@ async function main() {
     if (workValue.work?.status !== "verified") throw new Error("Authenticated Work Object was not readable through TLS/auth edge");
     if (JSON.stringify(workValue).includes(password)) throw new Error("Raw secret leaked into Work Object response");
 
-    run("tar", ["-C", dataDir, "-czf", backupPath, "."]);
+    backupPrivateDataDirectory(currentImage, dataDir, backupPath);
     if (!fs.existsSync(backupPath) || fs.statSync(backupPath).size === 0) throw new Error("Backup archive was not created");
 
     remove(appName);
-    fs.rmSync(dataDir, { recursive: true, force: true });
-    fs.mkdirSync(dataDir, { recursive: true });
-    run("tar", ["-C", dataDir, "-xzf", backupPath]);
-    preparePrivateDataDirectory(productionImage, dataDir);
+    restorePrivateDataDirectory(productionImage, dataDir, backupPath);
 
     run("docker", ["run", "-d", "--name", appName, "--network", network, "-e", "WORKPROOF_ALLOW_NON_LOOPBACK=1", "-v", dataDir + ":/data/work-runs", productionImage, "sh", "-c", "node dist/apps/studio.js /data/work-runs 8788 0.0.0.0"]);
     waitHealthy(baseUrl, packageJson.version, "smoke", password);
