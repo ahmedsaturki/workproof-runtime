@@ -40,7 +40,7 @@ test("remote artifact sinks do not write raw response payloads directly", () => 
   assert.doesNotMatch(discovery, /atomicWriteJson\([^\n]*payload/);
   assert.doesNotMatch(discovery, /fs\.writeFileSync\([^\n]*response/);
   assert.match(cli, /serializeTrustPolicySnapshot\(snapshot\)/);
-  assert.doesNotMatch(cli, /fs\.writeFileSync\([^\n]*JSON\.stringify\(snapshot\)/);
+  assert.doesNotMatch(cli, /fs\.writeFileSync\([^\n]*,\s*snapshot(?:[^\w]|$)/);
 });
 
 export {};
