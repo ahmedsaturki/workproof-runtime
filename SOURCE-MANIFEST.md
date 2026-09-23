@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The current distribution-ready tree contains **226 required paths** enforced by `scripts/verify-source-tree.js`. The count is kept synchronized with the executable source-tree gate; every required path is present on the current main lineage.
+The current distribution-ready tree contains **234 required paths** enforced by `scripts/verify-source-tree.js`. The count is kept synchronized with the executable source-tree gate; every required path is present on the current main lineage.
 
 The historical v3.4 implementation closeout was 171 paths. The current stable distribution additionally covers the release/container, interoperability, diagnostics, current release metadata, network-boundary hardening, and reproducible-install surfaces.
 
@@ -69,11 +69,25 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 - package metadata declares `Apache-2.0`; the repository license file contains the complete Apache License 2.0 text
 - executable source-tree gate currently verifies 226 required paths
 
-## v3.8.11 distribution evidence
+## v3.8.12 distribution evidence
+
+- package version: `3.8.12`
+- stable release: `v3.8.12`
+- release branch: `release/3.8.12`
+- release commit: `19b1efbfbc5f6f2d14eae5538f339667bd9fbb92`
+- GitHub Release ID: `394761988`
+- release workflow #284: success
+- container workflow #281: success
+- GHCR digest: `sha256:5690c65d0425c743c4fa0ebc1a31f913497eb6b7d4e8fa11a129a833aa926d5d`
+- commit-addressed image tag: `19b1efbfbc5f6f2d14eae5538f339667bd9fbb92`
+- five release assets published and SHA256-verified
+- live Solo Governance verification remained active
+- CodeQL JavaScript/TypeScript and Actions analysis passed with zero findings on the release candidate head
+
+## v3.8.11 previous stable distribution evidence
 
 - package version: `3.8.11`
 - stable release: `v3.8.11`
-- release branch: `release/3.8.11`
 - release commit: `9568cb2daffdd2f142f6112b1a6bd2c9cdbc4298`
 - GitHub Release ID: `394667295`
 - release workflow #265: success
@@ -83,11 +97,11 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 
 ## Verified main lineage
 
-- current verified release lineage: v3.8.11
-- current stable release commit: `9568cb2daffdd2f142f6112b1a6bd2c9cdbc4298`
-- release workflow #265: success
-- container workflow #262: success
-- GHCR digest: `sha256:9ad675ba540959c8ada0254f6c133c5fd51eaf02319fe8032b39738f34ea5088`
+- current verified release lineage: v3.8.12
+- current stable release commit: `19b1efbfbc5f6f2d14eae5538f339667bd9fbb92`
+- release workflow #284: success
+- container workflow #281: success
+- GHCR digest: `sha256:5690c65d0425c743c4fa0ebc1a31f913497eb6b7d4e8fa11a129a833aa926d5d`
 - v3.3 implementation merge: `c5e951056461c37f45bed8bb8406d119880d63df`
 - v3.3 closeout correction: `0c92a8c86950776243646de4bb40b0c0f2fe5876`
 - v3.4 implementation merge: `fe662d5bb5337bde18772f22864434935d59f66f`
