@@ -1,4 +1,3 @@
-const { URL } = require("url");
 import type { TrustPolicySnapshot } from "../../evidence/src/trust-sync";
 
 function normalizeBaseUrl(registryUrl: string): string {
