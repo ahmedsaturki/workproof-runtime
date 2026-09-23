@@ -28,6 +28,10 @@ The integrated hardening candidate immediately before release metadata preparati
 
 The subsequent `3.8.11` package/lock/release-note preparation is metadata-only and was subsequently verified by CI run #1562 after the final Windows fencing cleanup fix; it is not treated as published until the release branch is cut from the final merged `main` and the dedicated release workflow completes.
 
+### Post-merge release-hardening verification
+
+After the integrated candidate was merged to `main`, the release-critical Compose smoke harness was hardened so temporary bind-mounted private data is cleaned through the container root boundary rather than by the host runner. This preserves UID/GID 10001 and 0700/0600 private-state semantics while making teardown reliable. The fix was independently verified through the protected PR CI matrix before this release branch checkpoint.
+
 ### Release evidence requirements
 
 This file prepares the next release line; it does not claim publication.
