@@ -1,6 +1,6 @@
 import { CapabilityRegistry } from "../../capabilities/src/registry";
 import { Capability, EvidenceRef, Verifier } from "../../core/src/types";
-const fs = require("fs");
+import { writeValidatedDiscoveryArtifact } from "./discovery-artifact-writer";
 
 export interface DiscoveryInput {
   searchUrl: string;
@@ -46,19 +46,6 @@ function uniqueDiscoveryRecords(values: unknown[]): DiscoveryRecord[] {
   return unique;
 }
 
-function atomicWriteJson(filePath: string, value: unknown): void {
-  const path = require("path");
-  const crypto = require("crypto");
-  const temporary = filePath + ".tmp-" + crypto.randomBytes(8).toString("hex");
-  try {
-    fs.writeFileSync(temporary, JSON.stringify(value, null, 2) + "\n", { encoding: "utf8", flag: "wx" });
-    fs.renameSync(temporary, filePath);
-  } catch (error) {
-    try { if (fs.existsSync(temporary)) fs.unlinkSync(temporary); } catch {}
-    throw error;
-  }
-}
-
 class HttpDiscoveryCapability implements Capability {
   name = "pack.discovery.http";
   version = "0.1.0";
@@ -73,9 +60,7 @@ class HttpDiscoveryCapability implements Capability {
     const payload = await response.json() as { results?: unknown[] };
     const unique = uniqueDiscoveryRecords(Array.isArray(payload.results) ? payload.results : []);
     if (unique.length < input.minRecords) return { status: "rejected" as const, data: { count: unique.length } };
-    // lgtm[js/http-to-file-access]
-
-    atomicWriteJson(input.outputPath, unique);
+    writeValidatedDiscoveryArtifact(input.outputPath, unique);
     return {
       status: "accepted" as const,
       data: { count: unique.length, source: url },
