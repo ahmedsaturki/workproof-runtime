@@ -163,6 +163,7 @@ function saveMission(work: WorkObject, steps: WorkStep[], config: RuntimeConfig)
     approvalRequired: Boolean(work.contract.approvalRequired),
     steps
   }, null, 2) + "\n", { encoding: "utf8", mode: 0o600 });
+  securePrivateFile(target);
 }
 
 function loadMission(work: WorkObject, config: RuntimeConfig): WorkStep[] {
