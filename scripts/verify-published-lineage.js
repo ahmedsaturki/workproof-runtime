@@ -10,15 +10,15 @@ async function json(url, options = {}) {
   return { response, value };
 }
 
-async function ghcrDigest(image) {
-  const match = image.match(/^ghcr\.io\/([^:]+):(.+)$/);
-  if (!match) throw new Error("Unsupported GHCR image reference: " + image);
-  const repository = match[1];
-  const tag = match[2];
-  const tokenResult = await json("https://ghcr.io/token?scope=repository:" + encodeURIComponent(repository) + ":pull");
+const GITHUB_REPOSITORY = "ahmedsaturki/workproof-runtime";
+const GHCR_REPOSITORY = GITHUB_REPOSITORY.toLowerCase();
+
+async function ghcrDigest(tag) {
+  if (!/^[A-Za-z0-9._-]+$/.test(tag)) throw new Error("Unsupported GHCR tag: " + tag);
+  const tokenResult = await json("https://ghcr.io/token?scope=repository:" + GHCR_REPOSITORY + ":pull");
   const token = tokenResult.value.token;
   if (!token) throw new Error("GHCR pull token was not returned");
-  const manifestUrl = "https://ghcr.io/v2/" + repository + "/manifests/" + encodeURIComponent(tag);
+  const manifestUrl = "https://ghcr.io/v2/" + GHCR_REPOSITORY + "/manifests/" + encodeURIComponent(tag);
   const response = await fetch(manifestUrl, {
     headers: {
       authorization: "Bearer " + token,
@@ -40,11 +40,11 @@ async function main() {
   if (packageJson.version !== release.version) throw new Error("package version does not match release lineage");
   if (!compose.includes(expectedImage)) throw new Error("production compose does not contain the canonical release image/digest");
 
-  const repo = process.env.GITHUB_REPOSITORY || "ahmedsaturki/workproof-runtime";
-  const releaseResult = await json("https://api.github.com/repos/" + repo + "/releases/tags/" + encodeURIComponent(release.tag), {
+  const releasesResult = await json("https://api.github.com/repos/ahmedsaturki/workproof-runtime/releases?per_page=100", {
     headers: { accept: "application/vnd.github+json", "user-agent": "workproof-lineage-check" }
   });
-  const published = releaseResult.value;
+  const published = (releasesResult.value ?? []).find((item) => item && item.tag_name === release.tag);
+  if (!published) throw new Error("Published GitHub Release tag was not found: " + release.tag);
   if (published.id !== release.githubReleaseId) throw new Error("GitHub Release id mismatch");
   if (published.target_commitish !== release.commit) throw new Error("GitHub Release target commit mismatch");
   const assetNames = Array.isArray(published.assets) ? published.assets.map(asset => asset.name) : [];
@@ -57,10 +57,12 @@ async function main() {
   ];
   for (const name of expectedAssets) if (!assetNames.includes(name)) throw new Error("Published release is missing asset " + name);
 
-  const digest = await ghcrDigest(lineage.container.image);
+  const digest = await ghcrDigest(published.tag_name);
   if (digest !== lineage.container.digest) throw new Error("GHCR digest mismatch: " + digest + " != " + lineage.container.digest);
 
-  const rollbackDigest = await ghcrDigest("ghcr.io/" + repo.toLowerCase() + ":" + lineage.rollback.commit);
+  const expectedRollbackCommit = "f8af30bf69391db22863c432df5c452a73ebaa05";
+  if (lineage.rollback.commit !== expectedRollbackCommit) throw new Error("Unexpected rollback release commit in lineage");
+  const rollbackDigest = await ghcrDigest(expectedRollbackCommit);
   if (!/^sha256:[0-9a-f]{64}$/.test(rollbackDigest)) throw new Error("Rollback immutable image did not expose a valid digest");
   if (rollbackDigest !== lineage.rollback.digest) throw new Error("Rollback GHCR digest mismatch: " + rollbackDigest + " != " + lineage.rollback.digest);
 
@@ -72,7 +74,7 @@ async function main() {
     releaseCommit: published.target_commitish,
     image: lineage.container.image,
     digest,
-    rollbackImage: "ghcr.io/" + repo.toLowerCase() + ":" + lineage.rollback.commit,
+    rollbackImage: "ghcr.io/" + GHCR_REPOSITORY + ":" + expectedRollbackCommit,
     rollbackDigest,
     assets: assetNames.length
   }, null, 2) + "\n");
