@@ -68,11 +68,11 @@ test("external topology smoke uses the runtime UID for bind-mounted private data
 });
 
 test("external topology backup operates through the private container boundary", () => {
-  assert.match(externalTopologySmoke, /function backupPrivateDataDirectory\(image, dataDirectory, backupFile\)/);
-  assert.match(externalTopologySmoke, /function restorePrivateDataDirectory\(image, dataDirectory, backupFile\)/);
-  assert.match(externalTopologySmoke, /dataDirectory \+ ":\\/data:ro"/);
-  assert.match(externalTopologySmoke, /tar -C \/data -czf \/backup\//);
-  assert.doesNotMatch(externalTopologySmoke, /tar", \["-C", dataDir, "-czf", backupPath/);
+  assert.match(externalTopologySmoke, /function backupPrivateDataDirectory\\(image, dataDirectory, backupFile\\)/);
+  assert.match(externalTopologySmoke, /function restorePrivateDataDirectory\\(image, dataDirectory, backupFile\\)/);
+  assert.ok(externalTopologySmoke.includes('dataDirectory + ":/data:ro"'));
+  assert.ok(externalTopologySmoke.includes('tar -C /data -czf /backup/'));
+  assert.doesNotMatch(externalTopologySmoke, /tar", \\["-C", dataDir, "-czf", backupPath/);
 });
 
 test("Compose smoke prepares bind-mounted private data for UID 10001", () => {
