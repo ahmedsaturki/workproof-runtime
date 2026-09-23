@@ -10,8 +10,8 @@ This document was first written as `docs/FINAL-AUDIT-V3.5.md`. Repository FINAL-
 
 - Stable release: **v3.8.13** (unchanged by this closeout)
 - Published release commit: `dadef28ce8fbd299201a228673f1c2737c5b7d62`
-- Closeout commit (this work): `73f3b7e5a9cd7a507dd9d1725401543fa93cb1c5` plus follow-up correction commit on the same branch
-- Pull request: **#170** (`chore/post-v3.8.13-final-hardening` -> `main`) -- not merged at the time this record was written
+- Closeout commits on the PR branch: `9890153a048d91f927e7c31701e016483825a139` (`chore: finalize post-v3.8.13 product closeout`) and `7cae2764a405aa65971b4f959123f8c620f8cd64` (`fix: correct post-release audit record and CLI error semantics`), both SSH-signed
+- Pull request: **#170** (`chore/post-v3.8.13-final-hardening` -> `main`) -- **merged** at `4bfd046195675b3bce65bd9cfc42cd1abd4c9d6a` (2026-09-23T22:32:11Z)
 - Branch base at audit start: `main` @ `debcb194247632222b62bc7289558f71fce56674`
 - Package version: `3.8.13`
 - GitHub Release ID: `394849659` (5 assets)
@@ -61,7 +61,7 @@ Runtime authority semantics are unchanged: GOAL -> CONTRACT -> ROUTE -> ACT -> O
 
 ## Status
 
-**v3.8.13 remains the current stable release. This closeout is committed on `chore/post-v3.8.13-final-hardening`, submitted as PR #170 against `main`, and is not yet merged into `main` unless and until the PR merges. Distribution (GitHub Release + GHCR) was verified against the live publication. Published release artifacts remain immutable historical evidence.**
+**v3.8.13 remains the current stable release. PR #170 is merged into `main` as `4bfd046195675b3bce65bd9cfc42cd1abd4c9d6a` with both branch commits SSH-signed under the active `required_signatures` ruleset. Distribution (GitHub Release + GHCR) was verified against the live publication. Published release artifacts remain immutable historical evidence.**
 
 ## Recorded outcome (local verification for this closeout)
 
@@ -93,7 +93,7 @@ Runtime authority semantics are unchanged: GOAL -> CONTRACT -> ROUTE -> ACT -> O
 
 - Public production host, DNS, TLS termination, and production secrets remain an infrastructure boundary
 - External GitHub Advanced Security / Copilot model failures are service-side and are not worked around in WorkProof code
-- Commit signature material and GitHub merge timing are governed by the active `main` ruleset (`required_signatures`); this document does not claim the PR is merged
+- Commit signatures and merge gating are governed by the active `main` ruleset (`required_signatures`); PR #170 satisfied that gate via SSH-signed commits before merge
 
 ## Operator recovery
 
