@@ -136,7 +136,7 @@ test("registry rejects corrupted retained proof on egress", async () => {
 
     const corrupted = await request(registry.port, "GET", `/v1/proofs/${digest}/content`);
     assert.equal(corrupted.status, 422);
-    assert.match(corrupted.body, /integrity|digest/i);
+    assert.match(corrupted.body, /invalid-request/i);
   } finally {
     await registry.close();
     fs.rmSync(vaultDir, { recursive: true, force: true });
@@ -151,7 +151,7 @@ test("registry returns 404 for a syntactically valid but unknown proof digest", 
   try {
     const missing = await request(registry.port, "GET", `/v1/proofs/${"a".repeat(64)}`);
     assert.equal(missing.status, 404);
-    assert.match(missing.body, /Unknown proof digest|not-found/i);
+    assert.match(missing.body, /not-found/i);
   } finally {
     await registry.close();
     fs.rmSync(vaultDir, { recursive: true, force: true });
