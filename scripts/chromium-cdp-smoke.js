@@ -143,14 +143,22 @@ async function main() {
   } finally {
     browser.stdout?.off?.("data", append);
     browser.stderr?.off?.("data", append);
+    try { browser.kill("SIGKILL"); } catch {}
     try {
       const pid = browser.pid;
       if (pid && platform !== "win32") process.kill(-pid, "SIGKILL");
-      else spawnSync("taskkill", ["/PID", String(pid), "/T", "/F"], { stdio: "ignore", windowsHide: true });
-    } catch {
-      try { browser.kill("SIGKILL"); } catch {}
-    }
-    try { fs.rmSync(profile, { recursive: true, force: true }); } catch {}
+      else if (pid && platform === "win32") {
+        try {
+          const killer = spawn("taskkill", ["/PID", String(pid), "/T", "/F"], {
+            stdio: "ignore",
+            windowsHide: true,
+            detached: true
+          });
+          killer.unref?.();
+        } catch {}
+      }
+    } catch {}
+    try { fs.rmSync(profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }); } catch {}
   }
 }
 
