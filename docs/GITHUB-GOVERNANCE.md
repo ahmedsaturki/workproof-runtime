@@ -1,76 +1,99 @@
 # GitHub Governance Runbook
 
-## Verified repository state
+## Repository governance profiles
 
-The repository is public, the default branch is `main`, GitHub reports `main` as protected, and the active repository ruleset is `main` (ruleset ID `23845160`).
+WorkProof Runtime is maintained as a **single-maintainer repository**. The repository uses GitHub rulesets as a source-delivery control and keeps the runtime's own authorization, risk, verification, reconciliation, recovery, and proof boundaries independent of GitHub governance.
 
-The current ruleset targets `refs/heads/main` and has bypass actors set to none.
+The repository's supported operating profile is **Solo Governance**:
 
-## Active protection controls
+- changes to `main` must still arrive through a pull request;
+- `verify` remains a required, strict-freshness status check;
+- review conversations must be resolved;
+- branch deletion and non-fast-forward updates remain blocked;
+- no ruleset bypass actors are configured;
+- no human approval is mandatory for an ordinary pull request;
+- Code Owners remain documented ownership metadata, not an approval gate;
+- latest-push approval is not required because there may be no second maintainer;
+- the unattributed-Copilot extra-approval safety gate remains enabled as a separate exceptional control.
 
-The currently observed `main` ruleset enforces:
+This profile is deliberately explicit: automated scanners and review bots can provide evidence and comments, but they are not represented as human approvals.
 
-- pull requests before merging
-- required CI check: `verify`
-- strict required-status-check freshness
-- conversation/thread resolution
-- protection against branch deletion
-- protection against non-fast-forward updates
-- one required approving review
-- dismissal of stale approvals after new pushes
-- approval of the most recent push
-- review from Code Owners
-- additional approval for unattributed changes
-- merge methods limited to merge, squash, and rebase
-- no configured bypass actors
+## Active main ruleset
 
-The active ruleset reports:
+The active repository ruleset is named `main` (ruleset ID `23845160`) and targets `refs/heads/main`.
 
-- `required_approving_review_count: 1`
-- `require_code_owner_review: true`
-- `dismiss_stale_reviews_on_push: true`
-- `require_last_push_approval: true`
-- `required_review_thread_resolution: true`
-- `require_extra_approval_for_unattributed_changes: true`
-- required status check: `verify`
-- `strict_required_status_checks_policy: true`
-- `current_user_can_bypass: never`
+The intended Solo Governance settings are:
 
-This means the Code Owner requirement is now an effective approval gate rather than a flag with zero required approvals.
+- pull requests required before merge;
+- `required_approving_review_count: 0`;
+- `dismiss_stale_reviews_on_push: false`;
+- `require_code_owner_review: false`;
+- `require_last_push_approval: false`;
+- `required_review_thread_resolution: true`;
+- `require_extra_approval_for_unattributed_changes: true`;
+- required status check: `verify`;
+- `strict_required_status_checks_policy: true`;
+- deletion protection enabled;
+- non-fast-forward protection enabled;
+- no bypass actors;
+- merge methods limited to merge, squash, and rebase.
+
+GitHub exposes the review and ruleset controls used here, including required approval count, Code Owner review, latest-push approval, stale-review dismissal, thread resolution, and status-check requirements. citeturn306351search0turn306351search4
+
+## Governance drift verification
+
+The repository now includes `scripts/verify-solo-governance.js`.
+
+The required `verify` CI job executes this script against the live GitHub ruleset and fails closed when the Solo Governance contract drifts. It checks the actual active ruleset rather than relying only on documentation.
+
+This prevents a later GitHub Settings change from silently reintroducing an approval gate, bypass actor, missing `verify`, non-strict checks, or loss of branch protections.
+
+The ruleset is edited in GitHub under **Settings → Rulesets → main → Edit → Save changes**. GitHub documents that users with repository admin access can edit repository rulesets. citeturn306351search1turn306351search5
 
 ## CODEOWNERS
 
-`.github/CODEOWNERS` currently assigns the repository to `@ahmedsaturki`:
+`.github/CODEOWNERS` currently assigns repository ownership to:
 
 ```
 * @ahmedsaturki
 ```
 
-Because the active ruleset requires one approval and the current Code Owner is also the repository owner/author for repository-only changes, a pull request authored by that same account cannot self-satisfy the required approval. A second eligible reviewer with write access must be available when a pull request is intended to merge under this policy.
+Under Solo Governance this remains useful as ownership metadata and for future multi-maintainer evolution, but it is not itself a merge approval requirement because Code Owner review is disabled in the active Solo ruleset.
 
-Do not weaken the review rule merely to make a solo-authored pull request mergeable.
+## Automated review and security evidence
 
-## Verification
+The repository intentionally layers automated controls rather than pretending they are human reviewers:
 
-After any governance change, verify all of the following from GitHub:
+- CodeQL analyzes JavaScript/TypeScript and GitHub Actions;
+- Dependency Review checks dependency changes when GitHub Dependency Graph is available;
+- OSSF Scorecard analyzes repository supply-chain practices;
+- Dependabot manages npm and GitHub Actions updates;
+- secret scanning is enforced in CI;
+- Debricked vulnerability analysis is already integrated;
+- the main CI verifies Linux and Windows compatibility plus browser/CDP and private-filesystem security.
 
-1. `main` remains protected.
-2. The `main` ruleset is active and targets `refs/heads/main`.
-3. `verify` is required and must pass.
-4. Required status checks must be current with `main`.
-5. Force-push/non-fast-forward and branch deletion are blocked.
-6. Pull requests and conversation resolution remain required.
-7. One approval is required and stale approvals are dismissed on new pushes.
-8. The most recent push requires approval from an eligible reviewer other than the pusher.
-9. Code-owner review is required.
-10. No bypass actors are configured.
+A Marketplace review application may add additional comments or analysis, but its output must remain advisory unless GitHub itself records an eligible approval.
 
 ## Release and tag integrity
 
-The published `v3.8.10` tag currently resolves to the verified release commit `9daac7a926ce1631ac708a6c234379d622c56c19`, and Release workflow #261 verified tag/commit lineage plus the five published assets and their SHA256 manifest.
+The published `v3.8.10` tag currently resolves to the verified release commit `9daac7a926ce1631ac708a6c234379d622c56c19`, and Release workflow #261 verified the published assets and SHA256 manifest.
 
-GitHub's current Release API reports `immutable: false` for `v3.8.10`. Therefore the release pipeline's digest/lineage checks provide publication-time integrity evidence, but GitHub-level **immutable release enforcement is not retroactive for this already-published release**.
+GitHub currently reports that release as non-immutable. The release workflow therefore provides publication-time digest/lineage verification, while GitHub-side release/tag immutability is treated as a separate governance hardening layer.
 
-For future release integrity, enable GitHub release immutability in repository/organization settings and add an active tag ruleset covering release tags (for example, `v*`) with tag deletion and force-update protection. GitHub documents that immutable releases lock the associated tag and release assets after publication, while tag rulesets can separately restrict updates/deletions. This is a supply-chain hardening layer above the release workflow.
+For future release integrity, enable GitHub release immutability where available and protect release tags (for example `v*`) against deletion and force-update.
 
-Branch protection/rulesets are GitHub repository controls around source delivery. They do not replace WorkProof Runtime's runtime authorization, risk, effect, verification, reconciliation, recovery, or proof boundaries.
+## Verification contract
+
+After any governance change, GitHub state must be re-checked and `verify` must pass against the live ruleset.
+
+The repository must not claim Solo Governance while any of the following remains true:
+
+- mandatory ordinary approvals are greater than zero;
+- Code Owner approval is required;
+- latest-push approval is required;
+- stale-review dismissal is unexpectedly enabled;
+- a bypass actor is configured;
+- `verify` is not required with strict freshness;
+- branch deletion or non-fast-forward protection is removed.
+
+GitHub rulesets are an external repository control. They do not replace WorkProof Runtime's execution authorization, effect handling, verification, reconciliation, recovery, or proof model.
