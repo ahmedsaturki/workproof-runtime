@@ -1,6 +1,6 @@
 # WorkProof Runtime v3.8.11
 
-## Cross-platform runtime hardening release candidate
+## Cross-platform runtime hardening release
 
 v3.8.11 is the current published stable release following v3.8.10. It carries the integrated portability, filesystem-security, browser-runtime, Control Plane, A2A boundary, benchmark, and verification hardening validated by the repository CI matrix.
 
@@ -32,20 +32,9 @@ The subsequent `3.8.11` package/lock/release-note preparation is metadata-only a
 
 After the integrated candidate was merged to `main`, the release-critical Compose smoke harness was hardened so temporary bind-mounted private data is cleaned through the container root boundary rather than by the host runner. This preserves UID/GID 10001 and 0700/0600 private-state semantics while making teardown reliable. The fix was independently verified through the protected PR CI matrix before this release branch checkpoint.
 
-### Release evidence requirements
+### Publication record
 
-This file prepares the next release line; it does not claim publication.
-
-A v3.8.11 publication is valid only after:
-
-- the release branch is based on the final merged `main`;
-- package and lock versions match `v3.8.11`;
-- the complete release verification succeeds;
-- container verification publishes the exact release commit and digest;
-- five release assets are published and their SHA256 manifest verifies;
-- the GitHub Release and tag point to the same release commit;
-- the published GHCR version tag and commit-addressed image resolve to the same digest;
-- published lineage is reconciled back into `main`.
+The v3.8.11 publication completed from the verified release branch and is now the stable distribution.
 
 ### Publication verification
 
