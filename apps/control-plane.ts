@@ -153,7 +153,8 @@ function assertControlPlaneCapabilityInputs(steps: WorkStep[], workDirectory: st
   const isWithinRoots = (candidate: string, roots: string[]): boolean => {
     const comparable = normalizeComparable(path.resolve(candidate));
     const separator = require("process").platform === "win32" ? "\\" : path.sep;
-    return roots.some(root => {
+    return roots.some(rawRoot => {
+      const root = normalizeComparable(rawRoot);
       const normalizedRoot = root.endsWith(separator) ? root : root + separator;
       return comparable === root || comparable.startsWith(normalizedRoot);
     });
