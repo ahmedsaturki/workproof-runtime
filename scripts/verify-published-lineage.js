@@ -84,7 +84,7 @@ async function main() {
   ];
   for (const name of expectedAssets) if (!assetNames.includes(name)) throw new Error("Published release is missing asset " + name);
 
-  const digest = await ghcrDigest(published.tag_name);
+  const digest = await ghcrDigest(release.version);
   if (digest !== lineage.container.digest) throw new Error("GHCR digest mismatch: " + digest + " != " + lineage.container.digest);
 
   const expectedRollbackCommit = "f8af30bf69391db22863c432df5c452a73ebaa05";
