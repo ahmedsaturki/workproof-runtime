@@ -3,7 +3,7 @@ const test = require("node:test");
 const fs = require("fs");
 const path = require("path");
 
-const repoRoot = path.resolve(process.cwd());
+const repoRoot = path.resolve(".");
 
 function read(relativePath: string): string {
   return fs.readFileSync(path.join(repoRoot, relativePath), "utf8");
