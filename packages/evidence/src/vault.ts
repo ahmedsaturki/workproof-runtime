@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const { digestProofBundle, verifyProofIntegrity } = require("./integrity");
-const { securePrivateDirectory, securePrivateFile } = require("../storage/src/private-files");
+const { securePrivateDirectory, securePrivateFile } = require("../../storage/src/private-files");
 
 export interface VaultRecord {
   version: "0.1";
