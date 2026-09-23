@@ -58,28 +58,28 @@ The repository's disposable external-topology gate now verifies the technical to
 
 A **public production host is not claimed as provisioned**. Public host/DNS/certificate/secret/control-plane infrastructure remains an external deployment-resource boundary and must be supplied by the operator of the target environment.
 
-## Current verified baseline — v3.8.12
+## Current verified baseline — v3.8.13
 
-The current stable product baseline is **v3.8.12**.
+The current stable product baseline is **v3.8.13**.
 
-- package version: `3.8.12`
-- stable release: `v3.8.12`
-- release commit: `19b1efbfbc5f6f2d14eae5538f339667bd9fbb92`
-- GitHub Release ID: `394761988`
-- Release workflow #284: success
-- Container workflow #281: success
-- GHCR digest: `sha256:5690c65d0425c743c4fa0ebc1a31f913497eb6b7d4e8fa11a129a833aa926d5d`
-- commit-addressed image tag: `19b1efbfbc5f6f2d14eae5538f339667bd9fbb92`
-- previous stable: `v3.8.10`
-- cross-platform runtime hardening, filesystem security, browser runtime, Control Plane, A2A boundary, and release/verification hardening are included and verified
+- package version: `3.8.13`
+- stable release: `v3.8.13`
+- release commit: `dadef28ce8fbd299201a228673f1c2737c5b7d62`
+- GitHub Release ID: `394849659`
+- Release workflow #305: success
+- Container workflow #302: success
+- GHCR digest: `sha256:c9a9f6f6f0fb111dc64d42b1a2746091f14366c389c1af6eb3b0683c6e3fe564`
+- commit-addressed image tag: `dadef28ce8fbd299201a228673f1c2737c5b7d62`
+- previous stable: `v3.8.12`
+- validated trust-snapshot registry transport boundary isolated and verified without changing WorkProof execution semantics
 
-The published `v3.8.12` artifacts were verified as snapshots of release commit `19b1efbfbc5f6f2d14eae5538f339667bd9fbb92`. The current `main` lineage is reconciled to the published GitHub/GHCR evidence; this reconciliation is documentation/distribution metadata only and does not rewrite the published snapshot.
+The published `v3.8.13` artifacts were verified as snapshots of release commit `dadef28ce8fbd299201a228673f1c2737c5b7d62`. The current `main` lineage records the published GitHub/GHCR evidence without rewriting the published snapshot.
 
-The v3.8.12 distribution enforces an immutable Node 24.21.0 Trixie slim base digest and a bounded production resource/log envelope.
+The v3.8.13 distribution enforces an immutable Node 24.21.0 Trixie slim base digest and a bounded production resource/log envelope.
 
 ## Release acceptance gates
 
-| Gate | v3.8.12 evidence |
+| Gate | v3.8.13 evidence |
 | --- | --- |
 | Build | CI/Release/Container builds succeed from clean checkout |
 | Tests | Full unit/integration suite succeeds |
