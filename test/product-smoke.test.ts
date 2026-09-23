@@ -83,6 +83,58 @@ test("local product smoke boots Studio, reports release version, serves work, an
   assert.equal(cliVersion.status, 0, cliVersion.stderr || cliVersion.stdout);
   assert.equal(cliVersion.stdout.trim(), packageJson.version);
 
+  const cliMissing = childProcess.spawnSync(process.execPath, [cliEntry, "verify", "definitely-missing-proof.json"], {
+    cwd: require("process").cwd(),
+    encoding: "utf8"
+  });
+  assert.equal(cliMissing.status, 1, cliMissing.stdout || cliMissing.stderr);
+  assert.match(cliMissing.stderr, /File not found:.*definitely-missing-proof\.json/);
+  assert.doesNotMatch(cliMissing.stderr, /at Object\.(?:readFileSync|<anonymous>)/);
+
+  const malformedPath = path.join(os.tmpdir(), "workproof-malformed-proof.json");
+  fs.writeFileSync(malformedPath, "not-json", "utf8");
+  const cliMalformed = childProcess.spawnSync(process.execPath, [cliEntry, "verify", malformedPath], {
+    cwd: require("process").cwd(),
+    encoding: "utf8"
+  });
+  assert.equal(cliMalformed.status, 1, cliMalformed.stdout || cliMalformed.stderr);
+  assert.match(cliMalformed.stderr, /^Invalid JSON:/);
+  fs.rmSync(malformedPath, { force: true });
+
+  const cliRunMissing = childProcess.spawnSync(process.execPath, [cliEntry, "run", "definitely-missing-mission.json"], {
+    cwd: require("process").cwd(),
+    encoding: "utf8"
+  });
+  assert.equal(cliRunMissing.status, 1, cliRunMissing.stdout || cliRunMissing.stderr);
+  assert.match(cliRunMissing.stderr, /File not found:.*definitely-missing-mission\.json/);
+  assert.doesNotMatch(cliRunMissing.stderr, /at Object\.(?:readFileSync|<anonymous>)/);
+
+  const dirProof = path.join(os.tmpdir(), "workproof-dir-as-proof");
+  fs.mkdirSync(dirProof, { recursive: true });
+  try {
+    const cliDir = childProcess.spawnSync(process.execPath, [cliEntry, "verify", dirProof], {
+      cwd: require("process").cwd(),
+      encoding: "utf8"
+    });
+    assert.equal(cliDir.status, 1, cliDir.stdout || cliDir.stderr);
+    assert.match(cliDir.stderr, /Expected a file, but found a directory:.*workproof-dir-as-proof/);
+    assert.doesNotMatch(cliDir.stderr, /at Object\.(?:readFileSync|<anonymous>)/);
+    assert.doesNotMatch(cliDir.stderr, /^File not found:/);
+  } finally {
+    fs.rmSync(dirProof, { recursive: true, force: true });
+  }
+
+  const studioEntry = path.resolve(path.dirname(__filename), "../apps/studio.js");
+  const studioHelp = childProcess.spawnSync(process.execPath, [studioEntry, "--help"], {
+    cwd: require("process").cwd(),
+    encoding: "utf8",
+    timeout: 15000
+  });
+  assert.equal(studioHelp.status, 0, studioHelp.stderr || studioHelp.stdout);
+  assert.match(studioHelp.stdout, /workDirectory/);
+  assert.match(studioHelp.stdout, /8788/);
+  assert.doesNotMatch(studioHelp.stdout, /"studio": "http:/);
+
   const first = await startStudio({ workDirectory: root, host: "127.0.0.1", port: 0 });
   try {
     const base = "http://" + first.host + ":" + first.port;

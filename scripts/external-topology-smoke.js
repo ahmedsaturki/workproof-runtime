@@ -3,6 +3,8 @@ const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
 
+const NULL_DEVICE = process.platform === "win32" ? "NUL" : "/dev/null";
+
 function run(command, args, allowFailure = false) {
   const result = spawnSync(command, args, { cwd: process.cwd(), encoding: "utf8", stdio: "pipe" });
   if (result.error) throw result.error;
@@ -10,6 +12,45 @@ function run(command, args, allowFailure = false) {
     throw new Error(command + " " + args.join(" ") + " failed\nstdout:\n" + String(result.stdout || "") + "\nstderr:\n" + String(result.stderr || ""));
   }
   return { status: result.status ?? 0, stdout: String(result.stdout || ""), stderr: String(result.stderr || "") };
+}
+
+function sleepSeconds(seconds) {
+  const shared = new Int32Array(new SharedArrayBuffer(4));
+  Atomics.wait(shared, 0, 0, Math.max(1, seconds) * 1000);
+}
+
+const WINDOWS_TOOL_CANDIDATES = {
+  openssl: [
+    "C:\\Program Files\\Git\\usr\\bin\\openssl.exe",
+    "C:\\Program Files\\Git\\mingw64\\bin\\openssl.exe"
+  ],
+  curl: [
+    "C:\\Windows\\System32\\curl.exe"
+  ],
+  tar: [
+    "C:\\Program Files\\Git\\usr\\bin\\tar.exe"
+  ]
+};
+
+function resolveTool(command) {
+  if (process.platform !== "win32") return command;
+  const probe = spawnSync(command, ["--version"], { encoding: "utf8", stdio: "pipe" });
+  if (!probe.error && (probe.status ?? 1) === 0) return command;
+  for (const candidate of WINDOWS_TOOL_CANDIDATES[command] || []) {
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return command;
+}
+
+const TOOLS = {
+  docker: resolveTool("docker"),
+  openssl: resolveTool("openssl"),
+  curl: resolveTool("curl"),
+  tar: resolveTool("tar")
+};
+
+function tool(command) {
+  return TOOLS[command] || command;
 }
 
 const VERSION_ARGS = {
@@ -21,20 +62,20 @@ const VERSION_ARGS = {
 
 function requireCommand(command) {
   const args = VERSION_ARGS[command] ?? ["--version"];
-  const result = run(command, args, true);
+  const result = run(tool(command), args, true);
   if (result.status !== 0) throw new Error("Required host command is unavailable or incompatible: " + command);
 }
 
 function curlJson(url, user, password) {
-  const result = run("curl", ["-ksS", "--user", user + ":" + password, url]);
+  const result = run(tool("curl"), ["-ksS", "--user", user + ":" + password, url]);
   try { return JSON.parse(result.stdout); } catch { throw new Error("Invalid JSON from " + url + ": " + result.stdout); }
 }
 
 function curlStatus(url, user, password) {
-  const args = ["-ksS", "-o", "/dev/null", "-w", "%{http_code}"];
+  const args = ["-ksS", "-o", NULL_DEVICE, "-w", "%{http_code}"];
   if (user !== undefined && password !== undefined) args.push("--user", user + ":" + password);
   args.push(url);
-  return Number(run("curl", args).stdout.trim());
+  return Number(run(tool("curl"), args).stdout.trim());
 }
 
 function waitForStatus(baseUrl, expectedStatus, user, password) {
@@ -43,7 +84,7 @@ function waitForStatus(baseUrl, expectedStatus, user, password) {
       const status = curlStatus(baseUrl + "/health", user, password);
       if (status === expectedStatus) return;
     } catch {}
-    run("sleep", ["1"]);
+    sleepSeconds(1);
   }
   throw new Error("External topology did not return expected HTTP status " + expectedStatus);
 }
@@ -143,7 +184,7 @@ function waitContainerHealth(containerName, version, attempts = 45) {
         lastBody = probe.stdout;
       }
     }
-    run("sleep", ["1"]);
+    sleepSeconds(1);
   }
   throw new Error("Container did not become healthy with expected version " + version + "; lastStatus=" + lastStatus + "; lastBody=" + lastBody.slice(0, 500));
 }
@@ -165,7 +206,7 @@ function waitHealthy(baseUrl, version, user, password) {
     } catch (error) {
       lastError = String(error);
     }
-    run("sleep", ["1"]);
+    sleepSeconds(1);
   }
   throw new Error("External topology did not become healthy with expected version " + version + "; lastStatus=" + lastStatus + "; lastBody=" + lastBody.slice(0, 500) + "; lastError=" + lastError);
 }
@@ -258,11 +299,11 @@ async function main() {
   preparePrivateDataDirectory(currentImage, dataDir);
 
   const password = "smoke-" + runId;
-  const hash = run("openssl", ["passwd", "-apr1", "-salt", "smoke", password]).stdout.trim();
+  const hash = run(tool("openssl"), ["passwd", "-apr1", "-salt", "smoke", password]).stdout.trim();
   fs.writeFileSync(authPath, "smoke:" + hash + "\n", { encoding: "utf8", mode: 0o644 });
   if (hash.includes(password) || fs.readFileSync(authPath, "utf8").includes(password)) throw new Error("Raw authentication secret leaked into authorization file");
 
-  run("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", path.join(tlsDir, "tls.key"), "-out", path.join(tlsDir, "tls.crt"), "-days", "1", "-subj", "/CN=localhost", "-addext", "subjectAltName=DNS:localhost,IP:127.0.0.1"]);
+  run(tool("openssl"), ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", path.join(tlsDir, "tls.key"), "-out", path.join(tlsDir, "tls.crt"), "-days", "1", "-subj", "/CN=localhost", "-addext", "subjectAltName=DNS:localhost,IP:127.0.0.1"]);
 
   const nginxConfig = ["events {}", "http {", "  server {", "    listen 8443 ssl;", "    server_name localhost;", "    ssl_certificate /etc/nginx/tls/tls.crt;", "    ssl_certificate_key /etc/nginx/tls/tls.key;", "    auth_basic \"WorkProof\";", "    auth_basic_user_file /etc/nginx/auth/.htpasswd;", "    location / {", "      proxy_pass http://" + appName + ":8788;", "      proxy_set_header Host $host;", "      proxy_set_header X-Forwarded-Proto https;", "    }", "  }", "}"].join("\n") + "\n";
   fs.writeFileSync(nginxPath, nginxConfig, "utf8");

@@ -8,3 +8,10 @@ mission-proof.json
 proof-vault
 work-runs
 *.log
+private.pem
+public.pem
+trust.json
+restored-proof.json
+vault
+imported
+portable-bundle

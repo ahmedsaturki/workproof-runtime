@@ -29,6 +29,25 @@ const { createAuthPolicy, loadAuthPolicy, saveAuthPolicy, issueCredential, addIs
 const { publishTrustSnapshotToRegistry, getTrustSnapshotFromRegistry, listTrustSnapshotsFromRegistry, getCurrentTrustSnapshotFromRegistry, applyTrustSnapshotToRegistry } = require("../../registry/src/client.js");
 const { runDoctor } = require("../../doctor/src/index.js");
 
+function formatCliError(error: unknown, file?: string): string {
+  if (error instanceof Error) {
+    const code = (error as { code?: string }).code;
+    const fsPath = (error as { path?: string }).path || file || "";
+    if (code === "EISDIR") {
+      return "Expected a file, but found a directory: " + (fsPath || error.message);
+    }
+    if (code === "ENOENT") {
+      const match = error.message.match(/'([^']+)'$/);
+      return "File not found: " + (fsPath || (match ? match[1] : error.message));
+    }
+    if (error.name === "SyntaxError") {
+      return "Invalid JSON: " + error.message;
+    }
+    return error.message;
+  }
+  return String(error);
+}
+
 function usage(): void {
   process.stdout.write(`workctl
   run <mission.json>
@@ -368,8 +387,16 @@ function writeMissionProof(work: any, spec: any): void {
   if (work.status !== "verified") process.exitCode = 2;
 }
 
+function readJsonFile(file: string): any {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch (error) {
+    throw new Error(formatCliError(error, file));
+  }
+}
+
 async function runMission(file: string): Promise<void> {
-  const spec = JSON.parse(fs.readFileSync(file, "utf8"));
+  const spec = readJsonFile(file);
   if (!spec?.objective || !Array.isArray(spec?.steps)) throw new Error("Mission spec requires objective and steps[]");
   const store = new WorkStore();
   const registry = new CapabilityRegistry();
@@ -392,7 +419,7 @@ async function runMission(file: string): Promise<void> {
 
 async function resumeMission(workId: string, file: string): Promise<void> {
   if (!/^[A-Za-z0-9._-]+$/.test(workId)) throw new Error("Invalid work id");
-  const spec = JSON.parse(fs.readFileSync(file, "utf8"));
+  const spec = readJsonFile(file);
   if (!spec?.objective || !Array.isArray(spec?.steps)) throw new Error("Mission spec requires objective and steps[]");
   const repo = new JsonWorkRepository(spec.workDirectory ?? "./work-runs");
   const work = repo.load(workId);
@@ -425,167 +452,174 @@ if (!command || command === "--help" || command === "-h" || command === "help") 
   if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
   else {
     try { generateKeys(firstArg, secondArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "trust-add") {
   if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
   else {
     try { trustAdd(firstArg, secondArg, thirdArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "trust-revoke") {
   if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
   else {
     try { trustRevoke(firstArg, secondArg, thirdArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "registry-auth-init") {
   if (!firstArg) { usage(); process.exitCode = 1; }
   else {
     try { registryAuthInit(firstArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "registry-auth-add") {
   if (!firstArg || !secondArg || !thirdArg) { usage(); process.exitCode = 1; }
   else {
     try { registryAuthAdd(firstArg, secondArg, thirdArg, fourthArg, fifthArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "registry-auth-revoke") {
   if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
   else {
     try { registryAuthRevoke(firstArg, secondArg, thirdArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "registry-trust-publish") {
   if (!firstArg || !secondArg || !thirdArg) { usage(); process.exitCode = 1; }
-  else registryTrustPublish(firstArg, secondArg, thirdArg).catch(error => { process.stderr.write(String(error) + "\n"); process.exitCode = 1; });
+  else registryTrustPublish(firstArg, secondArg, thirdArg).catch(error => { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; });
 } else if (command === "registry-trust-pull") {
   if (!firstArg || !secondArg || !thirdArg || !fourthArg) { usage(); process.exitCode = 1; }
-  else registryTrustPull(firstArg, secondArg, thirdArg, fourthArg).catch(error => { process.stderr.write(String(error) + "\n"); process.exitCode = 1; });
+  else registryTrustPull(firstArg, secondArg, thirdArg, fourthArg).catch(error => { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; });
 } else if (command === "registry-trust-list") {
   if (!firstArg) { usage(); process.exitCode = 1; }
-  else registryTrustList(firstArg, secondArg).catch(error => { process.stderr.write(String(error) + "\n"); process.exitCode = 1; });
+  else registryTrustList(firstArg, secondArg).catch(error => { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; });
 } else if (command === "registry-trust-current") {
   if (!firstArg) { usage(); process.exitCode = 1; }
-  else registryTrustCurrent(firstArg, secondArg).catch(error => { process.stderr.write(String(error) + "\n"); process.exitCode = 1; });
+  else registryTrustCurrent(firstArg, secondArg).catch(error => { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; });
 } else if (command === "registry-trust-apply") {
   if (!firstArg || !secondArg || !thirdArg) { usage(); process.exitCode = 1; }
-  else registryTrustApply(firstArg, secondArg, thirdArg, fourthArg === "--allow-rollback").catch(error => { process.stderr.write(String(error) + "\n"); process.exitCode = 1; });
+  else registryTrustApply(firstArg, secondArg, thirdArg, fourthArg === "--allow-rollback").catch(error => { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; });
 } else if (command === "registry-auth-list") {
   if (!firstArg) { usage(); process.exitCode = 1; }
   else {
     try { registryAuthList(firstArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "compatibility") {
   if (!firstArg) { usage(); process.exitCode = 1; }
   else {
     try { showCompatibility(firstArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "proof-export") {
   if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
   else {
     try { proofExport(firstArg, secondArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "proof-bundle-verify") {
   if (!firstArg) { usage(); process.exitCode = 1; }
   else {
     try { proofBundleVerify(firstArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "proof-import") {
   if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
   else {
     try { proofImport(firstArg, secondArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "vault-publish") {
   if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
   else {
     try { vaultPublish(firstArg, secondArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "vault-restore") {
   if (!firstArg || !secondArg || !thirdArg) { usage(); process.exitCode = 1; }
   else {
     try { vaultRestore(firstArg, secondArg, thirdArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "vault-list") {
   if (!firstArg) { usage(); process.exitCode = 1; }
   else {
     try { vaultList(firstArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "vault-inspect") {
   if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
   else {
     try { vaultInspect(firstArg, secondArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
  } else if (command === "vault-inventory") {
   if (!firstArg) { usage(); process.exitCode = 1; }
   else {
     try { vaultInventory(firstArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "vault-retain") {
   if (!firstArg || !secondArg || !thirdArg) { usage(); process.exitCode = 1; }
   else {
     try { vaultRetain(firstArg, secondArg, thirdArg, fourthArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "vault-pin") {
   if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
   else {
     try { vaultPin(firstArg, secondArg, thirdArg, fourthArg, fifthArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "vault-unpin") {
   if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
   else {
     try { vaultUnpin(firstArg, secondArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "vault-gc") {
   if (!firstArg) { usage(); process.exitCode = 1; }
   else {
     try {
       vaultGc(firstArg, [secondArg, thirdArg, fourthArg, fifthArg, sixthArg].filter((value) => Boolean(value)));
-    } catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    } catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "vault-repair") {
   if (!firstArg) { usage(); process.exitCode = 1; }
   else {
     try { vaultRepair(firstArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "sign") {
   if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
   else {
     try { signProofFile(firstArg, secondArg); }
-    catch (error) { process.stderr.write(String(error) + "\n"); process.exitCode = 1; }
+    catch (error) { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; }
   }
 } else if (command === "doctor") {
   doctorCommand().catch(error => {
-    process.stderr.write(String(error) + "\n");
+    process.stderr.write(formatCliError(error) + "\n");
     process.exitCode = 1;
   });
 } else if (command === "run") {
   if (!firstArg) { usage(); process.exitCode = 1; }
-  else runMission(firstArg).catch(error => { process.stderr.write(String(error) + "\n"); process.exitCode = 1; });
+  else runMission(firstArg).catch(error => { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; });
 } else if (command === "resume") {
   if (!firstArg || !secondArg) { usage(); process.exitCode = 1; }
-  else resumeMission(firstArg, secondArg).catch(error => { process.stderr.write(String(error) + "\n"); process.exitCode = 1; });
+  else resumeMission(firstArg, secondArg).catch(error => { process.stderr.write(formatCliError(error) + "\n"); process.exitCode = 1; });
 } else {
   const file = firstArg;
   if (!file) { usage(); process.exitCode = 1; }
   else {
-    const raw = fs.readFileSync(file, "utf8");
-    const data = JSON.parse(raw);
+    let data: any;
+    try {
+      data = readJsonFile(file);
+    } catch (error) {
+      process.stderr.write(formatCliError(error) + "\n");
+      process.exitCode = 1;
+      data = null;
+    }
+    if (data !== null) {
     if (command === "inspect") {
       process.stdout.write(JSON.stringify(data, null, 2) + "\n");
     } else if (command === "summarize") {
@@ -636,6 +670,7 @@ if (!command || command === "--help" || command === "-h" || command === "help") 
     } else {
       usage();
       process.exitCode = 1;
+    }
     }
   }
 }
