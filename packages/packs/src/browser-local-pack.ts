@@ -18,16 +18,16 @@ function isAllowedBrowserUrl(value: string): boolean {
   } catch { return false; }
 }
 
-function cdpHttp(port: number, pathname: string, method = "GET"): Promise<any> {
+function cdpHttp(port: number, pathname: string, method = "GET", timeoutMs = 5000): Promise<any> {
   return new Promise((resolve, reject) => {
-    const req = httpRequest({ hostname: "127.0.0.1", port, path: pathname, method }, (res: any) => {
+    const req = httpRequest({ hostname: "127.0.0.1", port, path: pathname, method, timeout: timeoutMs }, (res: any) => {
       let raw = "";
       res.on("data", (c: any) => raw += c.toString());
       res.on("end", () => {
         try { resolve(raw ? JSON.parse(raw) : {}); } catch (e) { reject(e); }
       });
     });
-    req.on("error", reject); req.end();
+    req.on("timeout", () => { req.destroy(new Error(`CDP HTTP timeout: ${pathname}`)); }); req.on("error", reject); req.end();
   });
 }
 
@@ -126,7 +126,7 @@ function ensureBrowser(port = 0): any {
     "--disable-dev-shm-usage",
     "--no-first-run",
     "--no-default-browser-check",
-    "--disable-background-networking",
+    "--disable-background-networking",\n    "--remote-allow-origins=*",
     "--remote-debugging-address=127.0.0.1",
     `--remote-debugging-port=${port}`,
     `--user-data-dir=${profile}`,
