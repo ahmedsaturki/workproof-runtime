@@ -30,6 +30,11 @@ test("main release-state guard keeps release-control allowlist explicit", () => 
   assert.match(releaseStateScript, /test\/release-metadata\.test\.ts/);
 });
 
+test("solo governance verifier authenticates GitHub API calls when a token is available", () => {
+  assert.match(soloGovernanceScript, /process\.env\.GITHUB_TOKEN/);
+  assert.match(soloGovernanceScript, /headers\.authorization = "Bearer " \+ token/);
+});
+
 test("main release-state guard enforces current stable documentation coherence", () => {
   assert.match(releaseStateScript, /README current stable release does not match package version/);
   assert.match(releaseStateScript, /STATUS current stable release line does not match package version/);
