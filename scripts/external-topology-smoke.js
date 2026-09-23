@@ -12,9 +12,17 @@ function run(command, args, allowFailure = false) {
   return { status: result.status ?? 0, stdout: String(result.stdout || ""), stderr: String(result.stderr || "") };
 }
 
+const VERSION_ARGS = {
+  docker: ["--version"],
+  openssl: ["version"],
+  curl: ["--version"],
+  tar: ["--version"]
+};
+
 function requireCommand(command) {
-  const result = run(command, ["--version"], true);
-  if (result.status !== 0) throw new Error("Required host command is unavailable: " + command);
+  const args = VERSION_ARGS[command] ?? ["--version"];
+  const result = run(command, args, true);
+  if (result.status !== 0) throw new Error("Required host command is unavailable or incompatible: " + command);
 }
 
 function curlJson(url, user, password) {
