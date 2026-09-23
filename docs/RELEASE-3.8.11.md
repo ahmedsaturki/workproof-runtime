@@ -15,9 +15,9 @@ v3.8.11 is the next release candidate after v3.8.10. It carries the integrated p
 - Cross-platform registry namespace and signature-security regression coverage.
 - Bounded Studio scan regression coverage avoids coupling filesystem-scale acceptance to per-file ACL fixture setup.
 
-### Verified integrated CI
+### Verified integrated hardening
 
-The final integrated candidate has passed:
+The integrated hardening candidate immediately before release metadata preparation passed:
 
 - Linux `verify`
 - Windows full compatibility suite
@@ -25,6 +25,8 @@ The final integrated candidate has passed:
 - Windows private filesystem security acceptance
 - benchmark M001-M005: 5/5 verified, falseDoneCount 0, duplicateExternalEffectCount 0, evidenceCompleteRate 1
 - representative demo, CLI, Studio, registry, proof, recovery, and interoperability tests in the full suite
+
+The subsequent `3.8.11` package/lock/release-note preparation is metadata-only and is currently awaiting its own CI verification run (#1558); it is not treated as published or fully release-verified yet.
 
 ### Release evidence requirements
 
