@@ -33,7 +33,7 @@ test("private filesystem helper applies restrictive local permissions", () => {
       });
       assert.equal(acl.status, 0, String(acl.stderr ?? ""));
       assert.doesNotMatch(String(acl.stdout ?? ""), /\(I\)/, String(acl.stdout ?? ""));
-      assert.match(String(acl.stdout ?? ""), /:F\)/);
+      assert.match(String(acl.stdout ?? ""), /:\(F\)/);
       const everyoneLookup = spawnSync("icacls", [file, "/findsid", "*S-1-1-0"], {
         encoding: "utf8",
         stdio: ["ignore", "pipe", "pipe"],
