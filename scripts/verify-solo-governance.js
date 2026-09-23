@@ -4,12 +4,13 @@ const REPOSITORY = process.env.GITHUB_REPOSITORY || "ahmedsaturki/workproof-runt
 
 async function fetchRuleset() {
   const url = `https://api.github.com/repos/${REPOSITORY}/rulesets/${RULESET_ID}`;
-  const response = await fetch(url, {
-    headers: {
-      accept: "application/vnd.github+json",
-      "user-agent": "workproof-solo-governance-verifier"
-    }
-  });
+  const headers = {
+    accept: "application/vnd.github+json",
+    "user-agent": "workproof-solo-governance-verifier"
+  };
+  const token = process.env.GITHUB_TOKEN;
+  if (token) headers.authorization = "Bearer " + token;
+  const response = await fetch(url, { headers });
   if (!response.ok) {
     const body = await response.text();
     throw new Error(`GitHub ruleset lookup failed: HTTP ${response.status}: ${body.slice(0, 400)}`);
