@@ -18,7 +18,7 @@ No intended WorkProof execution semantics, risk policy, reconciliation, recovery
 
 ### Why this is a patch release
 
-The published v3.8.12 distribution remains unchanged and its tag/assets/GHCR image are not rewritten. The new source change is therefore prepared as v3.8.13 under the repository's post-release drift policy.
+The published v3.8.13 distribution is now the current release line. Its tag, release assets, and GHCR image were created from the verified release commit and are not rewritten by the main-branch reconciliation.
 
 ### Verification target
 
