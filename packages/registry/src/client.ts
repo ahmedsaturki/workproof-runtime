@@ -86,6 +86,7 @@ export async function listProofsFromRegistry(registryUrl: string, token?: string
 
 
 const { digestTrustPolicySnapshot, verifyTrustPolicySnapshotSignature } = require("../../evidence/src/trust-sync.js");
+const { postValidatedTrustSnapshot } = require("./trust-transport.js");
 import type { TrustPolicySnapshot, TrustSnapshotDecision } from "../../evidence/src/trust-sync";
 
 function assertValidTrustSnapshot(snapshot: TrustPolicySnapshot): void {
@@ -103,7 +104,7 @@ export async function publishTrustSnapshotToRegistry(registryUrl: string, snapsh
     digest: snapshot.digest,
     ...(snapshot.signature ? { signature: snapshot.signature } : {})
   };
-  const result = await request(registryUrl, "POST", "/v1/trust/snapshots", transport, token);
+  const result = await postValidatedTrustSnapshot(registryUrl, transport, token);
   if (result?.record?.digest !== snapshot.digest) throw new Error("Registry returned a mismatched trust snapshot digest");
   return result;
 }
