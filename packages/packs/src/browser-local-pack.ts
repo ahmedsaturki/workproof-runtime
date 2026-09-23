@@ -10,6 +10,12 @@ const platform = require("process").platform;
 interface BrowserAction { type: "navigate" | "fill" | "click" | "get_text"; selector?: string; value?: string; url?: string; }
 export interface BrowserWorkflowInput { startUrl: string; actions: BrowserAction[]; expectedText?: string; html?: string; cdpPort?: number; }
 
+function windowsSystemCommand(command: string): string {
+  const systemRoot = process.env.SystemRoot ?? process.env.WINDIR;
+  if (!systemRoot) throw new Error("SystemRoot/WINDIR is required for Windows process control");
+  return path.join(systemRoot, "System32", `${command}.exe`);
+}
+
 function isAllowedBrowserUrl(value: string): boolean {
   try {
     const u = new URL(value);
@@ -221,7 +227,7 @@ function killBrowser(browser: any): void {
     try { process.kill(-browserPid, "SIGKILL"); } catch {}
   } else if (browserPid && platform === "win32") {
     try {
-      const killer = spawn("taskkill", ["/PID", String(browserPid), "/T", "/F"], {
+      const killer = spawn(windowsSystemCommand("taskkill"), ["/PID", String(browserPid), "/T", "/F"], {
         stdio: "ignore",
         windowsHide: true,
         detached: true
