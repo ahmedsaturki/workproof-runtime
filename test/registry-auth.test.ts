@@ -189,8 +189,8 @@ test("saveAuthPolicy applies private filesystem security to registry credentials
         windowsHide: true
       });
       assert.equal(acl.status, 0, String(acl.stderr ?? ""));
-      assert.doesNotMatch(String(acl.stdout ?? ""), /\\(I\\)/, String(acl.stdout ?? ""));
-      assert.match(String(acl.stdout ?? ""), /:\\(F\\)/);
+      assert.doesNotMatch(String(acl.stdout ?? ""), /\(I\)/, String(acl.stdout ?? ""));
+      assert.match(String(acl.stdout ?? ""), /:\(F\)/);
     }
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
