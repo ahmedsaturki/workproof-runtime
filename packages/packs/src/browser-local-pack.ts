@@ -20,14 +20,20 @@ function isAllowedBrowserUrl(value: string): boolean {
 
 function cdpHttp(port: number, pathname: string, method = "GET", timeoutMs = 1500): Promise<any> {
   return new Promise((resolve, reject) => {
-    const req = httpRequest({ hostname: "127.0.0.1", port, path: pathname, method, timeout: timeoutMs }, (res: any) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const finish = (fn: () => void) => { clearTimeout(timer); fn(); };
+    const req = httpRequest({ hostname: "127.0.0.1", port, path: pathname, method, signal: controller.signal }, (res: any) => {
       let raw = "";
       res.on("data", (c: any) => raw += c.toString());
       res.on("end", () => {
-        try { resolve(raw ? JSON.parse(raw) : {}); } catch (e) { reject(e); }
+        finish(() => {
+          try { resolve(raw ? JSON.parse(raw) : {}); } catch (e) { reject(e); }
+        });
       });
     });
-    req.on("timeout", () => { req.destroy(new Error(`CDP HTTP timeout: ${pathname}`)); }); req.on("error", reject); req.end();
+    req.on("error", (error: any) => finish(() => reject(error)));
+    req.end();
   });
 }
 
