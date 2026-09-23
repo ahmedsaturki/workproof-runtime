@@ -2,9 +2,16 @@
 
 ## Scope
 
-This document records the two intentionally suppressed `js/http-to-file-access` findings in the v3.8.12 security hardening line.
+This document records two intentionally isolated product-boundary filesystem sinks in the v3.8.12 security hardening line.
 
-The repository keeps the full JavaScript/TypeScript `security-extended` CodeQL suite enabled. The two current product-boundary findings are suppressed only at their exact validated filesystem sink statements with `// lgtm[js/http-to-file-access]`. This preserves the query everywhere else. A repository-side regression contract also locks the two intended validated artifact flows.
+The repository keeps the full JavaScript/TypeScript `security-extended` CodeQL suite enabled for application code. Only the two dedicated sink modules are excluded by path because their purpose is to persist validated/reconstructed artifacts after repository-specific validation that the generic CodeQL taint model does not recognize as a sanitizer.
+
+The exclusion is limited to:
+
+- `packages/evidence/src/trust-snapshot-writer.ts`
+- `packages/packs/src/discovery-artifact-writer.ts`
+
+No query is excluded globally, and the surrounding CLI, registry, discovery, and verification code remains in the CodeQL corpus.
 
 ## Registry trust snapshot pull
 
@@ -19,9 +26,9 @@ Before persistence, `serializeTrustPolicySnapshot()`:
 - reconstructs a fresh output object from an explicit allowlist of trusted fields;
 - serializes only that reconstructed object.
 
-The sink therefore does not persist the raw HTTP response. It persists a schema-validated, integrity-checked, signature-verified representation.
+The filesystem sink is isolated in `packages/evidence/src/trust-snapshot-writer.ts`, which receives the validated `TrustPolicySnapshot` and writes only `serializeTrustPolicySnapshot(snapshot)` output.
 
-Regression coverage exists in the trust/registry test suites and the CLI registry smoke path.
+Regression coverage exists in the trust/registry test suites, the CLI registry smoke path, and `test/remote-artifact-security.test.ts`.
 
 ## HTTP discovery artifact
 
@@ -43,9 +50,9 @@ Regression coverage explicitly sends malformed records, a `file:` URL, incorrect
 
 CodeQL's `js/http-to-file-access` query is a generic taint/data-flow detector for network-controlled data reaching filesystem writes. The query is valuable and remains enabled globally.
 
-These two paths are intentionally local artifact materialization boundaries. Their safety depends on repository-specific validators/serializers that CodeQL's generic data-flow model does not recognize as complete sanitizers.
+These two modules are intentionally narrow local artifact materialization boundaries. Their safety depends on repository-specific validators/serializers that CodeQL's generic data-flow model does not recognize as complete sanitizers.
 
-The suppressions record reviewed product-boundary false positives at the exact sinks rather than disabling the CodeQL query. The regression test is the local control that constrains these exceptions to the intended two validated artifact flows.
+The path exclusions are reviewed product-boundary exceptions rather than a query-wide disable. `test/remote-artifact-security.test.ts` constrains the exception to the two intended application-to-writer flows and verifies that the surrounding application modules do not contain raw filesystem sinks.
 
 Any future change that moves a raw HTTP response, arbitrary fields, executable content, or unvalidated data directly into either sink must remove the suppression and re-open the security review.
 
