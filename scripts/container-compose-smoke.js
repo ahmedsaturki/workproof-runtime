@@ -26,6 +26,19 @@ async function waitForHealthy(baseUrl, version) {
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
 }
+function cleanupPrivateDataDirectory(image, rootDirectory) {
+  run("docker", [
+    "run",
+    "--rm",
+    "--user", "0:0",
+    "--entrypoint", "sh",
+    "-v", rootDirectory + ":/cleanup:rw",
+    image,
+    "-c",
+    "find /cleanup -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +"
+  ]);
+}
+
 function preparePrivateDataDirectory(image, dataDirectory) {
   run("docker", [
     "run",
@@ -96,7 +109,8 @@ async function main() {
     process.stdout.write(JSON.stringify({ status: "verified", project, version: packageJson.version, workId: "compose_smoke", restartPersistence: true }, null, 2) + "\n");
   } finally {
     try { run("docker", compose.concat(["down", "--remove-orphans"])); } catch {}
-    fs.rmSync(root, { recursive: true, force: true });
+    try { cleanupPrivateDataDirectory(image, root); } catch {}
+    try { fs.rmSync(root, { recursive: true, force: true }); } catch {}
   }
 }
 main().catch(error => { process.stderr.write(String(error) + "\n"); process.exitCode = 1; });
