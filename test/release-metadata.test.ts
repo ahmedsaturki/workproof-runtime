@@ -61,6 +61,15 @@ test("main release-state guard enforces current stable documentation coherence",
   assert.match(releaseStateScript, /CONTAINER-RUNTIME commit-addressed image tag does not match release lineage/);
 });
 
+test("published-lineage GHCR probe uses the same authenticated manifest contract as container verification", () => {
+  const lineageScript = fs.readFileSync(path.join(root, "scripts", "verify-published-lineage.js"), "utf8");
+  assert.match(lineageScript, /execFileSync\("curl"/);
+  assert.match(lineageScript, /ghcr\.io\/token\?scope=repository:/);
+  assert.match(lineageScript, /Authorization: Bearer \+ token/);
+  assert.match(lineageScript, /Docker-Content-Digest/);
+  assert.match(lineageScript, /application\/vnd\.oci\.image\.index\+json/);
+});
+
 test("published-lineage verifier exit code is propagated without truthiness coercion", () => {
   assert.match(releaseStateScript, /if \(child\.error\) throw child\.error;/);
   assert.match(releaseStateScript, /process\.exit\(child\.status === null \? 1 : child\.status\);/);
