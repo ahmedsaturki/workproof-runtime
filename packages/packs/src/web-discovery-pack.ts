@@ -74,6 +74,7 @@ class HttpDiscoveryCapability implements Capability {
     const unique = uniqueDiscoveryRecords(Array.isArray(payload.results) ? payload.results : []);
     if (unique.length < input.minRecords) return { status: "rejected" as const, data: { count: unique.length } };
     // lgtm[js/http-to-file-access]
+
     atomicWriteJson(input.outputPath, unique);
     return {
       status: "accepted" as const,
