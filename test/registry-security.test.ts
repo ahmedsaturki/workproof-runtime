@@ -116,7 +116,8 @@ test("trusted administrative signer identities are namespace-scoped when configu
     });
     assert.equal(leaked.status, 403);
     const leakedBody = await leaked.json();
-    assert.match(String(leakedBody.error), /untrusted-signer/);
+    assert.equal(leakedBody.error, "forbidden");
+    assert.doesNotMatch(JSON.stringify(leakedBody), /untrusted-signer|\.js:\d+|packages[\\/]/);
   } finally {
     await server.close();
     fs.rmSync(root, { recursive: true, force: true });

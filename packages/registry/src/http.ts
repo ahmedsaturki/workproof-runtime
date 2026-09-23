@@ -147,6 +147,7 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
   };
 
   const server = http.createServer(async (req: any, res: any) => {
+    const requestId = crypto.randomBytes(8).toString("hex");
     try {
       const method = String(req.method ?? "GET").toUpperCase();
       const url = new URL(String(req.url ?? "/"), `http://${host}`);
@@ -160,7 +161,6 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
       if (method === "POST" && url.pathname === "/v1/proofs") requiredPermission = "write";
       if (url.pathname.startsWith("/v1/trust/")) requiredPermission = "trust";
       const decision = authorize(options.authPolicy, req.headers, requiredPermission);
-      const requestId = crypto.randomBytes(8).toString("hex");
       audit({
         version: "0.1",
         requestId,
@@ -282,8 +282,16 @@ export async function startRegistryServer(options: RegistryServerOptions): Promi
       sendJson(res, 404, { error: "not-found" });
     } catch (error) {
       const message = String(error);
-      const status = /Unknown (proof|trust snapshot) digest|no-current-trust-snapshot/i.test(message) ? 404 : (/untrusted-signer|trust snapshot (conflict|rollback-required)/i.test(message) ? 403 : (/invalid|integrity|digest|Invalid proof|Proof integrity/i.test(message) ? 422 : 500));
-      sendJson(res, status, { error: message });
+      audit({ version: "0.1", event: "request.error", at: new Date().toISOString(), requestId, error: message });
+      const status = /Unknown (proof|trust snapshot) digest|no-current-trust-snapshot/i.test(message)
+        ? 404
+        : (/untrusted-signer|trust snapshot (conflict|rollback-required)/i.test(message)
+          ? 403
+          : (/invalid|integrity|digest|Invalid proof|Proof integrity/i.test(message) ? 422 : 500));
+      const publicError = status === 404
+        ? "not-found"
+        : (status === 403 ? "forbidden" : (status === 422 ? "invalid-request" : "internal-server-error"));
+      sendJson(res, status, { error: publicError, requestId });
     }
   });
 
