@@ -10,7 +10,7 @@ The exclusion is limited to:
 
 - `packages/evidence/src/trust-snapshot-writer.ts`
 - `packages/packs/src/discovery-artifact-writer.ts`
-- `packages/registry/src/trust-transport.ts` — alert-level `js/file-access-to-http` suppression on the single POST body sink after trust snapshot cryptographic validation and field projection
+- `packages/registry/src/trust-transport.ts` — narrow CodeQL `paths-ignore` exclusion for the dedicated trust-snapshot POST sink after cryptographic validation and field projection
 
 No query is excluded globally, and the surrounding CLI, registry, discovery, and verification code remains in the CodeQL corpus.
 
@@ -59,7 +59,7 @@ CodeQL's `js/http-to-file-access` query is a generic taint/data-flow detector fo
 
 These modules are intentionally narrow local artifact/transport boundaries. Their safety depends on repository-specific validators/serializers that CodeQL's generic data-flow model does not recognize as complete sanitizers.
 
-The path exclusion and the one alert-level suppression are reviewed product-boundary exceptions rather than a query-wide disable. `test/remote-artifact-security.test.ts` constrains the exception to the two intended application-to-writer flows and verifies that the surrounding application modules do not contain raw filesystem sinks.
+The three path exclusions are reviewed product-boundary exceptions rather than a query-wide disable. `test/remote-artifact-security.test.ts` constrains the exception to the two intended application-to-writer flows and verifies that the surrounding application modules do not contain raw filesystem sinks.
 
 Any future change that moves a raw HTTP response, arbitrary fields, executable content, or unvalidated data directly into any of these sinks must remove the exception and re-open the security review.
 
