@@ -152,9 +152,10 @@ function assertControlPlaneCapabilityInputs(steps: WorkStep[], workDirectory: st
   });
   const isWithinRoots = (candidate: string, roots: string[]): boolean => {
     const comparable = normalizeComparable(path.resolve(candidate));
+    const separator = require("process").platform === "win32" ? "\\\\" : path.sep;
     return roots.some(root => {
-      const boundary = root.endsWith(path.sep) ? root : root + path.sep;
-      return comparable === root || comparable.startsWith(boundary);
+      const normalizedRoot = root.endsWith(separator) ? root : root + separator;
+      return comparable === root || comparable.startsWith(normalizedRoot);
     });
   };
   const nearestExistingAncestor = (resolved: string): string | undefined => {
