@@ -31,7 +31,7 @@ test('real Chromium browser executes an injected page workflow and verifies resu
 export {};
 
 test("browser Runtime.evaluate strings escape code-delimiter characters without changing value", () => {
-  const malicious = "</script><img src=x>line\\nnext\\u2028end";
+  const malicious = "</script><img src=x>line\nnext\u2028end";
   const escaped = escapeRuntimeEvaluateString(malicious);
   assert.ok(escaped.includes("\\u003C\\u002Fscript\\u003E"));
   assert.ok(escaped.includes("\\u003Cimg"));
