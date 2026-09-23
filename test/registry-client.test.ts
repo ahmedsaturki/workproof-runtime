@@ -87,26 +87,22 @@ test("registry client rejects corrupted proof returned by the registry", async (
 export {};
 
 test("registry proof publishing sends only the validated proof transport shape", async () => {
+  let resolveReceived: ((value: Record<string, any>) => void) | null = null;
   const receivedPromise = new Promise<Record<string, any>>((resolve) => {
-    let settle: ((value: Record<string, any>) => void) | null = resolve;
-    // The promise is completed by the request handler after the full body is parsed.
-    serverHandler = (request, response) => {
-      const chunks: any[] = [];
-      request.on("data", (chunk: any) => chunks.push(chunk));
-      request.on("end", () => {
-        const body = JSON.parse(Buffer.concat(chunks).toString("utf8")) as Record<string, any>;
-        settle?.(body);
-        settle = null;
-        const responseBody = JSON.stringify({ digest: fixture().integrity.digest });
-        response.writeHead(200, { "content-type": "application/json" });
-        response.end(responseBody);
-      });
-    };
+    resolveReceived = resolve;
   });
 
-  let serverHandler: ((request: any, response: any) => void) | null = null;
   const server = require("http").createServer((req: any, res: any) => {
-    if (serverHandler) serverHandler(req, res);
+    const chunks: any[] = [];
+    req.on("data", (chunk: any) => chunks.push(chunk));
+    req.on("end", () => {
+      const received = JSON.parse(Buffer.concat(chunks).toString("utf8")) as Record<string, any>;
+      resolveReceived?.(received);
+      resolveReceived = null;
+      const body = JSON.stringify({ digest: fixture().integrity.digest });
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(body);
+    });
   });
 
   await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
