@@ -2,7 +2,27 @@
 
 Date: 2026-09-23
 
-## v3.8.12 publication closeout
+## v3.8.13 publication closeout
+
+- package version: `3.8.13`
+- stable release tag: `v3.8.13`
+- stable release commit: `dadef28ce8fbd299201a228673f1c2737c5b7d62`
+- GitHub Release ID: `394849659`
+- Release workflow #305: success
+- Container workflow #302: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.13`
+- GHCR digest: `sha256:c9a9f6f6f0fb111dc64d42b1a2746091f14366c389c1af6eb3b0683c6e3fe564`
+- commit-addressed image tag: `dadef28ce8fbd299201a228673f1c2737c5b7d62`
+- five release assets published and SHA256-verified
+- publication verification confirmed benchmark semantics, source/package version alignment, release/tag lineage, and final GHCR provenance
+
+## Main verified baseline
+
+The current stable release line is **v3.8.13**. Main CI is required to verify every post-release reconciliation.
+
+Main contains the v3.4 executable benchmark, restart/resume safety, portable proof, explicit proof compatibility, operator guidance, packaged operator docs/examples, multi-capability execution, external-topology validation, distribution hardening, Control Plane policy/idempotency safety, network-boundary hardening, immutable container-base provenance, and bounded production resource/log controls.
+
+## Previous stable v3.8.12
 
 - package version: `3.8.12`
 - stable release tag: `v3.8.12`
@@ -10,38 +30,18 @@ Date: 2026-09-23
 - GitHub Release ID: `394761988`
 - Release workflow #284: success
 - Container workflow #281: success
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.12`
 - GHCR digest: `sha256:5690c65d0425c743c4fa0ebc1a31f913497eb6b7d4e8fa11a129a833aa926d5d`
 - commit-addressed image tag: `19b1efbfbc5f6f2d14eae5538f339667bd9fbb92`
-- five release assets published and SHA256-verified
-- publication verification confirmed benchmark semantics, source/package version alignment, release/tag lineage, and final GHCR provenance
-
-## Main verified baseline
-
-The current stable release line is **v3.8.12**. Main CI is required to verify every post-release reconciliation.
-
-Main contains the v3.4 executable benchmark, restart/resume safety, portable proof, explicit proof compatibility, operator guidance, packaged operator docs/examples, multi-capability execution, external-topology validation, distribution hardening, Control Plane policy/idempotency safety, network-boundary hardening, immutable container-base provenance, and bounded production resource/log controls.
-
-## Previous stable v3.8.11
-
-- package version: `3.8.11`
-- stable release tag: `v3.8.11`
-- stable release commit: `9568cb2daffdd2f142f6112b1a6bd2c9cdbc4298`
-- GitHub Release ID: `394667295`
-- Release workflow #265: success
-- Container workflow #262: success
-- GHCR digest: `sha256:9ad675ba540959c8ada0254f6c133c5fd51eaf02319fe8032b39738f34ea5088`
-- commit-addressed image tag: `9568cb2daffdd2f142f6112b1a6bd2c9cdbc4298`
 
 ## Published snapshot vs current main
 
-The `v3.8.12` GitHub Release and source/container assets were verified against release commit `19b1efbfbc5f6f2d14eae5538f339667bd9fbb92`. The current `main` reconciliation records the published GitHub Release and GHCR evidence without rewriting or retagging the published release and without changing runtime semantics.
+The `v3.8.13` GitHub Release and source/container assets were verified against release commit `dadef28ce8fbd299201a228673f1c2737c5b7d62`. The current `main` reconciliation records the published GitHub Release and GHCR evidence without rewriting or retagging the published release and without changing runtime semantics.
 
 ## Current main closeout
 
-- v3.8.12 stable release: published and fully Container-verified
-- current main lineage: reconciled to the exact v3.8.12 GitHub Release target and GHCR digest
-- production Compose: pinned to exact v3.8.12 tag@digest
+- v3.8.13 stable release: published and fully Container-verified
+- current main lineage: reconciled to the exact v3.8.13 GitHub Release target and GHCR digest
+- production Compose: pinned to exact v3.8.13 tag@digest
 - container base: immutable Node 24.21.0 Trixie slim digest enforced by CI/Release/Container
 - production resource envelope: init, 10s stop grace, 1 CPU, 1 GiB RAM, 512 PIDs, 10 MiB × 3 JSON log rotation
 

@@ -4,10 +4,10 @@ WorkProof Studio is distributed as a Node 24 container with persistent `/data/wo
 
 ## Current stable release
 
-- tag: `3.8.12`
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.12`
-- published digest: `sha256:5690c65d0425c743c4fa0ebc1a31f913497eb6b7d4e8fa11a129a833aa926d5d`
-- commit-addressed image tag: `19b1efbfbc5f6f2d14eae5538f339667bd9fbb92`
+- tag: `3.8.13`
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.13`
+- published digest: `sha256:c9a9f6f6f0fb111dc64d42b1a2746091f14366c389c1af6eb3b0683c6e3fe564`
+- commit-addressed image tag: `dadef28ce8fbd299201a228673f1c2737c5b7d62`
 
 ## Container base provenance
 
