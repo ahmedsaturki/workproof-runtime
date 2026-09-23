@@ -18,9 +18,9 @@ The repository's supported operating profile is **Solo Governance**:
 
 This profile is deliberately explicit: automated scanners and review bots can provide evidence and comments, but they are not represented as human approvals.
 
-## Migration state
+## Solo Governance status
 
-The repository is currently in the migration window: the live GitHub ruleset has not yet been switched to the Solo settings below. Until that Settings change is made, the new governance verifier is expected to fail closed rather than pretending the migration is complete.
+The Solo Governance migration is complete. The live `main` ruleset was verified after the GitHub Settings change and now matches the repository's single-maintainer operating profile.
 
 ## Active main ruleset
 
@@ -40,7 +40,9 @@ The intended Solo Governance settings are:
 - deletion protection enabled;
 - non-fast-forward protection enabled;
 - no bypass actors;
-- merge methods limited to merge, squash, and rebase.
+- merge methods limited to merge, squash, and rebase;
+- Copilot code review on push remains active;
+- required commit signatures remain active.
 
 GitHub exposes the review and ruleset controls used here, including required approval count, Code Owner review, latest-push approval, stale-review dismissal, thread resolution, and status-check requirements.
 
@@ -69,7 +71,7 @@ Under Solo Governance this remains useful as ownership metadata and for future m
 The repository intentionally layers automated controls rather than pretending they are human reviewers:
 
 - CodeQL analyzes JavaScript/TypeScript and GitHub Actions;
-- Dependency Review checks dependency changes when GitHub Dependency Graph is available;
+- Dependency Review checks dependency changes; the repository Dependency Graph is enabled and the v3.8.11 release branch passed Dependency Review;
 - OSSF Scorecard analyzes repository supply-chain practices;
 - Dependabot manages npm and GitHub Actions updates;
 - secret scanning is enforced in CI;
@@ -80,9 +82,9 @@ A Marketplace review application may add additional comments or analysis, but it
 
 ## Release and tag integrity
 
-The published `v3.8.10` tag currently resolves to the verified release commit `9daac7a926ce1631ac708a6c234379d622c56c19`, and Release workflow #261 verified the published assets and SHA256 manifest.
+The published `v3.8.11` tag resolves to the verified release commit `9568cb2daffdd2f142f6112b1a6bd2c9cdbc4298`. Release workflow #265 verified the five published assets and SHA256 manifest; Container workflow #262 verified the matching GHCR image and digest.
 
-GitHub currently reports that release as non-immutable. The release workflow therefore provides publication-time digest/lineage verification, while GitHub-side release/tag immutability is treated as a separate governance hardening layer.
+GitHub currently reports the release as non-immutable. The release workflow therefore provides publication-time digest/lineage verification, while GitHub-side release/tag immutability remains a separate governance hardening layer.
 
 For future release integrity, enable GitHub release immutability where available and protect release tags (for example `v*`) against deletion and force-update.
 
