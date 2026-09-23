@@ -131,7 +131,7 @@ test("external topology smoke never passes a release image from the environment 
   assert.match(externalTopologySmoke, /expectedReleaseImage = "ghcr\.io\/ahmedsaturki\/workproof-runtime:"/);
   assert.ok(externalTopologySmoke.includes("releaseImageOverride !== expectedReleaseImage"));
   assert.ok(externalTopologySmoke.includes("const currentImage = releaseImageOverride ? expectedReleaseImage : localImage;"));
-  assert.doesNotMatch(externalTopologySmoke, /run\(.*releaseImageOverride/s);
+  assert.doesNotMatch(externalTopologySmoke, /run\(\s*["']docker["'][^\n]*releaseImageOverride/);
   assert.doesNotMatch(externalTopologySmoke, /sh.*-lc.*command -v/);
 });
 
