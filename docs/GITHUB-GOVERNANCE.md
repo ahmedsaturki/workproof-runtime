@@ -18,6 +18,10 @@ The repository's supported operating profile is **Solo Governance**:
 
 This profile is deliberately explicit: automated scanners and review bots can provide evidence and comments, but they are not represented as human approvals.
 
+## Migration state
+
+The repository is currently in the migration window: the live GitHub ruleset has not yet been switched to the Solo settings below. Until that Settings change is made, the new governance verifier is expected to fail closed rather than pretending the migration is complete.
+
 ## Active main ruleset
 
 The active repository ruleset is named `main` (ruleset ID `23845160`) and targets `refs/heads/main`.
