@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
+const platform = require("process").platform;
 
 const WINDOWS_SYSTEM_SID = "S-1-5-18";
 
@@ -51,7 +52,7 @@ function secureWindowsFile(filePath: string): void {
 export function securePrivateDirectory(directoryPath: string): void {
   const resolved = path.resolve(directoryPath);
   fs.mkdirSync(resolved, { recursive: true });
-  if (process.platform === "win32") {
+  if (platform === "win32") {
     secureWindowsDirectory(resolved);
   } else {
     fs.chmodSync(resolved, 0o700);
@@ -60,7 +61,7 @@ export function securePrivateDirectory(directoryPath: string): void {
 
 export function securePrivateFile(filePath: string): void {
   const resolved = path.resolve(filePath);
-  if (process.platform === "win32") {
+  if (platform === "win32") {
     secureWindowsFile(resolved);
   } else {
     fs.chmodSync(resolved, 0o600);
