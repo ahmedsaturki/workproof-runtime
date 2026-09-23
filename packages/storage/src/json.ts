@@ -2,6 +2,7 @@ import { WorkObject } from "../../core/src/types";
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const { securePrivateDirectory, securePrivateFile } = require("./private-files");
 
 function safeName(id: string): string {
   if (!/^[A-Za-z0-9._-]+$/.test(id)) throw new Error("Invalid work id");
@@ -9,13 +10,15 @@ function safeName(id: string): string {
 }
 
 export class JsonWorkRepository {
-  constructor(private readonly dir: string) { fs.mkdirSync(dir, { recursive: true }); }
+  constructor(private readonly dir: string) { securePrivateDirectory(dir); }
   save(work: WorkObject): string {
     const target = path.join(this.dir, `${safeName(work.id)}.json`);
     const tmp = `${target}.tmp-${process.pid}-${crypto.randomBytes(8).toString("hex")}`;
     try {
       fs.writeFileSync(tmp, JSON.stringify(work, null, 2), { encoding: "utf8", flag: "wx" });
+      securePrivateFile(tmp);
       fs.renameSync(tmp, target);
+      securePrivateFile(target);
       return target;
     } catch (error) {
       try { if (fs.existsSync(tmp)) fs.unlinkSync(tmp); } catch {}
