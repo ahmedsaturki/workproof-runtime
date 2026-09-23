@@ -13,7 +13,7 @@ function run(command, args, allowFailure = false) {
 }
 
 function requireCommand(command) {
-  const result = run("sh", ["-lc", "command -v " + command], true);
+  const result = run(command, ["--version"], true);
   if (result.status !== 0) throw new Error("Required host command is unavailable: " + command);
 }
 
