@@ -2,7 +2,10 @@ const fs = require("fs");
 const path = require("path");
 
 async function json(url, options = {}) {
-  const response = await fetch(url, options);
+  const headers = { ...(options.headers || {}) };
+  const token = process.env.GITHUB_TOKEN;
+  if (token && url.startsWith("https://api.github.com/")) headers.authorization = "Bearer " + token;
+  const response = await fetch(url, { ...options, headers });
   const text = await response.text();
   let value;
   try { value = JSON.parse(text); } catch { throw new Error("Invalid JSON from " + url); }
