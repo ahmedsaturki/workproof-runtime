@@ -529,7 +529,10 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
         return;
       }
 
-      sendJson(res, status, { error: message, requestId: id });
+      const publicError = status === 404
+        ? "not-found"
+        : (status === 400 ? "invalid-request" : "internal-server-error");
+      sendJson(res, status, { error: publicError, requestId: id });
     }
   });
 

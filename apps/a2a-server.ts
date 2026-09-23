@@ -329,7 +329,10 @@ export async function startA2AServer(options: A2AOptions): Promise<RunningA2A> {
     } catch (error) {
       const code = Number((error as any)?.rpcCode ?? (/not found|Unknown work/i.test(String(error)) ? -32001 : -32603));
       const status = code === -32001 ? 404 : (code === -32601 ? 404 : 400);
-      send(res, status, rpcError(body.id, code, String((error as any)?.message ?? error)));
+      const publicMessage = code === -32001
+        ? "Task not found"
+        : (code === -32601 ? "Method not found" : (code === -32602 ? "Invalid parameters" : "Internal server error"));
+      send(res, status, rpcError(body.id, code, publicMessage));
     }
   });
 

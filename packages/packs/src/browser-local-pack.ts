@@ -24,6 +24,30 @@ function isAllowedBrowserUrl(value: string): boolean {
   } catch { return false; }
 }
 
+const browserCodeCharMap: Record<string, string> = {
+  "<": "\\u003C",
+  ">": "\\u003E",
+  "/": "\\u002F",
+  "\b": "\\b",
+  "\f": "\\f",
+  "\n": "\\n",
+  "\r": "\\r",
+  "\t": "\\t",
+  "\0": "\\0",
+  "\u2028": "\\u2028",
+  "\u2029": "\\u2029"
+};
+
+function escapeUnsafeChars(str: string): string {
+  return str.replace(/[<>\/\b\f\n\r\t\0\u2028\u2029]/g, x => browserCodeCharMap[x]);
+}
+
+export function escapeRuntimeEvaluateString(value: string): string {
+  const serialized = JSON.stringify(value);
+  if (typeof serialized !== "string") throw new Error("Unable to serialize browser evaluation string");
+  return escapeUnsafeChars(serialized);
+}
+
 function cdpHttp(port: number, pathname: string, method = "GET", timeoutMs = 1500): Promise<any> {
   return new Promise((resolve, reject) => {
     const controller = new AbortController();
@@ -270,7 +294,7 @@ class LocalBrowserCapability implements Capability {
           await ws.call!("Page.navigate", { url: input.startUrl });
           if (!(await waitFor(ws, "document.readyState === 'complete'"))) throw new Error("Initial page did not become ready");
           if (input.html) {
-            await evaluate(ws, `document.open();document.write(${JSON.stringify(input.html)});document.close();void 0`);
+            await evaluate(ws, `document.open();document.write(${escapeRuntimeEvaluateString(input.html)});document.close();void 0`);
             if (!(await waitFor(ws, "document.readyState === 'complete'"))) throw new Error("Injected page did not become ready");
           }
 
@@ -285,21 +309,21 @@ class LocalBrowserCapability implements Capability {
                 break;
               case "fill":
                 if (!action.selector) throw new Error("fill requires selector");
-                if (!(await waitFor(ws, `Boolean(document.querySelector(${JSON.stringify(action.selector)}))`))) throw new Error(`fill target not found: ${action.selector}`);
-                await evaluate(ws, `(()=>{const e=document.querySelector(${JSON.stringify(action.selector)}); if(!e) throw new Error('not found'); e.focus(); e.value=${JSON.stringify(action.value ?? "")}; e.dispatchEvent(new Event('input',{bubbles:true})); e.dispatchEvent(new Event('change',{bubbles:true})); return e.value;})()`);
+                if (!(await waitFor(ws, `Boolean(document.querySelector(${escapeRuntimeEvaluateString(action.selector)}))`))) throw new Error(`fill target not found: ${action.selector}`);
+                await evaluate(ws, `(()=>{const e=document.querySelector(${escapeRuntimeEvaluateString(action.selector)}); if(!e) throw new Error('not found'); e.focus(); e.value=${escapeRuntimeEvaluateString(action.value ?? "")}; e.dispatchEvent(new Event('input',{bubbles:true})); e.dispatchEvent(new Event('change',{bubbles:true})); return e.value;})()`);
                 outputs.push({ type: action.type, selector: action.selector });
                 break;
               case "click":
                 if (!action.selector) throw new Error("click requires selector");
-                if (!(await waitFor(ws, `Boolean(document.querySelector(${JSON.stringify(action.selector)}))`))) throw new Error(`click target not found: ${action.selector}`);
-                await evaluate(ws, `(()=>{const e=document.querySelector(${JSON.stringify(action.selector)}); if(!e) throw new Error('not found'); e.click(); return true;})()`);
+                if (!(await waitFor(ws, `Boolean(document.querySelector(${escapeRuntimeEvaluateString(action.selector)}))`))) throw new Error(`click target not found: ${action.selector}`);
+                await evaluate(ws, `(()=>{const e=document.querySelector(${escapeRuntimeEvaluateString(action.selector)}); if(!e) throw new Error('not found'); e.click(); return true;})()`);
                 if (!(await waitFor(ws, "document.readyState === 'complete'"))) throw new Error("Page did not settle after click");
                 outputs.push({ type: action.type, selector: action.selector });
                 break;
               case "get_text":
                 if (!action.selector) throw new Error("get_text requires selector");
-                if (!(await waitFor(ws, `Boolean(document.querySelector(${JSON.stringify(action.selector)}))`))) throw new Error(`text target not found: ${action.selector}`);
-                outputs.push({ type: action.type, text: await evaluate(ws, `(()=>{const e=document.querySelector(${JSON.stringify(action.selector)}); return e ? e.textContent : null;})()`) });
+                if (!(await waitFor(ws, `Boolean(document.querySelector(${escapeRuntimeEvaluateString(action.selector)}))`))) throw new Error(`text target not found: ${action.selector}`);
+                outputs.push({ type: action.type, text: await evaluate(ws, `(()=>{const e=document.querySelector(${escapeRuntimeEvaluateString(action.selector)}); return e ? e.textContent : null;})()`) });
                 break;
             }
           }

@@ -19,6 +19,22 @@ function assertValidProof(data: any): void {
   }
 }
 
+function proofForTransport(data: any): Record<string, unknown> {
+  assertValidProof(data);
+  const transport: Record<string, unknown> = {
+    version: data.version,
+    work: data.work,
+    effects: data.effects,
+    sagas: data.sagas ?? [],
+    artifacts: data.artifacts,
+    verification: data.verification,
+    events: data.events,
+    integrity: data.integrity
+  };
+  if (data.signature !== undefined) transport.signature = data.signature;
+  return transport;
+}
+
 function normalizeBaseUrl(registryUrl: string): string {
   const url = new URL(registryUrl);
   if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("Registry URL must use HTTP or HTTPS");
@@ -47,9 +63,9 @@ async function request(registryUrl: string, method: string, path: string, body?:
 }
 
 export async function publishProofToRegistry(registryUrl: string, proof: Record<string, unknown>, token?: string): Promise<Record<string, unknown>> {
-  assertValidProof(proof);
-  const expectedDigest = digestProofBundle(proofBundle(proof));
-  const result = await request(registryUrl, "POST", "/v1/proofs", proof, token);
+  const transport = proofForTransport(proof);
+  const expectedDigest = digestProofBundle(proofBundle(transport));
+  const result = await request(registryUrl, "POST", "/v1/proofs", transport, token);
   if (result?.digest !== expectedDigest) throw new Error("Registry returned a mismatched proof digest");
   return result;
 }
@@ -80,7 +96,14 @@ function assertValidTrustSnapshot(snapshot: TrustPolicySnapshot): void {
 
 export async function publishTrustSnapshotToRegistry(registryUrl: string, snapshot: TrustPolicySnapshot, token?: string): Promise<Record<string, unknown>> {
   assertValidTrustSnapshot(snapshot);
-  const result = await request(registryUrl, "POST", "/v1/trust/snapshots", snapshot, token);
+  const transport: TrustPolicySnapshot = {
+    version: "0.1",
+    epoch: snapshot.epoch,
+    policy: snapshot.policy,
+    digest: snapshot.digest,
+    ...(snapshot.signature ? { signature: snapshot.signature } : {})
+  };
+  const result = await request(registryUrl, "POST", "/v1/trust/snapshots", transport, token);
   if (result?.record?.digest !== snapshot.digest) throw new Error("Registry returned a mismatched trust snapshot digest");
   return result;
 }

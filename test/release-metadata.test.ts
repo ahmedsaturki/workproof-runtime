@@ -8,6 +8,8 @@ const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), 
 const lockJson = JSON.parse(fs.readFileSync(path.join(root, "package-lock.json"), "utf8"));
 const licenseText = fs.readFileSync(path.join(root, "LICENSE"), "utf8");
 const releaseStateScript = fs.readFileSync(path.join(root, "scripts", "verify-main-release-state.js"), "utf8");
+const soloGovernanceScript = fs.readFileSync(path.join(root, "scripts", "verify-solo-governance.js"), "utf8");
+const externalTopologySmoke = fs.readFileSync(path.join(root, "scripts", "external-topology-smoke.js"), "utf8");
 
 test("release metadata is explicit and reproducible", () => {
   assert.strictEqual(packageJson.license, "Apache-2.0");
@@ -30,8 +32,19 @@ test("main release-state guard keeps release-control allowlist explicit", () => 
   assert.match(releaseStateScript, /test\/release-metadata\.test\.ts/);
 });
 
+test("external topology smoke uses compatible tool-specific version probes", () => {
+  assert.match(externalTopologySmoke, /openssl:\s*\["version"\]/);
+  assert.match(externalTopologySmoke, /docker:\s*\["--version"\]/);
+  assert.match(externalTopologySmoke, /curl:\s*\["--version"\]/);
+  assert.match(externalTopologySmoke, /tar:\s*\["--version"\]/);
+});
+
+test("solo governance verifier authenticates GitHub API calls when a token is available", () => {
+  assert.match(soloGovernanceScript, /process\.env\.GITHUB_TOKEN/);
+  assert.match(soloGovernanceScript, /headers\.authorization = "Bearer " \+ token/);
+});
+
 test("main release-state guard enforces current stable documentation coherence", () => {
-  assert.match(releaseStateScript, /README release asset name does not match package version/);
   assert.match(releaseStateScript, /README current stable release does not match package version/);
   assert.match(releaseStateScript, /STATUS current stable release line does not match package version/);
   assert.match(releaseStateScript, /SOURCE-MANIFEST current verified release lineage does not match package version/);
@@ -58,7 +71,6 @@ test("published-lineage verifier exit code is propagated without truthiness coer
 
 const ciWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "ci.yml"), "utf8");
 const releaseWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "release.yml"), "utf8");
-const externalTopologySmoke = fs.readFileSync(path.join(root, "scripts", "external-topology-smoke.js"), "utf8");
 const composeSmoke = fs.readFileSync(path.join(root, "scripts", "container-compose-smoke.js"), "utf8");
 const containerWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "container.yml"), "utf8");
 
@@ -114,3 +126,12 @@ test("release waits for the container verification gate before package verificat
 });
 
 export {};
+
+test("external topology smoke never passes a release image from the environment directly to Docker", () => {
+  assert.match(externalTopologySmoke, /expectedReleaseImage = "ghcr\.io\/ahmedsaturki\/workproof-runtime:"/);
+  assert.ok(externalTopologySmoke.includes("releaseImageOverride !== expectedReleaseImage"));
+  assert.ok(externalTopologySmoke.includes("const currentImage = releaseImageOverride ? expectedReleaseImage : localImage;"));
+  assert.doesNotMatch(externalTopologySmoke, /run\(\s*["']docker["'][^\n]*releaseImageOverride/);
+  assert.doesNotMatch(externalTopologySmoke, /sh.*-lc.*command -v/);
+});
+

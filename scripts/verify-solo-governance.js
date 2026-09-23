@@ -4,12 +4,13 @@ const REPOSITORY = process.env.GITHUB_REPOSITORY || "ahmedsaturki/workproof-runt
 
 async function fetchRuleset() {
   const url = `https://api.github.com/repos/${REPOSITORY}/rulesets/${RULESET_ID}`;
-  const response = await fetch(url, {
-    headers: {
-      accept: "application/vnd.github+json",
-      "user-agent": "workproof-solo-governance-verifier"
-    }
-  });
+  const headers = {
+    accept: "application/vnd.github+json",
+    "user-agent": "workproof-solo-governance-verifier"
+  };
+  const token = process.env.GITHUB_TOKEN;
+  if (token) headers.authorization = "Bearer " + token;
+  const response = await fetch(url, { headers });
   if (!response.ok) {
     const body = await response.text();
     throw new Error(`GitHub ruleset lookup failed: HTTP ${response.status}: ${body.slice(0, 400)}`);
@@ -59,6 +60,14 @@ async function main() {
     "All review threads must remain resolved before merge");
   assert(p.require_extra_approval_for_unattributed_changes === true,
     "Unattributed Copilot changes must retain the extra approval safety gate");
+
+  const signatures = requiredRule(ruleset, "required_signatures");
+  void signatures;
+
+  const copilotReview = requiredRule(ruleset, "copilot_code_review");
+  const copilot = copilotReview.parameters ?? {};
+  assert(copilot.review_on_push === true, "Copilot code review on push must remain enabled");
+  assert(copilot.review_draft_pull_requests === true, "Copilot review of draft pull requests must remain enabled");
 
   const statusChecks = requiredRule(ruleset, "required_status_checks");
   const s = statusChecks.parameters ?? {};

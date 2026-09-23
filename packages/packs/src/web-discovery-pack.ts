@@ -1,6 +1,7 @@
 import { CapabilityRegistry } from "../../capabilities/src/registry";
 import { Capability, EvidenceRef, Verifier } from "../../core/src/types";
 const fs = require("fs");
+import { writeValidatedDiscoveryArtifact } from "./discovery-artifact-writer";
 
 export interface DiscoveryInput {
   searchUrl: string;
@@ -15,6 +16,37 @@ export interface DiscoveryRecord {
   source: string;
 }
 
+function normalizeDiscoveryRecord(value: unknown): DiscoveryRecord | null {
+  if (!value || typeof value !== "object") return null;
+  const row = value as Record<string, unknown>;
+  if (typeof row.name !== "string" || typeof row.website !== "string" || typeof row.source !== "string") return null;
+  const name = row.name.trim();
+  const website = row.website.trim();
+  const source = row.source.trim();
+  if (!name || !website || !source || name.length > 500 || website.length > 4096 || source.length > 500) return null;
+  try {
+    const parsed = new URL(website);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+  } catch {
+    return null;
+  }
+  return { name, website, source };
+}
+
+function uniqueDiscoveryRecords(values: unknown[]): DiscoveryRecord[] {
+  const seen = new Set<string>();
+  const unique: DiscoveryRecord[] = [];
+  for (const value of values) {
+    const record = normalizeDiscoveryRecord(value);
+    if (!record) continue;
+    const key = record.website.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(record);
+  }
+  return unique;
+}
+
 class HttpDiscoveryCapability implements Capability {
   name = "pack.discovery.http";
   version = "0.1.0";
@@ -26,16 +58,10 @@ class HttpDiscoveryCapability implements Capability {
     const url = `${input.searchUrl}?q=${encodeURIComponent(input.query)}`;
     const response = await fetch(url);
     if (!response.ok) return { status: "rejected" as const, data: { status: response.status } };
-    const payload = await response.json() as { results: DiscoveryRecord[] };
-    const seen = new Set<string>();
-    const unique = payload.results.filter(r => r.name && r.website && r.source).filter(r => {
-      const key = r.website.toLowerCase();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+    const payload = await response.json() as { results?: unknown[] };
+    const unique = uniqueDiscoveryRecords(Array.isArray(payload.results) ? payload.results : []);
     if (unique.length < input.minRecords) return { status: "rejected" as const, data: { count: unique.length } };
-    fs.writeFileSync(input.outputPath, JSON.stringify(unique, null, 2), "utf8");
+    writeValidatedDiscoveryArtifact(input.outputPath, unique);
     return {
       status: "accepted" as const,
       data: { count: unique.length, source: url },
