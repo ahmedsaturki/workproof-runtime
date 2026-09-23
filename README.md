@@ -74,9 +74,9 @@ The runtime remains the authority for execution, risk policy, effects, verificat
 
 The v3.8.11 release publishes:
 
-- `operational-reality-core-3.8.10.tgz`
-- `workproof-runtime-v3.8.10.tar.gz`
-- `workproof-benchmark-v3.8.10.json`
+- `operational-reality-core-3.8.11.tgz`
+- `workproof-runtime-v3.8.11.tar.gz`
+- `workproof-benchmark-v3.8.11.json`
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
