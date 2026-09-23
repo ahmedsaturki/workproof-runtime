@@ -2,7 +2,7 @@
 
 ## Cross-platform runtime hardening release
 
-v3.8.11 is the current published stable release following v3.8.10. It carries the integrated portability, filesystem-security, browser-runtime, Control Plane, A2A boundary, benchmark, and verification hardening validated by the repository CI matrix.
+v3.8.11 was the published stable release following v3.8.10. It carried the integrated portability, filesystem-security, browser-runtime, Control Plane, A2A boundary, benchmark, and verification hardening validated by the repository CI matrix.
 
 ### Included hardening
 
