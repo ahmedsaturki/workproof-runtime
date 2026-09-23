@@ -6,6 +6,7 @@ const required = [
   ".github/CODEOWNERS",
   ".github/dependabot.yml",
   "scripts/external-topology-smoke.js",
+  "scripts/container-compose-smoke.js",
   "scripts/packed-control-plane-smoke.js",
   "scripts/packed-mcp-smoke.js",
   "scripts/packed-a2a-smoke.js",

@@ -40,10 +40,79 @@ function waitForStatus(baseUrl, expectedStatus, user, password) {
   throw new Error("External topology did not return expected HTTP status " + expectedStatus);
 }
 
+function containerState(containerName) {
+  const probe = run("docker", ["inspect", containerName, "--format={{json .State}}"], true);
+  if (probe.status !== 0 || !probe.stdout.trim()) return null;
+  try { return JSON.parse(probe.stdout); } catch { return null; }
+}
+
+function preparePrivateDataDirectory(image, dataDirectory) {
+  run("docker", [
+    "run",
+    "--rm",
+    "--user", "0:0",
+    "--entrypoint", "sh",
+    "-v", dataDirectory + ":/data:rw",
+    image,
+    "-c",
+    "chown -R 10001:10001 /data && chmod 700 /data && find /data -type f -name '*.json' -exec chmod 600 {} +"
+  ]);
+  const state = fs.statSync(dataDirectory);
+  if (process.platform !== "win32" && typeof state.uid === "number" && state.uid !== 10001) {
+    throw new Error("Container data directory ownership was not prepared for UID 10001: uid=" + state.uid);
+  }
+}
+
+function backupPrivateDataDirectory(image, dataDirectory, backupFile) {
+  const backupDir = path.dirname(backupFile);
+  const backupName = path.basename(backupFile);
+  run("docker", [
+    "run",
+    "--rm",
+    "--user", "0:0",
+    "--entrypoint", "sh",
+    "-v", dataDirectory + ":/data:ro",
+    "-v", backupDir + ":/backup:rw",
+    image,
+    "-c",
+    "tar -C /data -czf /backup/" + backupName + " ."
+  ]);
+}
+
+function restorePrivateDataDirectory(image, dataDirectory, backupFile) {
+  const backupDir = path.dirname(backupFile);
+  const backupName = path.basename(backupFile);
+  run("docker", [
+    "run",
+    "--rm",
+    "--user", "0:0",
+    "--entrypoint", "sh",
+    "-v", dataDirectory + ":/data:rw",
+    "-v", backupDir + ":/backup:ro",
+    image,
+    "-c",
+    "find /data -mindepth 1 -maxdepth 1 -exec rm -rf -- {} + && chown 10001:10001 /data && chmod 700 /data && tar -C /data -xzf /backup/" + backupName + " && chown -R 10001:10001 /data && chmod 700 /data && find /data -type f -name '*.json' -exec chmod 600 {} +"
+  ]);
+  const state = fs.statSync(dataDirectory);
+  if (process.platform !== "win32" && typeof state.uid === "number" && state.uid !== 10001) {
+    throw new Error("Restored container data directory ownership is not UID 10001: uid=" + state.uid);
+  }
+}
+
 function waitContainerHealth(containerName, version, attempts = 45) {
   let lastStatus = "";
   let lastBody = "";
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    const state = containerState(containerName);
+    if (state && ["exited", "dead"].includes(state.Status)) {
+      const logs = run("docker", ["logs", containerName], true);
+      throw new Error(
+        "Container exited before becoming healthy: status=" + String(state.Status) +
+        " exitCode=" + String(state.ExitCode ?? "") +
+        " error=" + String(state.Error ?? "") +
+        " logs=" + String(logs.stdout || logs.stderr || "").slice(0, 1000)
+      );
+    }
     const probe = run("docker", [
       "exec",
       containerName,
@@ -177,6 +246,7 @@ async function main() {
 
   const work = fixture();
   fs.writeFileSync(path.join(dataDir, work.id + ".json"), JSON.stringify(work, null, 2) + "\n", "utf8");
+  preparePrivateDataDirectory(currentImage, dataDir);
 
   const password = "smoke-" + runId;
   const hash = run("openssl", ["passwd", "-apr1", "-salt", "smoke", password]).stdout.trim();
@@ -214,13 +284,11 @@ async function main() {
     if (workValue.work?.status !== "verified") throw new Error("Authenticated Work Object was not readable through TLS/auth edge");
     if (JSON.stringify(workValue).includes(password)) throw new Error("Raw secret leaked into Work Object response");
 
-    run("tar", ["-C", dataDir, "-czf", backupPath, "."]);
+    backupPrivateDataDirectory(currentImage, dataDir, backupPath);
     if (!fs.existsSync(backupPath) || fs.statSync(backupPath).size === 0) throw new Error("Backup archive was not created");
 
     remove(appName);
-    fs.rmSync(dataDir, { recursive: true, force: true });
-    fs.mkdirSync(dataDir, { recursive: true });
-    run("tar", ["-C", dataDir, "-xzf", backupPath]);
+    restorePrivateDataDirectory(productionImage, dataDir, backupPath);
 
     run("docker", ["run", "-d", "--name", appName, "--network", network, "-e", "WORKPROOF_ALLOW_NON_LOOPBACK=1", "-v", dataDir + ":/data/work-runs", productionImage, "sh", "-c", "node dist/apps/studio.js /data/work-runs 8788 0.0.0.0"]);
     waitHealthy(baseUrl, packageJson.version, "smoke", password);

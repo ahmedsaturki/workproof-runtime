@@ -60,6 +60,34 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Wait for container verification gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 120); do
+            RUN_ID="$(gh run list --repo "${GITHUB_REPOSITORY}" --workflow container.yml --branch "${GITHUB_REF_NAME}" --limit 20 --json databaseId,headSha,status,conclusion --jq '.[] | select(.headSha == "'${GITHUB_SHA}'") | .databaseId' | head -n 1)"
+            if [ -n "${RUN_ID}" ]; then
+              STATUS="$(gh run view "${RUN_ID}" --repo "${GITHUB_REPOSITORY}" --json status --jq '.status')"
+              CONCLUSION="$(gh run view "${RUN_ID}" --repo "${GITHUB_REPOSITORY}" --json conclusion --jq '.conclusion')"
+              echo "Container verification run ${RUN_ID}: status=${STATUS} conclusion=${CONCLUSION}"
+              if [ "${STATUS}" = "completed" ]; then
+                if [ "${CONCLUSION}" != "success" ]; then
+                  echo "Container verification gate failed for ${GITHUB_SHA}."
+                  exit 1
+                fi
+                exit 0
+              fi
+            else
+              echo "Waiting for container verification run on ${GITHUB_SHA}..."
+            fi
+            sleep 5
+          done
+          echo "Timed out waiting for container verification gate."
+          exit 1
+
+
       - name: Full release verification
         run: npm run check
 
@@ -119,33 +147,6 @@ jobs:
           echo "packed MCP execution verified"
           node scripts/packed-a2a-smoke.js "${SMOKE_DIR}/node_modules/operational-reality-core"
           echo "packed A2A execution verified"
-      - name: Wait for container verification gate
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          for attempt in $(seq 1 120); do
-            RUN_ID="$(gh run list --repo "${GITHUB_REPOSITORY}" --workflow container.yml --branch "${GITHUB_REF_NAME}" --limit 20 --json databaseId,headSha,status,conclusion --jq '.[] | select(.headSha == "'${GITHUB_SHA}'") | .databaseId' | head -n 1)"
-            if [ -n "${RUN_ID}" ]; then
-              STATUS="$(gh run view "${RUN_ID}" --repo "${GITHUB_REPOSITORY}" --json status --jq '.status')"
-              CONCLUSION="$(gh run view "${RUN_ID}" --repo "${GITHUB_REPOSITORY}" --json conclusion --jq '.conclusion')"
-              echo "Container verification run ${RUN_ID}: status=${STATUS} conclusion=${CONCLUSION}"
-              if [ "${STATUS}" = "completed" ]; then
-                if [ "${CONCLUSION}" != "success" ]; then
-                  echo "Container verification gate failed for ${GITHUB_SHA}."
-                  exit 1
-                fi
-                exit 0
-              fi
-            else
-              echo "Waiting for container verification run on ${GITHUB_SHA}..."
-            fi
-            sleep 5
-          done
-          echo "Timed out waiting for container verification gate."
-          exit 1
-
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}

@@ -54,4 +54,45 @@ test("published-lineage verifier exit code is propagated without truthiness coer
   assert.match(releaseStateScript, /git.*cat-file.*lineage\.release\.commit/s);
 });
 
+
+const ciWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "ci.yml"), "utf8");
+const releaseWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "release.yml"), "utf8");
+const externalTopologySmoke = fs.readFileSync(path.join(root, "scripts", "external-topology-smoke.js"), "utf8");
+const composeSmoke = fs.readFileSync(path.join(root, "scripts", "container-compose-smoke.js"), "utf8");
+
+test("external topology smoke uses the runtime UID for bind-mounted private data", () => {
+  assert.match(externalTopologySmoke, /"--user", "0:0"/);
+  assert.match(externalTopologySmoke, /chown -R 10001:10001 \/data/);
+  assert.match(externalTopologySmoke, /chmod 700 \/data/);
+  assert.ok(externalTopologySmoke.includes("preparePrivateDataDirectory(currentImage, dataDir)"));
+  assert.ok(externalTopologySmoke.includes("restorePrivateDataDirectory(productionImage, dataDir, backupPath)"));
+});
+
+test("external topology backup operates through the private container boundary", () => {
+  assert.ok(externalTopologySmoke.includes("function backupPrivateDataDirectory(image, dataDirectory, backupFile)"));
+  assert.ok(externalTopologySmoke.includes("function restorePrivateDataDirectory(image, dataDirectory, backupFile)"));
+  assert.ok(externalTopologySmoke.includes('dataDirectory + ":/data:ro"'));
+  assert.ok(externalTopologySmoke.includes("tar -C /data -czf /backup/"));
+  assert.ok(!externalTopologySmoke.includes('tar", ["-C", dataDir, "-czf", backupPath'));
+  assert.ok(!externalTopologySmoke.includes("fs.rmSync(dataDir, { recursive: true, force: true })"));
+});
+
+test("Compose smoke prepares bind-mounted private data for UID 10001", () => {
+  assert.match(composeSmoke, /"--user", "0:0"/);
+  assert.match(composeSmoke, /chown -R 10001:10001 \/data/);
+  assert.match(composeSmoke, /chmod 700 \/data/);
+});
+
+test("external topology smoke runs on pull requests", () => {
+  assert.match(ciWorkflow, /github.event_name == 'pull_request'/);
+});
+
+test("release waits for the container verification gate before package verification", () => {
+  const waitIndex = releaseWorkflow.indexOf("name: Wait for container verification gate");
+  const fullCheckIndex = releaseWorkflow.indexOf("name: Full release verification");
+  assert.ok(waitIndex >= 0, "container verification gate must exist");
+  assert.ok(fullCheckIndex >= 0, "full release verification must exist");
+  assert.ok(waitIndex < fullCheckIndex, "container verification must complete before release npm check");
+});
+
 export {};
