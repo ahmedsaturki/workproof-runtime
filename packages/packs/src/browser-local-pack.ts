@@ -98,12 +98,16 @@ export function resolveBrowserBinary(): string {
       ]
     : ["chromium", "chromium-browser", "google-chrome", "google-chrome-stable"];
 
+  const pathEntries = (process.env.PATH ?? "").split(path.delimiter).map(entry => entry.trim().replace(/^"|"$/g, "")).filter(Boolean);
   for (const candidate of candidates) {
-    if (path.isAbsolute(candidate) && !fs.existsSync(candidate)) continue;
-    try {
-      const probe = spawnSync(candidate, ["--version"], { stdio: "ignore", windowsHide: true });
-      if (probe.status === 0) return candidate;
-    } catch {}
+    if (path.isAbsolute(candidate)) {
+      if (fs.existsSync(candidate)) return candidate;
+      continue;
+    }
+    for (const entry of pathEntries) {
+      const resolved = path.join(entry, candidate);
+      if (fs.existsSync(resolved)) return resolved;
+    }
   }
 
   throw new Error(
