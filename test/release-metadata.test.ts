@@ -36,6 +36,10 @@ test("main release-state guard keeps release-control allowlist explicit", () => 
   assert.match(releaseStateScript, /scripts\/verify-solo-governance\.js/);
   assert.match(releaseStateScript, /packages\/control-plane\/src\/http\.ts/);
   assert.match(releaseStateScript, /test\/control-idempotency\.test\.ts/);
+  assert.match(releaseStateScript, /test\/control-plane-app\.test\.ts/);
+  assert.match(releaseStateScript, /scripts\/packed-control-plane-smoke\.js/);
+  assert.match(releaseStateScript, /scripts\/packed-mcp-smoke\.js/);
+  assert.match(releaseStateScript, /scripts\/packed-a2a-smoke\.js/);
   assert.match(releaseStateScript, /scripts\/verify-source-tree\.js/);
   assert.match(releaseStateScript, /scripts\/secret-scan\.js/);
   assert.match(releaseStateScript, /test\/release-metadata\.test\.ts/);

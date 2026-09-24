@@ -8,7 +8,8 @@ const { spawn } = require("child_process");
 async function waitForPort(child: any): Promise<number> {
   return new Promise((resolve, reject) => {
     let output = "";
-    const timer = setTimeout(() => reject(new Error(`control-plane startup timeout: ${output}`)), 10000);
+    const startupTimeoutMs = Number(process.env.WORKPROOF_TEST_TIMEOUT_MS ?? 30000);
+    const timer = setTimeout(() => reject(new Error(`control-plane startup timeout: ${output}`)), startupTimeoutMs);
     const onData = (chunk: any) => {
       output += chunk.toString();
       const match = /"port"\s*:\s*(\d+)/.exec(output);

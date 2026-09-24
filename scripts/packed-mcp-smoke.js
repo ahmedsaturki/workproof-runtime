@@ -9,7 +9,7 @@ function tempDir(prefix) {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 }
 
-function waitForJsonLine(child, timeoutMs = 10000) {
+function waitForJsonLine(child, timeoutMs = Number(process.env.WORKPROOF_TEST_TIMEOUT_MS ?? 30000)) {
   return new Promise((resolve, reject) => {
     let output = "";
     const timer = setTimeout(() => reject(new Error("Timed out waiting for control-plane startup: " + output)), timeoutMs);

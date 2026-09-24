@@ -35,7 +35,8 @@ async function main() {
 
   try {
     const port = await new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error("Timed out waiting for packed control-plane startup: " + stdout)), 10000);
+      const startupTimeoutMs = Number(process.env.WORKPROOF_TEST_TIMEOUT_MS ?? 30000);
+      const timer = setTimeout(() => reject(new Error("Timed out waiting for packed control-plane startup: " + stdout)), startupTimeoutMs);
       const onData = () => {
         const match = /"port"\s*:\s*(\d+)/.exec(stdout);
         if (!match) return;

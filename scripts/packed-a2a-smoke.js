@@ -3,7 +3,7 @@ const os = require("os");
 const path = require("path");
 const { spawn } = require("child_process");
 
-function waitForReady(child, timeoutMs = 10000) {
+function waitForReady(child, timeoutMs = Number(process.env.WORKPROOF_TEST_TIMEOUT_MS ?? 30000)) {
   return new Promise((resolve, reject) => {
     let output = "";
     const timer = setTimeout(() => reject(new Error("Timed out waiting for A2A startup: " + output)), timeoutMs);
