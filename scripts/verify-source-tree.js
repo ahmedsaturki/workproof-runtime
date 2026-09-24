@@ -103,6 +103,7 @@ const required = [
   "docs/packs/data-transform-pack.json",
   "docs/packs/message-outbox-pack.json",
   "docs/packs/git-local-pack.json",
+  "docs/packs/publication-pack.json",
   "docs/schemas/pack.schema.json",
   "docs/schemas/work-object.schema.json",
   "examples/missions/research-local.json",
