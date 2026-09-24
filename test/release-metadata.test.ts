@@ -228,6 +228,13 @@ test("CI external topology smoke only selects GHCR images for semantic release b
   assert.ok(ciWorkflow.includes('export WORKPROOF_RELEASE_IMAGE="ghcr.io/${GITHUB_REPOSITORY}:${RELEASE_REF}"'));
 });
 
+test("solo governance verifier enforces immutable current stable release provenance", () => {
+  assert.ok(soloGovernanceScript.includes("/releases/tags/"));
+  assert.ok(soloGovernanceScript.includes("lineage.release.version"));
+  assert.ok(soloGovernanceScript.includes("release.immutable === true"));
+  assert.ok(soloGovernanceScript.includes("release.target_commitish === lineage.release.commit"));
+});
+
 test("release reconciles an existing release body from the versioned release notes", () => {
   assert.match(releaseWorkflow, /gh release edit "\${RELEASE_TAG}" --repo "\${GITHUB_REPOSITORY}" --notes-file "\${NOTES_FILE}"/);
 });

@@ -100,7 +100,7 @@ The published `v3.8.13` tag resolves to the verified release commit `dadef28ce8f
 
 GitHub currently reports the historical `v3.8.13` release as non-immutable. GitHub release immutability applies to future releases, so this status does not retroactively change the already-published release. The release workflow therefore continues to provide publication-time digest/lineage verification.
 
-The `v*` release-tag ruleset is now active and protects future version tags against deletion, non-fast-forward updates, and ordinary updates. The remaining release-integrity layer is GitHub's future-release immutability setting.
+The `v*` release-tag ruleset is now active and protects future version tags against deletion, non-fast-forward updates, and ordinary updates. The published `v3.8.13` GitHub Release is also immutable. The governance verifier checks the live release state and fails closed if the current stable release loses immutability or its target drifts from recorded release lineage.
 
 ## Verification contract
 

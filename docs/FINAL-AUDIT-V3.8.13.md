@@ -14,7 +14,7 @@ This document was first written as `docs/FINAL-AUDIT-V3.5.md`. Repository FINAL-
 - Pull request: **#170** (`chore/post-v3.8.13-final-hardening` -> `main`) -- **merged** at `4bfd046195675b3bce65bd9cfc42cd1abd4c9d6a` (2026-09-23T22:32:11Z)
 - Branch base at audit start: `main` @ `debcb194247632222b62bc7289558f71fce56674`
 - Package version: `3.8.13`
-- GitHub Release ID: `394849659` (5 assets)
+- GitHub Release ID: `394849659` (5 assets, immutable)
 - GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.13`
 - GHCR digest: `sha256:c9a9f6f6f0fb111dc64d42b1a2746091f14366c389c1af6eb3b0683c6e3fe564`
 - Verified rollback release: **v3.8.1** / `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
@@ -83,11 +83,12 @@ Runtime authority semantics are unchanged: GOAL -> CONTRACT -> ROUTE -> ACT -> O
 
 ## Distribution closeout (live, read-only)
 
-- GitHub Release `v3.8.13` / ID `394849659`: five published assets as listed in the release
+- GitHub Release `v3.8.13` / ID `394849659`: five published assets; release reports immutable
 - Tag/commit lineage matches release commit `dadef28...5b7d62`
 - GHCR `3.8.13` digest matches `docs/release-lineage.json`
 - Rollback image retained at `sha256:7908cc6a...9b5d0` (v3.8.1)
 - No stable tags moved; no published release assets rewritten by this closeout
+- `v*` tag ruleset and GitHub Release immutability are live external governance controls
 
 ## External / non-repo boundaries
 
