@@ -85,6 +85,12 @@ test("solo governance verifier authenticates GitHub API calls when a token is av
   assert.match(soloGovernanceScript, /headers\.authorization = "Bearer " \+ token/);
   assert.match(soloGovernanceScript, /copilot_code_review/);
   assert.match(soloGovernanceScript, /required_signatures/);
+  assert.match(soloGovernanceScript, /WORKPROOF_TAG_RULESET_ID/);
+  assert.match(soloGovernanceScript, /TAG_RULESET_NAME = "v\*"/);
+  assert.match(soloGovernanceScript, /refs\/tags\/v\*/);
+  assert.match(soloGovernanceScript, /requiredRule\(tagRuleset, "deletion"\)/);
+  assert.match(soloGovernanceScript, /requiredRule\(tagRuleset, "non_fast_forward"\)/);
+  assert.match(soloGovernanceScript, /requiredRule\(tagRuleset, "update"\)/);
 });
 
 test("main release-state guard enforces current stable documentation coherence", () => {
@@ -220,6 +226,10 @@ test("CI external topology smoke only selects GHCR images for semantic release b
   assert.ok(ciWorkflow.includes('[[ "${REF_NAME}" =~ ^release/[0-9]+\\.[0-9]+\\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]'));
   assert.ok(ciWorkflow.includes('Using local image for non-versioned release-like branch'));
   assert.ok(ciWorkflow.includes('export WORKPROOF_RELEASE_IMAGE="ghcr.io/${GITHUB_REPOSITORY}:${RELEASE_REF}"'));
+});
+
+test("release reconciles an existing release body from the versioned release notes", () => {
+  assert.match(releaseWorkflow, /gh release edit "\${RELEASE_TAG}" --repo "\${GITHUB_REPOSITORY}" --notes-file "\${NOTES_FILE}"/);
 });
 
 test("release waits for the container verification gate before package verification", () => {

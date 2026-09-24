@@ -1,9 +1,11 @@
 const RULESET_NAME = "main";
 const RULESET_ID = process.env.WORKPROOF_MAIN_RULESET_ID || "23845160";
+const TAG_RULESET_NAME = "v*";
+const TAG_RULESET_ID = process.env.WORKPROOF_TAG_RULESET_ID || "23924353";
 const REPOSITORY = process.env.GITHUB_REPOSITORY || "ahmedsaturki/workproof-runtime";
 
-async function fetchRuleset() {
-  const url = `https://api.github.com/repos/${REPOSITORY}/rulesets/${RULESET_ID}`;
+async function fetchRuleset(id) {
+  const url = `https://api.github.com/repos/${REPOSITORY}/rulesets/${id}`;
   const headers = {
     accept: "application/vnd.github+json",
     "user-agent": "workproof-solo-governance-verifier"
@@ -29,7 +31,7 @@ function requiredRule(ruleset, type) {
 }
 
 async function main() {
-  const ruleset = await fetchRuleset();
+  const ruleset = await fetchRuleset(RULESET_ID);
 
   assert(ruleset.name === RULESET_NAME, `Expected ruleset ${RULESET_NAME}, got ${ruleset.name}`);
   assert(ruleset.enforcement === "active", "main ruleset must be active");
@@ -83,12 +85,27 @@ async function main() {
   const allowedMergeMethods = p.allowed_merge_methods ?? [];
   assert(allowedMergeMethods.length > 0, "At least one merge method must remain enabled");
 
+  const tagRuleset = await fetchRuleset(TAG_RULESET_ID);
+  assert(tagRuleset.name === TAG_RULESET_NAME, `Expected tag ruleset ${TAG_RULESET_NAME}, got ${tagRuleset.name}`);
+  assert(tagRuleset.enforcement === "active", "release tag ruleset must be active");
+  const tagRefs = tagRuleset.conditions?.ref_name?.include ?? [];
+  assert(tagRefs.includes("refs/tags/v*"), "release tag ruleset must target refs/tags/v*");
+  const tagBypassActors = tagRuleset.bypass_actors ?? [];
+  assert(tagBypassActors.length === 0, "Release tag governance forbids ruleset bypass actors");
+  requiredRule(tagRuleset, "deletion");
+  requiredRule(tagRuleset, "non_fast_forward");
+  requiredRule(tagRuleset, "update");
+
   console.log(JSON.stringify({
     status: "verified",
     governance: "solo",
     repository: REPOSITORY,
     ruleset: ruleset.name,
     rulesetId: RULESET_ID,
+    tagRuleset: tagRuleset.name,
+    tagRulesetId: TAG_RULESET_ID,
+    tagRulesetTarget: tagRefs,
+    tagRules: tagRuleset.rules.map((rule) => rule.type),
     enforcement: ruleset.enforcement,
     mainProtected: true,
     pullRequestRequired: true,

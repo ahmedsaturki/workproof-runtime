@@ -165,6 +165,7 @@ jobs:
             echo "Release ${RELEASE_TAG} already exists; reconciling publication state."
             RELEASE_ID="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json databaseId --jq ".databaseId")"
             gh api --method PATCH "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" -f "prerelease=${EXPECTED_PRERELEASE}" -f "draft=false" >/dev/null
+            gh release edit "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --notes-file "${NOTES_FILE}" >/dev/null
           else
             if [ "${EXPECTED_PRERELEASE}" = "true" ]; then
               gh release create "${RELEASE_TAG}"               --repo "${GITHUB_REPOSITORY}"               --target "${GITHUB_SHA}"               --title "WorkProof Runtime ${RELEASE_TAG}"               --prerelease               --notes-file "${NOTES_FILE}"               release-dist/*

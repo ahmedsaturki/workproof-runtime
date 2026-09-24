@@ -20,7 +20,7 @@ This profile is deliberately explicit: automated scanners and review bots can pr
 
 ## Solo Governance status
 
-The Solo Governance migration is complete. The live `main` ruleset was verified after the GitHub Settings change and now matches the repository's single-maintainer operating profile.
+The Solo Governance migration is complete. The live `main` ruleset and the protected `v*` release-tag ruleset were verified after the GitHub Settings changes and now match the repository's single-maintainer operating profile.
 
 ## Active main ruleset
 
@@ -46,13 +46,27 @@ The intended Solo Governance settings are:
 
 GitHub exposes the review and ruleset controls used here, including required approval count, Code Owner review, latest-push approval, stale-review dismissal, thread resolution, and status-check requirements.
 
+## Release tag ruleset
+
+The active repository release-tag ruleset is named `v*` (ruleset ID `23924353`) and targets `refs/tags/v*`.
+
+It enforces:
+
+- tag deletion protection;
+- non-fast-forward protection;
+- update protection;
+- no bypass actors;
+- current user cannot bypass.
+
+Tag creation is intentionally not restricted so the release workflow can create a new version tag; the ruleset protects an existing release tag from mutation or deletion.
+
 ## Governance drift verification
 
 The repository now includes `scripts/verify-solo-governance.js`.
 
-The required `verify` CI job executes this script against the live GitHub ruleset and fails closed when the Solo Governance contract drifts. It checks the actual active ruleset rather than relying only on documentation.
+The required `verify` CI job executes this script against both live GitHub rulesets and fails closed when either governance contract drifts. It checks the actual active rulesets rather than relying only on documentation.
 
-This prevents a later GitHub Settings change from silently reintroducing an approval gate, bypass actor, missing `verify`, non-strict checks, or loss of branch protections.
+This prevents a later GitHub Settings change from silently reintroducing an approval gate, bypass actor, missing `verify`, non-strict checks, loss of main protections, or loss of release-tag protections.
 
 The ruleset is edited in GitHub under **Settings → Rulesets → main → Edit → Save changes**. GitHub documents that users with repository admin access can edit repository rulesets.
 
@@ -84,9 +98,9 @@ A Marketplace review application may add additional comments or analysis, but it
 
 The published `v3.8.13` tag resolves to the verified release commit `dadef28ce8fbd299201a228673f1c2737c5b7d62`. Release workflow #305 verified the five published assets and SHA256 manifest; Container workflow #302 verified the matching GHCR image and digest.
 
-GitHub currently reports the release as non-immutable. The release workflow therefore provides publication-time digest/lineage verification, while GitHub-side release/tag immutability remains a separate governance hardening layer.
+GitHub currently reports the historical `v3.8.13` release as non-immutable. GitHub release immutability applies to future releases, so this status does not retroactively change the already-published release. The release workflow therefore continues to provide publication-time digest/lineage verification.
 
-For future release integrity, enable GitHub release immutability where available and protect release tags (for example `v*`) against deletion and force-update.
+The `v*` release-tag ruleset is now active and protects future version tags against deletion, non-fast-forward updates, and ordinary updates. The remaining release-integrity layer is GitHub's future-release immutability setting.
 
 ## Verification contract
 
@@ -100,6 +114,7 @@ The repository must not claim Solo Governance while any of the following remains
 - stale-review dismissal is unexpectedly enabled;
 - a bypass actor is configured;
 - `verify` is not required with strict freshness;
-- branch deletion or non-fast-forward protection is removed.
+- branch deletion or non-fast-forward protection is removed;
+- release-tag deletion, non-fast-forward, or update protection is removed for `v*`.
 
 GitHub rulesets are an external repository control. They do not replace WorkProof Runtime's execution authorization, effect handling, verification, reconciliation, recovery, or proof model.
