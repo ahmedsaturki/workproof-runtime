@@ -49,7 +49,8 @@ The `v3.8.13` GitHub Release and source/container assets were verified against r
 - release publication path draft-first coherence recorded in docs after PR #176 (`f95a8c0`)
 - Control Plane terminal mutation errors finalize the claimed idempotency key (PR #177 `5f0830e`, SSH-signed under required signatures)
 - control-plane / packed MCP / A2A startup waits honor `WORKPROOF_TEST_TIMEOUT_MS` (default 30s) so packed smokes do not flake under parallel load
-- open pull requests and issues: zero after PR #177 merge
+- STATUS / FINAL-AUDIT / GITHUB-GOVERNANCE closeout for PR #172–#177 plus packed startup-timeout hardening landed in PR #178 (`cb7f1f4`, SSH-signed)
+- open pull requests and issues: zero after PR #178 merge
 
 ## Product gates
 
