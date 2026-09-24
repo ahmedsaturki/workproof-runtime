@@ -63,6 +63,8 @@ Runtime authority semantics are unchanged: GOAL -> CONTRACT -> ROUTE -> ACT -> O
 
 **v3.8.13 remains the current stable release. PR #170 is merged into `main` as `4bfd046195675b3bce65bd9cfc42cd1abd4c9d6a` with both branch commits SSH-signed under the active `required_signatures` ruleset. Distribution (GitHub Release + GHCR) was verified against the live publication. Published release artifacts remain immutable historical evidence.**
 
+Post-release governance closeout continued on 2026-09-24 with signed merges: PR #172 (`8179ce8`, live `v*` tag-ruleset and release-body reconciliation), PR #174 (`42bc9a4`, live release immutability assertions and audit coherence), and PR #175 (`ac99bb1`, draft-first immutable release publication: create draft, attach and validate the exact five assets, then publish, and refuse asset rewrites on published immutable releases). All three heads were SSH-signed under the active `required_signatures` ruleset before merge. Open pull requests and issues after #175: zero. Historical remote branches that are fully merged into `main` were pruned; diverged historical branches were retained (not deleted) to preserve unique ancestry.
+
 ## Recorded outcome (local verification for this closeout)
 
 - Build (strict TypeScript): EXIT 0
@@ -94,7 +96,8 @@ Runtime authority semantics are unchanged: GOAL -> CONTRACT -> ROUTE -> ACT -> O
 
 - Public production host, DNS, TLS termination, and production secrets remain an infrastructure boundary
 - External GitHub Advanced Security / Copilot model failures are service-side and are not worked around in WorkProof code
-- Commit signatures and merge gating are governed by the active `main` ruleset (`required_signatures`); PR #170 satisfied that gate via SSH-signed commits before merge
+- Commit signatures and merge gating are governed by the active `main` ruleset (`required_signatures`); PR #170, #172, #174, and #175 satisfied that gate via SSH-signed commits before merge
+- A Vercel Git integration may still be connected to this repository and can emit failed deployments when the free-tier rate limit or a static-site output-directory assumption is applied. WorkProof Runtime is a local-first runtime/CLI/Studio/Control Plane product, not a static site; do not add a fake `public/` directory to satisfy that integration. Disconnect the integration from Vercel project settings (Settings -> Git -> Connected Git Repository -> Disconnect) if failed status comments should stop.
 
 ## Operator recovery
 
