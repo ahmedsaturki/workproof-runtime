@@ -417,6 +417,61 @@ test("failed dispatch finalizes the idempotency key and replays without retrying
   }
 });
 
+test("failed resume with a not-found execution error finalizes the idempotency key", async () => {
+  const root = tempDir("workproof-idempotency-failed-resume-404-");
+  const repo = new JsonWorkRepository(path.join(root, "work"));
+  const credential = issueCredential({ id: "writer-failed-resume-404", permissions: ["write"] });
+  const policy = addIssuedCredential(createAuthPolicy(), credential);
+  const work = sampleWork("resume 404 failure");
+  work.status = "running";
+  repo.save(work);
+  let calls = 0;
+
+  const server = await startControlPlane({
+    repository: repo,
+    authPolicy: policy,
+    idempotencyDbPath: path.join(root, "control.sqlite"),
+    resume: async () => {
+      calls += 1;
+      throw new Error("ENOENT: persisted mission definition is missing");
+    }
+  });
+
+  const url = `http://${server.host}:${server.port}/v1/work/${work.id}/resume`;
+  const headers = {
+    authorization: `Bearer ${credential.token}`,
+    "idempotency-key": "resume-failed-404-001"
+  };
+
+  try {
+    const first = await fetch(url, { method: "POST", headers });
+    assert.equal(first.status, 404);
+    assert.equal((await first.json()).error, "not-found");
+    assert.equal(calls, 1);
+
+    const replay = await fetch(url, { method: "POST", headers });
+    assert.equal(replay.status, 404);
+    assert.equal(replay.headers.get("x-idempotency-replayed"), "true");
+    assert.equal((await replay.json()).error, "not-found");
+    assert.equal(calls, 1);
+  } finally {
+    await server.close();
+  }
+
+  const ledger = new (require("../packages/control-plane/src/idempotency.js").ControlIdempotencyLedger)(
+    path.join(root, "control.sqlite")
+  );
+  try {
+    const record = ledger.get("resume-failed-404-001");
+    assert.ok(record);
+    assert.equal(record.state, "failed");
+    assert.equal(record.statusCode, 404);
+  } finally {
+    ledger.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("failed resume finalizes the idempotency key and prevents duplicate resume execution", async () => {
   const root = tempDir("workproof-idempotency-failed-resume-");
   const repo = new JsonWorkRepository(path.join(root, "work"));
