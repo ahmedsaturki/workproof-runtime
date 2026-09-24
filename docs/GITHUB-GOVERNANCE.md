@@ -98,9 +98,9 @@ A Marketplace review application may add additional comments or analysis, but it
 
 The published `v3.8.13` tag resolves to the verified release commit `dadef28ce8fbd299201a228673f1c2737c5b7d62`. Release workflow #305 verified the five published assets and SHA256 manifest; Container workflow #302 verified the matching GHCR image and digest.
 
-GitHub currently reports the historical `v3.8.13` release as non-immutable. GitHub release immutability applies to future releases, so this status does not retroactively change the already-published release. The release workflow therefore continues to provide publication-time digest/lineage verification.
+The published `v3.8.13` GitHub Release is immutable. The `v*` release-tag ruleset separately protects version tags against deletion, non-fast-forward updates, and ordinary updates. The governance verifier checks both controls against live GitHub state and fails closed if the current stable release loses immutability or its target drifts from recorded release lineage.
 
-The `v*` release-tag ruleset is now active and protects future version tags against deletion, non-fast-forward updates, and ordinary updates. The remaining release-integrity layer is GitHub's future-release immutability setting.
+The `v*` release-tag ruleset is active and protects future version tags against deletion, non-fast-forward updates, and ordinary updates. The published `v3.8.13` GitHub Release is immutable.
 
 ## Verification contract
 
