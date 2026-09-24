@@ -3,6 +3,8 @@ const RULESET_ID = process.env.WORKPROOF_MAIN_RULESET_ID || "23845160";
 const TAG_RULESET_NAME = "v*";
 const TAG_RULESET_ID = process.env.WORKPROOF_TAG_RULESET_ID || "23924353";
 const REPOSITORY = process.env.GITHUB_REPOSITORY || "ahmedsaturki/workproof-runtime";
+const fs = require("fs");
+const path = require("path");
 
 async function fetchRuleset(id) {
   const url = `https://api.github.com/repos/${REPOSITORY}/rulesets/${id}`;
@@ -85,6 +87,19 @@ async function main() {
   const allowedMergeMethods = p.allowed_merge_methods ?? [];
   assert(allowedMergeMethods.length > 0, "At least one merge method must remain enabled");
 
+  const lineage = JSON.parse(fs.readFileSync(path.resolve("docs/release-lineage.json"), "utf8"));
+  const stableTag = "v" + lineage.release.version;
+  const releaseResponse = await fetch("https://api.github.com/repos/" + REPOSITORY + "/releases/tags/" + stableTag, {
+    headers: { accept: "application/vnd.github+json", "user-agent": "workproof-solo-governance-verifier" }
+  });
+  assert(releaseResponse.ok, "Published stable release lookup failed: HTTP " + releaseResponse.status);
+  const release = await releaseResponse.json();
+  assert(release.tag_name === stableTag, "Expected stable release " + stableTag + ", got " + release.tag_name);
+  assert(release.draft === false, "Current stable release must not be a draft");
+  assert(release.prerelease === false, "Current stable release must not be a prerelease");
+  assert(release.immutable === true, "Current stable GitHub Release must be immutable");
+  assert(release.target_commitish === lineage.release.commit, "Current stable release target must match release lineage");
+
   const tagRuleset = await fetchRuleset(TAG_RULESET_ID);
   assert(tagRuleset.name === TAG_RULESET_NAME, `Expected tag ruleset ${TAG_RULESET_NAME}, got ${tagRuleset.name}`);
   assert(tagRuleset.enforcement === "active", "release tag ruleset must be active");
@@ -106,6 +121,8 @@ async function main() {
     tagRulesetId: TAG_RULESET_ID,
     tagRulesetTarget: tagRefs,
     tagRules: tagRuleset.rules.map((rule) => rule.type),
+    stableRelease: stableTag,
+    releaseImmutable: release.immutable,
     enforcement: ruleset.enforcement,
     mainProtected: true,
     pullRequestRequired: true,
