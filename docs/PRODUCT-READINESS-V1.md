@@ -58,28 +58,28 @@ The repository's disposable external-topology gate now verifies the technical to
 
 A **public production host is not claimed as provisioned**. Public host/DNS/certificate/secret/control-plane infrastructure remains an external deployment-resource boundary and must be supplied by the operator of the target environment.
 
-## Current verified baseline — v3.8.14
+## Current verified baseline — v3.8.15
 
-The current stable product baseline is **v3.8.14**.
+The current stable product baseline is **v3.8.15**.
 
-- package version: `3.8.14`
-- stable release: `v3.8.14`
-- release commit: `8fcb6cfca67d865ce56533ad56e1a508d997e98a`
-- GitHub Release ID: `395985478`
-- Release workflow #307: success
-- Container workflow #304: success
-- GHCR digest: `sha256:fcde1ff9748e8c0306160b3d6e61fd03680b1cfb35e51ef305eab4b20640050c`
-- commit-addressed image tag: `8fcb6cfca67d865ce56533ad56e1a508d997e98a`
-- previous stable: `v3.8.13`
-- terminal Control Plane mutation errors finalize the claimed idempotency key, and packed startup waits honor `WORKPROOF_TEST_TIMEOUT_MS`, without changing WorkProof execution semantics
+- package version: `3.8.15`
+- stable release: `v3.8.15`
+- release commit: `cc9dbea5d3dd45b7ad542e8b2d417174f8d51365`
+- GitHub Release ID: `396153727`
+- Release workflow #319: success
+- Container workflow #316: success
+- GHCR digest: `sha256:a1e1c61cb98d6c70cc36458e805f99bc2abd32b89c07340332fb419b3e633715`
+- commit-addressed image tag: `cc9dbea5d3dd45b7ad542e8b2d417174f8d51365`
+- previous stable: `v3.8.14`
+- controlled publication requires a validated idempotency key, reconciles existing state by deterministic publication ID before writing, and surfaces ambiguous acknowledgements instead of blind retries, without changing WorkProof execution semantics
 
-The published `v3.8.14` artifacts were verified as snapshots of release commit `8fcb6cfca67d865ce56533ad56e1a508d997e98a`. The current `main` lineage records the published GitHub/GHCR evidence without rewriting the published snapshot.
+The published `v3.8.15` artifacts were verified as snapshots of release commit `cc9dbea5d3dd45b7ad542e8b2d417174f8d51365`. The current `main` lineage records the published GitHub/GHCR evidence without rewriting the published snapshot.
 
-The v3.8.14 distribution enforces an immutable Node 24.21.0 Trixie slim base digest and a bounded production resource/log envelope.
+The v3.8.15 distribution enforces an immutable Node 24.21.0 Trixie slim base digest and a bounded production resource/log envelope.
 
 ## Release acceptance gates
 
-| Gate | v3.8.14 evidence |
+| Gate | v3.8.15 evidence |
 | --- | --- |
 | Build | CI/Release/Container builds succeed from clean checkout |
 | Tests | Full unit/integration suite succeeds |
@@ -147,4 +147,4 @@ WorkProof Runtime is not required to become a generic agent framework, browser a
 
 ## Historical provenance
 
-v3.8.13 was the preceding verified stable distribution. v3.8.2 is retained as superseded release history and is not a rollback target. v3.8.1 remains the verified rollback release.
+v3.8.14 was the preceding verified stable distribution. v3.8.2 is retained as superseded release history and is not a rollback target. v3.8.1 remains the verified rollback release.

@@ -4,9 +4,9 @@ Outcome-first digital work runtime: execute real work, reconcile external effect
 
 ## Current status
 
-**v3.8.14 is the current stable release.**
+**v3.8.15 is the current stable release.**
 
-v3.8.14 is the operational hardening patch following v3.8.13; it finalizes a claimed Control Plane idempotency record on terminal mutation errors and makes packed Control Plane/MCP/A2A startup waits honor `WORKPROOF_TEST_TIMEOUT_MS`. The published release tag and source snapshot are anchored to release commit `8fcb6cfca67d865ce56533ad56e1a508d997e98a`. Release workflow #307 and Container workflow #304 verified the published GitHub/GHCR distribution.
+v3.8.15 is the external-write safety hardening patch following v3.8.14; it requires a validated idempotency key for controlled publication, reconciles existing publication state by deterministic publication ID before writing, surfaces ambiguous acknowledgement failures instead of blindly retrying, and paginates GitHub idempotency-marker lookup so existing effects beyond the first 100 issues remain discoverable. The published release tag and source snapshot are anchored to release commit `cc9dbea5d3dd45b7ad542e8b2d417174f8d51365`. Release workflow #319 and Container workflow #316 verified the published GitHub/GHCR distribution.
 
 The v3.4 line established the executable operator benchmark across research, HTTP discovery, Git mutation, ambiguous external-effect reconciliation, and capability substitution. Later releases added local product surfaces, proof compatibility, recovery, Control Plane safety, MCP/A2A interoperability, OTLP audit export, diagnostics, network-boundary hardening, and reproducible distribution.
 
@@ -14,26 +14,27 @@ The v3.4 line established the executable operator benchmark across research, HTT
 
 Goal -> Outcome Contract -> Capability -> Execute -> Observe/Reconcile -> Verify -> Recover/Substitute -> Deliver -> Proof -> Retain -> Control -> Compensate
 
-## v3.8.14 release evidence
+## v3.8.15 release evidence
 
-- GitHub Release: `v3.8.14` (ID `395985478`)
-- release commit: `8fcb6cfca67d865ce56533ad56e1a508d997e98a`
-- Release workflow #307: success
-- Container workflow #304: success
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.14`
-- GHCR digest: `sha256:fcde1ff9748e8c0306160b3d6e61fd03680b1cfb35e51ef305eab4b20640050c`
-- commit-addressed image tag: `8fcb6cfca67d865ce56533ad56e1a508d997e98a`
-- immediate previous stable: v3.8.13 / `sha256:c9a9f6f6f0fb111dc64d42b1a2746091f14366c389c1af6eb3b0683c6e3fe564`
+- GitHub Release: `v3.8.15` (ID `396153727`)
+- release commit: `cc9dbea5d3dd45b7ad542e8b2d417174f8d51365`
+- Release workflow #319: success
+- Container workflow #316: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.15`
+- GHCR digest: `sha256:a1e1c61cb98d6c70cc36458e805f99bc2abd32b89c07340332fb419b3e633715`
+- commit-addressed image tag: `cc9dbea5d3dd45b7ad542e8b2d417174f8d51365`
+- immediate previous stable: v3.8.14 / `sha256:fcde1ff9748e8c0306160b3d6e61fd03680b1cfb35e51ef305eab4b20640050c`
 - verified rollback release: v3.8.1 / `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
 - five release assets published and SHA256-verified
 
-### v3.8.14 closeout hardening
+### v3.8.15 closeout hardening
 
-- finalized a claimed Control Plane idempotency record for terminal mutation errors, including 4xx/404 execution failures;
-- preserved the public terminal error response while making safe replay deterministic and non-duplicating;
-- made packed Control Plane/MCP/A2A startup waits honor `WORKPROOF_TEST_TIMEOUT_MS` (30-second default) under parallel load;
-- kept the post-release source-drift guard scoped to the reconciled release documents;
-- preserved the validated trust-snapshot registry transport sink, immutable container-base provenance, and bounded production resource/log controls from v3.8.13.
+- require a validated idempotency key for `pack.publication.local` and send it through the HTTP `Idempotency-Key` header;
+- preflight the target publication by deterministic publication ID before POST, reconciling an existing exact publication as a successful outcome without a duplicate write;
+- reject conflicting existing content before any write and treat non-404 preflight failures as non-writable rather than guessing absence;
+- return an ambiguous receipt when a POST acknowledgement cannot be confirmed instead of silently retrying a blind POST;
+- treat non-success GitHub issue-create acknowledgements as ambiguous and reconcile before any retry, with paginated idempotency-marker lookup beyond the first 100 issues;
+- preserved the v3.8.14 Control Plane terminal-idempotency finalization, packed startup-timeout controls, immutable container-base provenance, and bounded production resource/log controls.
 
 ## Benchmark
 
@@ -70,21 +71,21 @@ The runtime remains the authority for execution, risk policy, effects, verificat
 
 ### GitHub Release
 
-The v3.8.14 release publishes:
+The v3.8.15 release publishes:
 
-- `operational-reality-core-3.8.14.tgz`
-- `workproof-runtime-v3.8.14.tar.gz`
-- `workproof-benchmark-v3.8.14.json`
+- `operational-reality-core-3.8.15.tgz`
+- `workproof-runtime-v3.8.15.tar.gz`
+- `workproof-benchmark-v3.8.15.json`
 - `RELEASE-MANIFEST.txt`
 - `SHA256SUMS.txt`
 
-The release pipeline re-downloads published assets, verifies SHA256 sums, verifies tag/commit lineage, validates benchmark semantics, and verifies the publication state. For v3.8.14, the final release verification passed and `sha256sum -c SHA256SUMS.txt` verified the published release assets.
+The release pipeline re-downloads published assets, verifies SHA256 sums, verifies tag/commit lineage, validates benchmark semantics, and verifies the publication state. For v3.8.15, the final release verification passed and `sha256sum -c SHA256SUMS.txt` verified the published release assets.
 
 ### GHCR container
 
-`ghcr.io/ahmedsaturki/workproof-runtime:3.8.14@sha256:fcde1ff9748e8c0306160b3d6e61fd03680b1cfb35e51ef305eab4b20640050c`
+`ghcr.io/ahmedsaturki/workproof-runtime:3.8.15@sha256:a1e1c61cb98d6c70cc36458e805f99bc2abd32b89c07340332fb419b3e633715`
 
-The commit-addressed image tag is `8fcb6cfca67d865ce56533ad56e1a508d997e98a`.
+The commit-addressed image tag is `cc9dbea5d3dd45b7ad542e8b2d417174f8d51365`.
 
 ### Self-hosted runtime
 
@@ -95,7 +96,7 @@ The repository includes:
 - `docs/CONTAINER-RUNTIME.md`
 - `docs/PRODUCTION-DEPLOYMENT.md`
 
-Production Compose pins the exact verified v3.8.14 image digest, binds the host port to localhost, persists `./work-runs`, and applies bounded resources/logs. The Control Plane is the authenticated mutation boundary.
+Production Compose pins the exact verified v3.8.15 image digest, binds the host port to localhost, persists `./work-runs`, and applies bounded resources/logs. The Control Plane is the authenticated mutation boundary.
 
 A public deployment requires an explicitly configured host, TLS reverse proxy, authentication/authorization, and production secrets. Those external resources are intentionally not claimed as provisioned by this repository.
 
@@ -151,7 +152,7 @@ WorkProof Runtime is not a replacement for agents, browsers, workflow engines, m
 
 ## Historical release provenance
 
-v3.8.13 was the immediately preceding published stable distribution; v3.8.14 is the current stable release. v3.8.12 and earlier versions remain historical provenance, while v3.8.1 remains the verified rollback release.
+v3.8.14 was the immediately preceding published stable distribution; v3.8.15 is the current stable release. v3.8.13 and earlier versions remain historical provenance, while v3.8.1 remains the verified rollback release.
 
 
 See `STATUS.md`, `SOURCE-MANIFEST.md`, `docs/release-lineage.json`, and `docs/PRODUCT-READINESS-V1.md` for the current verification and product-readiness records.

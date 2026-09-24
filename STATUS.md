@@ -2,7 +2,21 @@
 
 Date: 2026-09-24
 
-## v3.8.14 publication closeout
+## v3.8.15 publication closeout
+
+- package version: `3.8.15`
+- stable release tag: `v3.8.15`
+- stable release commit: `cc9dbea5d3dd45b7ad542e8b2d417174f8d51365`
+- GitHub Release ID: `396153727`
+- Release workflow #319: success
+- Container workflow #316: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.15`
+- GHCR digest: `sha256:a1e1c61cb98d6c70cc36458e805f99bc2abd32b89c07340332fb419b3e633715`
+- commit-addressed image tag: `cc9dbea5d3dd45b7ad542e8b2d417174f8d51365`
+- five release assets published and SHA256-verified
+- publication verification confirmed benchmark semantics, source/package version alignment, release/tag lineage, and final GHCR provenance
+
+## Previous stable v3.8.14
 
 - package version: `3.8.14`
 - stable release tag: `v3.8.14`
@@ -18,7 +32,7 @@ Date: 2026-09-24
 
 ## Main verified baseline
 
-The current stable release line is **v3.8.14**. Main CI is required to verify every post-release reconciliation.
+The current stable release line is **v3.8.15**. Main CI is required to verify every post-release reconciliation.
 
 Main contains the v3.4 executable benchmark, restart/resume safety, portable proof, explicit proof compatibility, operator guidance, packaged operator docs/examples, multi-capability execution, external-topology validation, distribution hardening, Control Plane policy/idempotency safety (including terminal mutation-error finalization), network-boundary hardening, immutable container-base provenance, and bounded production resource/log controls.
 
@@ -49,16 +63,16 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 
 ## Published snapshot vs current main
 
-The `v3.8.14` GitHub Release and source/container assets were verified against release commit `8fcb6cfca67d865ce56533ad56e1a508d997e98a`. The current `main` reconciliation records the published GitHub Release and GHCR evidence without rewriting or retagging the published release and without changing runtime semantics.
+The `v3.8.15` GitHub Release and source/container assets were verified against release commit `cc9dbea5d3dd45b7ad542e8b2d417174f8d51365`. The current `main` reconciliation records the published GitHub Release and GHCR evidence without rewriting or retagging the published release and without changing runtime semantics.
 
 ## Current main closeout
 
-- v3.8.14 stable release: published and fully Container-verified
-- current main lineage: reconciled to the exact v3.8.14 GitHub Release target and GHCR digest
-- production Compose: pinned to exact v3.8.14 tag@digest
+- v3.8.15 stable release: published and fully Container-verified
+- current main lineage: reconciled to the exact v3.8.15 GitHub Release target and GHCR digest
+- production Compose: pinned to exact v3.8.15 tag@digest
 - container base: immutable Node 24.21.0 Trixie slim digest enforced by CI/Release/Container
 - production resource envelope: init, 10s stop grace, 1 CPU, 1 GiB RAM, 512 PIDs, 10 MiB × 3 JSON log rotation
-- GitHub governance: `main` ruleset (required `verify`, required signatures, required review-thread resolution) and `v*` tag ruleset active; release `v3.8.14` immutable with five assets
+- GitHub governance: `main` ruleset (required `verify`, required signatures, required review-thread resolution) and `v*` tag ruleset active; release `v3.8.15` immutable with five assets
 - release publication path: draft-first for future immutable releases (create draft, upload and validate exact five assets, then publish); published immutable assets are not rewritten on rerun (PR #175)
 - release publication path draft-first coherence recorded in docs after PR #176 (`f95a8c0`)
 - Control Plane terminal mutation errors finalize the claimed idempotency key (PR #177 `5f0830e`, SSH-signed under required signatures)
@@ -67,6 +81,8 @@ The `v3.8.14` GitHub Release and source/container assets were verified against r
 - PR #178 closeout and signed-merge lineage recorded in STATUS / FINAL-AUDIT / GITHUB-GOVERNANCE via PR #179 (`1b22c91`, SSH-signed)
 - PR #179 closeout and release-readiness records recorded via PR #180 (`8406263`, SSH-signed)
 - v3.8.14 release preparation (version bump, release notes, metadata gate) landed in PR #181 (head `92e3fb1`, merged `8fcb6cf`, SSH-signed)
+- v3.8.14 post-release lineage reconciliation landed in PR #182 (head `e041770`, merged `ed574b2`, SSH-signed)
+- v3.8.15 release preparation (external-write idempotency hardening, publication/github pack fixes, governance token wiring) landed in PR #184 (head `2860e8c` re-signed, merged `cc9dbea`); PR #183 was closed unmerged as a superseded duplicate
 - open pull requests and issues: zero at this closeout verification
 
 ## Product gates

@@ -2,9 +2,9 @@
 
 Supported distribution target: the Node 24 GHCR container.
 
-- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.14`
-- pinned digest: `sha256:fcde1ff9748e8c0306160b3d6e61fd03680b1cfb35e51ef305eab4b20640050c`
-- commit-addressed image tag: `8fcb6cfca67d865ce56533ad56e1a508d997e98a`
+- image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.15`
+- pinned digest: `sha256:a1e1c61cb98d6c70cc36458e805f99bc2abd32b89c07340332fb419b3e633715`
+- commit-addressed image tag: `cc9dbea5d3dd45b7ad542e8b2d417174f8d51365`
 - bind: `127.0.0.1:8788`
 - persistent data: `./work-runs -> /data/work-runs`
 
@@ -48,16 +48,16 @@ Do not expose port 8788 directly to the Internet. Use a TLS reverse proxy with a
 
 Back up `work-runs` and any configured proof vault. Roll back by pinning Compose to a previously verified GHCR tag@digest and restarting the stack.
 
-## Verified v3.8.14 stable release
+## Verified v3.8.15 stable release
 
-- GitHub Release: `v3.8.14`
-- release commit: `8fcb6cfca67d865ce56533ad56e1a508d997e98a`
-- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.14`
-- GHCR digest: `sha256:fcde1ff9748e8c0306160b3d6e61fd03680b1cfb35e51ef305eab4b20640050c`
-- commit-addressed image tag: `8fcb6cfca67d865ce56533ad56e1a508d997e98a`
-- GitHub Release ID: `395985478`
-- Release workflow: #307
-- Container workflow: #304
+- GitHub Release: `v3.8.15`
+- release commit: `cc9dbea5d3dd45b7ad542e8b2d417174f8d51365`
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.15`
+- GHCR digest: `sha256:a1e1c61cb98d6c70cc36458e805f99bc2abd32b89c07340332fb419b3e633715`
+- commit-addressed image tag: `cc9dbea5d3dd45b7ad542e8b2d417174f8d51365`
+- GitHub Release ID: `396153727`
+- Release workflow: #319
+- Container workflow: #316
 - rollback release: `3.8.1`
 - rollback commit-addressed tag: `f8af30bf69391db22863c432df5c452a73ebaa05`
 - rollback digest: `sha256:7908cc6a4473495b7b5c51f1a0527815f0a8ff0c6d9eaf20ebf1ddfb0479b5d0`
