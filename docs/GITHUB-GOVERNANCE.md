@@ -104,6 +104,8 @@ The `v*` release-tag ruleset is active and protects future version tags against 
 
 The release workflow uses draft-first publication for future immutable releases: it creates a draft, attaches the complete five-asset distribution, validates the exact asset set while the release is still mutable, and only then publishes. Once published, reruns refuse to rewrite immutable release assets. This path landed in PR #175 (`ac99bb127fa621aa48ff903535075224949e4135`) under SSH-signed commits.
 
+Closeout documentation coherence landed in PR #176 (`f95a8c097e9fd5f93f479289b3b8b4f04721f028`) and the Control Plane terminal-idempotency hardening landed in PR #177 (`5f0830e5c1b179b66f7fd0d8a09904147aa57ce6`); both merges kept required signatures, required `verify` freshness, and review-thread resolution. Published `v3.8.13` release artifacts were not rewritten by either change.
+
 ## Verification contract
 
 After any governance change, GitHub state must be re-checked and `verify` must pass against the live ruleset.

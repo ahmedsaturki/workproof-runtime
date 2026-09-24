@@ -46,7 +46,10 @@ The `v3.8.13` GitHub Release and source/container assets were verified against r
 - production resource envelope: init, 10s stop grace, 1 CPU, 1 GiB RAM, 512 PIDs, 10 MiB × 3 JSON log rotation
 - GitHub governance: `main` ruleset (required `verify`, required signatures, required review-thread resolution) and `v*` tag ruleset active; release `v3.8.13` immutable with five assets
 - release publication path: draft-first for future immutable releases (create draft, upload and validate exact five assets, then publish); published immutable assets are not rewritten on rerun (PR #175)
-- open pull requests and issues: zero after PR #175 merge
+- release publication path draft-first coherence recorded in docs after PR #176 (`f95a8c0`)
+- Control Plane terminal mutation errors finalize the claimed idempotency key (PR #177 `5f0830e`, SSH-signed under required signatures)
+- control-plane / packed MCP / A2A startup waits honor `WORKPROOF_TEST_TIMEOUT_MS` (default 30s) so packed smokes do not flake under parallel load
+- open pull requests and issues: zero after PR #177 merge
 
 ## Product gates
 
@@ -68,7 +71,7 @@ The `v3.8.13` GitHub Release and source/container assets were verified against r
 - [x] authenticated capability inventory and Studio registry visibility
 - [x] packed control-plane product smoke
 - [x] Control Plane execution-policy enforcement
-- [x] terminal failed-idempotency replay safety
+- [x] terminal failed-idempotency replay safety (including terminal 4xx/404 finalize, PR #177)
 - [x] Studio loopback network boundary
 - [x] Registry non-loopback authentication boundary
 - [x] immutable container base provenance
