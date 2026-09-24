@@ -74,6 +74,23 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 - package metadata declares `Apache-2.0`; the repository license file contains the complete Apache License 2.0 text
 - executable source-tree gate currently verifies 226 required paths
 
+## v3.8.15 distribution evidence
+
+- package version: `3.8.15`
+- stable release: `v3.8.15`
+- release branch: `release/3.8.15`
+- release commit: `cc9dbea5d3dd45b7ad542e8b2d417174f8d51365`
+- GitHub Release ID: `396153727`
+- release workflow #319: success
+- container workflow #316: success
+- GHCR digest: `sha256:a1e1c61cb98d6c70cc36458e805f99bc2abd32b89c07340332fb419b3e633715`
+- commit-addressed image tag: `cc9dbea5d3dd45b7ad542e8b2d417174f8d51365`
+- five release assets published and SHA256-verified
+- GitHub Release `v3.8.15` is immutable
+- `v*` release-tag ruleset is active with deletion/update protection and no bypass actors
+- live Solo Governance verification remained active
+- CodeQL JavaScript/TypeScript and Actions analysis passed with zero findings on the release commit
+
 ## v3.8.14 distribution evidence
 
 - package version: `3.8.14`
@@ -136,11 +153,11 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 
 ## Verified main lineage
 
-- current verified release lineage: v3.8.14
-- current stable release commit: `8fcb6cfca67d865ce56533ad56e1a508d997e98a`
-- release workflow #307: success
-- container workflow #304: success
-- GHCR digest: `sha256:fcde1ff9748e8c0306160b3d6e61fd03680b1cfb35e51ef305eab4b20640050c`
+- current verified release lineage: v3.8.15
+- current stable release commit: `cc9dbea5d3dd45b7ad542e8b2d417174f8d51365`
+- release workflow #319: success
+- container workflow #316: success
+- GHCR digest: `sha256:a1e1c61cb98d6c70cc36458e805f99bc2abd32b89c07340332fb419b3e633715`
 - v3.3 implementation merge: `c5e951056461c37f45bed8bb8406d119880d63df`
 - v3.3 closeout correction: `0c92a8c86950776243646de4bb40b0c0f2fe5876`
 - v3.4 implementation merge: `fe662d5bb5337bde18772f22864434935d59f66f`
