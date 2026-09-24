@@ -1,4 +1,5 @@
 const assert = require("assert");
+const fs = require("fs");
 const test = require("node:test");
 const http = require("http");
 const { WorkStore } = require("../packages/core/src/work.js");
@@ -173,6 +174,18 @@ test("publication rejects conflicting existing content before any external write
   } finally {
     await new Promise<void>(resolve => server.close(() => resolve()));
   }
+});
+
+test("publication pack manifest matches the external-write implementation contract", () => {
+  const manifest = JSON.parse(
+    fs.readFileSync(require("path").join(process.cwd(), "docs", "packs", "publication-pack.json"), "utf8")
+  );
+  assert.equal(manifest.name, "pack.publication.local");
+  assert.equal(manifest.version, "0.2.0");
+  assert.deepEqual(manifest.capabilities, ["pack.publication.local@0.2.0"]);
+  assert.deepEqual(manifest.verifiers, ["pack.publication.local"]);
+  assert.ok(manifest.policies.some((value: string) => /Idempotency-Key/.test(value)));
+  assert.ok(manifest.policies.some((value: string) => /publication-id preflight/.test(value)));
 });
 
 export {};
