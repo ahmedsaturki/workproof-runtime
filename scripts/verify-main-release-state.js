@@ -98,6 +98,8 @@ async function main() {
       "scripts/secret-scan.js",
       "scripts/external-topology-smoke.js",
       "packages/cli/src/index.ts",
+      "packages/control-plane/src/http.ts",
+      "test/control-idempotency.test.ts",
       "apps/studio.ts",
       "test/release-metadata.test.ts",
       "test/product-smoke.test.ts",
