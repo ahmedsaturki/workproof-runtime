@@ -12,7 +12,7 @@ async function fetchRuleset(id) {
     accept: "application/vnd.github+json",
     "user-agent": "workproof-solo-governance-verifier"
   };
-  const token = process.env.GITHUB_TOKEN;
+  const token = process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN;
   if (token) headers.authorization = "Bearer " + token;
   const response = await fetch(url, { headers });
   if (!response.ok) {
@@ -89,8 +89,14 @@ async function main() {
 
   const lineage = JSON.parse(fs.readFileSync(path.resolve("docs/release-lineage.json"), "utf8"));
   const stableTag = "v" + lineage.release.version;
+  const releaseHeaders = {
+    accept: "application/vnd.github+json",
+    "user-agent": "workproof-solo-governance-verifier"
+  };
+  const releaseToken = process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN;
+  if (releaseToken) releaseHeaders.authorization = "Bearer " + releaseToken;
   const releaseResponse = await fetch("https://api.github.com/repos/" + REPOSITORY + "/releases/tags/" + stableTag, {
-    headers: { accept: "application/vnd.github+json", "user-agent": "workproof-solo-governance-verifier" }
+    headers: releaseHeaders
   });
   assert(releaseResponse.ok, "Published stable release lookup failed: HTTP " + releaseResponse.status);
   const release = await releaseResponse.json();

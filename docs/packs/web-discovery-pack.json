@@ -1,0 +1,17 @@
+{
+  "$schema": "../schemas/pack.schema.json",
+  "name": "pack.discovery.http",
+  "version": "0.1.0",
+  "capabilities": [
+    "pack.discovery.http@0.1.0"
+  ],
+  "verifiers": [
+    "pack.discovery.http"
+  ],
+  "policies": [
+    "read"
+  ],
+  "fixtures": [
+    "test/discovery.test.ts"
+  ]
+}

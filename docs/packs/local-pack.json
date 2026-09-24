@@ -1,0 +1,16 @@
+{
+  "$schema": "../schemas/pack.schema.json",
+  "name": "pack.local",
+  "version": "0.2.0",
+  "capabilities": [
+    "pack.local.file.create@0.2.0",
+    "pack.local.file.read@0.2.0"
+  ],
+  "verifiers": [],
+  "policies": [
+    "local_write"
+  ],
+  "fixtures": [
+    "packages/packs/src/local-pack.ts"
+  ]
+}

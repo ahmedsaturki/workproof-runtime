@@ -3,7 +3,7 @@ const path = require("path");
 
 async function json(url, options = {}) {
   const headers = { ...(options.headers || {}) };
-  const token = process.env.GITHUB_TOKEN;
+  const token = process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN;
   if (token && url.startsWith("https://api.github.com/")) headers.authorization = "Bearer " + token;
   const response = await fetch(url, { ...options, headers });
   const text = await response.text();

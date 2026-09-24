@@ -1,0 +1,17 @@
+{
+  "$schema": "../schemas/pack.schema.json",
+  "name": "pack.research.local",
+  "version": "0.1.0",
+  "capabilities": [
+    "pack.research.local@0.1.0"
+  ],
+  "verifiers": [
+    "pack.research.artifact"
+  ],
+  "policies": [
+    "read"
+  ],
+  "fixtures": [
+    "lab/fixtures/research-pack.json"
+  ]
+}

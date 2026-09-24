@@ -82,16 +82,24 @@ async function readJson(response: Response): Promise<unknown> {
 }
 
 export async function findGitHubIssueByMarker(input: GitHubIssueInput): Promise<GitHubIssue | null> {
-  const response = await fetch(issuesUrl(input), { headers: headers() });
-  if (!response.ok) throw new Error(`GitHub issue list HTTP ${response.status}`);
-  const data = await readJson(response);
-  if (!Array.isArray(data)) throw new Error("GitHub issue list response was not an array");
   const marker = markerText(input.idempotencyMarker);
-  const found = (data as unknown[]).find(value => {
-    const issue = value as Record<string, unknown>;
-    return String(issue.body ?? "").includes(marker);
-  }) as GitHubIssue | undefined;
-  return found ?? null;
+  for (let page = 1; ; page += 1) {
+    const separator = issuesUrl(input).includes("?") ? "&" : "?";
+    const response = await fetch(
+      issuesUrl(input) + separator + "page=" + page,
+      { headers: headers() }
+    );
+    if (!response.ok) throw new Error(`GitHub issue list HTTP ${response.status}`);
+    const data = await readJson(response);
+    if (!Array.isArray(data)) throw new Error("GitHub issue list response was not an array");
+    const found = (data as unknown[]).find(value => {
+      const issue = value as Record<string, unknown>;
+      if (issue.pull_request) return false;
+      return String(issue.body ?? "").includes(marker);
+    }) as GitHubIssue | undefined;
+    if (found) return found;
+    if (data.length < 100) return null;
+  }
 }
 
 class GitHubRepositoryReadCapability implements Capability {
@@ -236,11 +244,24 @@ class GitHubIssueCreateCapability implements Capability {
       });
       const data = await readJson(response);
       if (!response.ok) {
-        return { status: "rejected", data: { status: response.status, response: data } };
+        return {
+          status: "ambiguous",
+          data: {
+            reason: "GitHub issue write did not return a successful acknowledgement; reconciliation is required before retry",
+            status: response.status,
+            response: data
+          }
+        };
       }
       const issue = data as GitHubIssue;
       if (!Number.isFinite(issue.number)) {
-        return { status: "rejected", data: { reason: "GitHub create issue response did not include a valid issue number", response: data } };
+        return {
+          status: "ambiguous",
+          data: {
+            reason: "GitHub issue write returned an incomplete acknowledgement; reconciliation is required before retry",
+            response: data
+          }
+        };
       }
       return {
         status: "accepted",
