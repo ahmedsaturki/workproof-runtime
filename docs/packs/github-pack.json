@@ -12,7 +12,8 @@
   ],
   "policies": [
     "external_write requires human approval",
-    "external write requires deterministic idempotencyMarker"
+    "external write requires deterministic idempotencyMarker",
+    "failed write acknowledgement is treated as ambiguous and reconciled before retry"
   ],
   "fixtures": [
     "test/github.test.ts",

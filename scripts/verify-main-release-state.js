@@ -29,7 +29,7 @@ async function fetchJson(pathname) {
     accept: "application/vnd.github+json",
     "user-agent": "workproof-main-release-state-check"
   };
-  const token = process.env.GITHUB_TOKEN;
+  const token = process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN;
   if (token) headers.authorization = "Bearer " + token;
   const response = await fetch(GITHUB_API + pathname, { headers });
   const raw = await response.text();

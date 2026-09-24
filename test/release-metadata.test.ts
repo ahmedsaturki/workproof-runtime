@@ -79,6 +79,37 @@ test("versioned release note matches the active package version and required rel
   }
 });
 
+test("external-write pack policies declare reconciliation-safe acknowledgement semantics", () => {
+  const github = JSON.parse(fs.readFileSync(path.join(root, "docs", "packs", "github-pack.json"), "utf8"));
+  const publication = JSON.parse(fs.readFileSync(path.join(root, "docs", "packs", "publication-pack.json"), "utf8"));
+  assert.ok(github.policies.some((value: string) => /ambiguous.*reconciled before retry/i.test(value)));
+  assert.ok(publication.policies.some((value: string) => /deterministic publication-id preflight/i.test(value)));
+});
+
+test("built-in pack manifest inventory matches declared pack identities", () => {
+  const expected = [
+    ["github-pack.json", "github", "0.2.0", ["pack.github.repo.read@0.1.0", "pack.github.issue.create@0.1.0"]],
+    ["sqlite-pack.json", "pack.database.sqlite", "0.1.0", ["pack.database.sqlite.query@0.1.0", "pack.database.sqlite.upsert@0.1.0"]],
+    ["data-transform-pack.json", "pack.transform.json", "0.1.0", ["pack.transform.json@0.1.0"]],
+    ["message-outbox-pack.json", "pack.messaging.outbox", "0.1.0", ["pack.messaging.outbox@0.1.0"]],
+    ["git-local-pack.json", "pack.git.local.change", "0.1.0", ["pack.git.local.change@0.1.0"]],
+    ["publication-pack.json", "pack.publication.local", "0.2.0", ["pack.publication.local@0.2.0"]],
+    ["local-pack.json", "pack.local", "0.2.0", ["pack.local.file.create@0.2.0", "pack.local.file.read@0.2.0"]],
+    ["research-pack.json", "pack.research.local", "0.1.0", ["pack.research.local@0.1.0"]],
+    ["web-discovery-pack.json", "pack.discovery.http", "0.1.0", ["pack.discovery.http@0.1.0"]],
+    ["browser-local-pack.json", "pack.browser.local", "0.1.0", ["pack.browser.local@0.1.0"]]
+  ];
+  for (const [file, name, version, capabilities] of expected as [string, string, string, string[]][]) {
+    const manifest = JSON.parse(fs.readFileSync(path.join(root, "docs", "packs", file), "utf8"));
+    assert.equal(manifest.name, name, file);
+    assert.equal(manifest.version, version, file);
+    assert.deepEqual(manifest.capabilities, capabilities, file);
+    assert.ok(Array.isArray(manifest.verifiers), file);
+    assert.ok(Array.isArray(manifest.policies), file);
+    assert.ok(Array.isArray(manifest.fixtures), file);
+  }
+});
+
 test("external topology smoke uses compatible tool-specific version probes", () => {
   assert.match(externalTopologySmoke, /openssl:\s*\["version"\]/);
   assert.match(externalTopologySmoke, /docker:\s*\["--version"\]/);
@@ -97,6 +128,34 @@ test("external topology smoke is portable across Windows and POSIX hosts", () =>
   assert.match(externalTopologySmoke, /run\(tool\("curl"\)/);
 });
 
+test("CI authenticates live GitHub governance and release-state verification", () => {
+  const ci = ciWorkflow.replace(/\r\n/g, "\n");
+  const release = releaseWorkflow.replace(/\r\n/g, "\n");
+  const governanceStart = "      - name: Verify GitHub Solo Governance";
+  const releaseStateStart = "      - name: Verify main release state";
+  const tokenLine = "          GITHUB_TOKEN: ${{ github.token }}";
+  const governanceIndex = ci.indexOf(governanceStart);
+  const releaseStateIndex = ci.indexOf(releaseStateStart);
+  assert.ok(governanceIndex >= 0 && ci.indexOf(tokenLine, governanceIndex) > governanceIndex, "governance verification must pass GITHUB_TOKEN");
+  assert.ok(releaseStateIndex >= 0 && ci.indexOf(tokenLine, releaseStateIndex) > releaseStateIndex, "main release-state verification must pass GITHUB_TOKEN");
+  assert.ok(release.includes(tokenLine + "\n        run: npm run check"), "release verification must pass GITHUB_TOKEN to npm run check");
+});
+test("solo governance release lookup is authenticated when a GitHub token is available", () => {
+  const governance = fs.readFileSync(path.join(root, "scripts", "verify-solo-governance.js"), "utf8");
+  assert.ok(governance.includes("const releaseToken = process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN;"));
+  assert.ok(governance.includes("if (releaseToken) releaseHeaders.authorization = \"Bearer \" + releaseToken;"));
+  assert.ok(governance.includes("headers: releaseHeaders"));
+});
+test("GitHub verification scripts accept both token environment aliases", () => {
+  const scripts = [
+    fs.readFileSync(path.join(root, "scripts", "verify-solo-governance.js"), "utf8"),
+    fs.readFileSync(path.join(root, "scripts", "verify-main-release-state.js"), "utf8"),
+    fs.readFileSync(path.join(root, "scripts", "verify-published-lineage.js"), "utf8")
+  ];
+  for (const script of scripts) {
+    assert.ok(script.includes("process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN"));
+  }
+});
 test("solo governance verifier authenticates GitHub API calls when a token is available", () => {
   assert.match(soloGovernanceScript, /process\.env\.GITHUB_TOKEN/);
   assert.match(soloGovernanceScript, /headers\.authorization = "Bearer " \+ token/);
@@ -251,6 +310,7 @@ test("solo governance verifier enforces immutable current stable release provena
   assert.ok(soloGovernanceScript.includes("release.immutable === true"));
   assert.ok(soloGovernanceScript.includes("release.target_commitish === lineage.release.commit"));
 });
+
 
 test("immutable release publication is draft-first and assets are validated before publish", () => {
   const createIndex = releaseWorkflow.indexOf('gh release create "${RELEASE_TAG}"');

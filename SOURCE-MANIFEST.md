@@ -2,7 +2,7 @@
 
 ## Required source tree
 
-The current distribution-ready tree contains **237 required paths** enforced by `scripts/verify-source-tree.js`. The count is kept synchronized with the executable source-tree gate; every required path is present on the current main lineage.
+The current distribution-ready tree contains **242 required paths** enforced by `scripts/verify-source-tree.js`. The count is kept synchronized with the executable source-tree gate; every required path is present on the current main lineage.
 
 The historical v3.4 implementation closeout was 171 paths. The current stable distribution additionally covers the release/container, interoperability, diagnostics, current release metadata, network-boundary hardening, and reproducible-install surfaces.
 
@@ -20,6 +20,11 @@ The historical v3.4 implementation closeout was 171 paths. The current stable di
 - `docs/PRODUCT-READINESS-V1.md`
 - `test/product-smoke.test.ts`
 - `test/release-metadata.test.ts`
+- `docs/packs/publication-pack.json`
+- `docs/packs/browser-local-pack.json`
+- `docs/packs/web-discovery-pack.json`
+- `docs/packs/research-pack.json`
+- `docs/packs/local-pack.json`
 - `test/control-plane-execution-policy.test.ts`
 
 ## V3.4 benchmark

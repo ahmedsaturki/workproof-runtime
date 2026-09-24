@@ -1,0 +1,13 @@
+{
+  "$schema": "../schemas/pack.schema.json",
+  "name": "pack.publication.local",
+  "version": "0.2.0",
+  "capabilities": ["pack.publication.local@0.2.0"],
+  "verifiers": ["pack.publication.local"],
+  "policies": [
+    "external_write",
+    "deterministic Idempotency-Key required",
+    "deterministic publication-id preflight before write"
+  ],
+  "fixtures": ["test/publication.test.ts"]
+}

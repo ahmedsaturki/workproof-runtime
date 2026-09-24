@@ -90,6 +90,8 @@ jobs:
 
 
       - name: Full release verification
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: npm run check
 
       - name: Build distribution files

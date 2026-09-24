@@ -27,10 +27,17 @@ type FakeGitHub = {
   postCalls: number;
 };
 
-function startFakeGitHub({ loseCreateAck = false }: { loseCreateAck?: boolean } = {}): Promise<FakeGitHub> {
-  const issues: FakeIssue[] = [];
+function startFakeGitHub({ loseCreateAck = false, failCreateAfterCommit = false, seedIssueCount = 0 }: { loseCreateAck?: boolean; failCreateAfterCommit?: boolean; seedIssueCount?: number } = {}): Promise<FakeGitHub> {
+  const issues: FakeIssue[] = Array.from({ length: seedIssueCount }, (_, index) => ({
+    number: index + 1,
+    title: "Seed issue " + (index + 1),
+    body: "seed",
+    html_url: "http://127.0.0.1/issues/" + (index + 1),
+    repository_url: "http://127.0.0.1/repos/acme/demo",
+    state: "open"
+  }));
   let postCalls = 0;
-  let nextIssue = 1;
+  let nextIssue = seedIssueCount + 1;
   const server = http.createServer((req: any, res: any) => {
     const url = new URL(req.url ?? "/", "http://127.0.0.1");
     if (req.method === "GET" && url.pathname === "/repos/acme/demo") {
@@ -40,8 +47,10 @@ function startFakeGitHub({ loseCreateAck = false }: { loseCreateAck?: boolean } 
       return;
     }
     if (req.method === "GET" && url.pathname === "/repos/acme/demo/issues") {
+      const page = Math.max(1, Number(url.searchParams.get("page") ?? "1"));
+      const offset = (page - 1) * 100;
       res.writeHead(200, { "content-type": "application/json" });
-      res.end(JSON.stringify(issues));
+      res.end(JSON.stringify(issues.slice(offset, offset + 100)));
       return;
     }
     if (req.method === "POST" && url.pathname === "/repos/acme/demo/issues") {
@@ -62,6 +71,11 @@ function startFakeGitHub({ loseCreateAck = false }: { loseCreateAck?: boolean } 
         issues.push(issue);
         if (loseCreateAck) {
           req.socket.destroy();
+          return;
+        }
+        if (failCreateAfterCommit) {
+          res.writeHead(503, { "content-type": "application/json" });
+          res.end(JSON.stringify({ error: "write committed but acknowledgement failed" }));
           return;
         }
         res.writeHead(201, { "content-type": "application/json" });
@@ -192,6 +206,91 @@ test("GitHub external write survives lost acknowledgement with one POST and appr
     assert.equal(approvedWork.effects[0].status, "verified");
     assert.ok(approvedWork.events.some((e: any) => e.type === "recovery.reconcile"));
     assert.ok(approvedWork.artifacts.some((a: any) => a.kind === "github-issue-state"));
+  } finally {
+    await new Promise<void>(resolve => fake.server.close(() => resolve()));
+  }
+});
+
+
+test("GitHub external write reconciles a committed write after a non-success acknowledgement", async () => {
+  const fake = await startFakeGitHub({ failCreateAfterCommit: true });
+  try {
+    const store = new WorkStore();
+    const registry = new CapabilityRegistry();
+    const verification = new VerificationEngine();
+    registerGitHubPack(registry, verification);
+    const input = {
+      repository: "acme/demo",
+      title: "Reconcile after HTTP 503",
+      body: "The fake server commits before returning an error.",
+      idempotencyMarker: "test-issue-503",
+      apiBaseUrl: fake.baseUrl
+    };
+    const work = store.create({
+      objective: "Create one GitHub issue despite a failed acknowledgement",
+      inputs: input,
+      success: [{
+        id: "issue",
+        description: "The issue exists with the expected content",
+        verifier: "pack.github.issue.create",
+        required: true
+      }],
+      deliverables: ["GitHub issue"],
+      riskClass: "external_write"
+    });
+    const engine = new WorkEngine(store, registry, verification, async (_w: any, effectId: string) => {
+      const found = await findGitHubIssueByMarker(input);
+      const effect = work.effects.find((e: any) => e.effectId === effectId);
+      if (effect && found) effect.lastObservedState = { number: found.number, title: found.title };
+      return Boolean(found);
+    });
+    await engine.run(work, [{
+      id: "create",
+      operation: "create_issue",
+      capability: "pack.github.issue.create",
+      input,
+      idempotencyKey: "github:issue:acme/demo:test-issue-503",
+      riskClass: "external_write",
+      maxAttempts: 3
+    }]);
+    assert.equal(work.status, "verified");
+    assert.equal(fake.postCalls, 1);
+    assert.equal(work.effects[0].status, "verified");
+    assert.ok(work.events.some((event: any) => event.type === "recovery.reconcile"));
+  } finally {
+    await new Promise<void>(resolve => fake.server.close(() => resolve()));
+  }
+});
+
+
+test("GitHub marker reconciliation ignores pull requests and scans beyond the first 100 issues", async () => {
+  const fake = await startFakeGitHub({ seedIssueCount: 99 });
+  fake.issues.push({
+    number: 100,
+    title: "Look-alike pull request",
+    body: "<!-- workproof:idempotency:target-101 -->",
+    html_url: "http://127.0.0.1/pull/100",
+    repository_url: "http://127.0.0.1/repos/acme/demo",
+    state: "open",
+    pull_request: { url: "http://127.0.0.1/repos/acme/demo/pulls/100" }
+  } as any);
+  fake.issues.push({
+    number: 101,
+    title: "Target issue",
+    body: "<!-- workproof:idempotency:target-101 -->",
+    html_url: "http://127.0.0.1/issues/101",
+    repository_url: "http://127.0.0.1/repos/acme/demo",
+    state: "open"
+  });
+  try {
+    const found = await findGitHubIssueByMarker({
+      repository: "acme/demo",
+      title: "Target issue",
+      idempotencyMarker: "target-101",
+      apiBaseUrl: fake.baseUrl
+    });
+    assert.equal(found?.number, 101);
+    assert.equal(fake.postCalls, 0);
   } finally {
     await new Promise<void>(resolve => fake.server.close(() => resolve()));
   }
