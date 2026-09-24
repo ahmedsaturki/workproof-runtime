@@ -162,13 +162,13 @@ test("release-state allowlist covers ignore-file hardening without a version bum
 
 test("product readiness historical provenance names the immediately preceding stable release", () => {
   const productReadiness = fs.readFileSync(path.join(root, "docs", "PRODUCT-READINESS-V1.md"), "utf8");
-  assert.match(productReadiness, /v3\.8\.12 was the preceding verified stable distribution/);
-  assert.doesNotMatch(productReadiness, /v3\.8\.11 was the preceding verified stable distribution/);
+  assert.match(productReadiness, /v3\.8\.13 was the preceding verified stable distribution/);
+  assert.doesNotMatch(productReadiness, /v3\.8\.12 was the preceding verified stable distribution/);
 });
 
 test("README distinguishes the immediate previous stable from the verified rollback release", () => {
   const readme = fs.readFileSync(path.join(root, "README.md"), "utf8");
-  assert.match(readme, /immediate previous stable: v3\.8\.12/);
+  assert.match(readme, /immediate previous stable: v3\.8\.13/);
   assert.match(readme, /verified rollback release: v3\.8\.1/);
   assert.match(readme, /v3\.8\.1 remains the verified rollback release/);
   const lineage = JSON.parse(fs.readFileSync(path.join(root, "docs", "release-lineage.json"), "utf8"));

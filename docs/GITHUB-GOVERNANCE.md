@@ -85,7 +85,7 @@ Under Solo Governance this remains useful as ownership metadata and for future m
 The repository intentionally layers automated controls rather than pretending they are human reviewers:
 
 - CodeQL analyzes JavaScript/TypeScript and GitHub Actions;
-- Dependency Review checks dependency changes; the repository Dependency Graph is enabled and the v3.8.13 release branch passed Dependency Review;
+- Dependency Review checks dependency changes; the repository Dependency Graph is enabled and the v3.8.14 release branch passed Dependency Review;
 - OSSF Scorecard analyzes repository supply-chain practices;
 - Dependabot manages npm and GitHub Actions updates;
 - secret scanning is enforced in CI;
@@ -96,15 +96,15 @@ A Marketplace review application may add additional comments or analysis, but it
 
 ## Release and tag integrity
 
-The published `v3.8.13` tag resolves to the verified release commit `dadef28ce8fbd299201a228673f1c2737c5b7d62`. Release workflow #305 verified the five published assets and SHA256 manifest; Container workflow #302 verified the matching GHCR image and digest.
+The published `v3.8.14` tag resolves to the verified release commit `8fcb6cfca67d865ce56533ad56e1a508d997e98a`. Release workflow #307 verified the five published assets and SHA256 manifest; Container workflow #304 verified the matching GHCR image and digest.
 
-The published `v3.8.13` GitHub Release is immutable. The `v*` release-tag ruleset separately protects version tags against deletion, non-fast-forward updates, and ordinary updates. The governance verifier checks both controls against live GitHub state and fails closed if the current stable release loses immutability or its target drifts from recorded release lineage.
+The published `v3.8.14` GitHub Release is immutable. The `v*` release-tag ruleset separately protects version tags against deletion, non-fast-forward updates, and ordinary updates. The governance verifier checks both controls against live GitHub state and fails closed if the current stable release loses immutability or its target drifts from recorded release lineage.
 
-The `v*` release-tag ruleset is active and protects future version tags against deletion, non-fast-forward updates, and ordinary updates. The published `v3.8.13` GitHub Release is immutable.
+The `v*` release-tag ruleset is active and protects future version tags against deletion, non-fast-forward updates, and ordinary updates. The published `v3.8.14` GitHub Release is immutable.
 
 The release workflow uses draft-first publication for future immutable releases: it creates a draft, attaches the complete five-asset distribution, validates the exact asset set while the release is still mutable, and only then publishes. Once published, reruns refuse to rewrite immutable release assets. This path landed in PR #175 (`ac99bb127fa621aa48ff903535075224949e4135`) under SSH-signed commits.
 
-Closeout documentation coherence landed in PR #176 (`f95a8c097e9fd5f93f479289b3b8b4f04721f028`), the Control Plane terminal-idempotency hardening landed in PR #177 (`5f0830e5c1b179b66f7fd0d8a09904147aa57ce6`), PR #178 (`cb7f1f40205126da54a8364524e2aa8aa3fe51a6`) recorded that closeout plus packed startup-timeout hardening, and PR #179 (`1b22c91a9f7dd51309fdde6eb4bdcbef0356c5d8`) recorded the #178 closeout and signed-merge lineage; all merges kept required signatures, required `verify` freshness, and review-thread resolution. Published `v3.8.13` release artifacts were not rewritten by any of these changes.
+Closeout documentation coherence landed in PR #176 (`f95a8c097e9fd5f93f479289b3b8b4f04721f028`), the Control Plane terminal-idempotency hardening landed in PR #177 (`5f0830e5c1b179b66f7fd0d8a09904147aa57ce6`), PR #178 (`cb7f1f40205126da54a8364524e2aa8aa3fe51a6`) recorded that closeout plus packed startup-timeout hardening, and PR #179 (`1b22c91a9f7dd51309fdde6eb4bdcbef0356c5d8`) recorded the #178 closeout and signed-merge lineage; all merges kept required signatures, required `verify` freshness, and review-thread resolution. Published `v3.8.13` release artifacts were not rewritten by any of these changes. PR #180 (`84062634503f9b15937feaee6b3c21e288cd2cf3`) recorded the #179 closeout, and PR #181 (head `92e3fb1959cff5f479e0abab429ef5fabc271978`, merged as `8fcb6cfca67d865ce56533ad56e1a508d997e98a`) prepared and published the immutable `v3.8.14` release without rewriting any prior published release.
 
 ## Verification contract
 
