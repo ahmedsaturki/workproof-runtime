@@ -2,7 +2,27 @@
 
 Date: 2026-09-24
 
-## v3.8.13 publication closeout
+## v3.8.14 publication closeout
+
+- package version: `3.8.14`
+- stable release tag: `v3.8.14`
+- stable release commit: `8fcb6cfca67d865ce56533ad56e1a508d997e98a`
+- GitHub Release ID: `395985478`
+- Release workflow #307: success
+- Container workflow #304: success
+- GHCR image: `ghcr.io/ahmedsaturki/workproof-runtime:3.8.14`
+- GHCR digest: `sha256:fcde1ff9748e8c0306160b3d6e61fd03680b1cfb35e51ef305eab4b20640050c`
+- commit-addressed image tag: `8fcb6cfca67d865ce56533ad56e1a508d997e98a`
+- five release assets published and SHA256-verified
+- publication verification confirmed benchmark semantics, source/package version alignment, release/tag lineage, and final GHCR provenance
+
+## Main verified baseline
+
+The current stable release line is **v3.8.14**. Main CI is required to verify every post-release reconciliation.
+
+Main contains the v3.4 executable benchmark, restart/resume safety, portable proof, explicit proof compatibility, operator guidance, packaged operator docs/examples, multi-capability execution, external-topology validation, distribution hardening, Control Plane policy/idempotency safety (including terminal mutation-error finalization), network-boundary hardening, immutable container-base provenance, and bounded production resource/log controls.
+
+## Previous stable v3.8.13
 
 - package version: `3.8.13`
 - stable release tag: `v3.8.13`
@@ -15,12 +35,6 @@ Date: 2026-09-24
 - commit-addressed image tag: `dadef28ce8fbd299201a228673f1c2737c5b7d62`
 - five release assets published and SHA256-verified
 - publication verification confirmed benchmark semantics, source/package version alignment, release/tag lineage, and final GHCR provenance
-
-## Main verified baseline
-
-The current stable release line is **v3.8.13**. Main CI is required to verify every post-release reconciliation.
-
-Main contains the v3.4 executable benchmark, restart/resume safety, portable proof, explicit proof compatibility, operator guidance, packaged operator docs/examples, multi-capability execution, external-topology validation, distribution hardening, Control Plane policy/idempotency safety, network-boundary hardening, immutable container-base provenance, and bounded production resource/log controls.
 
 ## Previous stable v3.8.12
 
@@ -35,23 +49,25 @@ Main contains the v3.4 executable benchmark, restart/resume safety, portable pro
 
 ## Published snapshot vs current main
 
-The `v3.8.13` GitHub Release and source/container assets were verified against release commit `dadef28ce8fbd299201a228673f1c2737c5b7d62`. The current `main` reconciliation records the published GitHub Release and GHCR evidence without rewriting or retagging the published release and without changing runtime semantics.
+The `v3.8.14` GitHub Release and source/container assets were verified against release commit `8fcb6cfca67d865ce56533ad56e1a508d997e98a`. The current `main` reconciliation records the published GitHub Release and GHCR evidence without rewriting or retagging the published release and without changing runtime semantics.
 
 ## Current main closeout
 
-- v3.8.13 stable release: published and fully Container-verified
-- current main lineage: reconciled to the exact v3.8.13 GitHub Release target and GHCR digest
-- production Compose: pinned to exact v3.8.13 tag@digest
+- v3.8.14 stable release: published and fully Container-verified
+- current main lineage: reconciled to the exact v3.8.14 GitHub Release target and GHCR digest
+- production Compose: pinned to exact v3.8.14 tag@digest
 - container base: immutable Node 24.21.0 Trixie slim digest enforced by CI/Release/Container
 - production resource envelope: init, 10s stop grace, 1 CPU, 1 GiB RAM, 512 PIDs, 10 MiB × 3 JSON log rotation
-- GitHub governance: `main` ruleset (required `verify`, required signatures, required review-thread resolution) and `v*` tag ruleset active; release `v3.8.13` immutable with five assets
+- GitHub governance: `main` ruleset (required `verify`, required signatures, required review-thread resolution) and `v*` tag ruleset active; release `v3.8.14` immutable with five assets
 - release publication path: draft-first for future immutable releases (create draft, upload and validate exact five assets, then publish); published immutable assets are not rewritten on rerun (PR #175)
 - release publication path draft-first coherence recorded in docs after PR #176 (`f95a8c0`)
 - Control Plane terminal mutation errors finalize the claimed idempotency key (PR #177 `5f0830e`, SSH-signed under required signatures)
 - control-plane / packed MCP / A2A startup waits honor `WORKPROOF_TEST_TIMEOUT_MS` (default 30s) so packed smokes do not flake under parallel load
 - STATUS / FINAL-AUDIT / GITHUB-GOVERNANCE closeout for PR #172–#178 plus packed startup-timeout hardening landed in PR #178 (`cb7f1f4`, SSH-signed)
 - PR #178 closeout and signed-merge lineage recorded in STATUS / FINAL-AUDIT / GITHUB-GOVERNANCE via PR #179 (`1b22c91`, SSH-signed)
-- open pull requests and issues: zero after PR #179 merge
+- PR #179 closeout and release-readiness records recorded via PR #180 (`8406263`, SSH-signed)
+- v3.8.14 release preparation (version bump, release notes, metadata gate) landed in PR #181 (head `92e3fb1`, merged `8fcb6cf`, SSH-signed)
+- open pull requests and issues: zero at this closeout verification
 
 ## Product gates
 
