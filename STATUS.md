@@ -1,6 +1,6 @@
 # WorkProof Runtime Status
 
-Date: 2026-09-23
+Date: 2026-09-24
 
 ## v3.8.13 publication closeout
 
@@ -44,6 +44,9 @@ The `v3.8.13` GitHub Release and source/container assets were verified against r
 - production Compose: pinned to exact v3.8.13 tag@digest
 - container base: immutable Node 24.21.0 Trixie slim digest enforced by CI/Release/Container
 - production resource envelope: init, 10s stop grace, 1 CPU, 1 GiB RAM, 512 PIDs, 10 MiB × 3 JSON log rotation
+- GitHub governance: `main` ruleset (required `verify`, required signatures, required review-thread resolution) and `v*` tag ruleset active; release `v3.8.13` immutable with five assets
+- release publication path: draft-first for future immutable releases (create draft, upload and validate exact five assets, then publish); published immutable assets are not rewritten on rerun (PR #175)
+- open pull requests and issues: zero after PR #175 merge
 
 ## Product gates
 
@@ -94,7 +97,9 @@ M001-M005: 5/5 verified.
 - [x] immutable container-base verification
 - [x] bounded production resource/log envelope
 - [x] GitHub Release immutability and `v*` tag deletion/update protection verified live
+- [x] draft-first immutable release publication path (PR #175) with exact five-asset validation before publish
 - [external] public host/DNS/TLS/auth/secrets provisioning remains outside the repository's current provisioned resources
+- [external] Vercel Git integration (if still connected) is configured as a static site and is not part of the WorkProof Runtime product surface; disconnect it from Vercel settings rather than faking a `public/` output directory
 
 The disposable topology gate verifies TLS, authentication, secret non-leakage, persistent state, backup/restore, rollback to a previous verified digest-pinned release, and deny-by-default network exposure. Public infrastructure remains a separate external resource; the public-host portion is deployment provisioning, not a hidden runtime dependency.
 

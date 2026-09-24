@@ -102,7 +102,7 @@ The published `v3.8.13` GitHub Release is immutable. The `v*` release-tag rulese
 
 The `v*` release-tag ruleset is active and protects future version tags against deletion, non-fast-forward updates, and ordinary updates. The published `v3.8.13` GitHub Release is immutable.
 
-The release workflow uses draft-first publication for future immutable releases: it creates a draft, attaches the complete five-asset distribution, validates the exact asset set while the release is still mutable, and only then publishes. Once published, reruns refuse to rewrite immutable release assets.
+The release workflow uses draft-first publication for future immutable releases: it creates a draft, attaches the complete five-asset distribution, validates the exact asset set while the release is still mutable, and only then publishes. Once published, reruns refuse to rewrite immutable release assets. This path landed in PR #175 (`ac99bb127fa621aa48ff903535075224949e4135`) under SSH-signed commits.
 
 ## Verification contract
 
