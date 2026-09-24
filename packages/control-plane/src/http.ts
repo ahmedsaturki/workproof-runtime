@@ -517,9 +517,12 @@ export async function startControlPlane(options: ControlPlaneOptions): Promise<R
         at: new Date().toISOString()
       });
 
-      if (activeIdempotencyKey && idempotency && status >= 500) {
+      if (activeIdempotencyKey && idempotency) {
+        const publicError = status === 404
+          ? "not-found"
+          : (status === 400 ? "invalid-request" : "mutation-execution-failed");
         const safeFailure = {
-          error: "mutation-execution-failed",
+          error: publicError,
           requestId: id
         };
         try {
