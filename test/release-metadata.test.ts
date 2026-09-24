@@ -235,6 +235,25 @@ test("solo governance verifier enforces immutable current stable release provena
   assert.ok(soloGovernanceScript.includes("release.target_commitish === lineage.release.commit"));
 });
 
+test("immutable release publication is draft-first and assets are validated before publish", () => {
+  const createIndex = releaseWorkflow.indexOf('gh release create "${RELEASE_TAG}"');
+  const uploadIndex = releaseWorkflow.indexOf('gh release upload "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --clobber release-dist/*');
+  const validateIndex = releaseWorkflow.indexOf('ASSET_NAMES="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json assets --jq ".assets[].name")"');
+  const publishIndex = releaseWorkflow.indexOf('gh release edit "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --draft=false --notes-file "${NOTES_FILE}"');
+  assert.ok(createIndex >= 0, "release workflow must create the release explicitly");
+  assert.ok(uploadIndex > createIndex, "release assets must be uploaded after draft creation");
+  assert.ok(validateIndex > uploadIndex, "release assets must be validated while the release is still mutable");
+  assert.ok(publishIndex > validateIndex, "release must be published only after asset validation");
+  assert.ok(releaseWorkflow.includes("--draft"));
+  assert.ok(releaseWorkflow.includes("isImmutable"));
+  assert.ok(releaseWorkflow.includes('"RELEASE-MANIFEST.txt"'));
+  assert.ok(releaseWorkflow.includes('"SHA256SUMS.txt"'));
+  assert.ok(releaseWorkflow.includes('"operational-reality-core-${RELEASE_TAG#v}.tgz"'));
+  assert.ok(releaseWorkflow.includes('"workproof-benchmark-${RELEASE_TAG}.json"'));
+  assert.ok(releaseWorkflow.includes('"workproof-runtime-${RELEASE_TAG}.tar.gz"'));
+  assert.ok(releaseWorkflow.includes('test "${PUBLISHED_RELEASE_IMMUTABLE}" = "true"'));
+});
+
 test("release reconciles an existing release body from the versioned release notes", () => {
   assert.match(releaseWorkflow, /gh release edit "\${RELEASE_TAG}" --repo "\${GITHUB_REPOSITORY}" --notes-file "\${NOTES_FILE}"/);
 });

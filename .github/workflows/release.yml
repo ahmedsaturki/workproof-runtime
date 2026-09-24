@@ -161,18 +161,46 @@ jobs:
             EXPECTED_PRERELEASE="true"
           fi
 
-          if gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
-            echo "Release ${RELEASE_TAG} already exists; reconciling publication state."
-            RELEASE_ID="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json databaseId --jq ".databaseId")"
-            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" -f "prerelease=${EXPECTED_PRERELEASE}" -f "draft=false" >/dev/null
-            gh release edit "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --notes-file "${NOTES_FILE}" >/dev/null
-          else
+          if ! gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            echo "Creating immutable release ${RELEASE_TAG} as a draft before assets are attached."
             if [ "${EXPECTED_PRERELEASE}" = "true" ]; then
-              gh release create "${RELEASE_TAG}"               --repo "${GITHUB_REPOSITORY}"               --target "${GITHUB_SHA}"               --title "WorkProof Runtime ${RELEASE_TAG}"               --prerelease               --notes-file "${NOTES_FILE}"               release-dist/*
+              gh release create "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --target "${GITHUB_SHA}" --title "WorkProof Runtime ${RELEASE_TAG}" --prerelease --draft --notes-file "${NOTES_FILE}"
             else
-              gh release create "${RELEASE_TAG}"               --repo "${GITHUB_REPOSITORY}"               --target "${GITHUB_SHA}"               --title "WorkProof Runtime ${RELEASE_TAG}"               --notes-file "${NOTES_FILE}"               release-dist/*
+              gh release create "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --target "${GITHUB_SHA}" --title "WorkProof Runtime ${RELEASE_TAG}" --draft --notes-file "${NOTES_FILE}"
             fi
           fi
+
+          RELEASE_ID="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json databaseId --jq ".databaseId")"
+          RELEASE_IS_DRAFT="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json isDraft --jq ".isDraft")"
+          RELEASE_IS_IMMUTABLE="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json isImmutable --jq ".isImmutable")"
+          RELEASE_IS_PRERELEASE="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json isPrerelease --jq ".isPrerelease")"
+          RELEASE_TARGET="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json targetCommitish --jq ".targetCommitish")"
+          test "${RELEASE_TARGET}" = "${GITHUB_SHA}"
+          test "${RELEASE_IS_PRERELEASE}" = "${EXPECTED_PRERELEASE}"
+
+          if [ "${RELEASE_IS_DRAFT}" = "true" ]; then
+            echo "Attaching release assets while ${RELEASE_TAG} is still mutable."
+            gh release upload "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --clobber release-dist/*
+            ASSET_COUNT="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json assets --jq ".assets | length")"
+            test "${ASSET_COUNT}" = "5"
+            ASSET_NAMES="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json assets --jq ".assets[].name")"
+            for required in \
+              "RELEASE-MANIFEST.txt" \
+              "SHA256SUMS.txt" \
+              "operational-reality-core-${RELEASE_TAG#v}.tgz" \
+              "workproof-benchmark-${RELEASE_TAG}.json" \
+              "workproof-runtime-${RELEASE_TAG}.tar.gz"; do
+              echo "${ASSET_NAMES}" | grep -Fx "${required}" >/dev/null
+            done
+            gh release edit "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --draft=false --notes-file "${NOTES_FILE}" >/dev/null
+          else
+            echo "Release ${RELEASE_TAG} is already published; refusing to rewrite its immutable assets."
+            test "${RELEASE_IS_IMMUTABLE}" = "true"
+            gh release edit "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --notes-file "${NOTES_FILE}" >/dev/null
+          fi
+
+          PUBLISHED_RELEASE_IMMUTABLE="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json isImmutable --jq ".isImmutable")"
+          test "${PUBLISHED_RELEASE_IMMUTABLE}" = "true"
 
       - name: Verify published release body coherence
         env:
