@@ -40,7 +40,7 @@ function parseSha256Sums(text) {
   for (const rawLine of String(text).split(/\r?\n/)) {
     const line = rawLine.trim();
     if (!line) continue;
-    const match = /^([0-9a-f]{64})\\s+(?:\\*)?(.+)$/.exec(line);
+    const match = /^([0-9a-f]{64})\s+(?:\*)?(.+)$/.exec(line);
     if (!match) throw new Error("Malformed SHA256SUMS line: " + rawLine);
     entries.set(match[2], match[1]);
   }
