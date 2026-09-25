@@ -10,6 +10,7 @@ on:
       - "feature/**"
       - fix/**
   pull_request:
+  workflow_dispatch:
   schedule:
     - cron: "17 3 * * *"
 
@@ -19,7 +20,7 @@ concurrency:
 
 jobs:
   verify:
-    if: ${{ github.event_name != 'schedule' }}
+    if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     env:
       WORKPROOF_BROWSER_BINARY: google-chrome
@@ -168,7 +169,7 @@ jobs:
           retention-days: 14
 
   release-health:
-    if: ${{ github.event_name == 'schedule' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
     permissions:
