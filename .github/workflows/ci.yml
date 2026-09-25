@@ -121,6 +121,12 @@ jobs:
           fi
           node scripts/external-topology-smoke.js
         timeout-minutes: 8
+      - name: Verify published release integrity on pull requests
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/verify-published-lineage.js
+        timeout-minutes: 5
       - name: Verify main release state
         if: ${{ github.ref == 'refs/heads/main' }}
         env:
