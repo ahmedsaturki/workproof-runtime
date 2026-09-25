@@ -19,6 +19,7 @@ concurrency:
 
 jobs:
   verify:
+    if: ${{ github.event_name != 'schedule' }}
     runs-on: ubuntu-latest
     env:
       WORKPROOF_BROWSER_BINARY: google-chrome
@@ -174,10 +175,10 @@ jobs:
         with:
           node-version: 24
           package-manager-cache: false
-      - name: Verify published stable release, assets, benchmark, and rollback lineage
+      - name: Verify current main release state, published assets, benchmark, and rollback lineage
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: node scripts/verify-published-lineage.js
+        run: node scripts/verify-main-release-state.js
       - name: Verify required source tree
         run: node scripts/verify-source-tree.js
       - name: Verify repository secret scan
