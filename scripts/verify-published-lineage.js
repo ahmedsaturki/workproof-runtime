@@ -99,6 +99,13 @@ async function main() {
   if (published.draft !== false) throw new Error("Current stable GitHub Release must not be a draft");
   if (published.prerelease !== false) throw new Error("Current stable GitHub Release must not be a prerelease");
   if (published.immutable !== true) throw new Error("Current stable GitHub Release must be immutable");
+
+  const currentTagResult = await json("https://api.github.com/repos/ahmedsaturki/workproof-runtime/git/ref/tags/" + encodeURIComponent(release.tag), {
+    headers: { accept: "application/vnd.github+json", "user-agent": "workproof-lineage-check" }
+  });
+  if (currentTagResult.value?.object?.sha !== release.commit) {
+    throw new Error("Current Git tag target mismatch");
+  }
   const assetNames = Array.isArray(published.assets) ? published.assets.map(asset => asset.name) : [];
   const expectedAssets = [
     "operational-reality-core-" + release.version + ".tgz",
@@ -167,6 +174,10 @@ async function main() {
 
   const digest = await ghcrDigest(release.version);
   if (digest !== lineage.container.digest) throw new Error("GHCR digest mismatch: " + digest + " != " + lineage.container.digest);
+  const immutableDigest = await ghcrDigest(lineage.container.immutableTag);
+  if (immutableDigest !== lineage.container.digest) {
+    throw new Error("Commit-addressed GHCR digest mismatch: " + immutableDigest + " != " + lineage.container.digest);
+  }
 
   const expectedRollbackCommit = "f8af30bf69391db22863c432df5c452a73ebaa05";
   if (lineage.rollback.commit !== expectedRollbackCommit) throw new Error("Unexpected rollback release commit in lineage");
