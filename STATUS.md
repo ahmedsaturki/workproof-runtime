@@ -1,6 +1,6 @@
 # WorkProof Runtime Status
 
-Date: 2026-09-24
+Date: 2026-09-25
 
 ## v3.8.15 publication closeout
 
@@ -84,6 +84,7 @@ The `v3.8.15` GitHub Release and source/container assets were verified against r
 - v3.8.14 post-release lineage reconciliation landed in PR #182 (head `e041770`, merged `ed574b2`, SSH-signed)
 - v3.8.15 release preparation (external-write idempotency hardening, publication/github pack fixes, governance token wiring) landed in PR #184 (head `2860e8c` re-signed, merged `cc9dbea`); PR #183 was closed unmerged as a superseded duplicate
 - open pull requests and issues: zero at this closeout verification
+- scheduled + manually triggerable post-release integrity health: added to CI; it revalidates the current main/release lineage, downloads and SHA256-checks all published release assets, validates release manifest and benchmark semantics, verifies rollback release/tag/container lineage, and reruns source-tree/secret/container-base checks
 
 ## Product gates
 

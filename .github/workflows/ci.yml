@@ -10,6 +10,9 @@ on:
       - "feature/**"
       - fix/**
   pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * *"
 
 concurrency:
   group: workproof-runtime-ci-${{ github.workflow }}-${{ github.event.pull_request.number || format('push-{0}', github.ref_name) }}
@@ -17,6 +20,7 @@ concurrency:
 
 jobs:
   verify:
+    if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     env:
       WORKPROOF_BROWSER_BINARY: google-chrome
@@ -118,6 +122,12 @@ jobs:
           fi
           node scripts/external-topology-smoke.js
         timeout-minutes: 8
+      - name: Verify published release integrity on pull requests
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/verify-published-lineage.js
+        timeout-minutes: 5
       - name: Verify main release state
         if: ${{ github.ref == 'refs/heads/main' }}
         env:
@@ -157,6 +167,36 @@ jobs:
           name: workproof-benchmark-${{ github.sha }}
           path: benchmark-result.json
           retention-days: 14
+
+  release-health:
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe502a1 # v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Verify current main release state, published assets, benchmark, and rollback lineage
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/verify-main-release-state.js
+      - name: Verify live GitHub Solo Governance
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/verify-solo-governance.js
+      - name: Verify required source tree
+        run: node scripts/verify-source-tree.js
+      - name: Verify repository secret scan
+        run: node scripts/secret-scan.js
+      - name: Verify immutable container base declaration
+        run: node scripts/verify-container-base.js
 
   windows-browser-compatibility:
     runs-on: windows-latest
