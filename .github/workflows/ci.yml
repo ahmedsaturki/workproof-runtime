@@ -186,6 +186,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/verify-main-release-state.js
+      - name: Verify live GitHub Solo Governance
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/verify-solo-governance.js
       - name: Verify required source tree
         run: node scripts/verify-source-tree.js
       - name: Verify repository secret scan
