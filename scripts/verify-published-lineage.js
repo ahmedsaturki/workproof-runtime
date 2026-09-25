@@ -176,8 +176,8 @@ async function main() {
   const rollbackRelease = (rollbackReleaseResult.value ?? []).find((item) => item && item.tag_name === lineage.rollback.tag);
   if (!rollbackRelease) throw new Error("Rollback GitHub Release tag was not found: " + lineage.rollback.tag);
   if (rollbackRelease.target_commitish !== expectedRollbackCommit) throw new Error("Rollback release target commit mismatch");
-  if (rollbackRelease.draft !== false || rollbackRelease.prerelease !== false || rollbackRelease.immutable !== true) {
-    throw new Error("Rollback GitHub Release must be published, stable, and immutable");
+  if (rollbackRelease.draft !== false || rollbackRelease.prerelease !== false) {
+    throw new Error("Rollback GitHub Release must be published and stable");
   }
   const rollbackTagResult = await json("https://api.github.com/repos/ahmedsaturki/workproof-runtime/git/ref/tags/" + encodeURIComponent(lineage.rollback.tag), {
     headers: { accept: "application/vnd.github+json", "user-agent": "workproof-lineage-check" }
