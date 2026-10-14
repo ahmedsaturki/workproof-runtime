@@ -50,6 +50,6 @@
   ],
   "dependencies": {
     "@modelcontextprotocol/server": "2.0.0",
-    "zod": "4.6.5"
+    "zod": "4.6.6"
   }
 }
